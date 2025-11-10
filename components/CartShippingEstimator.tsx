@@ -23,9 +23,9 @@ interface CartShippingEstimatorProps {
   onShippingSelect?: (rate: ShippingRate) => void;
 }
 
-export default function CartShippingEstimator({ 
+export default function CartShippingEstimator({
   items,
-  onShippingSelect 
+  onShippingSelect,
 }: CartShippingEstimatorProps) {
   const [zipCode, setZipCode] = useState("");
   const [rates, setRates] = useState<ShippingRate[]>([]);
@@ -61,10 +61,10 @@ export default function CartShippingEstimator({
     if (isToday) return "Today";
     if (isTomorrow) return "Tomorrow";
 
-    return date.toLocaleDateString("en-US", { 
-      weekday: "long", 
-      month: "long", 
-      day: "numeric" 
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -81,27 +81,24 @@ export default function CartShippingEstimator({
     setError("");
 
     try {
-      const apiItems = items.map(item => ({
+      const apiItems = items.map((item) => ({
         product_id: item.productId,
-        quantity: item.quantity
+        quantity: item.quantity,
       }));
 
-      const response = await fetch(
-        "/api/shipping/calculate",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      const response = await fetch("/api/shipping/calculate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: apiItems,
+          destination: {
+            postcode: zip,
+            country: "US",
           },
-          body: JSON.stringify({
-            items: apiItems,
-            destination: {
-              postcode: zip,
-              country: "US",
-            },
-          }),
-        }
-      );
+        }),
+      });
 
       const data = await response.json();
 
@@ -111,18 +108,19 @@ export default function CartShippingEstimator({
         setAmountUntilFree(data.amount_until_free_shipping);
         setCartTotal(data.cart_total);
         setAutoCalculated(true);
-        
+
         // Auto-select cheapest shipping by default
         if (data.rates.length > 0) {
-          const cheapest = data.rates.reduce((prev: ShippingRate, current: ShippingRate) => 
-            current.cost < prev.cost ? current : prev
+          const cheapest = data.rates.reduce(
+            (prev: ShippingRate, current: ShippingRate) =>
+              current.cost < prev.cost ? current : prev,
           );
           setSelectedRate(cheapest);
           if (onShippingSelect) {
             onShippingSelect(cheapest);
           }
         }
-        
+
         localStorage.setItem("shipping_zip", zip);
       } else {
         setError(data.error || "Unable to calculate shipping");
@@ -210,7 +208,9 @@ export default function CartShippingEstimator({
       {autoCalculated && zipCode && (
         <div className="flex items-center gap-2 text-xs text-white/60">
           <div className="w-1 h-3 bg-white/30" />
-          <span className="uppercase tracking-wider">Delivering to {zipCode}</span>
+          <span className="uppercase tracking-wider">
+            Delivering to {zipCode}
+          </span>
         </div>
       )}
 
@@ -224,9 +224,7 @@ export default function CartShippingEstimator({
       {/* Shipping Rates */}
       <div>
         {rates.length > 0 && (
-          <div
-            className="space-y-2 overflow-hidden"
-          >
+          <div className="space-y-2 overflow-hidden">
             {rates.map((rate, index) => (
               <button
                 key={rate.method_id}
@@ -240,16 +238,18 @@ export default function CartShippingEstimator({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     {/* Radio Button */}
-                    <div className={`w-4 h-4 rounded-full border transition-all ${
-                      selectedRate?.method_id === rate.method_id
-                        ? "border-white bg-white"
-                        : "border-white/30"
-                    }`}>
+                    <div
+                      className={`w-4 h-4 rounded-full border transition-all ${
+                        selectedRate?.method_id === rate.method_id
+                          ? "border-white bg-white"
+                          : "border-white/30"
+                      }`}
+                    >
                       {selectedRate?.method_id === rate.method_id && (
                         <div className="w-2 h-2 rounded-full bg-black m-1" />
                       )}
                     </div>
-                    
+
                     <div>
                       <div className="text-sm text-white font-medium mb-0.5">
                         {rate.method_title.replace("USPS ", "")}
@@ -259,7 +259,7 @@ export default function CartShippingEstimator({
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="text-sm font-medium text-white">
                     ${rate.cost.toFixed(2)}
                   </div>
@@ -272,9 +272,7 @@ export default function CartShippingEstimator({
 
       {/* Free Shipping Progress */}
       {rates.length > 0 && amountUntilFree > 0 && (
-        <div
-          className="border-t border-white/10 pt-4 mt-4"
-        >
+        <div className="border-t border-white/10 pt-4 mt-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs uppercase tracking-wider text-white/50">
               Free Shipping Progress
@@ -285,7 +283,9 @@ export default function CartShippingEstimator({
           </div>
           <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
-              style={{ width: `${Math.min((cartTotal / freeShippingThreshold) * 100, 100)}%` }}
+              style={{
+                width: `${Math.min((cartTotal / freeShippingThreshold) * 100, 100)}%`,
+              }}
               className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
             />
           </div>
@@ -294,9 +294,7 @@ export default function CartShippingEstimator({
 
       {/* Free Shipping Achieved */}
       {rates.length > 0 && amountUntilFree === 0 && (
-        <div
-          className="border-t border-emerald-500/20 pt-4 mt-4"
-        >
+        <div className="border-t border-emerald-500/20 pt-4 mt-4">
           <div className="flex items-center gap-2 text-emerald-400">
             <div className="w-1 h-4 bg-emerald-400 rounded-full" />
             <span className="text-xs font-medium uppercase tracking-wider">
@@ -308,4 +306,3 @@ export default function CartShippingEstimator({
     </div>
   );
 }
-

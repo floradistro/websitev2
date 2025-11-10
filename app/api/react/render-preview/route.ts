@@ -3,22 +3,18 @@
  * Returns HTML with embedded React component code
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const { code, props = {} } = await request.json();
-    
+
     if (!code) {
-      return NextResponse.json({ error: 'No code provided' }, { status: 400 });
+      return NextResponse.json({ error: "No code provided" }, { status: 400 });
     }
 
-    console.log('🎨 Preparing React component preview...');
-
     // Strip export statements and wrap code
-    const cleanCode = code
-      .replace(/export\s+default\s+/g, '')
-      .trim();
+    const cleanCode = code.replace(/export\s+default\s+/g, "").trim();
 
     // Generate full preview HTML with React code embedded
     const fullHtml = `
@@ -79,12 +75,16 @@ export async function POST(request: NextRequest) {
     `;
 
     return NextResponse.json({ success: true, html: fullHtml });
-
   } catch (error: any) {
-    console.error('❌ Preview render error:', error);
-    return NextResponse.json({ 
-      error: error.message,
-      details: error.stack 
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Preview render error:", error);
+    }
+    return NextResponse.json(
+      {
+        error: error.message,
+        details: error.stack,
+      },
+      { status: 500 },
+    );
   }
 }

@@ -45,8 +45,9 @@ export class VercelDeployment {
 
       return deployment;
     } catch (error) {
-      console.error('❌ Deployment failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("❌ Deployment failed:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       throw new Error(`Vercel deployment failed: ${errorMessage}`);
     }
   }
@@ -54,13 +55,15 @@ export class VercelDeployment {
   /**
    * Create Vercel deployment
    */
-  private async createDeployment(config: DeploymentConfig): Promise<DeploymentResult> {
+  private async createDeployment(
+    config: DeploymentConfig,
+  ): Promise<DeploymentResult> {
     // For now, return mock data
     // In production, this would use Vercel API to deploy
-    
+
     const deploymentId = `dpl_${Math.random().toString(36).substring(7)}`;
     const projectId = `prj_${Math.random().toString(36).substring(7)}`;
-    
+
     return {
       deploymentId,
       deploymentUrl: `https://${config.vendorSlug}.vercel.app`,
@@ -71,16 +74,19 @@ export class VercelDeployment {
   /**
    * Configure custom domain
    */
-  private async configureDomain(projectId: string, domain: string): Promise<void> {
+  private async configureDomain(
+    projectId: string,
+    domain: string,
+  ): Promise<void> {
     console.log(`🔵 Configuring custom domain: ${domain}`);
 
     const url = `https://api.vercel.com/v10/projects/${projectId}/domains`;
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${this.vercelToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         name: domain,
@@ -99,7 +105,7 @@ export class VercelDeployment {
    * Get deployment status
    */
   async getDeploymentStatus(deploymentId: string): Promise<{
-    state: 'BUILDING' | 'READY' | 'ERROR';
+    state: "BUILDING" | "READY" | "ERROR";
     url?: string;
     errorMessage?: string;
   }> {
@@ -112,7 +118,7 @@ export class VercelDeployment {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to get deployment status');
+      throw new Error("Failed to get deployment status");
     }
 
     const data: any = await response.json();
@@ -131,17 +137,16 @@ export class VercelDeployment {
     const url = `https://api.vercel.com/v13/deployments/${deploymentId}`;
 
     const response = await fetch(url, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
         Authorization: `Bearer ${this.vercelToken}`,
       },
     });
 
     if (!response.ok) {
-      throw new Error('Failed to delete deployment');
+      throw new Error("Failed to delete deployment");
     }
 
     console.log(`✅ Deployment deleted: ${deploymentId}`);
   }
 }
-

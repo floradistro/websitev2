@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ds, cn, Button } from '@/components/ds';
+import { useState } from "react";
+import { ds, cn, Button } from "@/components/ds";
 
 interface LocationStockProps {
   productId: string;
@@ -7,7 +7,12 @@ interface LocationStockProps {
   inventoryId: string;
   locationName: string;
   quantity: number;
-  onAdjust: (productId: string, locationId: string, inventoryId: string, amount: number) => Promise<void>;
+  onAdjust: (
+    productId: string,
+    locationId: string,
+    inventoryId: string,
+    amount: number,
+  ) => Promise<void>;
   isAdjusting: boolean;
 }
 
@@ -18,9 +23,9 @@ export function LocationStock({
   locationName,
   quantity,
   onAdjust,
-  isAdjusting
+  isAdjusting,
 }: LocationStockProps) {
-  const [customAmount, setCustomAmount] = useState('');
+  const [customAmount, setCustomAmount] = useState("");
 
   const handleQuickAdd = async (amount: number) => {
     await onAdjust(productId, locationId, inventoryId, amount);
@@ -30,7 +35,7 @@ export function LocationStock({
     const amount = parseFloat(customAmount);
     if (!isNaN(amount) && amount !== 0) {
       await onAdjust(productId, locationId, inventoryId, amount);
-      setCustomAmount('');
+      setCustomAmount("");
     }
   };
 
@@ -41,14 +46,29 @@ export function LocationStock({
   };
 
   return (
-    <div className={cn("rounded-2xl border p-4", ds.colors.bg.secondary, ds.colors.border.default)}>
+    <div
+      className={cn(
+        "rounded-2xl border p-4",
+        ds.colors.bg.secondary,
+        ds.colors.border.default,
+      )}
+    >
       {/* Location Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <div className={cn(ds.typography.size.sm, "text-white font-light mb-1")}>
+          <div
+            className={cn(ds.typography.size.sm, "text-white font-light mb-1")}
+          >
             {locationName}
           </div>
-          <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, ds.typography.transform.uppercase, ds.typography.tracking.wide)}>
+          <div
+            className={cn(
+              ds.typography.size.xs,
+              ds.colors.text.quaternary,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+            )}
+          >
             Current Stock
           </div>
         </div>
@@ -66,7 +86,15 @@ export function LocationStock({
       <div className="space-y-3">
         {/* Preset Dropdown */}
         <div>
-          <label className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary, "block mb-2")}>
+          <label
+            className={cn(
+              ds.typography.size.xs,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+              ds.colors.text.quaternary,
+              "block mb-2",
+            )}
+          >
             Quick Adjust
           </label>
           <select
@@ -74,7 +102,7 @@ export function LocationStock({
               const value = parseFloat(e.target.value);
               if (value !== 0) {
                 handleQuickAdd(value);
-                e.target.value = '0';
+                e.target.value = "0";
               }
             }}
             disabled={isAdjusting}
@@ -85,7 +113,7 @@ export function LocationStock({
               ds.colors.text.primary,
               ds.typography.size.xs,
               "hover:border-white/20 focus:border-white/20 focus:outline-none",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
+              "disabled:opacity-50 disabled:cursor-not-allowed",
             )}
           >
             <option value="0">Select amount...</option>
@@ -112,7 +140,15 @@ export function LocationStock({
 
         {/* Custom Amount */}
         <div>
-          <label className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary, "block mb-2")}>
+          <label
+            className={cn(
+              ds.typography.size.xs,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+              ds.colors.text.quaternary,
+              "block mb-2",
+            )}
+          >
             Custom Amount
           </label>
           <div className="flex items-center gap-2">
@@ -123,7 +159,7 @@ export function LocationStock({
               value={customAmount}
               onChange={(e) => setCustomAmount(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === "Enter") {
                   handleCustomAdjust();
                 }
               }}
@@ -136,7 +172,7 @@ export function LocationStock({
                 ds.typography.size.xs,
                 "placeholder:text-white/20",
                 "hover:border-white/20 focus:border-white/20 focus:outline-none",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
+                "disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             />
             <button
@@ -150,13 +186,13 @@ export function LocationStock({
                 ds.typography.transform.uppercase,
                 ds.typography.tracking.wide,
                 "text-white hover:bg-white/10 hover:border-white/20",
-                "disabled:opacity-20 disabled:cursor-not-allowed min-w-[70px]"
+                "disabled:opacity-20 disabled:cursor-not-allowed min-w-[70px]",
               )}
             >
               {isAdjusting ? (
                 <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
               ) : (
-                'Apply'
+                "Apply"
               )}
             </button>
           </div>
@@ -164,7 +200,15 @@ export function LocationStock({
 
         {/* Fine Control */}
         <div>
-          <label className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary, "block mb-2")}>
+          <label
+            className={cn(
+              ds.typography.size.xs,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+              ds.colors.text.quaternary,
+              "block mb-2",
+            )}
+          >
             Fine Control
           </label>
           <div className="flex items-center gap-2">
@@ -177,7 +221,7 @@ export function LocationStock({
                 ds.colors.border.default,
                 ds.typography.size.xs,
                 "text-white/70 hover:bg-white/5 hover:text-white hover:border-white/20",
-                "disabled:opacity-20 disabled:cursor-not-allowed"
+                "disabled:opacity-20 disabled:cursor-not-allowed",
               )}
             >
               -1g
@@ -191,7 +235,7 @@ export function LocationStock({
                 ds.colors.border.default,
                 ds.typography.size.xs,
                 "text-white hover:bg-white/10 hover:border-white/20",
-                "disabled:opacity-20 disabled:cursor-not-allowed"
+                "disabled:opacity-20 disabled:cursor-not-allowed",
               )}
             >
               +1g
@@ -208,7 +252,7 @@ export function LocationStock({
                 ds.typography.transform.uppercase,
                 ds.typography.tracking.wide,
                 "text-white/50 hover:bg-white/5 hover:text-white/70 hover:border-white/20",
-                "disabled:opacity-20 disabled:cursor-not-allowed"
+                "disabled:opacity-20 disabled:cursor-not-allowed",
               )}
             >
               Clear

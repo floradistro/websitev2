@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 interface CartItem {
   productId: string;
@@ -25,7 +25,7 @@ interface CreateSaleRequest {
   subtotal: number;
   taxAmount: number;
   total: number;
-  paymentMethod: 'cash' | 'card' | 'split';
+  paymentMethod: "cash" | "card" | "split";
   cashTendered?: number;
   changeGiven?: number;
   customerId?: string;
@@ -60,11 +60,19 @@ export async function POST(request: NextRequest) {
   const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!hasServiceKey) {
-    console.error('🚨 CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing at request time!');
-    return NextResponse.json({
-      error: 'Internal configuration error - service credentials not available',
-      hint: 'Server environment variables are not properly configured'
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        "🚨 CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing at request time!",
+      );
+    }
+    return NextResponse.json(
+      {
+        error:
+          "Internal configuration error - service credentials not available",
+        hint: "Server environment variables are not properly configured",
+      },
+      { status: 500 },
+    );
   }
 
   const supabase = getServiceSupabase();
@@ -73,13 +81,16 @@ export async function POST(request: NextRequest) {
   // @ts-ignore - accessing internal state for debugging
   const clientHeaders = supabase.rest?.headers || {};
   // @ts-ignore - accessing header properties
-  const authHeader = clientHeaders.Authorization || '';
-  const isUsingServiceKey = authHeader.includes('eyJhbGciOiJIUzI1NiIs'); // Service keys start with this
-
+  const authHeader = clientHeaders.Authorization || "";
+  const isUsingServiceKey = authHeader.includes("eyJhbGciOiJIUzI1NiIs"); // Service keys start with this
 
   if (!isUsingServiceKey) {
-    console.error('🚨 CRITICAL: Supabase client is NOT using service role key!');
-    console.error('Auth header:', authHeader.substring(0, 50));
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        "🚨 CRITICAL: Supabase client is NOT using service role key!",
+      );
+    }
+    console.error("Auth header:", authHeader.substring(0, 50));
   }
 
   try {
@@ -102,38 +113,29 @@ export async function POST(request: NextRequest) {
       cashTendered,
       changeGiven,
       customerId,
-      customerName = 'Walk-In',
+      customerName = "Walk-In",
     } = body;
-
-    console.log('💰 POS Sale:', {
-      location: locationId,
-      items: items.length,
-      total: `$${total.toFixed(2)}`,
-      payment: paymentMethod,
-      hasServiceKey,
-      isUsingServiceKey
-    });
 
     // Validate required fields
     if (!locationId || !vendorId || !items || items.length === 0) {
       return NextResponse.json(
-        { error: 'Missing required fields: locationId, vendorId, items' },
-        { status: 400 }
+        { error: "Missing required fields: locationId, vendorId, items" },
+        { status: 400 },
       );
     }
 
     if (total <= 0) {
       return NextResponse.json(
-        { error: 'Invalid total amount' },
-        { status: 400 }
+        { error: "Invalid total amount" },
+        { status: 400 },
       );
     }
 
     // Validate numbers are actually numbers
     if (isNaN(subtotal) || isNaN(taxAmount) || isNaN(total)) {
       return NextResponse.json(
-        { error: 'Invalid numeric values in request' },
-        { status: 400 }
+        { error: "Invalid numeric values in request" },
+        { status: 400 },
       );
     }
 
@@ -141,24 +143,24 @@ export async function POST(request: NextRequest) {
     // STEP 2: VERIFY INVENTORY AVAILABILITY
     // ============================================================================
 
-    const inventoryIds = items.map(item => item.inventoryId);
+    const inventoryIds = items.map((item) => item.inventoryId);
     const { data: inventoryRecords, error: invError } = await supabase
-      .from('inventory')
-      .select('id, product_id, quantity, location_id')
-      .in('id', inventoryIds);
+      .from("inventory")
+      .select("id, product_id, quantity, location_id")
+      .in("id", inventoryIds);
 
     if (invError || !inventoryRecords) {
-      console.error('❌ Inventory lookup failed:', invError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Inventory lookup failed:", invError);
+      }
       return NextResponse.json(
-        { error: 'Failed to verify inventory' },
-        { status: 500 }
+        { error: "Failed to verify inventory" },
+        { status: 500 },
       );
     }
 
     // Build inventory map for quick lookup
-    const inventoryMap = new Map(
-      inventoryRecords.map(inv => [inv.id, inv])
-    );
+    const inventoryMap = new Map(inventoryRecords.map((inv) => [inv.id, inv]));
 
     // Check each item
     for (const item of items) {
@@ -167,7 +169,7 @@ export async function POST(request: NextRequest) {
       if (!inv) {
         return NextResponse.json(
           { error: `Inventory not found: ${item.productName}` },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -175,43 +177,42 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error: `Insufficient inventory: ${item.productName}`,
-            details: `Available: ${inv.quantity}, Requested: ${item.quantity}`
+            details: `Available: ${inv.quantity}, Requested: ${item.quantity}`,
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
-
 
     // ============================================================================
     // STEP 3: GENERATE ORDER NUMBER
     // ============================================================================
     const { data: locationData } = await supabase
-      .from('locations')
-      .select('slug')
-      .eq('id', locationId)
+      .from("locations")
+      .select("slug")
+      .eq("id", locationId)
       .single();
 
-    const locationCode = locationData?.slug?.substring(0, 3).toUpperCase() || 'POS';
-    const dateCode = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    const locationCode =
+      locationData?.slug?.substring(0, 3).toUpperCase() || "POS";
+    const dateCode = new Date().toISOString().split("T")[0].replace(/-/g, "");
     const sequence = Date.now().toString().slice(-6);
     const orderNumber = `${locationCode}-${dateCode}-${sequence}`;
-
 
     // ============================================================================
     // STEP 4: CREATE ORDER (ATOMIC)
     // ============================================================================
 
     const { data: order, error: orderError } = await supabase
-      .from('orders')
+      .from("orders")
       .insert({
         order_number: orderNumber,
         customer_id: customerId || null,
         vendor_id: vendorId,
-        status: 'completed',
-        payment_status: 'paid',
-        fulfillment_status: 'fulfilled',
-        delivery_type: 'pickup',
+        status: "completed",
+        payment_status: "paid",
+        fulfillment_status: "fulfilled",
+        delivery_type: "pickup",
         pickup_location_id: locationId,
         subtotal,
         tax_amount: taxAmount,
@@ -230,36 +231,45 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (orderError || !order) {
-      console.error('❌ Order creation failed:', orderError);
-
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Order creation failed:", orderError);
+      }
       // Special handling for RLS errors
-      if (orderError?.code === '42501') {
-        console.error('🚨 RLS POLICY VIOLATION - Service role should bypass this!');
-        console.error('Order data attempted:', {
-          vendor_id: vendorId,
-          customer_id: customerId || null,
-          location_id: locationId
-        });
+      if (orderError?.code === "42501") {
+        if (process.env.NODE_ENV === "development") {
+          console.error(
+            "🚨 RLS POLICY VIOLATION - Service role should bypass this!",
+          );
+        }
+        if (process.env.NODE_ENV === "development") {
+          if (process.env.NODE_ENV === "development") {
+            console.error("Order data attempted:", {
+              vendor_id: vendorId,
+              customer_id: customerId || null,
+              location_id: locationId,
+            });
+          }
+        }
       }
 
       return NextResponse.json(
         {
-          error: 'Failed to create order',
+          error: "Failed to create order",
           details: orderError?.message,
           code: orderError?.code,
-          hint: orderError?.code === '42501'
-            ? 'Row-level security policy violation - check database permissions'
-            : orderError?.hint
+          hint:
+            orderError?.code === "42501"
+              ? "Row-level security policy violation - check database permissions"
+              : orderError?.hint,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
-
 
     // ============================================================================
     // STEP 5: CREATE ORDER ITEMS (ATOMIC)
     // ============================================================================
-    const orderItems = items.map(item => ({
+    const orderItems = items.map((item) => ({
       order_id: order.id,
       product_id: item.productId,
       product_name: item.productName,
@@ -268,27 +278,27 @@ export async function POST(request: NextRequest) {
       line_subtotal: item.lineTotal,
       line_total: item.lineTotal,
       vendor_id: vendorId,
-      order_type: 'pickup',
+      order_type: "pickup",
       pickup_location_id: locationId,
       inventory_id: item.inventoryId,
     }));
 
     const { error: itemsError } = await supabase
-      .from('order_items')
+      .from("order_items")
       .insert(orderItems);
 
     if (itemsError) {
-      console.error('❌ Order items failed:', itemsError);
-
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Order items failed:", itemsError);
+      }
       // Rollback order
-      await supabase.from('orders').delete().eq('id', order.id);
+      await supabase.from("orders").delete().eq("id", order.id);
 
       return NextResponse.json(
-        { error: 'Failed to create order items', details: itemsError.message },
-        { status: 500 }
+        { error: "Failed to create order items", details: itemsError.message },
+        { status: 500 },
       );
     }
-
 
     // ============================================================================
     // STEP 6: DEDUCT INVENTORY (ATOMIC - RACE CONDITION SAFE)
@@ -296,16 +306,17 @@ export async function POST(request: NextRequest) {
 
     for (const item of items) {
       const { data: result, error: deductError } = await supabase.rpc(
-        'decrement_inventory',
+        "decrement_inventory",
         {
           p_inventory_id: item.inventoryId,
-          p_quantity: item.quantity
-        }
+          p_quantity: item.quantity,
+        },
       );
 
       if (deductError) {
-        console.error('❌ Inventory deduction failed:', deductError);
-
+        if (process.env.NODE_ENV === "development") {
+          console.error("❌ Inventory deduction failed:", deductError);
+        }
         // CRITICAL: Inventory deduction failed
         // In production, this should trigger:
         // 1. Alert to staff
@@ -313,17 +324,19 @@ export async function POST(request: NextRequest) {
         // 3. Order flagged for review
 
         await supabase
-          .from('orders')
+          .from("orders")
           .update({
             metadata: {
               ...order.metadata,
               inventory_error: true,
-              inventory_error_message: deductError.message
-            }
+              inventory_error_message: deductError.message,
+            },
           })
-          .eq('id', order.id);
+          .eq("id", order.id);
 
-        console.error('🚨 INVENTORY ERROR - Order flagged:', order.id);
+        if (process.env.NODE_ENV === "development") {
+          console.error("🚨 INVENTORY ERROR - Order flagged:", order.id);
+        }
       } else {
       }
     }
@@ -334,7 +347,7 @@ export async function POST(request: NextRequest) {
     const transactionNumber = `TXN-${orderNumber}`;
 
     const { data: transaction, error: txnError } = await supabase
-      .from('pos_transactions')
+      .from("pos_transactions")
       .insert({
         transaction_number: transactionNumber,
         location_id: locationId,
@@ -342,9 +355,9 @@ export async function POST(request: NextRequest) {
         order_id: order.id,
         session_id: sessionId || null,
         user_id: userId || null,
-        transaction_type: customerId ? 'customer_sale' : 'walk_in_sale',
+        transaction_type: customerId ? "customer_sale" : "walk_in_sale",
         payment_method: paymentMethod,
-        payment_status: 'completed',
+        payment_status: "completed",
         subtotal,
         tax_amount: taxAmount,
         total_amount: total,
@@ -360,7 +373,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (txnError) {
-      console.error('⚠️  Transaction record failed:', txnError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("⚠️  Transaction record failed:", txnError);
+      }
       // Non-critical - order is still valid
     } else {
     }
@@ -369,17 +384,21 @@ export async function POST(request: NextRequest) {
     // STEP 8: UPDATE SESSION TOTALS (IF SESSION EXISTS)
     // ============================================================================
     if (sessionId) {
-      const txnType = customerId ? 'pickup_orders_fulfilled' : 'walk_in_sales';
+      const txnType = customerId ? "pickup_orders_fulfilled" : "walk_in_sales";
 
-      const { error: sessionError } = await supabase
-        .rpc('increment_session_counter', {
+      const { error: sessionError } = await supabase.rpc(
+        "increment_session_counter",
+        {
           p_session_id: sessionId,
           p_counter_name: txnType,
-          p_amount: total
-        });
+          p_amount: total,
+        },
+      );
 
       if (sessionError) {
-        console.error('⚠️  Session update failed:', sessionError);
+        if (process.env.NODE_ENV === "development") {
+          console.error("⚠️  Session update failed:", sessionError);
+        }
         // Non-critical - session will be reconciled on close
       } else {
       }
@@ -399,7 +418,7 @@ export async function POST(request: NextRequest) {
         orderId: order.id,
         orderNumber,
         total,
-      }).catch(err => console.error('Background loyalty failed:', err));
+      }).catch((err) => console.error("Background loyalty failed:", err));
 
       syncToMarketing(supabase, {
         vendorId,
@@ -410,7 +429,7 @@ export async function POST(request: NextRequest) {
         userId,
         items,
         total,
-      }).catch(err => console.error('Background marketing failed:', err));
+      }).catch((err) => console.error("Background marketing failed:", err));
     }
 
     // ============================================================================
@@ -425,24 +444,26 @@ export async function POST(request: NextRequest) {
         order_number: orderNumber,
         total_amount: total,
       },
-      transaction: transaction ? {
-        id: transaction.id,
-        transaction_number: transactionNumber,
-      } : null,
+      transaction: transaction
+        ? {
+            id: transaction.id,
+            transaction_number: transactionNumber,
+          }
+        : null,
       message: `Sale completed: ${orderNumber}`,
       duration_ms: duration,
     });
-
   } catch (error: any) {
-    console.error('💥 SALE FAILED:', error);
-
+    if (process.env.NODE_ENV === "development") {
+      console.error("💥 SALE FAILED:", error);
+    }
     return NextResponse.json(
       {
-        error: 'Internal server error',
+        error: "Internal server error",
         details: error.message,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -463,42 +484,39 @@ async function processLoyaltyPoints(
     orderId: string;
     orderNumber: string;
     total: number;
-  }
+  },
 ) {
   const POINTS_PER_DOLLAR = 1;
   const pointsEarned = Math.floor(data.total * POINTS_PER_DOLLAR);
 
   // Get or create loyalty record
   const { data: loyalty } = await supabase
-    .from('customer_loyalty')
-    .select('*')
-    .eq('customer_id', data.customerId)
-    .eq('vendor_id', data.vendorId)
-    .eq('provider', 'builtin')
+    .from("customer_loyalty")
+    .select("*")
+    .eq("customer_id", data.customerId)
+    .eq("vendor_id", data.vendorId)
+    .eq("provider", "builtin")
     .single();
 
   if (loyalty) {
     // Update points
     await supabase
-      .from('customer_loyalty')
+      .from("customer_loyalty")
       .update({
         points_balance: loyalty.points_balance + pointsEarned,
         lifetime_points: loyalty.lifetime_points + pointsEarned,
       })
-      .eq('id', loyalty.id);
+      .eq("id", loyalty.id);
 
     // Log transaction
-    await supabase
-      .from('loyalty_transactions')
-      .insert({
-        customer_id: data.customerId,
-        vendor_id: data.vendorId,
-        type: 'earned',
-        points: pointsEarned,
-        order_id: data.orderId,
-        description: `Purchase - ${data.orderNumber}`,
-      });
-
+    await supabase.from("loyalty_transactions").insert({
+      customer_id: data.customerId,
+      vendor_id: data.vendorId,
+      type: "earned",
+      points: pointsEarned,
+      order_id: data.orderId,
+      description: `Purchase - ${data.orderNumber}`,
+    });
   }
 }
 
@@ -517,22 +535,19 @@ async function syncToMarketing(
     userId?: string;
     items: CartItem[];
     total: number;
-  }
+  },
 ) {
   // Queue for background processing
   // In production, this would use a job queue
-  await supabase
-    .from('alpine_iq_sync_queue')
-    .insert({
-      vendor_id: data.vendorId,
-      type: 'sale',
-      data: {
-        order_id: data.orderId,
-        order_number: data.orderNumber,
-        customer_id: data.customerId,
-      },
-      status: 'pending',
-      retry_count: 0,
-    });
-
+  await supabase.from("alpine_iq_sync_queue").insert({
+    vendor_id: data.vendorId,
+    type: "sale",
+    data: {
+      order_id: data.orderId,
+      order_number: data.orderNumber,
+      customer_id: data.customerId,
+    },
+    status: "pending",
+    retry_count: 0,
+  });
 }

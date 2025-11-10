@@ -40,12 +40,12 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
           box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
         }
       `}</style>
-      
+
       {[...Array(rows)].map((_, i) => (
         <div
           key={i}
           className={`px-4 lg:px-6 py-4 animate-pulse ${
-            i !== rows - 1 ? 'border-b border-white/5' : ''
+            i !== rows - 1 ? "border-b border-white/5" : ""
           }`}
         >
           <div className="flex items-center gap-4">
@@ -82,7 +82,7 @@ export function ChartSkeleton() {
           box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
         }
       `}</style>
-      
+
       <div className="flex items-center justify-between mb-6">
         <div>
           <div className="h-2 w-32 bg-white/5 rounded mb-2"></div>
@@ -102,6 +102,3 @@ export function ChartSkeleton() {
     </div>
   );
 }
-
-
-

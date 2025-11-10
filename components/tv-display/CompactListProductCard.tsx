@@ -3,9 +3,9 @@
  * Designed to fit 30+ products on one TV screen
  */
 
-import { motion } from 'framer-motion';
-import type { TVTheme } from '@/lib/themes';
-import { PRICE_BREAK_LABELS } from '@/lib/category-pricing-defaults';
+import { motion } from "framer-motion";
+import type { TVTheme } from "@/lib/themes";
+import { PRICE_BREAK_LABELS } from "@/lib/category-pricing-defaults";
 
 interface CompactListProductCardProps {
   product: any;
@@ -29,28 +29,30 @@ export function CompactListProductCard({
   const pricing_tiers = product.pricing_tiers || {};
 
   // Get available prices based on visible price breaks
-  const availablePrices = visiblePriceBreaks.length > 0
-    ? Object.keys(pricing_tiers)
-        .filter(key => visiblePriceBreaks.includes(key))
-        .map(key => ({
-          id: key,
-          price: parseFloat(pricing_tiers[key].price || pricing_tiers[key]),
-          label: PRICE_BREAK_LABELS[key] || key
-        }))
-        .sort((a, b) => {
-          const indexA = visiblePriceBreaks.indexOf(a.id);
-          const indexB = visiblePriceBreaks.indexOf(b.id);
-          return indexA - indexB;
-        })
-    : [];
+  const availablePrices =
+    visiblePriceBreaks.length > 0
+      ? Object.keys(pricing_tiers)
+          .filter((key) => visiblePriceBreaks.includes(key))
+          .map((key) => ({
+            id: key,
+            price: parseFloat(pricing_tiers[key].price || pricing_tiers[key]),
+            label: PRICE_BREAK_LABELS[key] || key,
+          }))
+          .sort((a, b) => {
+            const indexA = visiblePriceBreaks.indexOf(a.id);
+            const indexB = visiblePriceBreaks.indexOf(b.id);
+            return indexA - indexB;
+          })
+      : [];
 
   // Get the primary price (first available)
   const primaryPrice = availablePrices.length > 0 ? availablePrices[0] : null;
 
   // Get first custom field value (ultra compact - only show one)
-  const firstCustomField = customFieldsToShow.length > 0
-    ? product.custom_fields?.[customFieldsToShow[0]]
-    : null;
+  const firstCustomField =
+    customFieldsToShow.length > 0
+      ? product.custom_fields?.[customFieldsToShow[0]]
+      : null;
 
   return (
     <motion.div
@@ -69,8 +71,8 @@ export function CompactListProductCard({
             className="font-semibold truncate"
             style={{
               color: theme.styles.productName.color,
-              fontSize: '0.95rem',
-              lineHeight: '1.3',
+              fontSize: "0.95rem",
+              lineHeight: "1.3",
             }}
           >
             {product.name}
@@ -83,10 +85,10 @@ export function CompactListProductCard({
             className="flex-shrink-0"
             style={{
               color: theme.styles.productDescription.color,
-              fontSize: '0.75rem',
+              fontSize: "0.75rem",
               opacity: 0.6,
-              minWidth: '60px',
-              textAlign: 'center',
+              minWidth: "60px",
+              textAlign: "center",
             }}
           >
             {firstCustomField}
@@ -102,7 +104,7 @@ export function CompactListProductCard({
                 className="font-medium"
                 style={{
                   color: theme.styles.price.color,
-                  fontSize: '0.8rem',
+                  fontSize: "0.8rem",
                   opacity: 0.7,
                 }}
               >
@@ -114,8 +116,8 @@ export function CompactListProductCard({
               className="font-bold"
               style={{
                 color: theme.styles.price.color,
-                fontSize: '1.1rem',
-                letterSpacing: '-0.01em',
+                fontSize: "1.1rem",
+                letterSpacing: "-0.01em",
               }}
             >
               ${primaryPrice.price.toFixed(2)}

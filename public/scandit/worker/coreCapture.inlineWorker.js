@@ -1,1 +1,4 @@
-export{b as InlineWorker,a as workerInstance}from'../chunks/chunk-ECRBANIT.js';
+export {
+  b as InlineWorker,
+  a as workerInstance,
+} from "../chunks/chunk-ECRBANIT.js";

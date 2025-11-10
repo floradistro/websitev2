@@ -1,1 +1,1 @@
-export{a as ImageFrameSource}from'./chunks/chunk-BS7MAI4E.js';
+export { a as ImageFrameSource } from "./chunks/chunk-BS7MAI4E.js";

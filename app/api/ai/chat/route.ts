@@ -5,64 +5,66 @@
  * Streaming responses with tool use
  */
 
-import { NextRequest } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { ExaClient } from '@/lib/ai/exa-client';
+import { NextRequest } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { ExaClient } from "@/lib/ai/exa-client";
 
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!
+  apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
 const exa = new ExaClient(process.env.EXA_API_KEY);
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
-  
+
   const {
     messages,
     agentId,
     conversationId,
-    context = {}
+    context = {},
   } = await request.json();
 
   const stream = new ReadableStream({
     async start(controller) {
       const send = (event: string, data: any) => {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event, ...data })}\n\n`));
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ event, ...data })}\n\n`),
+        );
       };
 
       try {
         // Fetch agent configuration from database
         const supabase = getServiceSupabase();
         const { data: agent, error: agentError } = await supabase
-          .from('ai_agents')
-          .select('*')
-          .eq('id', agentId)
-          .eq('status', 'active')
+          .from("ai_agents")
+          .select("*")
+          .eq("id", agentId)
+          .eq("status", "active")
           .single();
 
         if (agentError || !agent) {
-          throw new Error('Agent not found or inactive');
+          throw new Error("Agent not found or inactive");
         }
 
-        send('status', { message: `🤖 Initializing ${agent.name}...` });
+        send("status", { message: `🤖 Initializing ${agent.name}...` });
 
         // Save conversation to database
         let dbConversationId = conversationId;
         if (!dbConversationId) {
           const { data: newConv, error: convError } = await supabase
-            .from('ai_conversations')
+            .from("ai_conversations")
             .insert({
-              user_id: context.userId || 'anonymous',
+              user_id: context.userId || "anonymous",
               agent_id: agent.id,
-              title: context.title || 'New Conversation',
-              context: context
+              title: context.title || "New Conversation",
+              context: context,
             })
-            .select('id')
+            .select("id")
             .single();
 
           if (!convError && newConv) {
@@ -73,21 +75,22 @@ export async function POST(request: NextRequest) {
         // Save user message
         if (dbConversationId && messages.length > 0) {
           const lastMessage = messages[messages.length - 1];
-          await supabase.from('ai_messages').insert({
+          await supabase.from("ai_messages").insert({
             conversation_id: dbConversationId,
             role: lastMessage.role,
-            content: typeof lastMessage.content === 'string' 
-              ? lastMessage.content 
-              : JSON.stringify(lastMessage.content)
+            content:
+              typeof lastMessage.content === "string"
+                ? lastMessage.content
+                : JSON.stringify(lastMessage.content),
           });
         }
 
         // Build context-aware system prompt
         const contextPrompt = buildContextPrompt(context);
-        const fullSystemPrompt = agent.system_prompt + '\n\n' + contextPrompt;
+        const fullSystemPrompt = agent.system_prompt + "\n\n" + contextPrompt;
 
         // Stream response from Claude
-        send('status', { message: '💭 Thinking...' });
+        send("status", { message: "💭 Thinking..." });
 
         const messageStream = await anthropic.messages.stream({
           model: agent.model,
@@ -97,43 +100,43 @@ export async function POST(request: NextRequest) {
           messages: messages,
         });
 
-        let fullResponse = '';
-        let currentThinking = '';
+        let fullResponse = "";
+        let currentThinking = "";
         let inThinkingBlock = false;
 
-        messageStream.on('text', (text) => {
+        messageStream.on("text", (text) => {
           // Check if we're in extended thinking
-          if (text.includes('<thinking>')) {
+          if (text.includes("<thinking>")) {
             inThinkingBlock = true;
-            currentThinking = '';
+            currentThinking = "";
           }
-          
+
           if (inThinkingBlock) {
             currentThinking += text;
-            send('thinking', { content: currentThinking });
-            
-            if (text.includes('</thinking>')) {
+            send("thinking", { content: currentThinking });
+
+            if (text.includes("</thinking>")) {
               inThinkingBlock = false;
             }
           } else {
             fullResponse += text;
-            send('text', { content: text, full: fullResponse });
+            send("text", { content: text, full: fullResponse });
           }
         });
 
         // @ts-expect-error - Anthropic SDK types are incomplete for streaming events
-        messageStream.on('content_block_start', (block) => {
-          if (block.type === 'tool_use') {
-            send('tool_start', { 
+        messageStream.on("content_block_start", (block) => {
+          if (block.type === "tool_use") {
+            send("tool_start", {
               tool: block.name,
-              id: block.id 
+              id: block.id,
             });
           }
         });
 
         // @ts-expect-error - Anthropic SDK types are incomplete for streaming events
-        messageStream.on('content_block_delta', (delta) => {
-          if (delta.type === 'text_delta') {
+        messageStream.on("content_block_delta", (delta) => {
+          if (delta.type === "text_delta") {
             // Already handled in 'text' event
           }
         });
@@ -142,42 +145,43 @@ export async function POST(request: NextRequest) {
 
         // Save assistant response
         if (dbConversationId && fullResponse) {
-          await supabase.from('ai_messages').insert({
+          await supabase.from("ai_messages").insert({
             conversation_id: dbConversationId,
-            role: 'assistant',
-            content: fullResponse
+            role: "assistant",
+            content: fullResponse,
           });
         }
 
-        send('complete', { 
+        send("complete", {
           conversationId: dbConversationId,
-          message: fullResponse 
+          message: fullResponse,
         });
-        
-        controller.close();
 
+        controller.close();
       } catch (error: any) {
-        console.error('Chat API error:', error);
-        send('error', { 
-          message: error.message || 'Failed to generate response',
-          details: error.stack
+        if (process.env.NODE_ENV === "development") {
+          console.error("Chat API error:", error);
+        }
+        send("error", {
+          message: error.message || "Failed to generate response",
+          details: error.stack,
         });
         controller.close();
       }
-    }
+    },
   });
 
   return new Response(stream, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
     },
   });
 }
 
 function buildContextPrompt(context: any): string {
-  let prompt = '\n## CURRENT CONTEXT\n';
+  let prompt = "\n## CURRENT CONTEXT\n";
 
   if (context.vendorId) {
     prompt += `Vendor ID: ${context.vendorId}\n`;
@@ -197,4 +201,3 @@ function buildContextPrompt(context: any): string {
 
   return prompt;
 }
-

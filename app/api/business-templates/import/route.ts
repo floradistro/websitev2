@@ -3,9 +3,9 @@
  * POST - Import template categories and field groups to vendor account
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,17 +18,20 @@ export async function POST(request: NextRequest) {
     const { template_id, import_categories, import_field_groups } = body;
 
     if (!template_id) {
-      return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Template ID is required" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();
 
     // Check if already imported
     const { data: existingImport } = await supabase
-      .from('vendor_template_imports')
-      .select('id')
-      .eq('vendor_id', vendorId)
-      .eq('template_id', template_id)
+      .from("vendor_template_imports")
+      .select("id")
+      .eq("vendor_id", vendorId)
+      .eq("template_id", template_id)
       .single();
 
     let categoriesCreated = 0;
@@ -36,11 +39,12 @@ export async function POST(request: NextRequest) {
 
     // Import Categories
     if (import_categories) {
-      const { data: templateCategories, error: categoriesError } = await supabase
-        .from('template_categories')
-        .select('*')
-        .eq('template_id', template_id)
-        .order('display_order', { ascending: true });
+      const { data: templateCategories, error: categoriesError } =
+        await supabase
+          .from("template_categories")
+          .select("*")
+          .eq("template_id", template_id)
+          .order("display_order", { ascending: true });
 
       if (categoriesError) throw categoriesError;
 
@@ -50,10 +54,10 @@ export async function POST(request: NextRequest) {
       for (const templateCat of templateCategories || []) {
         // Check if already exists
         const { data: existing } = await supabase
-          .from('categories')
-          .select('id')
-          .eq('vendor_id', vendorId)
-          .eq('source_template_category_id', templateCat.id)
+          .from("categories")
+          .select("id")
+          .eq("vendor_id", vendorId)
+          .eq("source_template_category_id", templateCat.id)
           .single();
 
         if (existing) {
@@ -65,9 +69,9 @@ export async function POST(request: NextRequest) {
         const baseSlug = templateCat.slug;
         let finalSlug = baseSlug;
         const { data: slugCheck } = await supabase
-          .from('categories')
-          .select('slug')
-          .eq('slug', baseSlug)
+          .from("categories")
+          .select("slug")
+          .eq("slug", baseSlug)
           .or(`vendor_id.is.null,vendor_id.eq.${vendorId}`)
           .single();
 
@@ -76,7 +80,7 @@ export async function POST(request: NextRequest) {
         }
 
         const { data: newCategory, error: createError } = await supabase
-          .from('categories')
+          .from("categories")
           .insert({
             name: templateCat.name,
             slug: finalSlug,
@@ -86,13 +90,15 @@ export async function POST(request: NextRequest) {
             vendor_id: vendorId,
             source_template_id: template_id,
             source_template_category_id: templateCat.id,
-            display_order: templateCat.display_order
+            display_order: templateCat.display_order,
           })
-          .select('id')
+          .select("id")
           .single();
 
         if (createError) {
-          console.error('Error creating category:', createError);
+          if (process.env.NODE_ENV === "development") {
+            console.error("Error creating category:", createError);
+          }
           continue;
         }
 
@@ -104,15 +110,18 @@ export async function POST(request: NextRequest) {
 
       // Handle parent relationships (for subcategories)
       for (const templateCat of templateCategories || []) {
-        if (templateCat.parent_id && categoryMapping.has(templateCat.parent_id)) {
+        if (
+          templateCat.parent_id &&
+          categoryMapping.has(templateCat.parent_id)
+        ) {
           const childId = categoryMapping.get(templateCat.id);
           const newParentId = categoryMapping.get(templateCat.parent_id);
 
           if (childId && newParentId) {
             await supabase
-              .from('categories')
+              .from("categories")
               .update({ parent_id: newParentId })
-              .eq('id', childId);
+              .eq("id", childId);
           }
         }
       }
@@ -120,22 +129,23 @@ export async function POST(request: NextRequest) {
 
     // Import Field Groups
     if (import_field_groups) {
-      const { data: templateFieldGroups, error: fieldGroupsError } = await supabase
-        .from('template_field_groups')
-        .select('*')
-        .eq('template_id', template_id)
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
+      const { data: templateFieldGroups, error: fieldGroupsError } =
+        await supabase
+          .from("template_field_groups")
+          .select("*")
+          .eq("template_id", template_id)
+          .eq("is_active", true)
+          .order("display_order", { ascending: true });
 
       if (fieldGroupsError) throw fieldGroupsError;
 
       for (const templateFieldGroup of templateFieldGroups || []) {
         // Check if already exists
         const { data: existing } = await supabase
-          .from('vendor_product_fields')
-          .select('id')
-          .eq('vendor_id', vendorId)
-          .eq('source_template_field_group_id', templateFieldGroup.id)
+          .from("vendor_product_fields")
+          .select("id")
+          .eq("vendor_id", vendorId)
+          .eq("source_template_field_group_id", templateFieldGroup.id)
           .single();
 
         if (existing) {
@@ -146,10 +156,10 @@ export async function POST(request: NextRequest) {
         const baseSlug = templateFieldGroup.slug;
         let finalSlug = baseSlug;
         const { data: slugCheck } = await supabase
-          .from('vendor_product_fields')
-          .select('slug')
-          .eq('vendor_id', vendorId)
-          .eq('slug', baseSlug)
+          .from("vendor_product_fields")
+          .select("slug")
+          .eq("vendor_id", vendorId)
+          .eq("slug", baseSlug)
           .single();
 
         if (slugCheck) {
@@ -157,7 +167,7 @@ export async function POST(request: NextRequest) {
         }
 
         const { error: createError } = await supabase
-          .from('vendor_product_fields')
+          .from("vendor_product_fields")
           .insert({
             vendor_id: vendorId,
             name: templateFieldGroup.name,
@@ -166,11 +176,13 @@ export async function POST(request: NextRequest) {
             fields: templateFieldGroup.fields,
             source_template_id: template_id,
             source_template_field_group_id: templateFieldGroup.id,
-            is_active: true
+            is_active: true,
           });
 
         if (createError) {
-          console.error('Error creating field group:', createError);
+          if (process.env.NODE_ENV === "development") {
+            console.error("Error creating field group:", createError);
+          }
           continue;
         }
 
@@ -180,38 +192,36 @@ export async function POST(request: NextRequest) {
 
     // Record import
     if (!existingImport) {
-      await supabase
-        .from('vendor_template_imports')
-        .insert({
-          vendor_id: vendorId,
-          template_id: template_id,
-          imported_categories: import_categories,
-          imported_field_groups: import_field_groups
-        });
+      await supabase.from("vendor_template_imports").insert({
+        vendor_id: vendorId,
+        template_id: template_id,
+        imported_categories: import_categories,
+        imported_field_groups: import_field_groups,
+      });
     } else {
       await supabase
-        .from('vendor_template_imports')
+        .from("vendor_template_imports")
         .update({
           imported_categories: import_categories,
-          imported_field_groups: import_field_groups
+          imported_field_groups: import_field_groups,
         })
-        .eq('vendor_id', vendorId)
-        .eq('template_id', template_id);
+        .eq("vendor_id", vendorId)
+        .eq("template_id", template_id);
     }
-
-    console.log(`✅ Template imported: ${categoriesCreated} categories, ${fieldGroupsCreated} field groups`);
 
     return NextResponse.json({
       success: true,
       categories_created: categoriesCreated,
       field_groups_created: fieldGroupsCreated,
-      message: 'Template imported successfully'
+      message: "Template imported successfully",
     });
   } catch (error: any) {
-    console.error('Import template error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Import template error:", error);
+    }
     return NextResponse.json(
-      { error: error.message || 'Failed to import template' },
-      { status: 500 }
+      { error: error.message || "Failed to import template" },
+      { status: 500 },
     );
   }
 }

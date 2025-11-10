@@ -9,12 +9,12 @@
  * Options for polyfill loading
  */
 interface PolyfillOptions {
-    /** Whether to force loading the animation polyfill */
-    forceAnimationPolyfill?: boolean;
-    /** Whether to force loading the structuredClone polyfill */
-    forceStructuredClonePolyfill?: boolean;
-    /** Whether to force loading all polyfills */
-    forceAllPolyfills?: boolean;
+  /** Whether to force loading the animation polyfill */
+  forceAnimationPolyfill?: boolean;
+  /** Whether to force loading the structuredClone polyfill */
+  forceStructuredClonePolyfill?: boolean;
+  /** Whether to force loading all polyfills */
+  forceAllPolyfills?: boolean;
 }
 /**
  * Loads all necessary polyfills for browser compatibility

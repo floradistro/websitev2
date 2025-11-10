@@ -1,33 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 // GET - Get field group assignments for a category or all assignments
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const categoryId = searchParams.get('category_id');
-    const fieldGroupId = searchParams.get('field_group_id');
+    const categoryId = searchParams.get("category_id");
+    const fieldGroupId = searchParams.get("field_group_id");
 
     let query = supabase
-      .from('category_field_groups')
-      .select(`
+      .from("category_field_groups")
+      .select(
+        `
         *,
         category:categories(id, name, slug),
         field_group:field_groups(id, name, slug, fields)
-      `)
-      .order('display_order', { ascending: true });
+      `,
+      )
+      .order("display_order", { ascending: true });
 
     if (categoryId) {
-      query = query.eq('category_id', categoryId);
+      query = query.eq("category_id", categoryId);
     }
 
     if (fieldGroupId) {
-      query = query.eq('field_group_id', fieldGroupId);
+      query = query.eq("field_group_id", fieldGroupId);
     }
 
     const { data, error } = await query;
@@ -36,13 +38,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      assignments: data || []
+      assignments: data || [],
     });
   } catch (error: any) {
-    console.error('Error fetching assignments:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error fetching assignments:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -51,41 +55,53 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { category_id, field_group_id, is_required = false, display_order = 0 } = body;
+    const {
+      category_id,
+      field_group_id,
+      is_required = false,
+      display_order = 0,
+    } = body;
 
     if (!category_id || !field_group_id) {
       return NextResponse.json(
-        { success: false, error: 'Category ID and Field Group ID are required' },
-        { status: 400 }
+        {
+          success: false,
+          error: "Category ID and Field Group ID are required",
+        },
+        { status: 400 },
       );
     }
 
     const { data, error } = await supabase
-      .from('category_field_groups')
+      .from("category_field_groups")
       .insert({
         category_id,
         field_group_id,
         is_required,
-        display_order
+        display_order,
       })
-      .select(`
+      .select(
+        `
         *,
         category:categories(id, name, slug),
         field_group:field_groups(id, name, slug, fields)
-      `)
+      `,
+      )
       .single();
 
     if (error) throw error;
 
     return NextResponse.json({
       success: true,
-      assignment: data
+      assignment: data,
     });
   } catch (error: any) {
-    console.error('Error creating assignment:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error creating assignment:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -98,8 +114,8 @@ export async function PUT(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Assignment ID is required' },
-        { status: 400 }
+        { success: false, error: "Assignment ID is required" },
+        { status: 400 },
       );
     }
 
@@ -108,27 +124,31 @@ export async function PUT(request: NextRequest) {
     if (display_order !== undefined) updateData.display_order = display_order;
 
     const { data, error } = await supabase
-      .from('category_field_groups')
+      .from("category_field_groups")
       .update(updateData)
-      .eq('id', id)
-      .select(`
+      .eq("id", id)
+      .select(
+        `
         *,
         category:categories(id, name, slug),
         field_group:field_groups(id, name, slug, fields)
-      `)
+      `,
+      )
       .single();
 
     if (error) throw error;
 
     return NextResponse.json({
       success: true,
-      assignment: data
+      assignment: data,
     });
   } catch (error: any) {
-    console.error('Error updating assignment:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error updating assignment:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -137,32 +157,33 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const id = searchParams.get("id");
 
     if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Assignment ID is required' },
-        { status: 400 }
+        { success: false, error: "Assignment ID is required" },
+        { status: 400 },
       );
     }
 
     const { error } = await supabase
-      .from('category_field_groups')
+      .from("category_field_groups")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) throw error;
 
     return NextResponse.json({
       success: true,
-      message: 'Assignment removed successfully'
+      message: "Assignment removed successfully",
     });
   } catch (error: any) {
-    console.error('Error deleting assignment:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error deleting assignment:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

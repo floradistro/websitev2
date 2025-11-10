@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardRedirect() {
   const router = useRouter();
 
   useEffect(() => {
     // Redirect to the mega launch pad
-    router.replace('/vendor/apps');
+    router.replace("/vendor/apps");
   }, [router]);
 
   return (

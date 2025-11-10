@@ -1,1 +1,7 @@
-function o(r){if(Object.fromEntries)return Object.fromEntries(r);let t={};for(let[e,n]of r)t[String(e)]=n;return t}export{o as a};
+function o(r) {
+  if (Object.fromEntries) return Object.fromEntries(r);
+  let t = {};
+  for (let [e, n] of r) t[String(e)] = n;
+  return t;
+}
+export { o as a };

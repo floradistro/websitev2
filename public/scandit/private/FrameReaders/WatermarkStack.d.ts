@@ -22,20 +22,20 @@
  * @export
  */
 declare class WatermarkStack<T> {
-    private items;
-    private readonly capacity;
-    private readonly lowWaterMark;
-    private readonly createItem;
-    constructor(options: {
-        capacity: number;
-        lowWaterMark: number;
-        createItem: () => T;
-    });
-    get length(): number;
-    pop(): T;
-    push(item: T): number | undefined;
-    empty(): void;
-    private isBelowOrEqualWaterMark;
+  private items;
+  private readonly capacity;
+  private readonly lowWaterMark;
+  private readonly createItem;
+  constructor(options: {
+    capacity: number;
+    lowWaterMark: number;
+    createItem: () => T;
+  });
+  get length(): number;
+  pop(): T;
+  push(item: T): number | undefined;
+  empty(): void;
+  private isBelowOrEqualWaterMark;
 }
 
 export { WatermarkStack };

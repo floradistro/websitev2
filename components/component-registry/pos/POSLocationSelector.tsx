@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { MapPin, Check, Store, Home, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
+import { MapPin, Check, Store, Home, ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 interface Location {
   id: string;
@@ -48,15 +48,22 @@ export function POSLocationSelector({
               <span>Dashboard</span>
             </Link>
             <ChevronRight size={16} className="text-white/20" />
-            <span className="text-white/60 uppercase tracking-[0.15em]">POS</span>
+            <span className="text-white/60 uppercase tracking-[0.15em]">
+              POS
+            </span>
             <ChevronRight size={16} className="text-white/20" />
-            <span className="text-white uppercase tracking-[0.15em]">Select Location</span>
+            <span className="text-white uppercase tracking-[0.15em]">
+              Select Location
+            </span>
           </nav>
         </div>
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-white uppercase tracking-tight mb-2" style={{ fontWeight: 900 }}>
+          <h1
+            className="text-3xl font-black text-white uppercase tracking-tight mb-2"
+            style={{ fontWeight: 900 }}
+          >
             Select Location
           </h1>
           <p className="text-white/60 text-sm uppercase tracking-[0.15em]">
@@ -79,7 +86,10 @@ export function POSLocationSelector({
 
               {/* Info */}
               <div className="mb-4">
-                <div className="text-white font-black text-lg uppercase tracking-tight mb-1 flex items-center gap-2" style={{ fontWeight: 900 }}>
+                <div
+                  className="text-white font-black text-lg uppercase tracking-tight mb-1 flex items-center gap-2"
+                  style={{ fontWeight: 900 }}
+                >
                   {location.name}
                   {location.is_primary && (
                     <span className="text-[9px] px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-md uppercase tracking-wider">

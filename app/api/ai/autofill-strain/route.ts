@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-import Exa from 'exa-js';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+import Exa from "exa-js";
+import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 interface StrainData {
@@ -48,18 +48,24 @@ export async function POST(request: NextRequest) {
   const writer = stream.writable.getWriter();
 
   const sendProgress = async (message: string) => {
-    await writer.write(encoder.encode(`data: ${JSON.stringify({ message })}\n\n`));
+    await writer.write(
+      encoder.encode(`data: ${JSON.stringify({ message })}\n\n`),
+    );
   };
 
   const sendComplete = async (productId: string, data: StrainData) => {
     await writer.write(
-      encoder.encode(`data: ${JSON.stringify({ productId, data, complete: true })}\n\n`)
+      encoder.encode(
+        `data: ${JSON.stringify({ productId, data, complete: true })}\n\n`,
+      ),
     );
   };
 
   const sendError = async (productId: string, error: string) => {
     await writer.write(
-      encoder.encode(`data: ${JSON.stringify({ productId, error, complete: true })}\n\n`)
+      encoder.encode(
+        `data: ${JSON.stringify({ productId, error, complete: true })}\n\n`,
+      ),
     );
   };
 
@@ -68,7 +74,7 @@ export async function POST(request: NextRequest) {
     try {
       // Initialize AI clients inside function to get fresh env vars
       const anthropic = new Anthropic({
-        apiKey: process.env.ANTHROPIC_API_KEY!
+        apiKey: process.env.ANTHROPIC_API_KEY!,
       });
 
       const exa = new Exa(process.env.EXASEARCH_API_KEY!);
@@ -77,17 +83,20 @@ export async function POST(request: NextRequest) {
       const { productIds } = body;
 
       if (!Array.isArray(productIds) || productIds.length === 0) {
-        await sendError('', 'No product IDs provided');
+        await sendError("", "No product IDs provided");
         await writer.close();
         return;
       }
 
-      await sendProgress(`# Strain Research\n\nProcessing ${productIds.length} products`);
+      await sendProgress(
+        `# Strain Research\n\nProcessing ${productIds.length} products`,
+      );
 
       // Fetch products with category info
       const { data: products, error: fetchError } = await supabase
-        .from('products')
-        .select(`
+        .from("products")
+        .select(
+          `
           id, 
           name, 
           meta_data,
@@ -99,19 +108,20 @@ export async function POST(request: NextRequest) {
               slug
             )
           )
-        `)
-        .in('id', productIds);
+        `,
+        )
+        .in("id", productIds);
 
       if (fetchError) {
         await sendProgress(`\n❌ Database error: ${fetchError.message}`);
-        await sendError('', `Failed to fetch products: ${fetchError.message}`);
+        await sendError("", `Failed to fetch products: ${fetchError.message}`);
         await writer.close();
         return;
       }
 
       if (!products || products.length === 0) {
         await sendProgress(`\n⚠️ No products found with those IDs`);
-        await sendError('', 'No products found');
+        await sendError("", "No products found");
         await writer.close();
         return;
       }
@@ -119,8 +129,7 @@ export async function POST(request: NextRequest) {
       await sendProgress(`Found ${products.length} products in database`);
 
       // Get field groups to know what fields to extract
-      const { data: fieldGroups } = await supabase
-        .from('category_field_groups')
+      const { data: fieldGroups } = await supabase.from("category_field_groups")
         .select(`
           field_group:field_groups(fields)
         `);
@@ -137,24 +146,24 @@ export async function POST(request: NextRequest) {
       for (let i = 0; i < products.length; i++) {
         const product = products[i];
         const strainName = product.name.trim();
-        
+
         await sendProgress(`\n---\n\n## ${product.name}`);
         await sendProgress(`\`Product ${i + 1} of ${products.length}\``);
 
         try {
           // Step 1: Search with Exa
           await sendProgress(`\nSearching web...`);
-          
+
           let searchResults;
           try {
             searchResults = await exa.searchAndContents(
               `${strainName} cannabis strain THC terpenes effects lineage genetics`,
               {
-                type: 'auto',
+                type: "auto",
                 useAutoprompt: true,
                 numResults: 5,
-                text: true
-              }
+                text: true,
+              },
             );
           } catch (exaError: any) {
             await sendProgress(`Error: ${exaError.message}`);
@@ -164,7 +173,7 @@ export async function POST(request: NextRequest) {
 
           if (!searchResults.results || searchResults.results.length === 0) {
             await sendProgress(`No results found`);
-            await sendError(product.id, 'No research data found');
+            await sendError(product.id, "No research data found");
             continue;
           }
 
@@ -177,77 +186,85 @@ export async function POST(request: NextRequest) {
           // Step 2: Combine search results
           const researchContext = searchResults.results
             .map((result) => `Source: ${result.title}\n${result.text}\n---\n`)
-            .join('\n');
+            .join("\n");
 
           await sendProgress(`\nAnalyzing with Claude...`);
 
           // Step 3: Ask Claude to analyze
-          const availableFieldsList = Array.from(availableFields).join(', ');
-          
+          const availableFieldsList = Array.from(availableFields).join(", ");
+
           const response = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514',
+            model: "claude-sonnet-4-20250514",
             max_tokens: 1500,
             temperature: 1,
             system: SYSTEM_PROMPT,
             messages: [
               {
-                role: 'user',
+                role: "user",
                 content: `Analyze "${strainName}" strain. Extract: ${availableFieldsList}
 
 SOURCES:
 ${researchContext}
 
-Return ONLY JSON.`
-              }
-            ]
+Return ONLY JSON.`,
+              },
+            ],
           });
 
           const claudeResponse = response.content[0];
-          if (claudeResponse.type !== 'text') {
-            throw new Error('Unexpected response type');
+          if (claudeResponse.type !== "text") {
+            throw new Error("Unexpected response type");
           }
 
           // Parse Claude's response
           let strainData: StrainData;
           try {
             const jsonMatch = claudeResponse.text.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) throw new Error('No JSON found');
+            if (!jsonMatch) throw new Error("No JSON found");
             strainData = JSON.parse(jsonMatch[0]);
           } catch (parseError) {
             await sendProgress(`Failed to parse response`);
-            await sendError(product.id, 'Failed to parse AI response');
+            await sendError(product.id, "Failed to parse AI response");
             continue;
           }
 
           // Show extracted fields as code block
           const fieldsOutput = [];
-          if (strainData.strain_type && strainData.strain_type !== 'Unknown') {
+          if (strainData.strain_type && strainData.strain_type !== "Unknown") {
             fieldsOutput.push(`strain_type: "${strainData.strain_type}"`);
           }
           if (strainData.thca_percentage !== null) {
             fieldsOutput.push(`thca_percentage: ${strainData.thca_percentage}`);
           }
           if (strainData.delta_9_percentage !== null) {
-            fieldsOutput.push(`delta_9_percentage: ${strainData.delta_9_percentage}`);
+            fieldsOutput.push(
+              `delta_9_percentage: ${strainData.delta_9_percentage}`,
+            );
           }
           if (strainData.terpene_profile?.length) {
-            fieldsOutput.push(`terpene_profile: [${strainData.terpene_profile.map(t => `"${t}"`).join(', ')}]`);
+            fieldsOutput.push(
+              `terpene_profile: [${strainData.terpene_profile.map((t) => `"${t}"`).join(", ")}]`,
+            );
           }
           if (strainData.effects?.length) {
-            fieldsOutput.push(`effects: [${strainData.effects.map(e => `"${e}"`).join(', ')}]`);
+            fieldsOutput.push(
+              `effects: [${strainData.effects.map((e) => `"${e}"`).join(", ")}]`,
+            );
           }
-          if (strainData.lineage && strainData.lineage !== 'Unknown') {
+          if (strainData.lineage && strainData.lineage !== "Unknown") {
             fieldsOutput.push(`lineage: "${strainData.lineage}"`);
           }
-          if (strainData.flavor && strainData.flavor !== 'Unknown') {
+          if (strainData.flavor && strainData.flavor !== "Unknown") {
             fieldsOutput.push(`flavor: "${strainData.flavor}"`);
           }
-          if (strainData.nose && strainData.nose !== 'Unknown') {
+          if (strainData.nose && strainData.nose !== "Unknown") {
             fieldsOutput.push(`aroma: "${strainData.nose}"`);
           }
-          
+
           if (fieldsOutput.length > 0) {
-            await sendProgress(`\n\`\`\`json\n{\n  ${fieldsOutput.join(',\n  ')}\n}\n\`\`\``);
+            await sendProgress(
+              `\n\`\`\`json\n{\n  ${fieldsOutput.join(",\n  ")}\n}\n\`\`\``,
+            );
           }
 
           // Step 4: Update product in Supabase
@@ -256,52 +273,72 @@ Return ONLY JSON.`
           const currentMetaData = (product.meta_data as any) || {};
           const updatedMetaData = {
             ...currentMetaData,
-            ...(strainData.strain_type && strainData.strain_type !== 'Unknown' && { strain_type: strainData.strain_type }),
-            ...(strainData.thca_percentage !== null && { thca_percentage: strainData.thca_percentage }),
-            ...(strainData.delta_9_percentage !== null && { delta_9_percentage: strainData.delta_9_percentage }),
-            ...(strainData.terpene_profile?.length && { terpene_profile: strainData.terpene_profile }),
+            ...(strainData.strain_type &&
+              strainData.strain_type !== "Unknown" && {
+                strain_type: strainData.strain_type,
+              }),
+            ...(strainData.thca_percentage !== null && {
+              thca_percentage: strainData.thca_percentage,
+            }),
+            ...(strainData.delta_9_percentage !== null && {
+              delta_9_percentage: strainData.delta_9_percentage,
+            }),
+            ...(strainData.terpene_profile?.length && {
+              terpene_profile: strainData.terpene_profile,
+            }),
             ...(strainData.effects?.length && { effects: strainData.effects }),
-            ...(strainData.lineage && strainData.lineage !== 'Unknown' && { lineage: strainData.lineage }),
-            ...(strainData.nose && strainData.nose !== 'Unknown' && { nose: strainData.nose }),
-            ...(strainData.flavor && strainData.flavor !== 'Unknown' && { flavor: strainData.flavor }),
-            ...(strainData.taste && strainData.taste !== 'Unknown' && { taste: strainData.taste })
+            ...(strainData.lineage &&
+              strainData.lineage !== "Unknown" && {
+                lineage: strainData.lineage,
+              }),
+            ...(strainData.nose &&
+              strainData.nose !== "Unknown" && { nose: strainData.nose }),
+            ...(strainData.flavor &&
+              strainData.flavor !== "Unknown" && { flavor: strainData.flavor }),
+            ...(strainData.taste &&
+              strainData.taste !== "Unknown" && { taste: strainData.taste }),
           };
 
           const { error: updateError } = await supabase
-            .from('products')
+            .from("products")
             .update({ meta_data: updatedMetaData })
-            .eq('id', product.id);
+            .eq("id", product.id);
 
           if (updateError) {
             await sendProgress(`Database error: ${updateError.message}`);
-            await sendError(product.id, 'Failed to update product');
+            await sendError(product.id, "Failed to update product");
             continue;
           }
 
           await sendProgress(`Saved successfully`);
           await sendComplete(product.id, strainData);
         } catch (error: any) {
-          console.error(`Error processing product ${product.id}:`, error);
+          if (process.env.NODE_ENV === "development") {
+            console.error(`Error processing product ${product.id}:`, error);
+          }
           await sendProgress(`❌ Error: ${error.message}`);
           await sendError(product.id, error.message);
         }
       }
 
-      await sendProgress(`\n---\n\n## Batch Complete\n\nProcessed ${products.length} products`);
+      await sendProgress(
+        `\n---\n\n## Batch Complete\n\nProcessed ${products.length} products`,
+      );
       await writer.close();
     } catch (error: any) {
-      console.error('Fatal error:', error);
-      await sendError('', error.message);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Fatal error:", error);
+      }
+      await sendError("", error.message);
       await writer.close();
     }
   })();
 
   return new NextResponse(stream.readable, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive'
-    }
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
   });
 }
-

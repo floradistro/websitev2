@@ -1,11 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { getPaymentProcessorForRegister, getPaymentProcessor } from '@/lib/payment-processors';
-import type { ProcessPaymentRequest } from '@/lib/payment-processors/types';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import {
+  getPaymentProcessorForRegister,
+  getPaymentProcessor,
+} from "@/lib/payment-processors";
+import type { ProcessPaymentRequest } from "@/lib/payment-processors/types";
+import { requireVendor } from "@/lib/auth/middleware";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 /**
  * POST /api/pos/payment/process
@@ -47,17 +50,17 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!locationId || !amount || !paymentMethod) {
       return NextResponse.json(
-        { error: 'Missing required fields: locationId, amount, paymentMethod' },
-        { status: 400 }
+        { error: "Missing required fields: locationId, amount, paymentMethod" },
+        { status: 400 },
       );
     }
 
     // Cash payments don't need processor
-    if (paymentMethod === 'cash') {
+    if (paymentMethod === "cash") {
       return NextResponse.json({
         success: true,
-        message: 'Cash payment - no processor required',
-        paymentMethod: 'cash',
+        message: "Cash payment - no processor required",
+        paymentMethod: "cash",
         amount,
       });
     }
@@ -110,30 +113,37 @@ export async function POST(request: NextRequest) {
         metadata: result.metadata,
       });
     } catch (error: any) {
-      console.error('Payment processing error:', error);
-
+      if (process.env.NODE_ENV === "development") {
+        console.error("Payment processing error:", error);
+      }
       // Check if it's a Dejavoo-specific error
-      const isDeclined = error.isDeclined?.() || error.statusCode !== '0000';
+      const isDeclined = error.isDeclined?.() || error.statusCode !== "0000";
       const isTerminalError = error.isTerminalError?.();
       const isTimeout = error.isTimeout?.();
 
       return NextResponse.json(
         {
           success: false,
-          error: error.message || 'Payment processing failed',
+          error: error.message || "Payment processing failed",
           isDeclined,
           isTerminalError,
           isTimeout,
           details: error.statusCode ? `Status: ${error.statusCode}` : undefined,
         },
-        { status: isTerminalError ? 503 : 400 }
+        { status: isTerminalError ? 503 : 400 },
       );
     }
   } catch (error: any) {
-    console.error('Payment API error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Payment API error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
-      { status: 500 }
+      {
+        success: false,
+        error: "Internal server error",
+        details: error.message,
+      },
+      { status: 500 },
     );
   }
 }
@@ -163,8 +173,8 @@ export async function PUT(request: NextRequest) {
 
     if (!transactionId) {
       return NextResponse.json(
-        { error: 'Missing required field: transactionId' },
-        { status: 400 }
+        { error: "Missing required field: transactionId" },
+        { status: 400 },
       );
     }
 
@@ -175,19 +185,26 @@ export async function PUT(request: NextRequest) {
 
     // Get original transaction
     const { data: paymentTxn, error: txnError } = await supabase
-      .from('payment_transactions')
-      .select('*, payment_processor:payment_processors(*)')
-      .eq('id', transactionId)
+      .from("payment_transactions")
+      .select("*, payment_processor:payment_processors(*)")
+      .eq("id", transactionId)
       .single();
 
     if (txnError || !paymentTxn) {
-      return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Transaction not found" },
+        { status: 404 },
+      );
     }
 
     try {
       // Get payment processor
-      const { getPaymentProcessorById } = await import('@/lib/payment-processors');
-      const processor = await getPaymentProcessorById(paymentTxn.payment_processor_id);
+      const { getPaymentProcessorById } = await import(
+        "@/lib/payment-processors"
+      );
+      const processor = await getPaymentProcessorById(
+        paymentTxn.payment_processor_id,
+      );
 
       // Process refund
       const result = await processor.processRefund({
@@ -205,21 +222,28 @@ export async function PUT(request: NextRequest) {
         receiptData: result.receiptData,
       });
     } catch (error: any) {
-      console.error('Refund processing error:', error);
-
+      if (process.env.NODE_ENV === "development") {
+        console.error("Refund processing error:", error);
+      }
       return NextResponse.json(
         {
           success: false,
-          error: error.message || 'Refund processing failed',
+          error: error.message || "Refund processing failed",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
   } catch (error: any) {
-    console.error('Refund API error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Refund API error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
-      { status: 500 }
+      {
+        success: false,
+        error: "Internal server error",
+        details: error.message,
+      },
+      { status: 500 },
     );
   }
 }
@@ -238,13 +262,13 @@ export async function DELETE(request: NextRequest) {
     const supabase = getServiceSupabase();
 
     const { searchParams } = new URL(request.url);
-    const transactionId = searchParams.get('transactionId');
-    const reason = searchParams.get('reason');
+    const transactionId = searchParams.get("transactionId");
+    const reason = searchParams.get("reason");
 
     if (!transactionId) {
       return NextResponse.json(
-        { error: 'Missing required parameter: transactionId' },
-        { status: 400 }
+        { error: "Missing required parameter: transactionId" },
+        { status: 400 },
       );
     }
 
@@ -255,19 +279,26 @@ export async function DELETE(request: NextRequest) {
 
     // Get original transaction
     const { data: paymentTxn, error: txnError } = await supabase
-      .from('payment_transactions')
-      .select('*, payment_processor:payment_processors(*)')
-      .eq('id', transactionId)
+      .from("payment_transactions")
+      .select("*, payment_processor:payment_processors(*)")
+      .eq("id", transactionId)
       .single();
 
     if (txnError || !paymentTxn) {
-      return NextResponse.json({ error: 'Transaction not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Transaction not found" },
+        { status: 404 },
+      );
     }
 
     try {
       // Get payment processor
-      const { getPaymentProcessorById } = await import('@/lib/payment-processors');
-      const processor = await getPaymentProcessorById(paymentTxn.payment_processor_id);
+      const { getPaymentProcessorById } = await import(
+        "@/lib/payment-processors"
+      );
+      const processor = await getPaymentProcessorById(
+        paymentTxn.payment_processor_id,
+      );
 
       // Void transaction
       const result = await processor.voidTransaction({
@@ -282,21 +313,28 @@ export async function DELETE(request: NextRequest) {
         message: result.message,
       });
     } catch (error: any) {
-      console.error('Void processing error:', error);
-
+      if (process.env.NODE_ENV === "development") {
+        console.error("Void processing error:", error);
+      }
       return NextResponse.json(
         {
           success: false,
-          error: error.message || 'Void processing failed',
+          error: error.message || "Void processing failed",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
   } catch (error: any) {
-    console.error('Void API error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Void API error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
-      { status: 500 }
+      {
+        success: false,
+        error: "Internal server error",
+        details: error.message,
+      },
+      { status: 500 },
     );
   }
 }

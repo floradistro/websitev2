@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export function HeroContent() {
   return (
@@ -37,7 +37,11 @@ export function HeroContent() {
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.21, 0.45, 0.27, 0.9] }}
+          transition={{
+            duration: 0.8,
+            delay: 0.2,
+            ease: [0.21, 0.45, 0.27, 0.9],
+          }}
           className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black mb-6 sm:mb-8 tracking-tighter leading-[0.85] uppercase"
           style={{ fontWeight: 900 }}
         >
@@ -50,7 +54,11 @@ export function HeroContent() {
           <motion.span
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4, ease: [0.21, 0.45, 0.27, 0.9] }}
+            transition={{
+              duration: 0.8,
+              delay: 0.4,
+              ease: [0.21, 0.45, 0.27, 0.9],
+            }}
             className="inline-block text-white/60"
           >
             Your Entire
@@ -59,7 +67,11 @@ export function HeroContent() {
           <motion.span
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: [0.21, 0.45, 0.27, 0.9] }}
+            transition={{
+              duration: 0.8,
+              delay: 0.6,
+              ease: [0.21, 0.45, 0.27, 0.9],
+            }}
             className="inline-block text-white/60"
           >
             Business.
@@ -70,7 +82,11 @@ export function HeroContent() {
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: 96 }}
-          transition={{ duration: 0.8, delay: 0.8, ease: [0.21, 0.45, 0.27, 0.9] }}
+          transition={{
+            duration: 0.8,
+            delay: 0.8,
+            ease: [0.21, 0.45, 0.27, 0.9],
+          }}
           className="h-[2px] bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto mb-10 sm:mb-12"
         />
 
@@ -78,12 +94,18 @@ export function HeroContent() {
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1, ease: [0.21, 0.45, 0.27, 0.9] }}
+          transition={{
+            duration: 0.8,
+            delay: 1,
+            ease: [0.21, 0.45, 0.27, 0.9],
+          }}
           className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-white/80 font-medium leading-relaxed max-w-4xl mx-auto mb-12 sm:mb-16 px-4"
         >
           Replace your entire software stack.
           <br />
-          <span className="text-white/50">POS. eCommerce. Inventory. Analytics.</span>
+          <span className="text-white/50">
+            POS. eCommerce. Inventory. Analytics.
+          </span>
           <br />
           <span className="text-white/50">Everything. Everywhere.</span>
         </motion.p>
@@ -92,7 +114,11 @@ export function HeroContent() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1.2, ease: [0.21, 0.45, 0.27, 0.9] }}
+          transition={{
+            duration: 0.8,
+            delay: 1.2,
+            ease: [0.21, 0.45, 0.27, 0.9],
+          }}
           className="mb-12 sm:mb-16"
         >
           <p className="text-xs sm:text-sm uppercase tracking-[0.15em] text-white/40 font-black">
@@ -104,7 +130,11 @@ export function HeroContent() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.4, ease: [0.21, 0.45, 0.27, 0.9] }}
+          transition={{
+            duration: 0.8,
+            delay: 1.4,
+            ease: [0.21, 0.45, 0.27, 0.9],
+          }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
         >
           <Link
@@ -113,7 +143,10 @@ export function HeroContent() {
             style={{ fontWeight: 900 }}
           >
             <span className="relative z-10">Start Free Trial</span>
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform relative z-10" />
+            <ArrowRight
+              size={18}
+              className="group-hover:translate-x-1 transition-transform relative z-10"
+            />
             {/* Subtle shine effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
           </Link>
@@ -130,7 +163,11 @@ export function HeroContent() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 1.6, ease: [0.21, 0.45, 0.27, 0.9] }}
+          transition={{
+            duration: 0.8,
+            delay: 1.6,
+            ease: [0.21, 0.45, 0.27, 0.9],
+          }}
           className="mt-8 sm:mt-10"
         >
           <p className="text-sm sm:text-base text-white/50 font-normal">

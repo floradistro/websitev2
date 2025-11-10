@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Fragment, ReactNode } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { X } from 'lucide-react';
-import { ds, cn } from '@/lib/design-system';
-import { IconButton } from './Button';
+import { Fragment, ReactNode } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { X } from "lucide-react";
+import { ds, cn } from "@/lib/design-system";
+import { IconButton } from "./Button";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children: ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: "sm" | "md" | "lg" | "xl" | "full";
   showClose?: boolean;
   footer?: ReactNode;
 }
@@ -26,16 +26,16 @@ export function Modal({
   onClose,
   title,
   children,
-  size = 'md',
+  size = "md",
   showClose = true,
   footer,
 }: ModalProps) {
   const sizeStyles = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-[95vw] sm:max-w-4xl',
-    full: 'max-w-[95vw] sm:max-w-7xl',
+    sm: "max-w-md",
+    md: "max-w-lg",
+    lg: "max-w-2xl",
+    xl: "max-w-[95vw] sm:max-w-4xl",
+    full: "max-w-[95vw] sm:max-w-7xl",
   };
 
   return (
@@ -68,30 +68,34 @@ export function Modal({
             >
               <Dialog.Panel
                 className={cn(
-                  'w-full transform overflow-hidden',
+                  "w-full transform overflow-hidden",
                   sizeStyles[size],
                   ds.colors.bg.primary,
                   ds.colors.border.default,
-                  'border',
+                  "border",
                   ds.effects.radius.xl,
                   ds.effects.shadow.xl,
-                  'transition-all'
+                  "transition-all",
                 )}
               >
                 {/* Header - Compact */}
                 {(title || showClose) && (
-                  <div className={cn(
-                    'flex items-center justify-between px-4 py-2.5',
-                    ds.colors.border.default,
-                    'border-b'
-                  )}>
+                  <div
+                    className={cn(
+                      "flex items-center justify-between px-4 py-2.5",
+                      ds.colors.border.default,
+                      "border-b",
+                    )}
+                  >
                     {title && (
-                      <Dialog.Title className={cn(
-                        ds.typography.size.sm,
-                        ds.typography.weight.light,
-                        ds.colors.text.secondary,
-                        ds.typography.tracking.tight
-                      )}>
+                      <Dialog.Title
+                        className={cn(
+                          ds.typography.size.sm,
+                          ds.typography.weight.light,
+                          ds.colors.text.secondary,
+                          ds.typography.tracking.tight,
+                        )}
+                      >
                         {title}
                       </Dialog.Title>
                     )}
@@ -113,11 +117,13 @@ export function Modal({
 
                 {/* Footer - Compact */}
                 {footer && (
-                  <div className={cn(
-                    'flex items-center justify-end gap-2 px-4 py-2.5',
-                    ds.colors.border.default,
-                    'border-t'
-                  )}>
+                  <div
+                    className={cn(
+                      "flex items-center justify-end gap-2 px-4 py-2.5",
+                      ds.colors.border.default,
+                      "border-t",
+                    )}
+                  >
                     {footer}
                   </div>
                 )}

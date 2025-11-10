@@ -1,8 +1,12 @@
 "use client";
 
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
-export default function AdminPageWrapper({ children }: { children: ReactNode }) {
+export default function AdminPageWrapper({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <div className="w-full px-4 lg:px-0">
       <style jsx global>{`
@@ -15,7 +19,8 @@ export default function AdminPageWrapper({ children }: { children: ReactNode }) 
           box-shadow: 0 0 30px rgba(255, 255, 255, 0.02);
         }
         /* Modern minimal checkbox */
-        input[type="checkbox"], input[type="radio"] {
+        input[type="checkbox"],
+        input[type="radio"] {
           appearance: none;
           -webkit-appearance: none;
           width: 16px;
@@ -26,16 +31,18 @@ export default function AdminPageWrapper({ children }: { children: ReactNode }) 
           position: relative;
           transition: all 0.3s ease;
         }
-        input[type="checkbox"]:hover, input[type="radio"]:hover {
+        input[type="checkbox"]:hover,
+        input[type="radio"]:hover {
           border-color: rgba(255, 255, 255, 0.25);
           background: rgba(255, 255, 255, 0.05);
         }
-        input[type="checkbox"]:checked, input[type="radio"]:checked {
+        input[type="checkbox"]:checked,
+        input[type="radio"]:checked {
           background: rgba(255, 255, 255, 0.1);
           border-color: rgba(255, 255, 255, 0.3);
         }
         input[type="checkbox"]:checked::after {
-          content: '';
+          content: "";
           position: absolute;
           left: 5px;
           top: 2px;
@@ -49,7 +56,7 @@ export default function AdminPageWrapper({ children }: { children: ReactNode }) 
           border-radius: 50%;
         }
         input[type="radio"]:checked::after {
-          content: '';
+          content: "";
           position: absolute;
           left: 4px;
           top: 4px;
@@ -63,6 +70,3 @@ export default function AdminPageWrapper({ children }: { children: ReactNode }) 
     </div>
   );
 }
-
-
-

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { unstable_cache } from 'next/cache';
+import { unstable_cache } from "next/cache";
 
 // Get base URL for internal API calls
 const getBaseUrl = () => {
@@ -9,7 +9,7 @@ const getBaseUrl = () => {
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  return 'http://localhost:3000';
+  return "http://localhost:3000";
 };
 
 // Ultra-fast cached single product fetch with ALL data from Supabase
@@ -17,28 +17,32 @@ const getCachedProductComplete = unstable_cache(
   async (productId: string) => {
     try {
       const baseUrl = getBaseUrl();
-      
+
       // Fetch ALL data in parallel from Supabase
-      const [productRes, inventoryRes, locationsRes, reviewsRes, pricingRes] = await Promise.all([
-        fetch(`${baseUrl}/api/supabase/products/${productId}`),
-        fetch(`${baseUrl}/api/supabase/inventory?product_id=${productId}`),
-        fetch(`${baseUrl}/api/supabase/locations`),
-        fetch(`${baseUrl}/api/supabase/reviews?product_id=${productId}&status=approved`),
-        fetch(`${baseUrl}/api/supabase/products/${productId}/pricing`).catch(() => ({ ok: false }))
-      ]);
+      const [productRes, inventoryRes, locationsRes, reviewsRes, pricingRes] =
+        await Promise.all([
+          fetch(`${baseUrl}/api/supabase/products/${productId}`),
+          fetch(`${baseUrl}/api/supabase/inventory?product_id=${productId}`),
+          fetch(`${baseUrl}/api/supabase/locations`),
+          fetch(
+            `${baseUrl}/api/supabase/reviews?product_id=${productId}&status=approved`,
+          ),
+          fetch(`${baseUrl}/api/supabase/products/${productId}/pricing`).catch(
+            () => ({ ok: false }),
+          ),
+        ]);
 
       const productData = await productRes.json();
       const inventoryData = await inventoryRes.json();
       const locationsData = await locationsRes.json();
       const reviewsData = await reviewsRes.json();
-      
+
       // Handle pricing response - may be 404 or error
       let pricingData = { pricingTiers: [] };
-      if (pricingRes.ok && 'json' in pricingRes) {
+      if (pricingRes.ok && "json" in pricingRes) {
         try {
           pricingData = await pricingRes.json();
         } catch (e) {
-          console.log('No pricing data available for product:', productId);
           pricingData = { pricingTiers: [] };
         }
       }
@@ -74,14 +78,17 @@ const getCachedProductComplete = unstable_cache(
       }, 0);
 
       // Extract pricing tiers from Supabase vendor_pricing_tiers
-      const pricingTiers = pricingData.pricingTiers || product.meta_data?._product_price_tiers || [];
+      const pricingTiers =
+        pricingData.pricingTiers ||
+        product.meta_data?._product_price_tiers ||
+        [];
 
       // Extract product fields from meta_data
       const transformedFields: any = {};
       if (product.meta_data) {
         Object.entries(product.meta_data).forEach(([key, value]) => {
-          if (key.startsWith('_field_')) {
-            const fieldName = key.replace('_field_', '');
+          if (key.startsWith("_field_")) {
+            const fieldName = key.replace("_field_", "");
             transformedFields[fieldName] = value;
           }
         });
@@ -90,43 +97,47 @@ const getCachedProductComplete = unstable_cache(
       return {
         product: {
           ...product,
-          images: product.featured_image ? [{ src: product.featured_image, alt: product.name }] : [],
+          images: product.featured_image
+            ? [{ src: product.featured_image, alt: product.name }]
+            : [],
           gallery: product.image_gallery || [],
-          total_sales: product.sales_count || 0
+          total_sales: product.sales_count || 0,
         },
         inventory: enrichedInventory,
         locations: locations,
         pricingTiers: pricingTiers,
         productFields: {
-          fields: transformedFields
+          fields: transformedFields,
         },
         reviews: reviewsData.reviews || [],
         total_stock: totalStock,
         meta: {
           cached: true,
           timestamp: new Date().toISOString(),
-        }
+        },
       };
     } catch (error) {
-      console.error(`Error fetching product ${productId}:`, error);
+      if (process.env.NODE_ENV === "development") {
+        console.error(`Error fetching product ${productId}:`, error);
+      }
       return null;
     }
   },
-  ['product-complete-supabase'],
-  { revalidate: 180, tags: ['product'] } // 3 minutes cache
+  ["product-complete-supabase"],
+  { revalidate: 180, tags: ["product"] }, // 3 minutes cache
 );
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
-    
+
     if (!id) {
       return NextResponse.json(
         { success: false, error: "Product ID required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -136,7 +147,7 @@ export async function GET(
     if (!data) {
       return NextResponse.json(
         { success: false, error: "Product not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -144,14 +155,15 @@ export async function GET(
       success: true,
       ...data,
     });
-
   } catch (error: any) {
-    if (!error.message?.includes('404')) {
-      console.error("Product API error:", error);
+    if (!error.message?.includes("404")) {
+      if (process.env.NODE_ENV === "development") {
+        console.error("Product API error:", error);
+      }
     }
     return NextResponse.json(
       { success: false, error: error.message || "Failed to fetch product" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

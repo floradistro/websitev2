@@ -1,8 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Package, ArrowLeft, CheckCircle, AlertCircle, Search, Scan } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  Package,
+  ArrowLeft,
+  CheckCircle,
+  AlertCircle,
+  Search,
+  Scan,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface PurchaseOrder {
   id: string;
@@ -31,27 +38,31 @@ interface POItem {
 export default function POSReceivingPage() {
   const router = useRouter();
   const [locationId, setLocationId] = useState<string | null>(null);
-  const [locationName, setLocationName] = useState<string>('');
+  const [locationName, setLocationName] = useState<string>("");
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [receiving, setReceiving] = useState(false);
-  const [searchSKU, setSearchSKU] = useState('');
-  const [receiveQuantities, setReceiveQuantities] = useState<Record<string, number>>({});
+  const [searchSKU, setSearchSKU] = useState("");
+  const [receiveQuantities, setReceiveQuantities] = useState<
+    Record<string, number>
+  >({});
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const skuInputRef = useRef<HTMLInputElement>(null);
 
   // Load location from localStorage (set by POS register)
   useEffect(() => {
-    const savedLocation = localStorage.getItem('pos_selected_location');
+    const savedLocation = localStorage.getItem("pos_selected_location");
     if (savedLocation) {
       try {
         const location = JSON.parse(savedLocation);
         setLocationId(location.id);
         setLocationName(location.name);
       } catch (e) {
-        console.error('Failed to parse location:', e);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Failed to parse location:", e);
+        }
       }
     }
   }, []);
@@ -62,16 +73,21 @@ export default function POSReceivingPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/pos/receiving?location_id=${locationId}`, {
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `/api/pos/receiving?location_id=${locationId}`,
+        {
+          credentials: "include",
+        },
+      );
 
       if (response.ok) {
         const data = await response.json();
         setPurchaseOrders(data.data || []);
       }
     } catch (err) {
-      console.error('Error loading POs:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading POs:", err);
+      }
     } finally {
       setLoading(false);
     }
@@ -86,12 +102,12 @@ export default function POSReceivingPage() {
     if (selectedPO) {
       const quantities: Record<string, number> = {};
       selectedPO.items
-        .filter(item => item.quantity_remaining > 0)
-        .forEach(item => {
+        .filter((item) => item.quantity_remaining > 0)
+        .forEach((item) => {
           quantities[item.id] = item.quantity_remaining; // Default to full quantity
         });
       setReceiveQuantities(quantities);
-      setSearchSKU('');
+      setSearchSKU("");
       setError(null);
       setSuccess(false);
     }
@@ -103,17 +119,17 @@ export default function POSReceivingPage() {
 
     const handleKeyPress = (e: KeyboardEvent) => {
       // Enter key triggers SKU lookup
-      if (e.key === 'Enter' && searchSKU.trim()) {
+      if (e.key === "Enter" && searchSKU.trim()) {
         e.preventDefault();
         handleSKULookup();
       }
     };
 
     const input = skuInputRef.current;
-    input.addEventListener('keypress', handleKeyPress);
+    input.addEventListener("keypress", handleKeyPress);
 
     return () => {
-      input.removeEventListener('keypress', handleKeyPress);
+      input.removeEventListener("keypress", handleKeyPress);
     };
   }, [selectedPO, searchSKU]);
 
@@ -121,20 +137,20 @@ export default function POSReceivingPage() {
     if (!selectedPO) return;
 
     const item = selectedPO.items.find(
-      i => i.product?.sku?.toLowerCase() === searchSKU.trim().toLowerCase()
+      (i) => i.product?.sku?.toLowerCase() === searchSKU.trim().toLowerCase(),
     );
 
     if (item) {
       // Scroll to item
       const element = document.getElementById(`item-${item.id}`);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        element.classList.add('ring-2', 'ring-emerald-400');
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+        element.classList.add("ring-2", "ring-emerald-400");
         setTimeout(() => {
-          element.classList.remove('ring-2', 'ring-emerald-400');
+          element.classList.remove("ring-2", "ring-emerald-400");
         }, 2000);
       }
-      setSearchSKU('');
+      setSearchSKU("");
       setError(null);
     } else {
       setError(`SKU "${searchSKU}" not found in this PO`);
@@ -150,13 +166,13 @@ export default function POSReceivingPage() {
       .map(([po_item_id, quantity_received]) => ({
         po_item_id,
         quantity_received,
-        condition: 'good' as const,
-        quality_notes: '',
-        notes: 'Received via POS',
+        condition: "good" as const,
+        quality_notes: "",
+        notes: "Received via POS",
       }));
 
     if (itemsToReceive.length === 0) {
-      setError('No items to receive');
+      setError("No items to receive");
       return;
     }
 
@@ -164,10 +180,10 @@ export default function POSReceivingPage() {
     setError(null);
 
     try {
-      const response = await fetch('/api/vendor/purchase-orders/receive', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const response = await fetch("/api/vendor/purchase-orders/receive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           po_id: selectedPO.id,
           items: itemsToReceive,
@@ -177,7 +193,7 @@ export default function POSReceivingPage() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to receive items');
+        throw new Error(data.error || "Failed to receive items");
       }
 
       setSuccess(true);
@@ -189,14 +205,18 @@ export default function POSReceivingPage() {
         setSuccess(false);
       }, 1500);
     } catch (err: any) {
-      setError(err.message || 'Failed to receive items');
+      setError(err.message || "Failed to receive items");
     } finally {
       setReceiving(false);
     }
   };
 
-  const receivableItems = selectedPO?.items.filter(item => item.quantity_remaining > 0) || [];
-  const totalReceiving = Object.values(receiveQuantities).reduce((sum, qty) => sum + qty, 0);
+  const receivableItems =
+    selectedPO?.items.filter((item) => item.quantity_remaining > 0) || [];
+  const totalReceiving = Object.values(receiveQuantities).reduce(
+    (sum, qty) => sum + qty,
+    0,
+  );
 
   // No location selected
   if (!locationId) {
@@ -205,9 +225,11 @@ export default function POSReceivingPage() {
         <div className="text-center max-w-md">
           <Package size={64} className="mx-auto mb-4 text-white/20" />
           <h2 className="text-xl font-light mb-2">No Location Selected</h2>
-          <p className="text-sm text-white/60 mb-6">Please select a location from the POS register to access receiving.</p>
+          <p className="text-sm text-white/60 mb-6">
+            Please select a location from the POS register to access receiving.
+          </p>
           <button
-            onClick={() => router.push('/pos/register')}
+            onClick={() => router.push("/pos/register")}
             className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-light transition-colors"
           >
             Go to Register
@@ -228,17 +250,24 @@ export default function POSReceivingPage() {
             className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-3"
           >
             <ArrowLeft size={16} />
-            <span className="text-xs uppercase tracking-wider">Back to Purchase Orders</span>
+            <span className="text-xs uppercase tracking-wider">
+              Back to Purchase Orders
+            </span>
           </button>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-light mb-1">{selectedPO.po_number}</h1>
+              <h1 className="text-xl font-light mb-1">
+                {selectedPO.po_number}
+              </h1>
               <p className="text-xs text-white/60">
-                {selectedPO.supplier?.external_name} • {receivableItems.length} items remaining
+                {selectedPO.supplier?.external_name} • {receivableItems.length}{" "}
+                items remaining
               </p>
             </div>
             <div className="text-right">
-              <div className="text-xs text-white/60 uppercase tracking-wider mb-1">Receiving</div>
+              <div className="text-xs text-white/60 uppercase tracking-wider mb-1">
+                Receiving
+              </div>
               <div className="text-2xl font-light">{totalReceiving} units</div>
             </div>
           </div>
@@ -248,7 +277,9 @@ export default function POSReceivingPage() {
         {success && (
           <div className="mx-4 mt-4 flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
             <CheckCircle size={20} className="text-emerald-400 flex-shrink-0" />
-            <span className="text-sm text-emerald-400">Items received successfully! Inventory updated.</span>
+            <span className="text-sm text-emerald-400">
+              Items received successfully! Inventory updated.
+            </span>
           </div>
         )}
 
@@ -262,7 +293,10 @@ export default function POSReceivingPage() {
         {/* SKU Scanner */}
         <div className="mx-4 mt-4">
           <div className="relative">
-            <Scan size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
+            <Scan
+              size={16}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40"
+            />
             <input
               ref={skuInputRef}
               type="text"
@@ -292,7 +326,7 @@ export default function POSReceivingPage() {
                 {/* Product Info */}
                 <div className="mb-3">
                   <h3 className="text-sm font-light text-white mb-1">
-                    {item.product?.name || 'Unknown Product'}
+                    {item.product?.name || "Unknown Product"}
                   </h3>
                   <div className="flex items-center gap-3 text-xs text-white/60">
                     {item.product?.sku && <span>SKU: {item.product.sku}</span>}
@@ -306,16 +340,21 @@ export default function POSReceivingPage() {
                 {/* Quantity Input */}
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
-                    <label className="block text-xs text-white/60 mb-1">Receiving Quantity</label>
+                    <label className="block text-xs text-white/60 mb-1">
+                      Receiving Quantity
+                    </label>
                     <input
                       type="number"
                       value={receiveQuantities[item.id] || 0}
                       onChange={(e) => {
                         const value = Math.min(
                           Math.max(0, parseFloat(e.target.value) || 0),
-                          item.quantity_remaining
+                          item.quantity_remaining,
                         );
-                        setReceiveQuantities(prev => ({ ...prev, [item.id]: value }));
+                        setReceiveQuantities((prev) => ({
+                          ...prev,
+                          [item.id]: value,
+                        }));
                       }}
                       min={0}
                       max={item.quantity_remaining}
@@ -325,13 +364,23 @@ export default function POSReceivingPage() {
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setReceiveQuantities(prev => ({ ...prev, [item.id]: 0 }))}
+                      onClick={() =>
+                        setReceiveQuantities((prev) => ({
+                          ...prev,
+                          [item.id]: 0,
+                        }))
+                      }
                       className="px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-xs transition-colors"
                     >
                       Skip
                     </button>
                     <button
-                      onClick={() => setReceiveQuantities(prev => ({ ...prev, [item.id]: item.quantity_remaining }))}
+                      onClick={() =>
+                        setReceiveQuantities((prev) => ({
+                          ...prev,
+                          [item.id]: item.quantity_remaining,
+                        }))
+                      }
                       className="px-3 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg text-xs transition-colors"
                     >
                       Full
@@ -358,7 +407,11 @@ export default function POSReceivingPage() {
               disabled={receiving || totalReceiving === 0 || success}
               className="flex-1 px-6 py-3 bg-emerald-500 hover:bg-emerald-600 rounded-xl text-sm font-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {receiving ? 'Receiving...' : success ? 'Received!' : `Receive ${totalReceiving} Units`}
+              {receiving
+                ? "Receiving..."
+                : success
+                  ? "Received!"
+                  : `Receive ${totalReceiving} Units`}
             </button>
           </div>
         </div>
@@ -372,11 +425,13 @@ export default function POSReceivingPage() {
       {/* Header */}
       <div className="bg-zinc-900/50 border-b border-white/5 p-4">
         <button
-          onClick={() => router.push('/pos/register')}
+          onClick={() => router.push("/pos/register")}
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-3"
         >
           <ArrowLeft size={16} />
-          <span className="text-xs uppercase tracking-wider">Back to Register</span>
+          <span className="text-xs uppercase tracking-wider">
+            Back to Register
+          </span>
         </button>
         <div className="flex items-center justify-between">
           <div>
@@ -392,7 +447,9 @@ export default function POSReceivingPage() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="w-12 h-12 border-4 border-white/10 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-xs text-white/60 uppercase tracking-wider">Loading purchase orders...</p>
+            <p className="text-xs text-white/60 uppercase tracking-wider">
+              Loading purchase orders...
+            </p>
           </div>
         </div>
       )}
@@ -414,7 +471,9 @@ export default function POSReceivingPage() {
       {!loading && purchaseOrders.length > 0 && (
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {purchaseOrders.map((po) => {
-            const receivableCount = po.items.filter(i => i.quantity_remaining > 0).length;
+            const receivableCount = po.items.filter(
+              (i) => i.quantity_remaining > 0,
+            ).length;
 
             return (
               <button
@@ -424,9 +483,11 @@ export default function POSReceivingPage() {
               >
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div className="flex-1">
-                    <h3 className="text-sm font-light text-white mb-1">{po.po_number}</h3>
+                    <h3 className="text-sm font-light text-white mb-1">
+                      {po.po_number}
+                    </h3>
                     <p className="text-xs text-white/60">
-                      {po.supplier?.external_name || 'Unknown Supplier'}
+                      {po.supplier?.external_name || "Unknown Supplier"}
                     </p>
                   </div>
                   <div className="px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded text-xs uppercase tracking-wider">
@@ -435,7 +496,9 @@ export default function POSReceivingPage() {
                 </div>
                 <div className="flex items-center justify-between text-xs text-white/60">
                   <span>{receivableCount} items to receive</span>
-                  <span className="text-white font-light">${parseFloat(po.total?.toString() || '0').toFixed(2)}</span>
+                  <span className="text-white font-light">
+                    ${parseFloat(po.total?.toString() || "0").toFixed(2)}
+                  </span>
                 </div>
               </button>
             );

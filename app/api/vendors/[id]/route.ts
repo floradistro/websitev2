@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const supabase = getServiceSupabase();
@@ -11,35 +11,38 @@ export async function GET(
 
     if (!vendorId) {
       return NextResponse.json(
-        { success: false, error: 'Vendor ID is required' },
-        { status: 400 }
+        { success: false, error: "Vendor ID is required" },
+        { status: 400 },
       );
     }
 
     const { data: vendor, error } = await supabase
-      .from('vendors')
-      .select('*')
-      .eq('id', vendorId)
+      .from("vendors")
+      .select("*")
+      .eq("id", vendorId)
       .single();
 
     if (error) {
-      console.error('Error fetching vendor:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching vendor:", error);
+      }
       return NextResponse.json(
         { success: false, error: error.message },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     return NextResponse.json({
       success: true,
-      vendor
+      vendor,
     });
   } catch (error) {
-    console.error('GET /api/vendors/[id] error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("GET /api/vendors/[id] error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
-

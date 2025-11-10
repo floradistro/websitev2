@@ -1,1 +1,2 @@
-var e=Symbol("SDC.NativeHandle");export{e as a};
+var e = Symbol("SDC.NativeHandle");
+export { e as a };

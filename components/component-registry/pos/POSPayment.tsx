@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Plus, X, Banknote, CreditCard, Wallet } from 'lucide-react';
+import { useState } from "react";
+import { Plus, X, Banknote, CreditCard, Wallet } from "lucide-react";
 
 interface SplitPayment {
-  method: 'cash' | 'card';
+  method: "cash" | "card";
   amount: number;
 }
 
@@ -18,7 +18,7 @@ interface POSPaymentProps {
 }
 
 export interface PaymentData {
-  paymentMethod: 'cash' | 'card' | 'split';
+  paymentMethod: "cash" | "card" | "split";
   cashTendered?: number;
   changeGiven?: number;
   authorizationCode?: string;
@@ -28,13 +28,22 @@ export interface PaymentData {
   splitPayments?: SplitPayment[];
 }
 
-export function POSPayment({ total, onPaymentComplete, onCancel, locationId, registerId, hasPaymentProcessor = false }: POSPaymentProps) {
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'split'>('cash');
-  const [cashTendered, setCashTendered] = useState('');
+export function POSPayment({
+  total,
+  onPaymentComplete,
+  onCancel,
+  locationId,
+  registerId,
+  hasPaymentProcessor = false,
+}: POSPaymentProps) {
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "split">(
+    "cash",
+  );
+  const [cashTendered, setCashTendered] = useState("");
   const [processing, setProcessing] = useState(false);
   const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
-  const [splitMethod, setSplitMethod] = useState<'cash' | 'card'>('cash');
-  const [splitAmount, setSplitAmount] = useState('');
+  const [splitMethod, setSplitMethod] = useState<"cash" | "card">("cash");
+  const [splitAmount, setSplitAmount] = useState("");
 
   // Clean cancel handler
   const handleCancel = () => {
@@ -44,11 +53,11 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
     }
 
     // Reset all state
-    setPaymentMethod('cash');
-    setCashTendered('');
+    setPaymentMethod("cash");
+    setCashTendered("");
     setSplitPayments([]);
-    setSplitMethod('cash');
-    setSplitAmount('');
+    setSplitMethod("cash");
+    setSplitAmount("");
     setProcessing(false);
 
     // Call parent cancel
@@ -58,20 +67,24 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
   const changeAmount = cashTendered ? parseFloat(cashTendered) - total : 0;
   const totalPaid = splitPayments.reduce((sum, p) => sum + p.amount, 0);
   const remaining = Math.round((total - totalPaid) * 100) / 100;
-  
-  const canComplete = paymentMethod === 'cash' 
-    ? changeAmount >= 0 
-    : paymentMethod === 'split'
-    ? remaining <= 0.01
-    : true;
+
+  const canComplete =
+    paymentMethod === "cash"
+      ? changeAmount >= 0
+      : paymentMethod === "split"
+        ? remaining <= 0.01
+        : true;
 
   const handleAddSplitPayment = () => {
     const amount = parseFloat(splitAmount);
     if (amount > 0 && amount <= remaining + 0.01) {
       const finalAmount = Math.min(amount, remaining);
       const roundedAmount = Math.round(finalAmount * 100) / 100;
-      setSplitPayments([...splitPayments, { method: splitMethod, amount: roundedAmount }]);
-      setSplitAmount('');
+      setSplitPayments([
+        ...splitPayments,
+        { method: splitMethod, amount: roundedAmount },
+      ]);
+      setSplitAmount("");
     }
   };
 
@@ -85,63 +98,61 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
     setProcessing(true);
 
     try {
-      if (paymentMethod === 'cash') {
+      if (paymentMethod === "cash") {
         const tendered = parseFloat(cashTendered);
         const change = tendered - total;
 
         onPaymentComplete({
-          paymentMethod: 'cash',
+          paymentMethod: "cash",
           cashTendered: tendered,
           changeGiven: change,
         });
-      } else if (paymentMethod === 'split') {
+      } else if (paymentMethod === "split") {
         onPaymentComplete({
-          paymentMethod: 'split',
+          paymentMethod: "split",
           splitPayments,
         });
-      } else if (paymentMethod === 'card') {
+      } else if (paymentMethod === "card") {
         // If no processor, allow manual entry
         if (!hasPaymentProcessor) {
           // Manual card entry - mark as manual for later processing
           onPaymentComplete({
-            paymentMethod: 'card',
-            authorizationCode: 'MANUAL-ENTRY',
+            paymentMethod: "card",
+            authorizationCode: "MANUAL-ENTRY",
             transactionId: `MANUAL-${Date.now()}`,
-            cardType: 'Manual Entry',
-            cardLast4: 'XXXX',
+            cardType: "Manual Entry",
+            cardLast4: "XXXX",
           });
         } else {
           // CRITICAL FIX: Validate IDs exist before API call
           if (!locationId || !registerId) {
             throw new Error(
-              'Location or Register ID missing. Cannot process payment. ' +
-              'Please refresh the page and select your register again.'
+              "Location or Register ID missing. Cannot process payment. " +
+                "Please refresh the page and select your register again.",
             );
           }
 
           // Process card payment through payment terminal
-          const response = await fetch('/api/pos/payment/process', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          const response = await fetch("/api/pos/payment/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               locationId,
               registerId,
               amount: total,
-              paymentMethod: 'credit',
+              paymentMethod: "credit",
               referenceId: `POS-${Date.now()}`,
             }),
           });
 
           const result = await response.json();
 
-          console.log('Payment API response:', result);
-
           if (!result.success) {
-            throw new Error(result.error || 'Payment failed');
+            throw new Error(result.error || "Payment failed");
           }
 
           onPaymentComplete({
-            paymentMethod: 'card',
+            paymentMethod: "card",
             authorizationCode: result.authorizationCode,
             transactionId: result.transactionId,
             cardType: result.cardType,
@@ -150,7 +161,9 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
         }
       }
     } catch (error: any) {
-      console.error('Payment error:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Payment error:", error);
+      }
       alert(`Payment failed: ${error.message}`);
       setProcessing(false);
     }
@@ -172,7 +185,10 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
           <h2 className="text-xs uppercase tracking-[0.15em] text-white/60 mb-2 font-black">
             Payment
           </h2>
-          <div className="text-white font-black text-4xl tracking-tight" style={{ fontWeight: 900 }}>
+          <div
+            className="text-white font-black text-4xl tracking-tight"
+            style={{ fontWeight: 900 }}
+          >
             ${total.toFixed(2)}
           </div>
         </div>
@@ -180,33 +196,33 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
         {/* Payment Method Selection */}
         <div className="grid grid-cols-3 gap-2 mb-6">
           <button
-            onClick={() => setPaymentMethod('cash')}
+            onClick={() => setPaymentMethod("cash")}
             className={`py-3 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-bold transition-all ${
-              paymentMethod === 'cash'
-                ? 'bg-white/20 text-white border-2 border-white/30'
-                : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-white/20'
+              paymentMethod === "cash"
+                ? "bg-white/20 text-white border-2 border-white/30"
+                : "bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-white/20"
             }`}
           >
             <Banknote size={14} className="inline mr-2" />
             Cash
           </button>
           <button
-            onClick={() => setPaymentMethod('card')}
+            onClick={() => setPaymentMethod("card")}
             className={`py-3 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-bold transition-all ${
-              paymentMethod === 'card'
-                ? 'bg-white/20 text-white border-2 border-white/30'
-                : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-white/20'
+              paymentMethod === "card"
+                ? "bg-white/20 text-white border-2 border-white/30"
+                : "bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-white/20"
             }`}
           >
             <CreditCard size={14} className="inline mr-2" />
             Card
           </button>
           <button
-            onClick={() => setPaymentMethod('split')}
+            onClick={() => setPaymentMethod("split")}
             className={`py-3 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-bold transition-all ${
-              paymentMethod === 'split'
-                ? 'bg-white/20 text-white border-2 border-white/30'
-                : 'bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-white/20'
+              paymentMethod === "split"
+                ? "bg-white/20 text-white border-2 border-white/30"
+                : "bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-white/20"
             }`}
           >
             <Wallet size={14} className="inline mr-2" />
@@ -215,7 +231,7 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
         </div>
 
         {/* Manual Entry Notice */}
-        {!hasPaymentProcessor && paymentMethod === 'card' && (
+        {!hasPaymentProcessor && paymentMethod === "card" && (
           <div className="mb-6 -mt-3 text-center">
             <p className="text-[10px] text-blue-400/80 uppercase tracking-[0.15em]">
               Manual Card Entry - No Terminal Connected
@@ -224,7 +240,7 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
         )}
 
         {/* Cash Payment */}
-        {paymentMethod === 'cash' && (
+        {paymentMethod === "cash" && (
           <div className="space-y-4 mb-6">
             <div>
               <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
@@ -259,10 +275,15 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
             {cashTendered && (
               <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-white/60 text-xs uppercase tracking-[0.15em]">Change Due</span>
-                  <span className={`font-black text-2xl tracking-tight ${
-                    changeAmount >= 0 ? 'text-green-400' : 'text-red-400'
-                  }`} style={{ fontWeight: 900 }}>
+                  <span className="text-white/60 text-xs uppercase tracking-[0.15em]">
+                    Change Due
+                  </span>
+                  <span
+                    className={`font-black text-2xl tracking-tight ${
+                      changeAmount >= 0 ? "text-green-400" : "text-red-400"
+                    }`}
+                    style={{ fontWeight: 900 }}
+                  >
                     ${Math.abs(changeAmount).toFixed(2)}
                   </span>
                 </div>
@@ -277,7 +298,7 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
         )}
 
         {/* Card Payment */}
-        {paymentMethod === 'card' && (
+        {paymentMethod === "card" && (
           <div className="bg-[#141414] border border-white/5 rounded-2xl p-6 mb-6 text-center">
             <div className="flex justify-center mb-3">
               <CreditCard size={48} className="text-white/20" />
@@ -285,23 +306,27 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
             {processing ? (
               <>
                 <div className="text-white text-sm font-bold uppercase tracking-wider mb-2">
-                  {hasPaymentProcessor ? 'Processing on terminal...' : 'Processing manual entry...'}
+                  {hasPaymentProcessor
+                    ? "Processing on terminal..."
+                    : "Processing manual entry..."}
                 </div>
                 <div className="text-white/60 text-[10px]">
                   {hasPaymentProcessor
-                    ? 'Please follow prompts on payment terminal'
-                    : 'Manual card entry in progress'}
+                    ? "Please follow prompts on payment terminal"
+                    : "Manual card entry in progress"}
                 </div>
               </>
             ) : (
               <>
                 <div className="text-white text-sm font-bold uppercase tracking-wider mb-2">
-                  {hasPaymentProcessor ? 'Ready to process' : 'Manual card entry'}
+                  {hasPaymentProcessor
+                    ? "Ready to process"
+                    : "Manual card entry"}
                 </div>
                 <div className="text-white/60 text-[10px]">
                   {hasPaymentProcessor
-                    ? 'Click Complete to send to payment terminal'
-                    : 'Click Complete for manual card entry (enter card details after completion)'}
+                    ? "Click Complete to send to payment terminal"
+                    : "Click Complete for manual card entry (enter card details after completion)"}
                 </div>
               </>
             )}
@@ -309,22 +334,30 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
         )}
 
         {/* Split Payment */}
-        {paymentMethod === 'split' && (
+        {paymentMethod === "split" && (
           <div className="space-y-4 mb-6">
             {/* Split Payments List */}
             {splitPayments.length > 0 && (
               <div className="space-y-2">
                 {splitPayments.map((payment, index) => (
-                  <div key={index} className="flex items-center justify-between bg-[#141414] border border-white/5 rounded-2xl p-3">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-[#141414] border border-white/5 rounded-2xl p-3"
+                  >
                     <div className="flex items-center gap-3">
-                      {payment.method === 'cash' ? (
+                      {payment.method === "cash" ? (
                         <Banknote size={20} className="text-white/40" />
                       ) : (
                         <CreditCard size={20} className="text-white/40" />
                       )}
                       <div>
-                        <div className="text-[10px] uppercase tracking-[0.15em] text-white/40">{payment.method}</div>
-                        <div className="text-white font-black text-sm" style={{ fontWeight: 900 }}>
+                        <div className="text-[10px] uppercase tracking-[0.15em] text-white/40">
+                          {payment.method}
+                        </div>
+                        <div
+                          className="text-white font-black text-sm"
+                          style={{ fontWeight: 900 }}
+                        >
                           ${payment.amount.toFixed(2)}
                         </div>
                       </div>
@@ -343,19 +376,33 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
             {/* Payment Progress */}
             <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
               <div className="flex justify-between text-xs mb-2">
-                <span className="text-white/40 uppercase tracking-[0.15em]">Paid</span>
-                <span className="text-white font-black" style={{ fontWeight: 900 }}>${totalPaid.toFixed(2)}</span>
+                <span className="text-white/40 uppercase tracking-[0.15em]">
+                  Paid
+                </span>
+                <span
+                  className="text-white font-black"
+                  style={{ fontWeight: 900 }}
+                >
+                  ${totalPaid.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between text-xs mb-3">
-                <span className="text-white/40 uppercase tracking-[0.15em]">Remaining</span>
-                <span className={`font-black ${remaining > 0 ? 'text-white' : 'text-green-400'}`} style={{ fontWeight: 900 }}>
+                <span className="text-white/40 uppercase tracking-[0.15em]">
+                  Remaining
+                </span>
+                <span
+                  className={`font-black ${remaining > 0 ? "text-white" : "text-green-400"}`}
+                  style={{ fontWeight: 900 }}
+                >
                   ${remaining.toFixed(2)}
                 </span>
               </div>
               <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-white transition-all duration-300"
-                  style={{ width: `${Math.min((totalPaid / total) * 100, 100)}%` }}
+                  style={{
+                    width: `${Math.min((totalPaid / total) * 100, 100)}%`,
+                  }}
                 />
               </div>
             </div>
@@ -365,22 +412,22 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={() => setSplitMethod('cash')}
+                    onClick={() => setSplitMethod("cash")}
                     className={`py-3 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-bold transition-all ${
-                      splitMethod === 'cash'
-                        ? 'bg-white/10 text-white border border-white/20'
-                        : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10'
+                      splitMethod === "cash"
+                        ? "bg-white/10 text-white border border-white/20"
+                        : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/10"
                     }`}
                   >
                     <Banknote size={14} className="inline mr-2" />
                     Cash
                   </button>
                   <button
-                    onClick={() => setSplitMethod('card')}
+                    onClick={() => setSplitMethod("card")}
                     className={`py-3 rounded-2xl text-[10px] uppercase tracking-[0.15em] font-bold transition-all ${
-                      splitMethod === 'card'
-                        ? 'bg-white/10 text-white border border-white/20'
-                        : 'bg-white/5 text-white/60 border border-white/10 hover:bg-white/10'
+                      splitMethod === "card"
+                        ? "bg-white/10 text-white border border-white/20"
+                        : "bg-white/5 text-white/60 border border-white/10 hover:bg-white/10"
                     }`}
                   >
                     <CreditCard size={14} className="inline mr-2" />
@@ -395,7 +442,7 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
                     value={splitAmount}
                     onChange={(e) => setSplitAmount(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         handleAddSplitPayment();
                       }
@@ -439,11 +486,10 @@ export function POSPayment({ total, onPaymentComplete, onCancel, locationId, reg
             className="flex-1 px-4 py-3 bg-white/10 text-white border-2 border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
             style={{ fontWeight: 900 }}
           >
-            {processing ? 'Processing...' : 'Complete'}
+            {processing ? "Processing..." : "Complete"}
           </button>
         </div>
       </div>
     </div>
   );
 }
-

@@ -6,9 +6,9 @@
  * Perfect for stats sections
  */
 
-import { motion, useSpring, useTransform } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { useEffect } from 'react';
+import { motion, useSpring, useTransform } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import { useEffect } from "react";
 
 interface CountUpProps {
   value: number;
@@ -22,23 +22,24 @@ interface CountUpProps {
 export function CountUp({
   value,
   duration = 2,
-  suffix = '',
-  prefix = '',
-  className = '',
-  decimals = 0
+  suffix = "",
+  prefix = "",
+  className = "",
+  decimals = 0,
 }: CountUpProps) {
   const { ref, inView } = useInView({
     triggerOnce: true,
-    threshold: 0.1
+    threshold: 0.1,
   });
 
   const spring = useSpring(0, {
     duration: duration * 1000,
-    bounce: 0
+    bounce: 0,
   });
 
-  const display = useTransform(spring, (current) =>
-    `${prefix}${Math.floor(current).toLocaleString()}${suffix}`
+  const display = useTransform(
+    spring,
+    (current) => `${prefix}${Math.floor(current).toLocaleString()}${suffix}`,
   );
 
   useEffect(() => {
@@ -53,4 +54,3 @@ export function CountUp({
     </motion.span>
   );
 }
-

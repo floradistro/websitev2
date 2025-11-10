@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
 
 // GET /api/pos/cash-movements - Get cash movements for a session
 export async function GET(request: NextRequest) {
@@ -11,12 +11,12 @@ export async function GET(request: NextRequest) {
     const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
-    const sessionId = searchParams.get('sessionId');
+    const sessionId = searchParams.get("sessionId");
 
     if (!sessionId) {
       return NextResponse.json(
-        { error: 'sessionId is required' },
-        { status: 400 }
+        { error: "sessionId is required" },
+        { status: 400 },
       );
     }
 
@@ -24,16 +24,18 @@ export async function GET(request: NextRequest) {
 
     // Get all cash movements for session
     const { data: movements, error } = await supabase
-      .from('pos_cash_movements')
-      .select('*')
-      .eq('session_id', sessionId)
-      .order('created_at', { ascending: true });
+      .from("pos_cash_movements")
+      .select("*")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: true });
 
     if (error) {
-      console.error('Error fetching cash movements:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching cash movements:", error);
+      }
       return NextResponse.json(
-        { error: 'Failed to fetch cash movements' },
-        { status: 500 }
+        { error: "Failed to fetch cash movements" },
+        { status: 500 },
       );
     }
 
@@ -51,22 +53,22 @@ export async function GET(request: NextRequest) {
 
     movements?.forEach((m: any) => {
       switch (m.movement_type) {
-        case 'opening':
+        case "opening":
           summary.opening = parseFloat(m.amount);
           break;
-        case 'sale':
+        case "sale":
           summary.sales += parseFloat(m.amount);
           break;
-        case 'refund':
+        case "refund":
           summary.refunds += parseFloat(m.amount);
           break;
-        case 'no_sale':
+        case "no_sale":
           summary.no_sales += 1;
           break;
-        case 'paid_in':
+        case "paid_in":
           summary.paid_in += parseFloat(m.amount);
           break;
-        case 'paid_out':
+        case "paid_out":
           summary.paid_out += Math.abs(parseFloat(m.amount));
           break;
       }
@@ -78,10 +80,12 @@ export async function GET(request: NextRequest) {
       summary,
     });
   } catch (error: any) {
-    console.error('Error in GET /api/pos/cash-movements:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in GET /api/pos/cash-movements:", error);
+    }
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
+      { error: error.message || "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -108,19 +112,31 @@ export async function POST(request: NextRequest) {
     // SECURITY: vendorId from JWT, request param ignored (Phase 4)
 
     // Validate required fields
-    if (!sessionId || !userId || !locationId || !movementType || amount === undefined || !reason) {
+    if (
+      !sessionId ||
+      !userId ||
+      !locationId ||
+      !movementType ||
+      amount === undefined ||
+      !reason
+    ) {
       return NextResponse.json(
-        { error: 'Missing required fields: sessionId, userId, locationId, movementType, amount, reason' },
-        { status: 400 }
+        {
+          error:
+            "Missing required fields: sessionId, userId, locationId, movementType, amount, reason",
+        },
+        { status: 400 },
       );
     }
 
     // Validate movement type
-    const validTypes = ['no_sale', 'paid_in', 'paid_out', 'refund'];
+    const validTypes = ["no_sale", "paid_in", "paid_out", "refund"];
     if (!validTypes.includes(movementType)) {
       return NextResponse.json(
-        { error: `Invalid movement type. Must be one of: ${validTypes.join(', ')}` },
-        { status: 400 }
+        {
+          error: `Invalid movement type. Must be one of: ${validTypes.join(", ")}`,
+        },
+        { status: 400 },
       );
     }
 
@@ -128,7 +144,7 @@ export async function POST(request: NextRequest) {
 
     // Create cash movement
     const { data: movement, error } = await supabase
-      .from('pos_cash_movements')
+      .from("pos_cash_movements")
       .insert({
         session_id: sessionId,
         register_id: registerId || null,
@@ -144,10 +160,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Error creating cash movement:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error creating cash movement:", error);
+      }
       return NextResponse.json(
-        { error: 'Failed to create cash movement' },
-        { status: 500 }
+        { error: "Failed to create cash movement" },
+        { status: 500 },
       );
     }
 
@@ -157,11 +175,12 @@ export async function POST(request: NextRequest) {
       message: `Cash movement recorded: ${reason}`,
     });
   } catch (error: any) {
-    console.error('Error in POST /api/pos/cash-movements:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in POST /api/pos/cash-movements:", error);
+    }
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
+      { error: error.message || "Internal server error" },
+      { status: 500 },
     );
   }
 }
-

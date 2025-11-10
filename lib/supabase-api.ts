@@ -6,16 +6,17 @@
 // Determine base URL for API calls
 function getBaseUrl() {
   // Browser
-  if (typeof window !== 'undefined') return '';
+  if (typeof window !== "undefined") return "";
 
   // Vercel production
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
 
   // Vercel preview
-  if (process.env.NEXT_PUBLIC_VERCEL_URL) return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+  if (process.env.NEXT_PUBLIC_VERCEL_URL)
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 
   // Local development
-  return 'http://localhost:3000';
+  return "http://localhost:3000";
 }
 
 const BASE_URL = getBaseUrl();
@@ -27,9 +28,9 @@ const BASE_URL = getBaseUrl();
 async function apiFetch(url: string, options?: RequestInit): Promise<Response> {
   return fetch(url, {
     ...options,
-    credentials: 'include', // Include HTTP-only cookies
+    credentials: "include", // Include HTTP-only cookies
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       ...options?.headers,
     },
   });
@@ -52,7 +53,7 @@ export async function getProducts(params?: {
   order?: string;
 }) {
   const queryParams = new URLSearchParams();
-  
+
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -60,26 +61,32 @@ export async function getProducts(params?: {
       }
     });
   }
-  
-  const response = await apiFetch(`${BASE_URL}/api/supabase/products?${queryParams}`);
+
+  const response = await apiFetch(
+    `${BASE_URL}/api/supabase/products?${queryParams}`,
+  );
   return response.json();
 }
 
 export async function getProduct(id: string) {
   try {
     const response = await apiFetch(`${BASE_URL}/api/page-data/product/${id}`, {
-      next: { revalidate: 60 }
+      next: { revalidate: 60 },
     });
-    
+
     if (!response.ok) {
-      console.error(`Product API returned ${response.status} for ${id}`);
+      if (process.env.NODE_ENV === "development") {
+        console.error(`Product API returned ${response.status} for ${id}`);
+      }
       return { success: false, product: null };
     }
-    
+
     const data = await response.json();
     return data.success ? data.data : { success: false, product: null };
   } catch (error) {
-    console.error(`Error fetching product ${id}:`, error);
+    if (process.env.NODE_ENV === "development") {
+      console.error(`Error fetching product ${id}:`, error);
+    }
     return { success: false, product: null };
   }
 }
@@ -101,9 +108,9 @@ export async function getCustomer(id: string) {
 
 export async function updateCustomer(id: string, data: any) {
   const response = await apiFetch(`${BASE_URL}/api/supabase/customers/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
   });
   return response.json();
 }
@@ -113,7 +120,9 @@ export async function updateCustomer(id: string, data: any) {
 // ============================================================================
 
 export async function getCustomerOrders(customerId: string) {
-  const response = await apiFetch(`${BASE_URL}/api/supabase/orders?customer_id=${customerId}`);
+  const response = await apiFetch(
+    `${BASE_URL}/api/supabase/orders?customer_id=${customerId}`,
+  );
   const data = await response.json();
   return data.orders || [];
 }
@@ -125,9 +134,9 @@ export async function getOrder(id: string) {
 
 export async function createOrder(orderData: any) {
   const response = await apiFetch(`${BASE_URL}/api/supabase/orders`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(orderData)
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(orderData),
   });
   return response.json();
 }
@@ -137,7 +146,9 @@ export async function createOrder(orderData: any) {
 // ============================================================================
 
 export async function getProductInventory(productId: number) {
-  const response = await apiFetch(`${BASE_URL}/api/supabase/inventory?product_id=${productId}`);
+  const response = await apiFetch(
+    `${BASE_URL}/api/supabase/inventory?product_id=${productId}`,
+  );
   const data = await response.json();
   return data.inventory || [];
 }
@@ -153,16 +164,18 @@ export async function getLocations() {
 // ============================================================================
 
 export async function getProductReviews(productId: string) {
-  const response = await apiFetch(`${BASE_URL}/api/supabase/reviews?product_id=${productId}`);
+  const response = await apiFetch(
+    `${BASE_URL}/api/supabase/reviews?product_id=${productId}`,
+  );
   const data = await response.json();
   return data.reviews || [];
 }
 
 export async function createReview(reviewData: any) {
   const response = await apiFetch(`${BASE_URL}/api/supabase/reviews`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(reviewData)
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(reviewData),
   });
   return response.json();
 }
@@ -171,11 +184,19 @@ export async function createReview(reviewData: any) {
 // COUPONS
 // ============================================================================
 
-export async function validateCoupon(code: string, cartTotal: number, customerId?: string) {
+export async function validateCoupon(
+  code: string,
+  cartTotal: number,
+  customerId?: string,
+) {
   const response = await apiFetch(`${BASE_URL}/api/supabase/coupons/validate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, cart_total: cartTotal, customer_id: customerId })
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      code,
+      cart_total: cartTotal,
+      customer_id: customerId,
+    }),
   });
   return response.json();
 }
@@ -201,9 +222,11 @@ export async function getVendorProducts(vendorSlug: string) {
   // Get vendor first
   const vendor = await getVendorBySlug(vendorSlug);
   if (!vendor) return [];
-  
+
   // Get vendor's products
-  const response = await apiFetch(`${BASE_URL}/api/supabase/products?vendor_id=${vendor.id}`);
+  const response = await apiFetch(
+    `${BASE_URL}/api/supabase/products?vendor_id=${vendor.id}`,
+  );
   const data = await response.json();
   return data.products || [];
 }
@@ -215,37 +238,44 @@ export async function getVendorProducts(vendorSlug: string) {
 export async function getVendorPayouts(vendorId?: string) {
   const headers: any = {};
   if (vendorId) {
-    headers['x-vendor-id'] = vendorId;
+    headers["x-vendor-id"] = vendorId;
   }
-  
-  const response = await apiFetch(`${BASE_URL}/api/supabase/vendor/payouts`, { headers });
+
+  const response = await apiFetch(`${BASE_URL}/api/supabase/vendor/payouts`, {
+    headers,
+  });
   const data = await response.json();
   return data.payouts || [];
 }
 
 export async function getVendorAnalytics(vendorId: string, days: number = 30) {
-  const response = await apiFetch(`${BASE_URL}/api/supabase/vendor/analytics?days=${days}`, {
-    headers: { 'x-vendor-id': vendorId }
-  });
+  const response = await apiFetch(
+    `${BASE_URL}/api/supabase/vendor/analytics?days=${days}`,
+    {
+      headers: { "x-vendor-id": vendorId },
+    },
+  );
   return response.json();
 }
 
 export async function getVendorBranding(vendorId: string) {
   const response = await apiFetch(`${BASE_URL}/api/supabase/vendor/branding`, {
-    headers: { 'x-vendor-id': vendorId }
+    headers: { "x-vendor-id": vendorId },
   });
   return response.json();
 }
 
-export async function updateVendorBranding(vendorId: string, brandingData: any) {
+export async function updateVendorBranding(
+  vendorId: string,
+  brandingData: any,
+) {
   const response = await apiFetch(`${BASE_URL}/api/supabase/vendor/branding`, {
-    method: 'PUT',
-    headers: { 
-      'Content-Type': 'application/json',
-      'x-vendor-id': vendorId
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "x-vendor-id": vendorId,
     },
-    body: JSON.stringify(brandingData)
+    body: JSON.stringify(brandingData),
   });
   return response.json();
 }
-

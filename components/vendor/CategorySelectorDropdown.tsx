@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
 
 interface CategorySelectorDropdownProps {
   selectedCategoryIds: string[];
@@ -18,13 +18,15 @@ export function CategorySelectorDropdown({
   useEffect(() => {
     async function loadCategories() {
       try {
-        const res = await fetch('/api/categories');
+        const res = await fetch("/api/categories");
         if (res.ok) {
           const data = await res.json();
           setCategories(data.categories || data || []);
         }
       } catch (error) {
-        console.error('Failed to load categories:', error);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Failed to load categories:", error);
+        }
       } finally {
         setLoading(false);
       }
@@ -32,11 +34,13 @@ export function CategorySelectorDropdown({
     loadCategories();
   }, []);
 
-  const selectedCategories = categories.filter(c => selectedCategoryIds.includes(c.id));
+  const selectedCategories = categories.filter((c) =>
+    selectedCategoryIds.includes(c.id),
+  );
 
   const toggleCategory = (categoryId: string) => {
     if (selectedCategoryIds.includes(categoryId)) {
-      onChange(selectedCategoryIds.filter(id => id !== categoryId));
+      onChange(selectedCategoryIds.filter((id) => id !== categoryId));
     } else {
       onChange([...selectedCategoryIds, categoryId]);
     }
@@ -47,7 +51,7 @@ export function CategorySelectorDropdown({
       {/* Selected Categories */}
       {selectedCategories.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {selectedCategories.map(category => (
+          {selectedCategories.map((category) => (
             <div
               key={category.id}
               className="flex items-center gap-1 bg-green-600 text-white text-xs px-2 py-1 rounded"
@@ -67,12 +71,16 @@ export function CategorySelectorDropdown({
       {/* Category List */}
       <div className="max-h-48 overflow-y-auto border border-neutral-800 rounded bg-neutral-950">
         {loading ? (
-          <div className="p-4 text-center text-neutral-500 text-xs">Loading...</div>
+          <div className="p-4 text-center text-neutral-500 text-xs">
+            Loading...
+          </div>
         ) : categories.length === 0 ? (
-          <div className="p-4 text-center text-neutral-500 text-xs">No categories found</div>
+          <div className="p-4 text-center text-neutral-500 text-xs">
+            No categories found
+          </div>
         ) : (
           <div className="divide-y divide-neutral-800">
-            {categories.map(category => (
+            {categories.map((category) => (
               <label
                 key={category.id}
                 className="flex items-center gap-2 p-2 hover:bg-neutral-900 cursor-pointer"
@@ -84,9 +92,13 @@ export function CategorySelectorDropdown({
                   className="rounded"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-white truncate">{category.name}</div>
+                  <div className="text-sm text-white truncate">
+                    {category.name}
+                  </div>
                   {category.slug && (
-                    <div className="text-xs text-neutral-500">{category.slug}</div>
+                    <div className="text-xs text-neutral-500">
+                      {category.slug}
+                    </div>
                   )}
                 </div>
               </label>
@@ -96,11 +108,10 @@ export function CategorySelectorDropdown({
       </div>
 
       <p className="text-xs text-neutral-500">
-        {selectedCategories.length === 0 
-          ? 'Select categories or leave empty to show all' 
-          : `${selectedCategories.length} categor${selectedCategories.length === 1 ? 'y' : 'ies'} selected`}
+        {selectedCategories.length === 0
+          ? "Select categories or leave empty to show all"
+          : `${selectedCategories.length} categor${selectedCategories.length === 1 ? "y" : "ies"} selected`}
       </p>
     </div>
   );
 }
-

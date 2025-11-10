@@ -1,10 +1,21 @@
-import {a}from'../../../chunks/chunk-S24T6WS2.js';import {a as a$1}from'../../../chunks/chunk-3A4KLILV.js';import {a as a$2}from'../../../chunks/chunk-MU6SADSF.js';var e=class e extends a{static create(){return document.createElement(e.tag)}static register(){a$1({[e.tag]:e});}render(){return a$2`
+import { a } from "../../../chunks/chunk-S24T6WS2.js";
+import { a as a$1 } from "../../../chunks/chunk-3A4KLILV.js";
+import { a as a$2 } from "../../../chunks/chunk-MU6SADSF.js";
+var e = class e extends a {
+  static create() {
+    return document.createElement(e.tag);
+  }
+  static register() {
+    a$1({ [e.tag]: e });
+  }
+  render() {
+    return a$2`
       <style>
         ${e.tag} {
           display: flex;
         }
       </style>
-      <svg width="${this.size}" height="${this.heightForViewbox(24,24)}" viewBox="0 0 24 24" fill="none">
+      <svg width="${this.size}" height="${this.heightForViewbox(24, 24)}" viewBox="0 0 24 24" fill="none">
         <path d="M17.475 12C17.7487 12 18.0127 12.1008 18.2167 12.2833C18.3991 12.4872 18.5 12.7513 18.5 13.025C18.5 13.2986 18.3991 13.5627 18.2167 13.7666L16.7333 15.25L18.2167 16.7333C18.3991 16.9373 18.5 17.2014 18.5 17.475C18.5 17.7487 18.3991 18.0127 18.2167 18.2167C18.0127 18.3991 17.7487 18.5 17.475 18.5C17.2013 18.5 16.9373 18.3991 16.7333 18.2167L15.25 16.7333L13.7666 18.2167C13.5626 18.3991 13.2986 18.5 13.0249 18.5C12.7513 18.5 12.4872 18.3991 12.2833 18.2167C12.1008 18.0127 12 17.7487 12 17.475C12 17.2014 12.1008 16.9373 12.2833 16.7333L13.7666 15.25L12.2833 13.7666C12.1841 13.559 12.1518 13.3258 12.1907 13.099C12.2296 12.8723 12.3378 12.6632 12.5005 12.5005C12.6632 12.3378 12.8723 12.2296 13.099 12.1907C13.3258 12.1518 13.559 12.1841 13.7666 12.2833L15.25 13.7666L16.7333 12.2833C16.9373 12.1008 17.2013 12 17.475 12Z"
           fill="${this.fill}"
         />
@@ -12,4 +23,10 @@ import {a}from'../../../chunks/chunk-S24T6WS2.js';import {a as a$1}from'../../..
           fill="${this.fill}"
         />
       </svg>
-    `}};e.tag="scandit-wrong-item-icon";var t=e;t.register();export{t as WrongItemSvgIcon};
+    `;
+  }
+};
+e.tag = "scandit-wrong-item-icon";
+var t = e;
+t.register();
+export { t as WrongItemSvgIcon };

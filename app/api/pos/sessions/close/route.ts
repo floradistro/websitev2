@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,36 +10,30 @@ export async function POST(request: NextRequest) {
     const { sessionId, closingCash, closingNotes } = await request.json();
 
     if (!sessionId) {
-      return NextResponse.json(
-        { error: 'Missing sessionId' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing sessionId" }, { status: 400 });
     }
 
     // Get session details
     const { data: session, error: sessionError } = await supabase
-      .from('pos_sessions')
-      .select('*')
-      .eq('id', sessionId)
+      .from("pos_sessions")
+      .select("*")
+      .eq("id", sessionId)
       .single();
 
     if (sessionError || !session) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    if (session.status === 'closed') {
+    if (session.status === "closed") {
       // Already closed - return success with existing data
       return NextResponse.json({
         success: true,
-        message: 'Session already closed',
+        message: "Session already closed",
         summary: {
           session_number: session.session_number,
           total_sales: session.total_sales,
           total_transactions: session.total_transactions,
-          status: 'closed',
+          status: "closed",
         },
       });
     }
@@ -50,22 +44,24 @@ export async function POST(request: NextRequest) {
 
     // Close session
     const { error: updateError } = await supabase
-      .from('pos_sessions')
+      .from("pos_sessions")
       .update({
-        status: 'closed',
+        status: "closed",
         closing_cash: closingCash,
         expected_cash: expectedCash,
         cash_difference: cashDifference,
         closed_at: new Date().toISOString(),
         closing_notes: closingNotes,
       })
-      .eq('id', sessionId);
+      .eq("id", sessionId);
 
     if (updateError) {
-      console.error('Error closing session:', updateError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error closing session:", updateError);
+      }
       return NextResponse.json(
-        { error: 'Failed to close session', details: updateError.message },
-        { status: 500 }
+        { error: "Failed to close session", details: updateError.message },
+        { status: 500 },
       );
     }
 
@@ -81,16 +77,22 @@ export async function POST(request: NextRequest) {
         closing_cash: closingCash,
         expected_cash: expectedCash,
         cash_difference: cashDifference,
-        status: cashDifference === 0 ? 'balanced' : cashDifference > 0 ? 'over' : 'short',
+        status:
+          cashDifference === 0
+            ? "balanced"
+            : cashDifference > 0
+              ? "over"
+              : "short",
       },
       message: `Session ${session.session_number} closed successfully`,
     });
   } catch (error: any) {
-    console.error('Error in close session endpoint:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in close session endpoint:", error);
+    }
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
+      { error: "Internal server error", details: error.message },
+      { status: 500 },
     );
   }
 }
-

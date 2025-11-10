@@ -36,8 +36,8 @@ export interface BusinessHours {
 }
 
 export interface DayHours {
-  open: string;   // "09:00"
-  close: string;  // "21:00"
+  open: string; // "09:00"
+  close: string; // "21:00"
   closed?: boolean;
 }
 
@@ -52,8 +52,8 @@ export interface AssetVariant {
   id: string;
   name: string;
   url: string;
-  type: 'logo' | 'banner' | 'icon' | 'pattern';
-  variant?: 'light' | 'dark' | 'color' | 'mono';
+  type: "logo" | "banner" | "icon" | "pattern";
+  variant?: "light" | "dark" | "color" | "mono";
   width?: number;
   height?: number;
   fileSize?: number;
@@ -194,70 +194,70 @@ export interface BrandPreset {
 
 export const BRAND_PRESETS: BrandPreset[] = [
   {
-    id: 'cannabis-modern',
-    name: 'Cannabis Modern',
-    description: 'Fresh, clean, professional cannabis aesthetic',
+    id: "cannabis-modern",
+    name: "Cannabis Modern",
+    description: "Fresh, clean, professional cannabis aesthetic",
     colors: {
-      primary: '#10B981',
-      secondary: '#F3F4F6',
-      accent: '#059669',
-      background: '#FFFFFF',
-      text: '#1A1A1A'
+      primary: "#10B981",
+      secondary: "#F3F4F6",
+      accent: "#059669",
+      background: "#FFFFFF",
+      text: "#1A1A1A",
     },
-    font: 'Inter'
+    font: "Inter",
   },
   {
-    id: 'luxury-minimal',
-    name: 'Luxury Minimal',
-    description: 'Sophisticated high-end brand identity',
+    id: "luxury-minimal",
+    name: "Luxury Minimal",
+    description: "Sophisticated high-end brand identity",
     colors: {
-      primary: '#D4AF37',
-      secondary: '#1F1F1F',
-      accent: '#F5F5F5',
-      background: '#FFFFFF',
-      text: '#1F1F1F'
+      primary: "#D4AF37",
+      secondary: "#1F1F1F",
+      accent: "#F5F5F5",
+      background: "#FFFFFF",
+      text: "#1F1F1F",
     },
-    font: 'Playfair Display'
+    font: "Playfair Display",
   },
   {
-    id: 'earth-tones',
-    name: 'Earth Tones',
-    description: 'Natural, organic, grounded aesthetic',
+    id: "earth-tones",
+    name: "Earth Tones",
+    description: "Natural, organic, grounded aesthetic",
     colors: {
-      primary: '#8B7355',
-      secondary: '#F5F1E8',
-      accent: '#A8956B',
-      background: '#FFFEF9',
-      text: '#3D3D3D'
+      primary: "#8B7355",
+      secondary: "#F5F1E8",
+      accent: "#A8956B",
+      background: "#FFFEF9",
+      text: "#3D3D3D",
     },
-    font: 'Merriweather'
+    font: "Merriweather",
   },
   {
-    id: 'bold-vibrant',
-    name: 'Bold & Vibrant',
-    description: 'Eye-catching, energetic brand presence',
+    id: "bold-vibrant",
+    name: "Bold & Vibrant",
+    description: "Eye-catching, energetic brand presence",
     colors: {
-      primary: '#EC4899',
-      secondary: '#8B5CF6',
-      accent: '#F59E0B',
-      background: '#FFFFFF',
-      text: '#1A1A1A'
+      primary: "#EC4899",
+      secondary: "#8B5CF6",
+      accent: "#F59E0B",
+      background: "#FFFFFF",
+      text: "#1A1A1A",
     },
-    font: 'Poppins'
+    font: "Poppins",
   },
   {
-    id: 'dark-mode',
-    name: 'Dark Mode',
-    description: 'Sleek, modern dark theme',
+    id: "dark-mode",
+    name: "Dark Mode",
+    description: "Sleek, modern dark theme",
     colors: {
-      primary: '#FFFFFF',
-      secondary: '#1A1A1A',
-      accent: '#3B82F6',
-      background: '#0A0A0A',
-      text: '#F5F5F5'
+      primary: "#FFFFFF",
+      secondary: "#1A1A1A",
+      accent: "#3B82F6",
+      background: "#0A0A0A",
+      text: "#F5F5F5",
     },
-    font: 'Inter'
-  }
+    font: "Inter",
+  },
 ];
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -274,21 +274,26 @@ export interface BrandingValidation {
 export type BrandingField = keyof VendorBranding;
 
 export const AVAILABLE_FONTS = [
-  'Inter',
-  'Playfair Display',
-  'Montserrat',
-  'Lato',
-  'Roboto',
-  'Open Sans',
-  'Poppins',
-  'Raleway',
-  'Merriweather',
-  'Crimson Text'
+  "Inter",
+  "Playfair Display",
+  "Montserrat",
+  "Lato",
+  "Roboto",
+  "Open Sans",
+  "Poppins",
+  "Raleway",
+  "Merriweather",
+  "Crimson Text",
 ] as const;
 
-export type AvailableFont = typeof AVAILABLE_FONTS[number];
+export type AvailableFont = (typeof AVAILABLE_FONTS)[number];
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+export const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
 export const LOGO_RECOMMENDED_SIZE = { width: 300, height: 300 };
 export const BANNER_RECOMMENDED_SIZE = { width: 1920, height: 600 };

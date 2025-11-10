@@ -3,12 +3,14 @@
 ## Problem Statement
 
 **Current Flaw:**
+
 - Inbound POs can only select from existing 68 products in catalog
 - Suppliers typically have 200-500 products
 - Vendor might only carry 50 of them
 - When ordering new products from supplier → BLOCKED ❌
 
 **Real-World Scenario:**
+
 1. Supplier introduces new strain "Purple Haze"
 2. Vendor wants to order 100 units at $15/unit
 3. Current system: Must manually create product first
@@ -17,6 +19,7 @@
 6. Total: 3 separate workflows 😤
 
 **Should Be:**
+
 1. Create PO with new product details inline
 2. Receive PO
 3. System auto-creates product (or prompts to create)
@@ -27,7 +30,9 @@
 ## Solution Design: Hybrid Approach
 
 ### Option A: "Quick Add" New Products (RECOMMENDED)
+
 **UX Flow:**
+
 1. Creating Inbound PO
 2. See list of existing products
 3. **"+ Add New Product" button** at top
@@ -37,17 +42,21 @@
 7. One-click to create all, or manually review each
 
 **Pros:**
+
 - Fast workflow
 - No context switching
 - Auto-creation is optional
 - Vendor controls what gets cataloged
 
 **Cons:**
+
 - Requires temporary storage for "pending" products
 - Needs UI for product creation approval
 
 ### Option B: "Full Product Creation" Inline
+
 **UX Flow:**
+
 1. Creating Inbound PO
 2. Click "+ Add New Product"
 3. Full product creation form (name, category, pricing, etc.)
@@ -56,16 +65,20 @@
 6. When received, product status → "published"
 
 **Pros:**
+
 - No temporary storage needed
 - Products always in catalog
 
 **Cons:**
+
 - Slower workflow
 - Forces full product setup upfront
 - Can't order samples without full cataloging
 
 ### Option C: "Simple Product Stubs" (MIDDLE GROUND) ⭐
+
 **UX Flow:**
+
 1. Creating Inbound PO
 2. Click "+ Add New Product"
 3. Quick form: Name, SKU, Category, Unit Cost, Supplier Product ID
@@ -78,12 +91,14 @@
 7. Vendor can bulk-edit pricing, then publish
 
 **Pros:**
+
 - Fast during PO creation
 - Products exist in system (no temporary storage)
 - Inventory tracking works immediately
 - Gradual product enrichment
 
 **Cons:**
+
 - New product status: "po_only"
 - Needs bulk pricing tool
 
@@ -94,6 +109,7 @@
 ### Phase 1: PO Creation with New Products
 
 **Database Changes:**
+
 ```sql
 -- Add new product status
 ALTER TABLE products
@@ -110,6 +126,7 @@ ADD COLUMN created_from_po_id UUID REFERENCES purchase_orders(id);
 ```
 
 **Frontend: Inbound PO Modal**
+
 ```tsx
 // When po_type === 'inbound'
 <div className="flex items-center justify-between mb-4">
@@ -145,25 +162,26 @@ ADD COLUMN created_from_po_id UUID REFERENCES purchase_orders(id);
 ```
 
 **API: Create PO with New Products**
+
 ```typescript
 // Detect new products (those without product_id)
-const newProductItems = items.filter(item => !item.product_id);
-const existingProductItems = items.filter(item => item.product_id);
+const newProductItems = items.filter((item) => !item.product_id);
+const existingProductItems = items.filter((item) => item.product_id);
 
 // Create stub products
 for (const item of newProductItems) {
   const { data: newProduct } = await supabase
-    .from('products')
+    .from("products")
     .insert({
       vendor_id,
       name: item.product_name,
       sku: item.sku || `AUTO-${Date.now()}`,
       supplier_product_id: item.supplier_sku,
-      category: item.category || 'Uncategorized',
+      category: item.category || "Uncategorized",
       cost_price: item.unit_price,
       regular_price: item.unit_price * 2, // Default 100% markup
-      status: 'po_only',
-      created_from_po_id: newPO.id
+      status: "po_only",
+      created_from_po_id: newPO.id,
     })
     .select()
     .single();
@@ -174,13 +192,14 @@ for (const item of newProductItems) {
 
 // Insert all PO items (now all have product_id)
 const { error: itemsError } = await supabase
-  .from('purchase_order_items')
+  .from("purchase_order_items")
   .insert([...existingProductItems, ...newProductItems]);
 ```
 
 ### Phase 2: Receiving PO (Auto-create Inventory)
 
 **API: Receive PO**
+
 ```typescript
 case 'receive': {
   // ... existing receive logic ...
@@ -212,6 +231,7 @@ case 'receive': {
 ### Phase 3: Bulk Publish Tool
 
 **New Page: `/vendor/products/pending`**
+
 ```tsx
 // Shows all products with status='in_stock_unpublished'
 <PageHeader
@@ -233,6 +253,7 @@ case 'receive': {
 ## Migration Path
 
 ### Step 1: Add New Product Status (No Breaking Changes)
+
 ```sql
 -- Safe migration, doesn't affect existing products
 ALTER TABLE products DROP CONSTRAINT IF EXISTS products_status_check;
@@ -241,15 +262,18 @@ ALTER TABLE products ADD CONSTRAINT products_status_check
 ```
 
 ### Step 2: Update PO Creation API
+
 - Add logic to detect items without product_id
 - Create stub products automatically
 - Link to PO with created_from_po_id
 
 ### Step 3: Update Receive API
+
 - Change status from po_only → in_stock_unpublished
 - Return list of new products in response
 
 ### Step 4: Build Bulk Publish Tool
+
 - New page for reviewing pending products
 - Bulk pricing editor
 - One-click publish
@@ -259,9 +283,11 @@ ALTER TABLE products ADD CONSTRAINT products_status_check
 ## User Stories
 
 ### Story 1: Ordering New Strain from Supplier
+
 **As a vendor,** I want to order a new strain from my supplier without pre-creating the product.
 
 **Acceptance Criteria:**
+
 - [x] Can click "+ Add New Product" in inbound PO
 - [x] Fill in: Name, SKU, Unit Cost, Category
 - [x] Product appears in PO with "NEW" badge
@@ -271,9 +297,11 @@ ALTER TABLE products ADD CONSTRAINT products_status_check
 - [x] Can set retail price and publish
 
 ### Story 2: Bulk Order from New Supplier
+
 **As a vendor,** I want to order 20 new products from a new supplier in one PO.
 
 **Acceptance Criteria:**
+
 - [x] Can add multiple new products to one PO
 - [x] Each product has minimal required info
 - [x] All 20 products created as stubs
@@ -282,9 +310,11 @@ ALTER TABLE products ADD CONSTRAINT products_status_check
 - [x] Can bulk-publish all at once
 
 ### Story 3: Sample Order
+
 **As a vendor,** I want to order 5 units of a new product as a sample before adding to catalog.
 
 **Acceptance Criteria:**
+
 - [x] Create PO with new product
 - [x] Receive PO (5 units added to inventory)
 - [x] Product remains unpublished
@@ -299,6 +329,7 @@ ALTER TABLE products ADD CONSTRAINT products_status_check
 Some wholesalers might want to maintain a separate "supplier catalog" that's not their main catalog.
 
 **Database:**
+
 ```sql
 CREATE TABLE supplier_products (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -320,11 +351,13 @@ ADD COLUMN supplier_product_id UUID REFERENCES supplier_products(id);
 ```
 
 **Benefit:**
+
 - Track all supplier offerings
 - Order from supplier catalog
 - Decide later what to add to your catalog
 
 **Drawback:**
+
 - More complex
 - Duplicate data
 - Harder to track inventory
@@ -337,11 +370,13 @@ Start with simple approach (stub products), add supplier catalog later if needed
 ## Summary
 
 **Current State:**
+
 - ❌ Can only order existing products
 - ❌ Forces manual product creation first
 - ❌ 3-step workflow for new products
 
 **Proposed State:**
+
 - ✅ Add new products inline in PO
 - ✅ Auto-create product stubs
 - ✅ Auto-create inventory when received
@@ -349,12 +384,14 @@ Start with simple approach (stub products), add supplier catalog later if needed
 - ✅ 1-step workflow
 
 **Implementation Complexity:**
+
 - Database: 3 new columns, 1 status value
 - API: ~100 lines of code
 - Frontend: ~200 lines (new product form + pending products page)
 - Total: 2-3 hours of work
 
 **Impact:**
+
 - Unblocks critical wholesale workflow
 - 70% faster new product onboarding
 - Natural inventory management flow
@@ -362,4 +399,4 @@ Start with simple approach (stub products), add supplier catalog later if needed
 
 ---
 
-*Next Steps: Implement Phase 1 (PO creation with new products)*
+_Next Steps: Implement Phase 1 (PO creation with new products)_

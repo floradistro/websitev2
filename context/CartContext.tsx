@@ -1,6 +1,15 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 // import { analytics } from "@/lib/analytics";
 
 interface CartItem {
@@ -10,11 +19,11 @@ interface CartItem {
   quantity: number;
   tierName: string;
   image?: string;
-  
+
   // DUAL UNIT SYSTEM - Critical for inventory deduction
-  quantity_grams?: number;          // Actual amount in grams (for inventory deduction)
-  quantity_display?: string;        // Display label (e.g., "1 lb", "3.5g", "½ oz")
-  
+  quantity_grams?: number; // Actual amount in grams (for inventory deduction)
+  quantity_display?: string; // Display label (e.g., "1 lb", "3.5g", "½ oz")
+
   orderType?: "pickup" | "delivery";
   locationId?: string;
   locationName?: string;
@@ -53,7 +62,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (Array.isArray(parsed)) {
           setItems(parsed);
         } else {
-          console.warn("Cart data in localStorage is not an array, clearing it");
+          console.warn(
+            "Cart data in localStorage is not an array, clearing it",
+          );
           localStorage.removeItem("flora-cart");
         }
       } catch (error) {
@@ -90,14 +101,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = useCallback((item: CartItem) => {
     setItems((prev) => {
       const existingItem = prev.find(
-        (i) => i.productId === item.productId && i.tierName === item.tierName
+        (i) => i.productId === item.productId && i.tierName === item.tierName,
       );
 
       if (existingItem) {
         return prev.map((i) =>
           i.productId === item.productId && i.tierName === item.tierName
             ? { ...i, quantity: i.quantity + item.quantity }
-            : i
+            : i,
         );
       }
 
@@ -116,7 +127,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeFromCart = useCallback((productId: number) => {
     setItems((prev) => {
       const item = prev.find((i) => i.productId === productId);
-      
+
       // Track analytics event
       // if (item) {
       //   analytics.removeFromCart({
@@ -126,31 +137,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
       //     quantity: item.quantity,
       //   });
       // }
-      
+
       return prev.filter((item) => item.productId !== productId);
     });
   }, []);
 
-  const updateQuantity = useCallback((productId: number, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
+  const updateQuantity = useCallback(
+    (productId: number, quantity: number) => {
+      if (quantity <= 0) {
+        removeFromCart(productId);
+        return;
+      }
 
-    setItems((prev) =>
-      prev.map((item) =>
-        item.productId === productId ? { ...item, quantity } : item
-      )
-    );
-  }, [removeFromCart]);
+      setItems((prev) =>
+        prev.map((item) =>
+          item.productId === productId ? { ...item, quantity } : item,
+        ),
+      );
+    },
+    [removeFromCart],
+  );
 
-  const updateCartItem = useCallback((productId: number, updates: Partial<CartItem>) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.productId === productId ? { ...item, ...updates } : item
-      )
-    );
-  }, []);
+  const updateCartItem = useCallback(
+    (productId: number, updates: Partial<CartItem>) => {
+      setItems((prev) =>
+        prev.map((item) =>
+          item.productId === productId ? { ...item, ...updates } : item,
+        ),
+      );
+    },
+    [],
+  );
 
   const clearCart = useCallback(() => {
     setItems([]);
@@ -161,7 +178,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!Array.isArray(items)) return 0;
     return items.reduce((total, item) => total + item.quantity, 0);
   }, [items]);
-  
+
   const total = useMemo(() => {
     if (!Array.isArray(items)) return 0;
     return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -179,13 +196,20 @@ export function CartProvider({ children }: { children: ReactNode }) {
       itemCount,
       total,
     }),
-    [items, addToCart, removeFromCart, updateQuantity, updateCartItem, clearCart, itemCount, total]
+    [
+      items,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      updateCartItem,
+      clearCart,
+      itemCount,
+      total,
+    ],
   );
 
   return (
-    <CartContext.Provider value={contextValue}>
-      {children}
-    </CartContext.Provider>
+    <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>
   );
 }
 
@@ -196,4 +220,3 @@ export function useCart() {
   }
   return context;
 }
-

@@ -1,24 +1,24 @@
 "use client";
 
-import { useState } from 'react';
-import { Code, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { useState } from "react";
+import { Code, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 interface CodeEditorFieldProps {
   value: string;
   onChange: (value: string) => void;
-  language?: 'html' | 'css' | 'javascript';
+  language?: "html" | "css" | "javascript";
   label?: string;
   maxLength?: number;
   allowedTags?: string[];
 }
 
 export function CodeEditorField({
-  value = '',
+  value = "",
   onChange,
-  language = 'html',
-  label = 'Custom Code',
+  language = "html",
+  label = "Custom Code",
   maxLength = 5000,
-  allowedTags = ['div', 'span', 'p', 'a', 'img', 'style', 'script']
+  allowedTags = ["div", "span", "p", "a", "img", "style", "script"],
 }: CodeEditorFieldProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export function CodeEditorField({
 
     for (const pattern of dangerousPatterns) {
       if (pattern.test(code)) {
-        return 'Code contains potentially unsafe patterns';
+        return "Code contains potentially unsafe patterns";
       }
     }
 
@@ -61,7 +61,7 @@ export function CodeEditorField({
           className="text-white/60 hover:text-white text-xs flex items-center gap-1"
         >
           {showPreview ? <EyeOff size={12} /> : <Eye size={12} />}
-          {showPreview ? 'Hide' : 'Preview'}
+          {showPreview ? "Hide" : "Preview"}
         </button>
       </div>
 
@@ -107,12 +107,18 @@ export function CodeEditorField({
       {/* Security Warning */}
       <div className="mt-2 bg-yellow-500/10 border border-yellow-500/20 rounded p-2">
         <div className="flex gap-2">
-          <AlertCircle size={12} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+          <AlertCircle
+            size={12}
+            className="text-yellow-500 flex-shrink-0 mt-0.5"
+          />
           <div>
-            <p className="text-yellow-500 text-[10px] font-medium mb-1">Security Notice</p>
+            <p className="text-yellow-500 text-[10px] font-medium mb-1">
+              Security Notice
+            </p>
             <p className="text-white/60 text-[10px] leading-relaxed">
-              Code runs in a sandboxed iframe. Avoid accessing cookies or localStorage. 
-              Only HTTPS iframes allowed. Dangerous patterns will be blocked.
+              Code runs in a sandboxed iframe. Avoid accessing cookies or
+              localStorage. Only HTTPS iframes allowed. Dangerous patterns will
+              be blocked.
             </p>
           </div>
         </div>
@@ -151,4 +157,3 @@ export function CodeEditorField({
     </div>
   );
 }
-

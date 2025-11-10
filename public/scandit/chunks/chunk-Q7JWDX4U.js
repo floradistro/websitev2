@@ -1,1 +1,26 @@
-var t=class t{constructor(i,e){this._running=false;this.duration=i>t.maxDurationAllowedByJSEngines?t.maxDurationAllowedByJSEngines:i,this.callback=e;}get running(){return this._running}start(){this.stop(),this.timeout=setTimeout(()=>{this.callback(),this.stop();},this.duration),this._running=true;}stop(){clearTimeout(this.timeout),this._running=false;}};t.maxDurationAllowedByJSEngines=2147483647;var n=t;export{n as a};
+var t = class t {
+  constructor(i, e) {
+    this._running = false;
+    ((this.duration =
+      i > t.maxDurationAllowedByJSEngines
+        ? t.maxDurationAllowedByJSEngines
+        : i),
+      (this.callback = e));
+  }
+  get running() {
+    return this._running;
+  }
+  start() {
+    (this.stop(),
+      (this.timeout = setTimeout(() => {
+        (this.callback(), this.stop());
+      }, this.duration)),
+      (this._running = true));
+  }
+  stop() {
+    (clearTimeout(this.timeout), (this._running = false));
+  }
+};
+t.maxDurationAllowedByJSEngines = 2147483647;
+var n = t;
+export { n as a };

@@ -1,16 +1,25 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useAppAuth } from '@/context/AppAuthContext';
-import { AppsGrid } from '@/components/admin/AppsGrid';
-import { MapPin, User, Briefcase, Store, Sparkles, TrendingUp, Package } from 'lucide-react';
-import { useVendorDashboard } from '@/hooks/useVendorData';
-import { DashboardSkeleton } from '@/components/vendor/VendorSkeleton';
-import { KPIWidget } from '@/components/dashboard/KPIWidget';
-import { AIKPICreator } from '@/components/dashboard/AIKPICreator';
+import { useEffect, useState } from "react";
+import { useAppAuth } from "@/context/AppAuthContext";
+import { AppsGrid } from "@/components/admin/AppsGrid";
+import {
+  MapPin,
+  User,
+  Briefcase,
+  Store,
+  Sparkles,
+  TrendingUp,
+  Package,
+} from "lucide-react";
+import { useVendorDashboard } from "@/hooks/useVendorData";
+import { DashboardSkeleton } from "@/components/vendor/VendorSkeleton";
+import { KPIWidget } from "@/components/dashboard/KPIWidget";
+import { AIKPICreator } from "@/components/dashboard/AIKPICreator";
 
 export default function MegaDashboard() {
-  const { user, vendor, locations, primaryLocation, role, isLoading } = useAppAuth();
+  const { user, vendor, locations, primaryLocation, role, isLoading } =
+    useAppAuth();
   const { data: dashboardData, loading } = useVendorDashboard();
 
   const [stats, setStats] = useState({
@@ -44,7 +53,9 @@ export default function MegaDashboard() {
           setKpiWidgets(data.widgets);
         }
       } catch (error) {
-        console.error('Error loading KPI widgets:', error);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error loading KPI widgets:", error);
+        }
       }
     };
     loadKPIWidgets();
@@ -55,13 +66,17 @@ export default function MegaDashboard() {
     const fetchBadgeCounts = async () => {
       if (!vendor?.id) return;
       try {
-        const response = await fetch(`/api/vendor/badge-counts?vendorId=${vendor.id}`);
+        const response = await fetch(
+          `/api/vendor/badge-counts?vendorId=${vendor.id}`,
+        );
         const data = await response.json();
         if (data.success) {
           setBadgeCounts(data.badgeCounts);
         }
       } catch (error) {
-        console.error('Error fetching badge counts:', error);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error fetching badge counts:", error);
+        }
       }
     };
     fetchBadgeCounts();
@@ -74,38 +89,42 @@ export default function MegaDashboard() {
   const handleSaveKPI = async (kpi: any) => {
     if (!vendor?.id) return;
     try {
-      const response = await fetch('/api/kpi-widgets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/kpi-widgets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           vendorId: vendor.id,
-          kpi: { ...kpi, originalPrompt: kpi.originalPrompt || '' },
+          kpi: { ...kpi, originalPrompt: kpi.originalPrompt || "" },
         }),
       });
       const data = await response.json();
       if (data.success) {
-        setKpiWidgets(prev => [...prev, data.widget]);
+        setKpiWidgets((prev) => [...prev, data.widget]);
       }
     } catch (error) {
-      console.error('Error saving KPI widget:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error saving KPI widget:", error);
+      }
     }
   };
 
   const handleDeleteKPI = async (id: string) => {
     try {
-      const response = await fetch(`/api/kpi-widgets?id=${id}`, { method: 'DELETE' });
+      const response = await fetch(`/api/kpi-widgets?id=${id}`, {
+        method: "DELETE",
+      });
       const data = await response.json();
       if (data.success) {
-        setKpiWidgets(prev => prev.filter(kpi => kpi.id !== id));
+        setKpiWidgets((prev) => prev.filter((kpi) => kpi.id !== id));
       }
     } catch (error) {
-      console.error('Error deleting KPI widget:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error deleting KPI widget:", error);
+      }
     }
   };
 
-  const handleRefreshKPI = async (id: string) => {
-    console.log('Refreshing KPI:', id);
-  };
+  const handleRefreshKPI = async (id: string) => {};
 
   // CRITICAL FIX: Wait for auth context to load before rendering apps
   // This prevents "No apps available" from showing during context load
@@ -114,14 +133,21 @@ export default function MegaDashboard() {
   }
 
   const vendorBranding = dashboardData?.vendor;
-  const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  const currentTime = new Date().toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 18) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
   };
 
   return (
@@ -139,8 +165,8 @@ export default function MegaDashboard() {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center overflow-hidden shadow-lg shadow-black/40">
                 <img
-                  src={vendor?.logo_url || '/yacht-club-logo.png'}
-                  alt={vendor?.store_name || 'Logo'}
+                  src={vendor?.logo_url || "/yacht-club-logo.png"}
+                  alt={vendor?.store_name || "Logo"}
                   className="w-full h-full object-contain p-2"
                 />
               </div>
@@ -149,7 +175,7 @@ export default function MegaDashboard() {
                   {getGreeting()}
                 </h1>
                 <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-medium">
-                  {vendor?.store_name || 'Your Store'}
+                  {vendor?.store_name || "Your Store"}
                 </p>
               </div>
             </div>
@@ -158,7 +184,9 @@ export default function MegaDashboard() {
           {/* Section divider */}
           <div className="mb-8">
             <div className="flex items-center gap-3">
-              <h2 className="text-white/90 text-sm uppercase tracking-[0.15em] font-medium">Apps</h2>
+              <h2 className="text-white/90 text-sm uppercase tracking-[0.15em] font-medium">
+                Apps
+              </h2>
               <div className="flex-1 h-px bg-white/[0.06]" />
             </div>
           </div>
@@ -175,7 +203,7 @@ export default function MegaDashboard() {
         isOpen={showKPICreator}
         onClose={() => setShowKPICreator(false)}
         onSave={handleSaveKPI}
-        vendorId={vendor?.id || ''}
+        vendorId={vendor?.id || ""}
       />
     </div>
   );

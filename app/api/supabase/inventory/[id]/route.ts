@@ -1,47 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     const supabase = getServiceSupabase();
-    
+
     const { data, error } = await supabase
-      .from('inventory')
-      .select(`
+      .from("inventory")
+      .select(
+        `
         *,
         location:locations(id, name, type, city, state),
         vendor:vendors(id, store_name, email)
-      `)
-      .eq('id', id)
+      `,
+      )
+      .eq("id", id)
       .single();
-    
+
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    
+
     if (!data) {
-      return NextResponse.json({ error: 'Inventory not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Inventory not found" },
+        { status: 404 },
+      );
     }
-    
+
     return NextResponse.json({
       success: true,
-      inventory: data
+      inventory: data,
     });
-    
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -50,57 +56,62 @@ export async function PUT(
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) return authResult;
     const { vendorId } = authResult;
-    
+
     const body = await request.json();
     const { quantity, unit_cost, low_stock_threshold, notes } = body;
-    
+
     const supabase = getServiceSupabase();
-    
+
     // Verify vendor owns this inventory
     const { data: existing } = await supabase
-      .from('inventory')
-      .select('*')
-      .eq('id', id)
-      .eq('vendor_id', vendorId)
+      .from("inventory")
+      .select("*")
+      .eq("id", id)
+      .eq("vendor_id", vendorId)
       .single();
-    
+
     if (!existing) {
-      return NextResponse.json({ error: 'Inventory not found or unauthorized' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Inventory not found or unauthorized" },
+        { status: 404 },
+      );
     }
-    
+
     // Build update object
     const updates: any = {};
     if (quantity !== undefined) updates.quantity = parseFloat(quantity);
     if (unit_cost !== undefined) updates.unit_cost = parseFloat(unit_cost);
-    if (low_stock_threshold !== undefined) updates.low_stock_threshold = parseFloat(low_stock_threshold);
+    if (low_stock_threshold !== undefined)
+      updates.low_stock_threshold = parseFloat(low_stock_threshold);
     if (notes !== undefined) updates.notes = notes;
-    
+
     // Update inventory
     const { data: updated, error: updateError } = await supabase
-      .from('inventory')
+      .from("inventory")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
-    
+
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
-    
+
     return NextResponse.json({
       success: true,
-      inventory: updated
+      inventory: updated,
     });
-    
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -109,39 +120,42 @@ export async function DELETE(
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) return authResult;
     const { vendorId } = authResult;
-    
+
     const supabase = getServiceSupabase();
-    
+
     // Verify vendor owns this inventory
     const { data: existing } = await supabase
-      .from('inventory')
-      .select('*')
-      .eq('id', id)
-      .eq('vendor_id', vendorId)
+      .from("inventory")
+      .select("*")
+      .eq("id", id)
+      .eq("vendor_id", vendorId)
       .single();
-    
+
     if (!existing) {
-      return NextResponse.json({ error: 'Inventory not found or unauthorized' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Inventory not found or unauthorized" },
+        { status: 404 },
+      );
     }
-    
+
     // Delete inventory
     const { error: deleteError } = await supabase
-      .from('inventory')
+      .from("inventory")
       .delete()
-      .eq('id', id);
-    
+      .eq("id", id);
+
     if (deleteError) {
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
-    
+
     return NextResponse.json({
       success: true,
-      message: 'Inventory deleted'
+      message: "Inventory deleted",
     });
-    
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState } from "react";
+import { X } from "lucide-react";
 
 interface Customer {
   id: string;
@@ -37,21 +37,23 @@ export function NewCustomerForm({
   onCancel,
   prefilledData = null,
 }: NewCustomerFormProps) {
-  const [firstName, setFirstName] = useState(prefilledData?.firstName || '');
-  const [middleName, setMiddleName] = useState(prefilledData?.middleName || '');
-  const [lastName, setLastName] = useState(prefilledData?.lastName || '');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState(prefilledData?.dateOfBirth || '');
-  const [address, setAddress] = useState(prefilledData?.address || '');
-  const [city, setCity] = useState(prefilledData?.city || '');
-  const [state, setState] = useState(prefilledData?.state || '');
-  const [postalCode, setPostalCode] = useState(prefilledData?.postalCode || '');
+  const [firstName, setFirstName] = useState(prefilledData?.firstName || "");
+  const [middleName, setMiddleName] = useState(prefilledData?.middleName || "");
+  const [lastName, setLastName] = useState(prefilledData?.lastName || "");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState(
+    prefilledData?.dateOfBirth || "",
+  );
+  const [address, setAddress] = useState(prefilledData?.address || "");
+  const [city, setCity] = useState(prefilledData?.city || "");
+  const [state, setState] = useState(prefilledData?.state || "");
+  const [postalCode, setPostalCode] = useState(prefilledData?.postalCode || "");
   const [creating, setCreating] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!firstName || !lastName) {
       return; // Form validation prevents submission
     }
@@ -59,16 +61,18 @@ export function NewCustomerForm({
     setCreating(true);
 
     try {
-      const response = await fetch('/api/pos/customers/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/pos/customers/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           vendorId,
           firstName,
           middleName: middleName || null,
           lastName,
           phone: phone || null,
-          email: email || `${firstName.toLowerCase()}.${lastName.toLowerCase()}@walk-in.local`,
+          email:
+            email ||
+            `${firstName.toLowerCase()}.${lastName.toLowerCase()}@walk-in.local`,
           dateOfBirth: dateOfBirth || null,
           address: address || null,
           city: city || null,
@@ -79,13 +83,15 @@ export function NewCustomerForm({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to create customer');
+        throw new Error(error.error || "Failed to create customer");
       }
 
       const data = await response.json();
       onCustomerCreated(data.customer);
     } catch (error: any) {
-      console.error('Error creating customer:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error creating customer:", error);
+      }
       setCreating(false);
     }
   };
@@ -94,7 +100,10 @@ export function NewCustomerForm({
     <div className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[60] flex items-center justify-center p-4">
       <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 max-w-md w-full">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
+          <h3
+            className="text-xs uppercase tracking-[0.15em] text-white font-black"
+            style={{ fontWeight: 900 }}
+          >
             New Customer
           </h3>
           <button
@@ -104,7 +113,7 @@ export function NewCustomerForm({
             <X size={20} />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -179,7 +188,7 @@ export function NewCustomerForm({
 
           <div>
             <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
-              Date of Birth {prefilledData?.dateOfBirth && '(From ID)'}
+              Date of Birth {prefilledData?.dateOfBirth && "(From ID)"}
             </label>
             <input
               type="date"
@@ -191,7 +200,7 @@ export function NewCustomerForm({
 
           <div>
             <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
-              Address {prefilledData?.address && '(From ID)'}
+              Address {prefilledData?.address && "(From ID)"}
             </label>
             <input
               type="text"
@@ -205,7 +214,7 @@ export function NewCustomerForm({
           <div className="grid grid-cols-3 gap-2">
             <div className="col-span-2">
               <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
-                City {prefilledData?.city && '(From ID)'}
+                City {prefilledData?.city && "(From ID)"}
               </label>
               <input
                 type="text"
@@ -217,7 +226,7 @@ export function NewCustomerForm({
             </div>
             <div>
               <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
-                State {prefilledData?.state && '(From ID)'}
+                State {prefilledData?.state && "(From ID)"}
               </label>
               <input
                 type="text"
@@ -232,7 +241,7 @@ export function NewCustomerForm({
 
           <div>
             <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 block">
-              Postal Code {prefilledData?.postalCode && '(From ID)'}
+              Postal Code {prefilledData?.postalCode && "(From ID)"}
             </label>
             <input
               type="text"
@@ -259,7 +268,7 @@ export function NewCustomerForm({
               className="flex-1 px-4 py-3 bg-white/10 text-white border-2 border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
               style={{ fontWeight: 900 }}
             >
-              {creating ? 'Creating...' : 'Create'}
+              {creating ? "Creating..." : "Create"}
             </button>
           </div>
         </form>
@@ -267,4 +276,3 @@ export function NewCustomerForm({
     </div>
   );
 }
-

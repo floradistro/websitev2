@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import Image from "next/image";
 
 export function HomeCountdown() {
@@ -11,7 +11,7 @@ export function HomeCountdown() {
     const countdownTimer = setInterval(() => {
       setCountdown((prev) => (prev <= 1 ? 20 : prev - 1));
     }, 1000);
-    
+
     return () => clearInterval(countdownTimer);
   }, []);
 
@@ -26,15 +26,15 @@ export function HomeCountdown() {
           className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-8 sm:p-12 md:p-16 lg:p-24"
         >
           <div className="mb-6 sm:mb-8">
-            <Image 
-              src="/yacht-club-logo.png" 
-              alt="Yacht Club" 
-              width={80} 
+            <Image
+              src="/yacht-club-logo.png"
+              alt="Yacht Club"
+              width={80}
               height={80}
               className="object-contain mx-auto opacity-20 sm:w-[100px] sm:h-[100px] md:w-[120px] md:h-[120px]"
             />
           </div>
-          <motion.div 
+          <motion.div
             key={countdown}
             initial={{ scale: 1.2, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -44,13 +44,22 @@ export function HomeCountdown() {
           >
             {countdown}
           </motion.div>
-          <div className="text-xs uppercase tracking-[0.12em] text-white/60 font-black mb-8 sm:mb-12" style={{ fontWeight: 900 }}>
+          <div
+            className="text-xs uppercase tracking-[0.12em] text-white/60 font-black mb-8 sm:mb-12"
+            style={{ fontWeight: 900 }}
+          >
             Seconds
           </div>
-          <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black mb-4 sm:mb-6 uppercase tracking-tight" style={{ fontWeight: 900 }}>
+          <h3
+            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black mb-4 sm:mb-6 uppercase tracking-tight"
+            style={{ fontWeight: 900 }}
+          >
             From Idea To Deployed
           </h3>
-          <p className="text-xs sm:text-sm uppercase tracking-[0.12em] text-white/40 font-black" style={{ fontWeight: 900 }}>
+          <p
+            className="text-xs sm:text-sm uppercase tracking-[0.12em] text-white/40 font-black"
+            style={{ fontWeight: 900 }}
+          >
             No Designer. No Developer.
           </p>
         </motion.div>
@@ -58,4 +67,3 @@ export function HomeCountdown() {
     </section>
   );
 }
-

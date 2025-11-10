@@ -1,6 +1,6 @@
-import { Package } from 'lucide-react';
-import { ds, cn } from '@/components/ds';
-import { InventoryItem } from './InventoryItem';
+import { Package } from "lucide-react";
+import { ds, cn } from "@/components/ds";
+import { InventoryItem } from "./InventoryItem";
 
 interface LocationInventory {
   inventory_id: string;
@@ -23,7 +23,12 @@ interface ProductInventory {
 interface InventoryListProps {
   products: ProductInventory[];
   isLoading: boolean;
-  onAdjust: (productId: string, locationId: string, inventoryId: string, amount: number) => Promise<void>;
+  onAdjust: (
+    productId: string,
+    locationId: string,
+    inventoryId: string,
+    amount: number,
+  ) => Promise<void>;
   isAdjusting: Record<string, boolean>;
 }
 
@@ -31,13 +36,26 @@ export function InventoryList({
   products,
   isLoading,
   onAdjust,
-  isAdjusting
+  isAdjusting,
 }: InventoryListProps) {
   if (isLoading) {
     return (
-      <div className={cn("rounded-2xl border p-12 text-center", ds.colors.bg.secondary, ds.colors.border.default)}>
+      <div
+        className={cn(
+          "rounded-2xl border p-12 text-center",
+          ds.colors.bg.secondary,
+          ds.colors.border.default,
+        )}
+      >
         <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-        <p className={cn(ds.typography.size.xs, ds.typography.transform.uppercase, ds.typography.tracking.wide, ds.colors.text.quaternary)}>
+        <p
+          className={cn(
+            ds.typography.size.xs,
+            ds.typography.transform.uppercase,
+            ds.typography.tracking.wide,
+            ds.colors.text.quaternary,
+          )}
+        >
           Loading inventory...
         </p>
       </div>
@@ -46,8 +64,18 @@ export function InventoryList({
 
   if (products.length === 0) {
     return (
-      <div className={cn("rounded-2xl border p-16 text-center", ds.colors.bg.secondary, ds.colors.border.default)}>
-        <Package size={48} className="text-white/10 mx-auto mb-4" strokeWidth={1} />
+      <div
+        className={cn(
+          "rounded-2xl border p-16 text-center",
+          ds.colors.bg.secondary,
+          ds.colors.border.default,
+        )}
+      >
+        <Package
+          size={48}
+          className="text-white/10 mx-auto mb-4"
+          strokeWidth={1}
+        />
         <p className={cn(ds.typography.size.sm, "text-white/60 mb-2")}>
           No inventory found
         </p>

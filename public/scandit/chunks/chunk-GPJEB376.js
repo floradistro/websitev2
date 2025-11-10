@@ -1,1 +1,11 @@
-import {a}from'./chunk-QCZSSQAQ.js';var i=class extends a{constructor(r){super({name:"UnsupportedBrowserError",message:`This OS / browser has one or more missing features preventing it from working correctly (${r.missingFeatures.join(", ")})`}),this.data=r;}};export{i as a};
+import { a } from "./chunk-QCZSSQAQ.js";
+var i = class extends a {
+  constructor(r) {
+    (super({
+      name: "UnsupportedBrowserError",
+      message: `This OS / browser has one or more missing features preventing it from working correctly (${r.missingFeatures.join(", ")})`,
+    }),
+      (this.data = r));
+  }
+};
+export { i as a };

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useAppAuth } from '@/context/AppAuthContext';
-import { POSPickupQueue } from '@/components/component-registry/pos/POSPickupQueue';
-import { POSVendorDropdown } from '@/components/component-registry/pos/POSVendorDropdown';
-import { POSRegisterSelector } from '@/components/component-registry/pos/POSRegisterSelector';
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useAppAuth } from "@/context/AppAuthContext";
+import { POSPickupQueue } from "@/components/component-registry/pos/POSPickupQueue";
+import { POSVendorDropdown } from "@/components/component-registry/pos/POSVendorDropdown";
+import { POSRegisterSelector } from "@/components/component-registry/pos/POSRegisterSelector";
 
 // Charlotte Central as default for now
-const CHARLOTTE_CENTRAL_ID = 'c4eedafb-4050-4d2d-a6af-e164aad5d934';
+const CHARLOTTE_CENTRAL_ID = "c4eedafb-4050-4d2d-a6af-e164aad5d934";
 
 export default function POSOrdersPage() {
   const searchParams = useSearchParams();
@@ -19,7 +19,7 @@ export default function POSOrdersPage() {
   useEffect(() => {
     setMounted(true);
     // Check if register is assigned
-    const savedRegisterId = localStorage.getItem('pos_register_id');
+    const savedRegisterId = localStorage.getItem("pos_register_id");
     if (savedRegisterId) {
       setRegisterId(savedRegisterId);
     }
@@ -28,16 +28,19 @@ export default function POSOrdersPage() {
   if (!mounted || !isAuthenticated) {
     return (
       <div className="h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-white/60 text-xs uppercase tracking-[0.15em]">Loading...</div>
+        <div className="text-white/60 text-xs uppercase tracking-[0.15em]">
+          Loading...
+        </div>
       </div>
     );
   }
 
   // Use Charlotte Central as default for now
-  const currentLocationId = searchParams.get('location') || CHARLOTTE_CENTRAL_ID;
+  const currentLocationId =
+    searchParams.get("location") || CHARLOTTE_CENTRAL_ID;
   const currentLocation = {
     id: currentLocationId,
-    name: 'Charlotte Central'
+    name: "Charlotte Central",
   };
 
   // Show register selector if not assigned
@@ -81,4 +84,3 @@ export default function POSOrdersPage() {
     </div>
   );
 }
-

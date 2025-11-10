@@ -3,7 +3,7 @@
  * Title + subtitle + action buttons
  */
 
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 interface PageHeaderProps {
   title: string;
@@ -12,7 +12,12 @@ interface PageHeaderProps {
   className?: string;
 }
 
-export function PageHeader({ title, subtitle, action, className = '' }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  subtitle,
+  action,
+  className = "",
+}: PageHeaderProps) {
   return (
     <div className={`mb-12 ${className}`}>
       <div className="flex items-start justify-between">
@@ -26,13 +31,8 @@ export function PageHeader({ title, subtitle, action, className = '' }: PageHead
             </p>
           )}
         </div>
-        {action && (
-          <div className="flex items-center gap-3">
-            {action}
-          </div>
-        )}
+        {action && <div className="flex items-center gap-3">{action}</div>}
       </div>
     </div>
   );
 }
-

@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
-import { withErrorHandler } from '@/lib/api-handler';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
+import { withErrorHandler } from "@/lib/api-handler";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export const GET = withErrorHandler(async (request: NextRequest) => {
   try {
@@ -14,13 +14,14 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       return authResult;
     }
     const { vendorId } = authResult;
-    
+
     const supabase = getServiceSupabase();
-    
+
     // Get products with inventory
     const { data: products, error: productsError } = await supabase
-      .from('products')
-      .select(`
+      .from("products")
+      .select(
+        `
         id,
         name,
         sku,
@@ -28,16 +29,18 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         cost_price,
         custom_fields,
         primary_category:categories!primary_category_id(name)
-      `)
-      .eq('vendor_id', vendorId)
-      .order('name');
+      `,
+      )
+      .eq("vendor_id", vendorId)
+      .order("name");
 
     if (productsError) throw productsError;
 
     // Get inventory
     const { data: inventoryData, error: inventoryError } = await supabase
-      .from('inventory')
-      .select(`
+      .from("inventory")
+      .select(
+        `
         id,
         product_id,
         quantity,
@@ -49,32 +52,33 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
           city,
           state
         )
-      `)
-      .eq('vendor_id', vendorId);
+      `,
+      )
+      .eq("vendor_id", vendorId);
 
     if (inventoryError) throw inventoryError;
 
     // Get locations
     const { data: locations, error: locationsError } = await supabase
-      .from('locations')
-      .select('id, name, city, state, is_primary, is_active')
-      .eq('vendor_id', vendorId)
-      .eq('is_active', true)
-      .order('is_primary', { ascending: false });
+      .from("locations")
+      .select("id, name, city, state, is_primary, is_active")
+      .eq("vendor_id", vendorId)
+      .eq("is_active", true)
+      .order("is_primary", { ascending: false });
 
     if (locationsError) throw locationsError;
 
     // Map inventory to products
-    const inventory = (products || []).flatMap(product => {
+    const inventory = (products || []).flatMap((product) => {
       const productInventory = (inventoryData || []).filter(
-        inv => inv.product_id === product.id
+        (inv) => inv.product_id === product.id,
       );
 
       if (productInventory.length === 0) {
         return [];
       }
 
-      return productInventory.map(inv => {
+      return productInventory.map((inv) => {
         // Extract flora fields
         const floraFields: any = {};
         if (product.custom_fields && Array.isArray(product.custom_fields)) {
@@ -86,23 +90,28 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         }
 
         // Determine stock status
-        let stock_status: 'in_stock' | 'low_stock' | 'out_of_stock' = 'out_of_stock';
-        if (inv.quantity > 10) stock_status = 'in_stock';
-        else if (inv.quantity > 0) stock_status = 'low_stock';
+        let stock_status: "in_stock" | "low_stock" | "out_of_stock" =
+          "out_of_stock";
+        if (inv.quantity > 10) stock_status = "in_stock";
+        else if (inv.quantity > 0) stock_status = "low_stock";
 
         return {
           id: `${inv.id}`,
           product_id: product.id,
           product_name: product.name,
-          sku: product.sku || '',
+          sku: product.sku || "",
           quantity: parseFloat(inv.quantity) || 0,
-          category_name: (product.primary_category as any)?.name || 'Uncategorized',
+          category_name:
+            (product.primary_category as any)?.name || "Uncategorized",
           price: parseFloat(product.price) || 0,
-          cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
+          cost_price: product.cost_price
+            ? parseFloat(product.cost_price)
+            : undefined,
           stock_status,
-          location_id: inv.location_id || '',
-          location_name: (inv.location as any)?.name || 'Unknown',
-          flora_fields: Object.keys(floraFields).length > 0 ? floraFields : undefined,
+          location_id: inv.location_id || "",
+          location_name: (inv.location as any)?.name || "Unknown",
+          flora_fields:
+            Object.keys(floraFields).length > 0 ? floraFields : undefined,
         };
       });
     });
@@ -114,10 +123,12 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       total: inventory.length,
     });
   } catch (error: any) {
-    console.error('Inventory API error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Inventory API error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: error.message || 'Internal server error' },
-      { status: 500 }
+      { success: false, error: error.message || "Internal server error" },
+      { status: 500 },
     );
   }
 });

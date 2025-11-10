@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
+import Image from "next/image";
+import { useState, useEffect, useRef } from "react";
 
 interface OptimizedProductImageProps {
   src: string | null | undefined;
@@ -26,18 +26,20 @@ export default function OptimizedProductImage({
   width,
   height,
   priority = false,
-  className = '',
+  className = "",
   sizes,
   quality = 75,
 }: OptimizedProductImageProps) {
-  const [imgSrc, setImgSrc] = useState<string>(src || '/placeholder-product.jpg');
+  const [imgSrc, setImgSrc] = useState<string>(
+    src || "/placeholder-product.jpg",
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const mountedRef = useRef(true);
 
   useEffect(() => {
     mountedRef.current = true;
-    
+
     // Update source if prop changes
     if (src && src !== imgSrc && !hasError) {
       setImgSrc(src);
@@ -60,45 +62,43 @@ export default function OptimizedProductImage({
     if (mountedRef.current) {
       setHasError(true);
       setIsLoading(false);
-      setImgSrc('/placeholder-product.jpg');
+      setImgSrc("/placeholder-product.jpg");
     }
   };
 
   // Common image props
   const imageProps = {
     src: imgSrc,
-    alt: alt || 'Product image',
+    alt: alt || "Product image",
     onLoad: handleLoad,
     onError: handleError,
-    className: `${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`,
+    className: `${className} ${isLoading ? "opacity-0" : "opacity-100"} transition-opacity duration-300`,
     quality,
-    sizes: sizes || fill ? '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw' : undefined,
+    sizes:
+      sizes || fill
+        ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        : undefined,
     priority,
   };
 
   return (
-    <div className={`relative ${fill ? 'w-full h-full' : ''} bg-neutral-900`}>
+    <div className={`relative ${fill ? "w-full h-full" : ""} bg-neutral-900`}>
       {/* Loading skeleton */}
       {isLoading && (
         <div className="absolute inset-0 bg-neutral-800 animate-pulse rounded" />
       )}
-      
+
       {/* Image */}
       {fill ? (
-        <Image
-          {...imageProps}
-          fill
-          style={{ objectFit: 'cover' }}
-        />
+        <Image {...imageProps} fill style={{ objectFit: "cover" }} />
       ) : (
         <Image
           {...imageProps}
           width={width || 400}
           height={height || 400}
-          style={{ objectFit: 'cover' }}
+          style={{ objectFit: "cover" }}
         />
       )}
     </div>
   );
 }
-

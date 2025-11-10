@@ -3,43 +3,48 @@
 
 export const WALLET_CONFIG = {
   // Apple Developer Configuration
-  passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID || 'pass.com.whaletools.wallet',
-  teamIdentifier: process.env.APPLE_TEAM_ID || 'Y9Q7L7SGR3',
+  passTypeIdentifier:
+    process.env.APPLE_PASS_TYPE_ID || "pass.com.whaletools.wallet",
+  teamIdentifier: process.env.APPLE_TEAM_ID || "Y9Q7L7SGR3",
 
   // Certificate Paths (relative to project root)
   certificates: {
     // Path to your Certificates.p12 file
-    signerCert: process.env.APPLE_WALLET_CERT_PATH || '/Users/whale/Desktop/APPLE WALLET SHIT/Certificates.p12',
+    signerCert:
+      process.env.APPLE_WALLET_CERT_PATH ||
+      "/Users/whale/Desktop/APPLE WALLET SHIT/Certificates.p12",
 
     // Path to Apple WWDR certificate
-    wwdr: process.env.APPLE_WALLET_WWDR_PATH || '/Users/whale/Desktop/APPLE WALLET SHIT/AppleWWDRCAG4.cer',
+    wwdr:
+      process.env.APPLE_WALLET_WWDR_PATH ||
+      "/Users/whale/Desktop/APPLE WALLET SHIT/AppleWWDRCAG4.cer",
 
     // Password for the .p12 certificate
-    signerKeyPassphrase: process.env.APPLE_WALLET_CERT_PASSWORD || '',
+    signerKeyPassphrase: process.env.APPLE_WALLET_CERT_PASSWORD || "",
   },
 
   // Default Pass Styling
   defaultColors: {
-    foregroundColor: 'rgb(255,255,255)',
-    backgroundColor: 'rgb(0,0,0)',
-    labelColor: 'rgb(255,255,255)',
+    foregroundColor: "rgb(255,255,255)",
+    backgroundColor: "rgb(0,0,0)",
+    labelColor: "rgb(255,255,255)",
   },
 
   // Asset Paths
   assets: {
     // Default logo/icon if vendor doesn't have one
-    defaultLogo: '/wallet-assets/default-logo.png',
-    defaultIcon: '/wallet-assets/default-icon.png',
+    defaultLogo: "/wallet-assets/default-logo.png",
+    defaultIcon: "/wallet-assets/default-icon.png",
   },
 
   // API URLs
-  webServiceURL: process.env.NEXT_PUBLIC_APP_URL || 'https://yourdomain.com',
+  webServiceURL: process.env.NEXT_PUBLIC_APP_URL || "https://yourdomain.com",
 
   // Pass Update Settings
   updates: {
     enablePushNotifications: true,
     maxUpdateRetries: 3,
-  }
+  },
 } as const;
 
 // Validation
@@ -47,15 +52,15 @@ export function validateWalletConfig(): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   if (!WALLET_CONFIG.certificates.signerKeyPassphrase) {
-    errors.push('Missing APPLE_WALLET_CERT_PASSWORD environment variable');
+    errors.push("Missing APPLE_WALLET_CERT_PASSWORD environment variable");
   }
 
   if (!WALLET_CONFIG.passTypeIdentifier) {
-    errors.push('Missing APPLE_PASS_TYPE_ID environment variable');
+    errors.push("Missing APPLE_PASS_TYPE_ID environment variable");
   }
 
   if (!WALLET_CONFIG.teamIdentifier) {
-    errors.push('Missing APPLE_TEAM_ID environment variable');
+    errors.push("Missing APPLE_TEAM_ID environment variable");
   }
 
   return {
@@ -77,7 +82,7 @@ export function getVendorWalletBranding(vendor: {
   return {
     organizationName: vendor.store_name,
     logoText: `${vendor.store_name} Rewards`,
-    foregroundColor: 'rgb(255,255,255)',
+    foregroundColor: "rgb(255,255,255)",
     backgroundColor: vendor.brand_colors?.primary
       ? rgbFromHex(vendor.brand_colors.primary)
       : WALLET_CONFIG.defaultColors.backgroundColor,
@@ -88,7 +93,7 @@ export function getVendorWalletBranding(vendor: {
 // Convert hex color to rgb() format
 function rgbFromHex(hex: string): string {
   // Remove # if present
-  hex = hex.replace('#', '');
+  hex = hex.replace("#", "");
 
   // Parse hex values
   const r = parseInt(hex.substring(0, 2), 16);

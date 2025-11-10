@@ -1,1 +1,6 @@
-async function n(e=0){return new Promise(i=>{setTimeout(i,e);})}export{n as a};
+async function n(e = 0) {
+  return new Promise((i) => {
+    setTimeout(i, e);
+  });
+}
+export { n as a };

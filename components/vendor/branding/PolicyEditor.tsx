@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from 'react';
-import { FileText, Copy, Check, AlertCircle } from 'lucide-react';
-import { ds, cn } from '@/lib/design-system';
+import { useState } from "react";
+import { FileText, Copy, Check, AlertCircle } from "lucide-react";
+import { ds, cn } from "@/lib/design-system";
 
 interface PolicyEditorProps {
   label: string;
@@ -67,7 +67,7 @@ We offer multiple delivery options to meet your needs.
 - Delivery available during business hours only
 - Driver will verify ID and age before handing over products
 
-For delivery questions, contact us at delivery@yourdispensary.com`
+For delivery questions, contact us at delivery@yourdispensary.com`,
 };
 
 /**
@@ -79,9 +79,9 @@ export function PolicyEditor({
   label,
   value,
   onChange,
-  placeholder = 'Enter your policy...',
+  placeholder = "Enter your policy...",
   maxLength = 2000,
-  template
+  template,
 }: PolicyEditorProps) {
   const [showTemplate, setShowTemplate] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -103,7 +103,9 @@ export function PolicyEditor({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to copy:", err);
+      }
     }
   };
 
@@ -111,28 +113,32 @@ export function PolicyEditor({
     <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <label className={cn(
-          ds.typography.size.xs,
-          ds.typography.weight.medium,
-          ds.typography.transform.uppercase,
-          ds.typography.tracking.wide,
-          ds.colors.text.tertiary,
-          'flex items-center gap-2'
-        )}>
+        <label
+          className={cn(
+            ds.typography.size.xs,
+            ds.typography.weight.medium,
+            ds.typography.transform.uppercase,
+            ds.typography.tracking.wide,
+            ds.colors.text.tertiary,
+            "flex items-center gap-2",
+          )}
+        >
           <FileText size={14} />
           {label}
         </label>
 
         <div className="flex items-center gap-2">
           {/* Character count */}
-          <span className={cn(
-            ds.typography.size.micro,
-            isOverLimit
-              ? ds.colors.status.error
-              : isNearLimit
-              ? ds.colors.status.warning
-              : ds.colors.text.quaternary
-          )}>
+          <span
+            className={cn(
+              ds.typography.size.micro,
+              isOverLimit
+                ? ds.colors.status.error
+                : isNearLimit
+                  ? ds.colors.status.warning
+                  : ds.colors.text.quaternary,
+            )}
+          >
             {characterCount} / {maxLength}
           </span>
 
@@ -142,13 +148,13 @@ export function PolicyEditor({
               type="button"
               onClick={handleCopy}
               className={cn(
-                'p-1.5',
+                "p-1.5",
                 ds.effects.radius.md,
                 ds.colors.bg.elevated,
-                'hover:bg-white/[0.06]',
+                "hover:bg-white/[0.06]",
                 ds.colors.text.quaternary,
-                'hover:text-white/60',
-                ds.effects.transition.fast
+                "hover:text-white/60",
+                ds.effects.transition.fast,
               )}
               title="Copy to clipboard"
             >
@@ -162,19 +168,19 @@ export function PolicyEditor({
               type="button"
               onClick={() => setShowTemplate(!showTemplate)}
               className={cn(
-                'px-2 py-1',
+                "px-2 py-1",
                 ds.effects.radius.md,
                 ds.colors.bg.elevated,
-                'hover:bg-white/[0.06]',
-                'border',
+                "hover:bg-white/[0.06]",
+                "border",
                 ds.colors.border.default,
                 ds.colors.text.quaternary,
-                'hover:text-white/60',
+                "hover:text-white/60",
                 ds.effects.transition.fast,
-                ds.typography.size.micro
+                ds.typography.size.micro,
               )}
             >
-              {showTemplate ? 'Hide Template' : 'View Template'}
+              {showTemplate ? "Hide Template" : "View Template"}
             </button>
           )}
         </div>
@@ -182,50 +188,56 @@ export function PolicyEditor({
 
       {/* Template preview */}
       {showTemplate && template && (
-        <div className={cn(
-          'p-4',
-          ds.colors.bg.elevated,
-          'border',
-          ds.colors.border.default,
-          ds.effects.radius.lg,
-          'space-y-3'
-        )}>
+        <div
+          className={cn(
+            "p-4",
+            ds.colors.bg.elevated,
+            "border",
+            ds.colors.border.default,
+            ds.effects.radius.lg,
+            "space-y-3",
+          )}
+        >
           <div className="flex items-center justify-between">
-            <span className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              ds.typography.weight.medium
-            )}>
+            <span
+              className={cn(
+                ds.typography.size.xs,
+                ds.colors.text.tertiary,
+                ds.typography.weight.medium,
+              )}
+            >
               Template Preview
             </span>
             <button
               type="button"
               onClick={handleUseTemplate}
               className={cn(
-                'px-3 py-1.5',
+                "px-3 py-1.5",
                 ds.effects.radius.md,
-                'bg-white text-black',
-                'hover:bg-white/90',
+                "bg-white text-black",
+                "hover:bg-white/90",
                 ds.effects.transition.fast,
                 ds.typography.size.xs,
                 ds.typography.transform.uppercase,
-                ds.typography.tracking.wide
+                ds.typography.tracking.wide,
               )}
             >
               Use This Template
             </button>
           </div>
 
-          <div className={cn(
-            'p-3',
-            'bg-black/20',
-            ds.effects.radius.md,
-            'max-h-60 overflow-y-auto',
-            ds.typography.size.xs,
-            ds.colors.text.quaternary,
-            'font-mono',
-            'whitespace-pre-wrap'
-          )}>
+          <div
+            className={cn(
+              "p-3",
+              "bg-black/20",
+              ds.effects.radius.md,
+              "max-h-60 overflow-y-auto",
+              ds.typography.size.xs,
+              ds.colors.text.quaternary,
+              "font-mono",
+              "whitespace-pre-wrap",
+            )}
+          >
             {template}
           </div>
         </div>
@@ -239,39 +251,37 @@ export function PolicyEditor({
           placeholder={placeholder}
           rows={12}
           className={cn(
-            'w-full',
-            'p-4',
+            "w-full",
+            "p-4",
             ds.colors.bg.input,
-            'border',
-            isOverLimit
-              ? 'border-red-500/50'
-              : ds.colors.border.default,
+            "border",
+            isOverLimit ? "border-red-500/50" : ds.colors.border.default,
             ds.colors.text.secondary,
             ds.effects.radius.lg,
             ds.effects.transition.normal,
             ds.typography.size.sm,
             ds.typography.leading.relaxed,
-            'resize-y',
-            'focus:outline-none',
-            isOverLimit
-              ? 'focus:border-red-500/70'
-              : 'focus:border-white/20',
-            'placeholder:text-white/20'
+            "resize-y",
+            "focus:outline-none",
+            isOverLimit ? "focus:border-red-500/70" : "focus:border-white/20",
+            "placeholder:text-white/20",
           )}
         />
 
         {/* Overlay warning */}
         {isOverLimit && (
-          <div className={cn(
-            'absolute bottom-4 left-4 right-4',
-            'p-2',
-            'bg-red-500/10',
-            'border border-red-500/30',
-            ds.effects.radius.md,
-            'flex items-center gap-2',
-            ds.typography.size.xs,
-            'text-red-400'
-          )}>
+          <div
+            className={cn(
+              "absolute bottom-4 left-4 right-4",
+              "p-2",
+              "bg-red-500/10",
+              "border border-red-500/30",
+              ds.effects.radius.md,
+              "flex items-center gap-2",
+              ds.typography.size.xs,
+              "text-red-400",
+            )}
+          >
             <AlertCircle size={14} />
             <span>Character limit exceeded. Please shorten your policy.</span>
           </div>
@@ -279,26 +289,38 @@ export function PolicyEditor({
       </div>
 
       {/* Formatting guide */}
-      <div className={cn(
-        'p-3',
-        ds.colors.bg.elevated,
-        'border',
-        ds.colors.border.default,
-        ds.effects.radius.lg
-      )}>
-        <div className={cn(
-          ds.typography.size.micro,
-          ds.colors.text.quaternary,
-          'space-y-1'
-        )}>
+      <div
+        className={cn(
+          "p-3",
+          ds.colors.bg.elevated,
+          "border",
+          ds.colors.border.default,
+          ds.effects.radius.lg,
+        )}
+      >
+        <div
+          className={cn(
+            ds.typography.size.micro,
+            ds.colors.text.quaternary,
+            "space-y-1",
+          )}
+        >
           <div>
             <strong>Markdown Supported:</strong>
           </div>
           <div className="grid grid-cols-2 gap-x-4">
-            <div>• <code>#</code> Heading</div>
-            <div>• <code>**bold**</code> Bold text</div>
-            <div>• <code>-</code> Bullet list</div>
-            <div>• <code>1.</code> Numbered list</div>
+            <div>
+              • <code>#</code> Heading
+            </div>
+            <div>
+              • <code>**bold**</code> Bold text
+            </div>
+            <div>
+              • <code>-</code> Bullet list
+            </div>
+            <div>
+              • <code>1.</code> Numbered list
+            </div>
           </div>
         </div>
       </div>
@@ -311,7 +333,7 @@ export function PolicyEditor({
  */
 export function ReturnPolicyEditor({
   value,
-  onChange
+  onChange,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -333,7 +355,7 @@ export function ReturnPolicyEditor({
  */
 export function ShippingPolicyEditor({
   value,
-  onChange
+  onChange,
 }: {
   value: string;
   onChange: (value: string) => void;

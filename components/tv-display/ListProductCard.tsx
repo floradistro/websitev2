@@ -3,9 +3,9 @@
  * Clean, minimal, data-dense product rows optimized for TV displays
  */
 
-import { motion } from 'framer-motion';
-import type { TVTheme } from '@/lib/themes';
-import { PRICE_BREAK_LABELS } from '@/lib/category-pricing-defaults';
+import { motion } from "framer-motion";
+import type { TVTheme } from "@/lib/themes";
+import { PRICE_BREAK_LABELS } from "@/lib/category-pricing-defaults";
 
 interface ListProductCardProps {
   product: any;
@@ -29,20 +29,21 @@ export function ListProductCard({
   const pricing_tiers = product.pricing_tiers || {};
 
   // Get available prices based on visible price breaks
-  const availablePrices = visiblePriceBreaks.length > 0
-    ? Object.keys(pricing_tiers)
-        .filter(key => visiblePriceBreaks.includes(key))
-        .map(key => ({
-          id: key,
-          price: parseFloat(pricing_tiers[key].price || pricing_tiers[key]),
-          label: PRICE_BREAK_LABELS[key] || key
-        }))
-        .sort((a, b) => {
-          const indexA = visiblePriceBreaks.indexOf(a.id);
-          const indexB = visiblePriceBreaks.indexOf(b.id);
-          return indexA - indexB;
-        })
-    : [];
+  const availablePrices =
+    visiblePriceBreaks.length > 0
+      ? Object.keys(pricing_tiers)
+          .filter((key) => visiblePriceBreaks.includes(key))
+          .map((key) => ({
+            id: key,
+            price: parseFloat(pricing_tiers[key].price || pricing_tiers[key]),
+            label: PRICE_BREAK_LABELS[key] || key,
+          }))
+          .sort((a, b) => {
+            const indexA = visiblePriceBreaks.indexOf(a.id);
+            const indexB = visiblePriceBreaks.indexOf(b.id);
+            return indexA - indexB;
+          })
+      : [];
 
   // Get the primary price (first available)
   const primaryPrice = availablePrices.length > 0 ? availablePrices[0] : null;
@@ -52,7 +53,7 @@ export function ListProductCard({
     if (value === null || value === undefined) return null;
 
     // Special formatting for common fields
-    if (field === 'thc_percentage' || field === 'cbd_percentage') {
+    if (field === "thc_percentage" || field === "cbd_percentage") {
       return `${value}%`;
     }
 
@@ -61,15 +62,18 @@ export function ListProductCard({
 
   // Get custom field display
   const customFieldsDisplay = customFieldsToShow
-    .map(field => {
+    .map((field) => {
       const value = product.custom_fields?.[field];
       if (!value) return null;
 
       const formattedValue = formatFieldValue(field, value);
       if (!formattedValue) return null;
 
-      const showLabel = !hideAllFieldLabels && (customFieldsConfig[field]?.showLabel !== false);
-      const fieldLabel = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const showLabel =
+        !hideAllFieldLabels && customFieldsConfig[field]?.showLabel !== false;
+      const fieldLabel = field
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
 
       return showLabel ? `${fieldLabel}: ${formattedValue}` : formattedValue;
     })
@@ -92,9 +96,9 @@ export function ListProductCard({
             className="font-bold leading-tight"
             style={{
               color: theme.styles.productName.color,
-              fontSize: '1.5rem',
+              fontSize: "1.5rem",
               fontWeight: 700,
-              letterSpacing: '-0.01em',
+              letterSpacing: "-0.01em",
             }}
           >
             {product.name}
@@ -109,13 +113,15 @@ export function ListProductCard({
                 key={idx}
                 style={{
                   color: theme.styles.productDescription.color,
-                  fontSize: '1rem',
+                  fontSize: "1rem",
                   opacity: 0.7,
-                  whiteSpace: 'nowrap',
+                  whiteSpace: "nowrap",
                 }}
               >
                 {field}
-                {idx < customFieldsDisplay.length - 1 && <span style={{ opacity: 0.4, marginLeft: '0.5rem' }}>·</span>}
+                {idx < customFieldsDisplay.length - 1 && (
+                  <span style={{ opacity: 0.4, marginLeft: "0.5rem" }}>·</span>
+                )}
               </span>
             ))}
           </div>
@@ -125,12 +131,16 @@ export function ListProductCard({
         {availablePrices.length > 1 && (
           <div className="flex items-center gap-4 flex-shrink-0">
             {availablePrices.slice(1).map((price, idx) => (
-              <div key={idx} className="flex items-baseline gap-1.5" style={{ whiteSpace: 'nowrap' }}>
+              <div
+                key={idx}
+                className="flex items-baseline gap-1.5"
+                style={{ whiteSpace: "nowrap" }}
+              >
                 <span
                   className="font-medium"
                   style={{
                     color: theme.styles.price.color,
-                    fontSize: '1rem',
+                    fontSize: "1rem",
                     opacity: 0.75,
                   }}
                 >
@@ -140,7 +150,7 @@ export function ListProductCard({
                   className="font-bold"
                   style={{
                     color: theme.styles.price.color,
-                    fontSize: '1.25rem',
+                    fontSize: "1.25rem",
                   }}
                 >
                   ${price.price.toFixed(2)}
@@ -152,15 +162,18 @@ export function ListProductCard({
 
         {/* Primary Price - Right aligned, prominent with tier label */}
         {primaryPrice && (
-          <div className="flex items-baseline gap-2 flex-shrink-0" style={{ minWidth: '140px' }}>
+          <div
+            className="flex items-baseline gap-2 flex-shrink-0"
+            style={{ minWidth: "140px" }}
+          >
             {/* Tier Label - Prominent */}
             <div
               className="font-semibold"
               style={{
                 color: theme.styles.price.color,
-                fontSize: '1.25rem',
+                fontSize: "1.25rem",
                 opacity: 0.8,
-                whiteSpace: 'nowrap',
+                whiteSpace: "nowrap",
               }}
             >
               {primaryPrice.label}
@@ -170,9 +183,9 @@ export function ListProductCard({
               className="font-bold"
               style={{
                 color: theme.styles.price.color,
-                fontSize: '2rem',
+                fontSize: "2rem",
                 fontWeight: 600,
-                letterSpacing: '-0.02em',
+                letterSpacing: "-0.02em",
                 lineHeight: 1,
               }}
             >

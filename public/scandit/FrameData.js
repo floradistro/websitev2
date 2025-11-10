@@ -1,1 +1,1 @@
-export{a as convertToPublicFrameData}from'./chunks/chunk-UHFABUTI.js';
+export { a as convertToPublicFrameData } from "./chunks/chunk-UHFABUTI.js";

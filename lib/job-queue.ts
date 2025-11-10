@@ -10,7 +10,7 @@ interface Job {
   data: any;
   attempts: number;
   maxAttempts: number;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   createdAt: Date;
   processedAt?: Date;
   error?: string;
@@ -43,7 +43,7 @@ class JobQueue {
   async enqueue(
     type: string,
     data: any,
-    options: { maxAttempts?: number; priority?: number } = {}
+    options: { maxAttempts?: number; priority?: number } = {},
   ): Promise<string> {
     const job: Job = {
       id: `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -51,17 +51,15 @@ class JobQueue {
       data,
       attempts: 0,
       maxAttempts: options.maxAttempts || 3,
-      status: 'pending',
+      status: "pending",
       createdAt: new Date(),
-      priority: options.priority || 3
+      priority: options.priority || 3,
     };
 
     this.queue.push(job);
-    
+
     // Sort by priority (lower number = higher priority)
     this.queue.sort((a, b) => a.priority - b.priority);
-
-    console.log(`📋 Job enqueued: ${type} (ID: ${job.id}, Priority: ${job.priority})`);
 
     // Start processing if not already running
     if (!this.processing) {
@@ -78,65 +76,61 @@ class JobQueue {
     if (this.processing) return;
 
     this.processing = true;
-    console.log('⚙️  Job queue processor started');
 
     while (this.queue.length > 0) {
       // Find next pending job
-      const job = this.queue.find(j => j.status === 'pending');
+      const job = this.queue.find((j) => j.status === "pending");
       if (!job) break;
 
-      job.status = 'processing';
+      job.status = "processing";
       job.attempts++;
-
-      console.log(`🔄 Processing job: ${job.type} (Attempt ${job.attempts}/${job.maxAttempts})`);
 
       try {
         await this.executeJob(job);
-        
-        job.status = 'completed';
+
+        job.status = "completed";
         job.processedAt = new Date();
-        
-        console.log(`✅ Job completed: ${job.type} (ID: ${job.id})`);
-        
+
         // Move to completed history
         this.completedJobs.unshift(job);
         if (this.completedJobs.length > this.maxCompletedHistory) {
           this.completedJobs.pop();
         }
-        
+
         // Remove from queue
-        this.queue = this.queue.filter(j => j.id !== job.id);
-        
+        this.queue = this.queue.filter((j) => j.id !== job.id);
       } catch (error: any) {
-        console.error(`❌ Job failed: ${job.type}`, error);
+        if (process.env.NODE_ENV === "development") {
+          console.error(`❌ Job failed: ${job.type}`, error);
+        }
         job.error = error.message;
 
         if (job.attempts >= job.maxAttempts) {
           // Max attempts reached, mark as failed
-          job.status = 'failed';
-          console.error(`🔴 Job permanently failed: ${job.type} (ID: ${job.id})`);
-          
+          job.status = "failed";
+          console.error(
+            `🔴 Job permanently failed: ${job.type} (ID: ${job.id})`,
+          );
+
           // Move to failed history
           this.failedJobs.unshift(job);
           if (this.failedJobs.length > this.maxFailedHistory) {
             this.failedJobs.pop();
           }
-          
+
           // Remove from queue
-          this.queue = this.queue.filter(j => j.id !== job.id);
+          this.queue = this.queue.filter((j) => j.id !== job.id);
         } else {
           // Retry with exponential backoff
-          job.status = 'pending';
+          job.status = "pending";
           const backoffMs = Math.pow(2, job.attempts) * 1000;
-          console.log(`🔄 Retrying job in ${backoffMs}ms: ${job.type}`);
-          
-          await new Promise(resolve => setTimeout(resolve, backoffMs));
+
+          await new Promise((resolve) => setTimeout(resolve, backoffMs));
         }
       }
     }
 
     this.processing = false;
-    console.log('⏸️  Job queue processor stopped');
   }
 
   /**
@@ -144,30 +138,30 @@ class JobQueue {
    */
   private async executeJob(job: Job): Promise<void> {
     switch (job.type) {
-      case 'send-email':
+      case "send-email":
         await this.sendEmail(job.data);
         break;
-      
-      case 'process-image':
+
+      case "process-image":
         await this.processImage(job.data);
         break;
-      
-      case 'generate-report':
+
+      case "generate-report":
         await this.generateReport(job.data);
         break;
-      
-      case 'sync-inventory':
+
+      case "sync-inventory":
         await this.syncInventory(job.data);
         break;
-      
-      case 'cleanup-cache':
+
+      case "cleanup-cache":
         await this.cleanupCache(job.data);
         break;
-      
-      case 'send-notification':
+
+      case "send-notification":
         await this.sendNotification(job.data);
         break;
-      
+
       default:
         throw new Error(`Unknown job type: ${job.type}`);
     }
@@ -177,14 +171,9 @@ class JobQueue {
    * Job: Send Email
    */
   private async sendEmail(data: any): Promise<void> {
-    console.log('📧 Sending email:', {
-      to: data.to,
-      subject: data.subject
-    });
-    
     // Simulate email sending (in production, use SendGrid/AWS SES/etc)
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     // In production, call actual email service:
     // await emailService.send({ to: data.to, subject: data.subject, html: data.html });
   }
@@ -193,14 +182,9 @@ class JobQueue {
    * Job: Process Image
    */
   private async processImage(data: any): Promise<void> {
-    console.log('🖼️  Processing image:', {
-      productId: data.productId,
-      imageCount: data.images?.length || 0
-    });
-    
     // Simulate image processing
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
     // In production:
     // - Resize images
     // - Generate thumbnails
@@ -212,14 +196,9 @@ class JobQueue {
    * Job: Generate Report
    */
   private async generateReport(data: any): Promise<void> {
-    console.log('📊 Generating report:', {
-      type: data.type,
-      date: data.date
-    });
-    
     // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // In production:
     // - Query database
     // - Generate PDF
@@ -231,14 +210,9 @@ class JobQueue {
    * Job: Sync Inventory
    */
   private async syncInventory(data: any): Promise<void> {
-    console.log('🔄 Syncing inventory:', {
-      vendorId: data.vendorId,
-      productCount: data.products?.length || 0
-    });
-    
     // Simulate inventory sync
-    await new Promise(resolve => setTimeout(resolve, 400));
-    
+    await new Promise((resolve) => setTimeout(resolve, 400));
+
     // In production:
     // - Sync with external system
     // - Update database
@@ -249,22 +223,20 @@ class JobQueue {
    * Job: Cleanup Cache
    */
   private async cleanupCache(data: any): Promise<void> {
-    console.log('🧹 Cleaning up cache:', {
-      type: data.cacheType || 'all'
-    });
-    
     // Import cache managers
-    const { productCache, vendorCache, inventoryCache } = await import('./cache-manager');
-    
-    if (!data.cacheType || data.cacheType === 'all') {
+    const { productCache, vendorCache, inventoryCache } = await import(
+      "./cache-manager"
+    );
+
+    if (!data.cacheType || data.cacheType === "all") {
       productCache.clear();
       vendorCache.clear();
       inventoryCache.clear();
-    } else if (data.cacheType === 'products') {
+    } else if (data.cacheType === "products") {
       productCache.clear();
-    } else if (data.cacheType === 'vendors') {
+    } else if (data.cacheType === "vendors") {
       vendorCache.clear();
-    } else if (data.cacheType === 'inventory') {
+    } else if (data.cacheType === "inventory") {
       inventoryCache.clear();
     }
   }
@@ -273,14 +245,9 @@ class JobQueue {
    * Job: Send Notification
    */
   private async sendNotification(data: any): Promise<void> {
-    console.log('🔔 Sending notification:', {
-      to: data.userId,
-      type: data.type
-    });
-    
     // Simulate notification
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
     // In production:
     // - Push notification
     // - In-app notification
@@ -292,11 +259,12 @@ class JobQueue {
    */
   getStats(): JobStats {
     return {
-      total: this.queue.length + this.completedJobs.length + this.failedJobs.length,
-      pending: this.queue.filter(j => j.status === 'pending').length,
-      processing: this.queue.filter(j => j.status === 'processing').length,
+      total:
+        this.queue.length + this.completedJobs.length + this.failedJobs.length,
+      pending: this.queue.filter((j) => j.status === "pending").length,
+      processing: this.queue.filter((j) => j.status === "processing").length,
       completed: this.completedJobs.length,
-      failed: this.failedJobs.length
+      failed: this.failedJobs.length,
     };
   }
 
@@ -304,10 +272,12 @@ class JobQueue {
    * Get job by ID
    */
   getJob(jobId: string): Job | null {
-    return this.queue.find(j => j.id === jobId) ||
-           this.completedJobs.find(j => j.id === jobId) ||
-           this.failedJobs.find(j => j.id === jobId) ||
-           null;
+    return (
+      this.queue.find((j) => j.id === jobId) ||
+      this.completedJobs.find((j) => j.id === jobId) ||
+      this.failedJobs.find((j) => j.id === jobId) ||
+      null
+    );
   }
 
   /**
@@ -328,11 +298,11 @@ class JobQueue {
    * Retry a failed job
    */
   retryJob(jobId: string): boolean {
-    const jobIndex = this.failedJobs.findIndex(j => j.id === jobId);
+    const jobIndex = this.failedJobs.findIndex((j) => j.id === jobId);
     if (jobIndex === -1) return false;
 
     const job = this.failedJobs[jobIndex];
-    job.status = 'pending';
+    job.status = "pending";
     job.attempts = 0;
     job.error = undefined;
 
@@ -357,4 +327,3 @@ class JobQueue {
 
 // Export singleton instance
 export const jobQueue = new JobQueue();
-

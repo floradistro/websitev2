@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useAppAuth } from '@/context/AppAuthContext';
-import { createClient } from '@supabase/supabase-js';
+import { useEffect, useState } from "react";
+import { useAppAuth } from "@/context/AppAuthContext";
+import { createClient } from "@supabase/supabase-js";
 import {
   Wallet,
   Smartphone,
@@ -15,11 +15,11 @@ import {
   AlertCircle,
   ExternalLink,
   ChevronRight,
-} from 'lucide-react';
+} from "lucide-react";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 interface WalletStats {
@@ -44,7 +44,7 @@ export default function MarketingDashboard() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [testCustomers, setTestCustomers] = useState<any[]>([]);
-  const [selectedCustomer, setSelectedCustomer] = useState('');
+  const [selectedCustomer, setSelectedCustomer] = useState("");
   const [generatingTest, setGeneratingTest] = useState(false);
 
   useEffect(() => {
@@ -57,7 +57,9 @@ export default function MarketingDashboard() {
     if (!vendor) return;
     try {
       // Load stats
-      const statsRes = await fetch(`/api/vendor/apple-wallet/stats?vendor_id=${vendor.id}`);
+      const statsRes = await fetch(
+        `/api/vendor/apple-wallet/stats?vendor_id=${vendor.id}`,
+      );
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         if (statsData.success) {
@@ -67,8 +69,10 @@ export default function MarketingDashboard() {
 
       // Load test customers
       const { data: customers } = await supabase
-        .from('customers')
-        .select('id, first_name, last_name, email, loyalty_points, loyalty_tier')
+        .from("customers")
+        .select(
+          "id, first_name, last_name, email, loyalty_points, loyalty_tier",
+        )
         .limit(5);
 
       if (customers?.length) {
@@ -76,7 +80,9 @@ export default function MarketingDashboard() {
         setSelectedCustomer(customers[0].id);
       }
     } catch (error) {
-      console.error('Failed to load data:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to load data:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -91,15 +97,15 @@ export default function MarketingDashboard() {
       const response = await fetch(url);
 
       if (!response.ok) {
-        throw new Error('Failed to generate pass');
+        throw new Error("Failed to generate pass");
       }
 
       // Download the pass
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = downloadUrl;
-      link.download = 'test-loyalty-pass.pkpass';
+      link.download = "test-loyalty-pass.pkpass";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -108,8 +114,10 @@ export default function MarketingDashboard() {
       // Refresh stats
       await loadData();
     } catch (error) {
-      console.error('Failed to generate test pass:', error);
-      alert('Failed to generate test pass. Check console for errors.');
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to generate test pass:", error);
+      }
+      alert("Failed to generate test pass. Check console for errors.");
     } finally {
       setGeneratingTest(false);
     }
@@ -117,7 +125,7 @@ export default function MarketingDashboard() {
 
   const shareUrl = vendor
     ? `${window.location.origin}/customer/wallet?vendor=${vendor.slug}`
-    : '';
+    : "";
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -184,7 +192,9 @@ export default function MarketingDashboard() {
         <div className="bg-white/[0.02] border border-white/10 rounded-3xl p-8 mb-6">
           <div className="flex items-start justify-between mb-8">
             <div>
-              <h2 className="text-lg font-medium text-white mb-2">Test Pass Generation</h2>
+              <h2 className="text-lg font-medium text-white mb-2">
+                Test Pass Generation
+              </h2>
               <p className="text-sm text-white/40">
                 Generate a test wallet pass to preview how it looks
               </p>
@@ -194,15 +204,23 @@ export default function MarketingDashboard() {
           {testCustomers.length > 0 ? (
             <div className="space-y-6">
               <div>
-                <label className="block text-xs text-white/60 mb-3">Select Test Customer</label>
+                <label className="block text-xs text-white/60 mb-3">
+                  Select Test Customer
+                </label>
                 <select
                   value={selectedCustomer}
                   onChange={(e) => setSelectedCustomer(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/20"
                 >
                   {testCustomers.map((customer) => (
-                    <option key={customer.id} value={customer.id} className="bg-black">
-                      {customer.first_name} {customer.last_name} • {customer.loyalty_points || 0} pts • {customer.loyalty_tier || 'Bronze'}
+                    <option
+                      key={customer.id}
+                      value={customer.id}
+                      className="bg-black"
+                    >
+                      {customer.first_name} {customer.last_name} •{" "}
+                      {customer.loyalty_points || 0} pts •{" "}
+                      {customer.loyalty_tier || "Bronze"}
                     </option>
                   ))}
                 </select>
@@ -229,13 +247,18 @@ export default function MarketingDashboard() {
               <div className="flex items-start gap-3 p-4 bg-white/[0.02] border border-white/10 rounded-xl">
                 <AlertCircle className="w-4 h-4 text-white/40 flex-shrink-0 mt-0.5" />
                 <div className="text-xs text-white/60">
-                  The pass will download as a <span className="text-white">.pkpass</span> file. Double-click it to open in Apple Wallet. On Mac, it will open in Simulator or prompt to send to iPhone.
+                  The pass will download as a{" "}
+                  <span className="text-white">.pkpass</span> file. Double-click
+                  it to open in Apple Wallet. On Mac, it will open in Simulator
+                  or prompt to send to iPhone.
                 </div>
               </div>
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-sm text-white/40">No customers available for testing</p>
+              <p className="text-sm text-white/40">
+                No customers available for testing
+              </p>
             </div>
           )}
         </div>
@@ -243,7 +266,9 @@ export default function MarketingDashboard() {
         {/* Customer Share Link */}
         <div className="bg-white/[0.02] border border-white/10 rounded-3xl p-8 mb-6">
           <div className="mb-6">
-            <h2 className="text-lg font-medium text-white mb-2">Customer Wallet Link</h2>
+            <h2 className="text-lg font-medium text-white mb-2">
+              Customer Wallet Link
+            </h2>
             <p className="text-sm text-white/40">
               Share this link with customers to let them add their loyalty card
             </p>
@@ -287,19 +312,19 @@ export default function MarketingDashboard() {
             icon={Send}
             title="Send to Customers"
             description="Email wallet pass links to all customers"
-            onClick={() => alert('Coming soon: Bulk email campaign')}
+            onClick={() => alert("Coming soon: Bulk email campaign")}
           />
           <ActionCard
             icon={Eye}
             title="View Analytics"
             description="Detailed insights and usage patterns"
-            onClick={() => alert('Coming soon: Analytics dashboard')}
+            onClick={() => alert("Coming soon: Analytics dashboard")}
           />
           <ActionCard
             icon={RefreshCw}
             title="Update All Passes"
             description="Push notification to all active passes"
-            onClick={() => alert('Coming soon: Bulk pass update')}
+            onClick={() => alert("Coming soon: Bulk pass update")}
           />
         </div>
 

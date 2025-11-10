@@ -3,7 +3,7 @@
  * Pure functions for calculations, formatting, and data transformation
  */
 
-import { TrendData, TimeRange, DateRange } from '@/types/analytics';
+import { TrendData, TimeRange, DateRange } from "@/types/analytics";
 
 // ============================================================================
 // Date Utilities
@@ -17,20 +17,20 @@ export function getStartDate(range: TimeRange): Date {
   now.setHours(0, 0, 0, 0);
 
   switch (range) {
-    case '7d':
+    case "7d":
       now.setDate(now.getDate() - 7);
       break;
-    case '30d':
+    case "30d":
       now.setDate(now.getDate() - 30);
       break;
-    case '90d':
+    case "90d":
       now.setDate(now.getDate() - 90);
       break;
-    case '1y':
+    case "1y":
       now.setFullYear(now.getFullYear() - 1);
       break;
-    case 'all':
-      return new Date('2000-01-01');
+    case "all":
+      return new Date("2000-01-01");
     default:
       now.setDate(now.getDate() - 30);
   }
@@ -46,16 +46,16 @@ export function getComparisonPeriod(range: TimeRange): DateRange {
   const start = new Date(end);
 
   switch (range) {
-    case '7d':
+    case "7d":
       start.setDate(start.getDate() - 7);
       break;
-    case '30d':
+    case "30d":
       start.setDate(start.getDate() - 30);
       break;
-    case '90d':
+    case "90d":
       start.setDate(start.getDate() - 90);
       break;
-    case '1y':
+    case "1y":
       start.setFullYear(start.getFullYear() - 1);
       break;
     default:
@@ -68,20 +68,23 @@ export function getComparisonPeriod(range: TimeRange): DateRange {
 /**
  * Format date for display
  */
-export function formatDate(date: string | Date, format: 'short' | 'long' = 'short'): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+export function formatDate(
+  date: string | Date,
+  format: "short" | "long" = "short",
+): string {
+  const d = typeof date === "string" ? new Date(date) : date;
 
-  if (format === 'long') {
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+  if (format === "long") {
+    return d.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   }
 
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
   });
 }
 
@@ -98,7 +101,7 @@ export function calculateTrend(current: number, previous: number): TrendData {
       value: current,
       change: current,
       changePercent: current > 0 ? 100 : 0,
-      direction: current > 0 ? 'up' : current < 0 ? 'down' : 'neutral',
+      direction: current > 0 ? "up" : current < 0 ? "down" : "neutral",
     };
   }
 
@@ -109,7 +112,7 @@ export function calculateTrend(current: number, previous: number): TrendData {
     value: current,
     change,
     changePercent,
-    direction: change > 0 ? 'up' : change < 0 ? 'down' : 'neutral',
+    direction: change > 0 ? "up" : change < 0 ? "down" : "neutral",
   };
 }
 
@@ -134,7 +137,7 @@ export function calculateAverage(numbers: number[]): number {
  */
 export function calculateGrowthRate(
   currentData: Array<{ amount: number }>,
-  previousData: Array<{ amount: number }>
+  previousData: Array<{ amount: number }>,
 ): number {
   const currentTotal = currentData.reduce((sum, d) => sum + d.amount, 0);
   const previousTotal = previousData.reduce((sum, d) => sum + d.amount, 0);
@@ -149,7 +152,9 @@ export function calculatePeriodGrowth(data: Array<{ amount: number }>): number {
   if (data.length < 2) return 0;
 
   const midpoint = Math.floor(data.length / 2);
-  const firstHalf = data.slice(0, midpoint).reduce((sum, d) => sum + d.amount, 0);
+  const firstHalf = data
+    .slice(0, midpoint)
+    .reduce((sum, d) => sum + d.amount, 0);
   const secondHalf = data.slice(midpoint).reduce((sum, d) => sum + d.amount, 0);
 
   return calculatePercentage(secondHalf - firstHalf, firstHalf);
@@ -168,13 +173,13 @@ export function formatCurrency(
     decimals?: number;
     compact?: boolean;
     showCents?: boolean;
-  } = {}
+  } = {},
 ): string {
   const { decimals = 2, compact = false, showCents = true } = options;
 
   // Handle null/undefined
   if (amount === null || amount === undefined || isNaN(amount)) {
-    return '$0.00';
+    return "$0.00";
   }
 
   // Ensure it's a number
@@ -189,9 +194,9 @@ export function formatCurrency(
 
   const fractionDigits = showCents ? decimals : 0;
 
-  return numAmount.toLocaleString('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return numAmount.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   });
@@ -205,13 +210,13 @@ export function formatNumber(
   options: {
     decimals?: number;
     compact?: boolean;
-  } = {}
+  } = {},
 ): string {
   const { decimals = 0, compact = false } = options;
 
   // Handle null/undefined
   if (value === null || value === undefined || isNaN(value)) {
-    return '0';
+    return "0";
   }
 
   // Ensure it's a number
@@ -224,7 +229,7 @@ export function formatNumber(
     return `${(numValue / 1000).toFixed(1)}K`;
   }
 
-  return numValue.toLocaleString('en-US', {
+  return numValue.toLocaleString("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
@@ -238,19 +243,19 @@ export function formatPercentage(
   options: {
     decimals?: number;
     showSign?: boolean;
-  } = {}
+  } = {},
 ): string {
   const { decimals = 1, showSign = false } = options;
 
   // Handle null/undefined
   if (value === null || value === undefined || isNaN(value)) {
-    return '0%';
+    return "0%";
   }
 
   // Ensure it's a number
   const numValue = Number(value);
 
-  const sign = showSign && numValue > 0 ? '+' : '';
+  const sign = showSign && numValue > 0 ? "+" : "";
   return `${sign}${numValue.toFixed(decimals)}%`;
 }
 
@@ -263,12 +268,12 @@ export function formatPercentage(
  */
 export function groupByDate<T extends { date: string }>(
   data: T[],
-  aggregator: (items: T[]) => any
+  aggregator: (items: T[]) => any,
 ): any[] {
   const grouped = new Map<string, T[]>();
 
   data.forEach((item) => {
-    const date = new Date(item.date).toISOString().split('T')[0];
+    const date = new Date(item.date).toISOString().split("T")[0];
     if (!grouped.has(date)) {
       grouped.set(date, []);
     }
@@ -290,20 +295,22 @@ export function fillMissingDates(
   data: Array<{ date: string; [key: string]: any }>,
   startDate: Date,
   endDate: Date,
-  defaultValue: any = 0
+  defaultValue: any = 0,
 ): Array<{ date: string; [key: string]: any }> {
   const filled: Array<{ date: string; [key: string]: any }> = [];
   const dataMap = new Map(data.map((d) => [d.date, d]));
 
   const current = new Date(startDate);
   while (current <= endDate) {
-    const dateStr = current.toISOString().split('T')[0];
+    const dateStr = current.toISOString().split("T")[0];
 
     if (dataMap.has(dateStr)) {
       filled.push(dataMap.get(dateStr)!);
     } else {
       // Create entry with default values
-      const keys = data[0] ? Object.keys(data[0]).filter((k) => k !== 'date') : [];
+      const keys = data[0]
+        ? Object.keys(data[0]).filter((k) => k !== "date")
+        : [];
       const entry: any = { date: dateStr };
       keys.forEach((key) => {
         entry[key] = defaultValue;
@@ -320,7 +327,10 @@ export function fillMissingDates(
 /**
  * Calculate percentile
  */
-export function calculatePercentile(values: number[], percentile: number): number {
+export function calculatePercentile(
+  values: number[],
+  percentile: number,
+): number {
   if (values.length === 0) return 0;
 
   const sorted = [...values].sort((a, b) => a - b);
@@ -333,7 +343,7 @@ export function calculatePercentile(values: number[], percentile: number): numbe
  */
 export function safeParseFloat(value: any, defaultValue = 0): number {
   if (value === null || value === undefined) return defaultValue;
-  if (typeof value === 'number') return value;
+  if (typeof value === "number") return value;
 
   const parsed = parseFloat(value);
   return isNaN(parsed) ? defaultValue : parsed;
@@ -344,7 +354,7 @@ export function safeParseFloat(value: any, defaultValue = 0): number {
  */
 export function safeParseInt(value: any, defaultValue = 0): number {
   if (value === null || value === undefined) return defaultValue;
-  if (typeof value === 'number') return Math.floor(value);
+  if (typeof value === "number") return Math.floor(value);
 
   const parsed = parseInt(value, 10);
   return isNaN(parsed) ? defaultValue : parsed;
@@ -358,7 +368,7 @@ export function safeParseInt(value: any, defaultValue = 0): number {
  * Validate time range
  */
 export function isValidTimeRange(range: string): range is TimeRange {
-  return ['7d', '30d', '90d', '1y', 'all'].includes(range);
+  return ["7d", "30d", "90d", "1y", "all"].includes(range);
 }
 
 /**
@@ -367,6 +377,7 @@ export function isValidTimeRange(range: string): range is TimeRange {
 export function isValidVendorId(id: string | null): boolean {
   if (!id) return false;
   // UUID v4 format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(id);
 }

@@ -11,7 +11,7 @@ const getBaseUrl = () => {
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  return 'http://localhost:3000';
+  return "http://localhost:3000";
 };
 
 // ============================================================================
@@ -25,19 +25,20 @@ async function syncOrderToAlpineIQ(orderId: string, customerId: string) {
 
   // Get customer info
   const { data: customer } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('id', customerId)
+    .from("customers")
+    .select("*")
+    .eq("id", customerId)
     .single();
 
   if (!customer) {
-    throw new Error('Customer not found');
+    throw new Error("Customer not found");
   }
 
   // Get order with items and product details
   const { data: order } = await supabase
-    .from('orders')
-    .select(`
+    .from("orders")
+    .select(
+      `
       *,
       order_items (
         *,
@@ -50,48 +51,56 @@ async function syncOrderToAlpineIQ(orderId: string, customerId: string) {
           thc_percentage
         )
       )
-    `)
-    .eq('id', orderId)
+    `,
+    )
+    .eq("id", orderId)
     .single();
 
   if (!order) {
-    throw new Error('Order not found');
+    throw new Error("Order not found");
   }
 
   // Format items for Alpine IQ
   const items = (order.order_items || []).map((item: any) => ({
-    sku: item.products?.sku || item.product_id || 'UNKNOWN',
+    sku: item.products?.sku || item.product_id || "UNKNOWN",
     size: item.quantity_display || `${item.quantity}`,
-    category: item.products?.category || 'MISC',
-    brand: item.products?.brand || '',
-    name: item.products?.name || item.product_name || 'Product',
-    species: item.products?.cannabis_type || '',
+    category: item.products?.category || "MISC",
+    brand: item.products?.brand || "",
+    name: item.products?.name || item.product_name || "Product",
+    species: item.products?.cannabis_type || "",
     price: parseFloat(item.unit_price || 0),
     discount: 0,
     quantity: parseInt(item.quantity || 1),
-    customAttributes: item.products?.thc_percentage ? [{
-      key: 'THC',
-      value: `${item.products.thc_percentage}%`
-    }] : []
+    customAttributes: item.products?.thc_percentage
+      ? [
+          {
+            key: "THC",
+            value: `${item.products.thc_percentage}%`,
+          },
+        ]
+      : [],
   }));
 
   // Get location
   const { data: location } = await supabase
-    .from('locations')
-    .select('name')
-    .eq('id', order.location_id)
+    .from("locations")
+    .select("name")
+    .eq("id", order.location_id)
     .single();
 
   // Format transaction date for Alpine IQ
-  const transactionDate = new Date(order.created_at || order.order_date)
-    .toISOString()
-    .replace('T', ' ')
-    .split('.')[0] + ' +0000';
+  const transactionDate =
+    new Date(order.created_at || order.order_date)
+      .toISOString()
+      .replace("T", " ")
+      .split(".")[0] + " +0000";
 
   // Initialize Alpine IQ client
   const alpine = new AlpineIQClient({
-    apiKey: process.env.ALPINE_API_KEY || 'U_SKZShKgmfH1U5CyIBsH0OcNQnWkOcx4oUNMZcq8BFtOiWFEMRPmB6Iqw',
-    userId: process.env.ALPINE_USER_ID || '3999'
+    apiKey:
+      process.env.ALPINE_API_KEY ||
+      "U_SKZShKgmfH1U5CyIBsH0OcNQnWkOcx4oUNMZcq8BFtOiWFEMRPmB6Iqw",
+    userId: process.env.ALPINE_USER_ID || "3999",
   });
 
   // Push to Alpine IQ
@@ -105,16 +114,14 @@ async function syncOrderToAlpineIQ(orderId: string, customerId: string) {
     visit: {
       pos_id: order.id,
       pos_user: customer.email,
-      pos_type: order.order_type === 'delivery' ? 'online' : 'in-store',
+      pos_type: order.order_type === "delivery" ? "online" : "in-store",
       transaction_date: transactionDate,
-      location: location?.name || 'Main Store',
+      location: location?.name || "Main Store",
       visit_details_attributes: items,
       transaction_total: parseFloat(order.total_amount),
-      send_notification: false
-    }
+      send_notification: false,
+    },
   });
-
-  console.log(`✅ Order ${order.order_number} synced to Alpine IQ`);
 }
 
 export async function GET(request: NextRequest) {
@@ -124,40 +131,42 @@ export async function GET(request: NextRequest) {
     const page = searchParams.get("page") || "1";
     const perPage = searchParams.get("per_page") || "20";
     const status = searchParams.get("status");
-    
+
     if (!customerId) {
       return NextResponse.json(
         { success: false, error: "Customer ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     // Build query params
     const params = new URLSearchParams({
       customer_id: customerId,
       page,
-      per_page: perPage
+      per_page: perPage,
     });
-    
+
     if (status) {
-      params.append('status', status);
+      params.append("status", status);
     }
-    
+
     // Fetch orders from Supabase
-    const response = await fetch(`${getBaseUrl()}/api/supabase/orders?${params}`);
+    const response = await fetch(
+      `${getBaseUrl()}/api/supabase/orders?${params}`,
+    );
     const data = await response.json();
-    
+
     if (!data.success) {
-      throw new Error('Failed to fetch orders');
+      throw new Error("Failed to fetch orders");
     }
-    
+
     // Format orders data
     const orders = data.orders.map((order: any) => ({
       id: order.id,
       number: order.order_number,
       status: order.status,
       total: order.total_amount.toString(),
-      currency: order.currency || 'USD',
+      currency: order.currency || "USD",
       date_created: order.order_date,
       date_modified: order.updated_at,
       date_completed: order.completed_date,
@@ -172,29 +181,33 @@ export async function GET(request: NextRequest) {
         total: item.line_total,
         image: item.product_image ? { src: item.product_image } : null,
         meta_data: item.meta_data || {},
-        order_type: item.order_type || 'delivery',
+        order_type: item.order_type || "delivery",
         tier_name: item.tier_name,
-        pickup_location: item.pickup_location_name
+        pickup_location: item.pickup_location_name,
       })),
       shipping_lines: [],
       payment_method: order.payment_method,
       payment_method_title: order.payment_method_title,
-      customer_note: order.customer_note
+      customer_note: order.customer_note,
     }));
-    
+
     return NextResponse.json({
       success: true,
       orders,
-      pagination: data.pagination
+      pagination: data.pagination,
     });
-    
   } catch (error: any) {
-    console.error('Orders API error:', error);
-    return NextResponse.json({ 
-      success: false,
-      orders: [],
-      error: error.message 
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("Orders API error:", error);
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        orders: [],
+        error: error.message,
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -204,7 +217,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   const supabase = getServiceSupabase();
-  
+
   try {
     const body = await request.json();
     const {
@@ -215,58 +228,69 @@ export async function POST(request: NextRequest) {
       payment_method,
       payment_method_title,
       customer_note,
-      order_type = 'delivery'
+      order_type = "delivery",
     } = body;
-
-    console.log('🛒 Creating order with', line_items?.length, 'items');
 
     // ============================================================================
     // STEP 1: Validate all line items have stock (in grams)
     // ============================================================================
     for (const item of line_items) {
       const quantity_grams = item.quantity_grams || item.quantity; // Fallback to quantity if no grams specified
-      
+
       if (!quantity_grams || quantity_grams <= 0) {
-        return NextResponse.json({
-          success: false,
-          error: `Invalid quantity for ${item.name}`
-        }, { status: 400 });
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Invalid quantity for ${item.name}`,
+          },
+          { status: 400 },
+        );
       }
 
       // Fetch current stock
       const { data: product, error: productError } = await supabase
-        .from('products')
-        .select('id, name, stock_quantity, sku')
-        .eq('id', item.product_id)
+        .from("products")
+        .select("id, name, stock_quantity, sku")
+        .eq("id", item.product_id)
         .single();
 
       if (productError || !product) {
-        console.error('❌ Product not found:', item.product_id);
-        return NextResponse.json({
-          success: false,
-          error: `Product not found: ${item.name}`
-        }, { status: 404 });
+        if (process.env.NODE_ENV === "development") {
+          console.error("❌ Product not found:", item.product_id);
+        }
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Product not found: ${item.name}`,
+          },
+          { status: 404 },
+        );
       }
 
       // Check if sufficient stock (in grams)
       const availableStock = product.stock_quantity || 0;
-      
-      if (!isStockAvailable(availableStock, quantity_grams)) {
-        console.error(`❌ Insufficient stock for ${product.name}. Need: ${quantity_grams}g, Have: ${availableStock}g`);
-        return NextResponse.json({
-          success: false,
-          error: `Insufficient stock for ${product.name}. Only ${availableStock}g available.`
-        }, { status: 400 });
-      }
 
-      console.log(`✅ Stock check passed: ${product.name} (${quantity_grams}g requested, ${availableStock}g available)`);
+      if (!isStockAvailable(availableStock, quantity_grams)) {
+        if (process.env.NODE_ENV === "development") {
+          console.error(
+            `❌ Insufficient stock for ${product.name}. Need: ${quantity_grams}g, Have: ${availableStock}g`,
+          );
+        }
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Insufficient stock for ${product.name}. Only ${availableStock}g available.`,
+          },
+          { status: 400 },
+        );
+      }
     }
 
     // ============================================================================
     // STEP 2: Calculate order total
     // ============================================================================
     const total_amount = line_items.reduce((sum: number, item: any) => {
-      return sum + (item.price * item.quantity);
+      return sum + item.price * item.quantity;
     }, 0);
 
     // ============================================================================
@@ -275,68 +299,70 @@ export async function POST(request: NextRequest) {
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
     const { data: order, error: orderError } = await supabase
-      .from('orders')
+      .from("orders")
       .insert({
         customer_id,
         order_number: orderNumber,
-        status: 'pending',
+        status: "pending",
         total_amount,
-        currency: 'USD',
+        currency: "USD",
         payment_method,
         payment_method_title: payment_method_title || payment_method,
         billing_address,
         shipping_address,
         customer_note,
         order_type,
-        order_date: new Date().toISOString()
+        order_date: new Date().toISOString(),
       })
       .select()
       .single();
 
     if (orderError) {
-      console.error('❌ Failed to create order:', orderError);
-      throw new Error('Failed to create order');
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Failed to create order:", orderError);
+      }
+      throw new Error("Failed to create order");
     }
-
-    console.log('✅ Order created:', order.order_number);
 
     // ============================================================================
     // STEP 4: Create order items & Deduct inventory (in GRAMS)
     // ============================================================================
     const orderItems = [];
-    
+
     for (const item of line_items) {
       const quantity_grams = item.quantity_grams || item.quantity;
       const quantity_display = item.quantity_display || `${item.quantity}`;
 
       // Create order item
       const { data: orderItem, error: itemError } = await supabase
-        .from('order_items')
+        .from("order_items")
         .insert({
           order_id: order.id,
           product_id: item.product_id,
           product_name: item.name,
           product_image: item.image,
           quantity: item.quantity,
-          quantity_grams,           // ← CRITICAL: Store grams for tracking
-          quantity_display,         // ← CRITICAL: Store display for receipt
+          quantity_grams, // ← CRITICAL: Store grams for tracking
+          quantity_display, // ← CRITICAL: Store display for receipt
           unit_price: item.price,
           line_total: item.price * item.quantity,
-          tier_name: item.tierName || 'Standard',
+          tier_name: item.tierName || "Standard",
           order_type: item.orderType || order_type,
           pickup_location_id: item.locationId,
           pickup_location_name: item.locationName,
           meta_data: {
             quantity_grams,
             quantity_display,
-            original_tier: item.tierName
-          }
+            original_tier: item.tierName,
+          },
         })
         .select()
         .single();
 
       if (itemError) {
-        console.error('❌ Failed to create order item:', itemError);
+        if (process.env.NODE_ENV === "development") {
+          console.error("❌ Failed to create order item:", itemError);
+        }
         throw new Error(`Failed to create order item for ${item.name}`);
       }
 
@@ -345,68 +371,73 @@ export async function POST(request: NextRequest) {
       // ============================================================================
       // DEDUCT FROM INVENTORY (in GRAMS)
       // ============================================================================
-      console.log(`📉 Deducting ${quantity_grams}g (${quantity_display}) from ${item.name}`);
 
       // First get current stock
       const { data: currentProduct, error: fetchError } = await supabase
-        .from('products')
-        .select('stock_quantity, name')
-        .eq('id', item.product_id)
+        .from("products")
+        .select("stock_quantity, name")
+        .eq("id", item.product_id)
         .single();
 
       if (fetchError || !currentProduct) {
-        console.error('❌ Failed to fetch product:', fetchError);
+        if (process.env.NODE_ENV === "development") {
+          console.error("❌ Failed to fetch product:", fetchError);
+        }
         throw new Error(`Failed to fetch product ${item.name}`);
       }
 
       // Calculate new stock
-      const currentStock = parseFloat(currentProduct.stock_quantity || '0');
+      const currentStock = parseFloat(currentProduct.stock_quantity || "0");
       const newStock = Math.max(0, currentStock - quantity_grams);
 
       // Update stock
       const { data: updatedProduct, error: stockError } = await supabase
-        .from('products')
+        .from("products")
         .update({
-          stock_quantity: newStock
+          stock_quantity: newStock,
         })
-        .eq('id', item.product_id)
-        .select('stock_quantity, name')
+        .eq("id", item.product_id)
+        .select("stock_quantity, name")
         .single();
 
       if (stockError) {
-        console.error('❌ Failed to update inventory:', stockError);
+        if (process.env.NODE_ENV === "development") {
+          console.error("❌ Failed to update inventory:", stockError);
+        }
         throw new Error(`Failed to update inventory for ${item.name}`);
       }
-
-      console.log(`✅ Inventory updated: ${updatedProduct.name} - New stock: ${updatedProduct.stock_quantity}g`);
 
       // If using multi-location inventory, also update inventory_items table
       if (item.locationId) {
         // First get current inventory
         const { data: currentInventory } = await supabase
-          .from('inventory_items')
-          .select('quantity')
-          .eq('product_id', item.product_id)
-          .eq('location_id', item.locationId)
+          .from("inventory_items")
+          .select("quantity")
+          .eq("product_id", item.product_id)
+          .eq("location_id", item.locationId)
           .single();
 
         if (currentInventory) {
-          const currentInvQty = parseFloat(currentInventory.quantity || '0');
+          const currentInvQty = parseFloat(currentInventory.quantity || "0");
           const newInvQty = Math.max(0, currentInvQty - quantity_grams);
 
           const { error: locationStockError } = await supabase
-            .from('inventory_items')
+            .from("inventory_items")
             .update({
-              quantity: newInvQty
+              quantity: newInvQty,
             })
-            .eq('product_id', item.product_id)
-            .eq('location_id', item.locationId);
+            .eq("product_id", item.product_id)
+            .eq("location_id", item.locationId);
 
           if (locationStockError) {
-            console.warn('⚠️ Location inventory update failed:', locationStockError);
+            if (process.env.NODE_ENV === "development") {
+              console.warn(
+                "⚠️ Location inventory update failed:",
+                locationStockError,
+              );
+            }
             // Don't fail the order, just log it
           } else {
-            console.log(`✅ Location inventory updated: ${item.locationName}`);
           }
         }
       }
@@ -417,13 +448,15 @@ export async function POST(request: NextRequest) {
     // ============================================================================
     // Push order to Alpine IQ for loyalty points (don't await - let it run in background)
     syncOrderToAlpineIQ(order.id, customer_id).catch((error) => {
-      console.error('⚠️ Alpine IQ sync failed (order still created):', error.message);
+      console.error(
+        "⚠️ Alpine IQ sync failed (order still created):",
+        error.message,
+      );
     });
 
     // ============================================================================
     // STEP 6: Return complete order
     // ============================================================================
-    console.log('✅ Order completed successfully:', order.order_number);
 
     return NextResponse.json({
       success: true,
@@ -439,20 +472,24 @@ export async function POST(request: NextRequest) {
           name: item.product_name,
           product_id: item.product_id,
           quantity: item.quantity,
-          quantity_grams: item.quantity_grams,        // ← Included in response
-          quantity_display: item.quantity_display,    // ← Included in response
+          quantity_grams: item.quantity_grams, // ← Included in response
+          quantity_display: item.quantity_display, // ← Included in response
           price: item.unit_price,
           total: item.line_total,
-          tier_name: item.tier_name
-        }))
-      }
+          tier_name: item.tier_name,
+        })),
+      },
     });
-
   } catch (error: any) {
-    console.error('❌ Order creation error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to create order'
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Order creation error:", error);
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || "Failed to create order",
+      },
+      { status: 500 },
+    );
   }
 }

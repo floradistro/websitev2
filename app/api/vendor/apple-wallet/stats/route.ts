@@ -1,13 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { requireVendor } from "@/lib/auth/middleware";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 /**
@@ -26,60 +26,62 @@ export async function GET(request: NextRequest) {
 
     // Get total passes count
     const { count: totalPasses } = await supabase
-      .from('wallet_passes')
-      .select('*', { count: 'exact', head: true })
-      .eq('vendor_id', vendorId);
+      .from("wallet_passes")
+      .select("*", { count: "exact", head: true })
+      .eq("vendor_id", vendorId);
 
     // Get active passes count
     const { count: activePasses } = await supabase
-      .from('wallet_passes')
-      .select('*', { count: 'exact', head: true })
-      .eq('vendor_id', vendorId)
-      .eq('status', 'active')
-      .not('added_to_wallet_at', 'is', null);
+      .from("wallet_passes")
+      .select("*", { count: "exact", head: true })
+      .eq("vendor_id", vendorId)
+      .eq("status", "active")
+      .not("added_to_wallet_at", "is", null);
 
     // Get total devices count (sum of all devices across all passes)
     const { data: passesWithDevices } = await supabase
-      .from('wallet_passes')
-      .select('devices')
-      .eq('vendor_id', vendorId)
-      .eq('status', 'active');
+      .from("wallet_passes")
+      .select("devices")
+      .eq("vendor_id", vendorId)
+      .eq("status", "active");
 
-    const totalDevices = passesWithDevices?.reduce((sum, pass) => {
-      return sum + (Array.isArray(pass.devices) ? pass.devices.length : 0);
-    }, 0) || 0;
+    const totalDevices =
+      passesWithDevices?.reduce((sum, pass) => {
+        return sum + (Array.isArray(pass.devices) ? pass.devices.length : 0);
+      }, 0) || 0;
 
     // Get passes added today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const { count: passesAddedToday } = await supabase
-      .from('wallet_passes')
-      .select('*', { count: 'exact', head: true })
-      .eq('vendor_id', vendorId)
-      .gte('created_at', today.toISOString());
+      .from("wallet_passes")
+      .select("*", { count: "exact", head: true })
+      .eq("vendor_id", vendorId)
+      .gte("created_at", today.toISOString());
 
     // Get passes added this week
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const { count: passesAddedThisWeek } = await supabase
-      .from('wallet_passes')
-      .select('*', { count: 'exact', head: true })
-      .eq('vendor_id', vendorId)
-      .gte('created_at', weekAgo.toISOString());
+      .from("wallet_passes")
+      .select("*", { count: "exact", head: true })
+      .eq("vendor_id", vendorId)
+      .gte("created_at", weekAgo.toISOString());
 
     // Get passes added this month
     const monthAgo = new Date();
     monthAgo.setDate(monthAgo.getDate() - 30);
     const { count: passesAddedThisMonth } = await supabase
-      .from('wallet_passes')
-      .select('*', { count: 'exact', head: true })
-      .eq('vendor_id', vendorId)
-      .gte('created_at', monthAgo.toISOString());
+      .from("wallet_passes")
+      .select("*", { count: "exact", head: true })
+      .eq("vendor_id", vendorId)
+      .gte("created_at", monthAgo.toISOString());
 
     // Get recent passes with customer data
     const { data: recentPasses } = await supabase
-      .from('wallet_passes')
-      .select(`
+      .from("wallet_passes")
+      .select(
+        `
         id,
         serial_number,
         status,
@@ -95,22 +97,24 @@ export async function GET(request: NextRequest) {
           loyalty_points,
           loyalty_tier
         )
-      `)
-      .eq('vendor_id', vendorId)
-      .order('created_at', { ascending: false })
+      `,
+      )
+      .eq("vendor_id", vendorId)
+      .order("created_at", { ascending: false })
       .limit(10);
 
     // Format recent passes
-    const formattedPasses = recentPasses?.map((pass: any) => ({
-      id: pass.id,
-      serial_number: pass.serial_number,
-      status: pass.status,
-      devices: pass.devices || [],
-      added_to_wallet_at: pass.added_to_wallet_at,
-      last_updated_at: pass.last_updated_at,
-      created_at: pass.created_at,
-      customer: pass.customers,
-    })) || [];
+    const formattedPasses =
+      recentPasses?.map((pass: any) => ({
+        id: pass.id,
+        serial_number: pass.serial_number,
+        status: pass.status,
+        devices: pass.devices || [],
+        added_to_wallet_at: pass.added_to_wallet_at,
+        last_updated_at: pass.last_updated_at,
+        created_at: pass.created_at,
+        customer: pass.customers,
+      })) || [];
 
     return NextResponse.json({
       success: true,
@@ -125,13 +129,15 @@ export async function GET(request: NextRequest) {
       recent_passes: formattedPasses,
     });
   } catch (error: any) {
-    console.error('Wallet stats API error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Wallet stats API error:", error);
+    }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Failed to fetch wallet stats',
+        error: error.message || "Failed to fetch wallet stats",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

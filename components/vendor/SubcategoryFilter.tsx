@@ -22,7 +22,7 @@ interface SubcategoryFilterProps {
 export function SubcategoryFilter({
   subcategories,
   activeSubcategory,
-  onSelect
+  onSelect,
 }: SubcategoryFilterProps) {
   if (subcategories.length === 0) return null;
 
@@ -30,12 +30,13 @@ export function SubcategoryFilter({
     <div className="flex items-center gap-2 py-3 overflow-x-auto">
       {/* All subcategories pill */}
       <button
-        onClick={() => onSelect('all')}
+        onClick={() => onSelect("all")}
         className={`
           px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
-          ${activeSubcategory === 'all'
-            ? 'bg-white text-black'
-            : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+          ${
+            activeSubcategory === "all"
+              ? "bg-white text-black"
+              : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80"
           }
         `}
         style={{ fontWeight: 900 }}
@@ -50,9 +51,10 @@ export function SubcategoryFilter({
           onClick={() => onSelect(subcat.id)}
           className={`
             px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] font-black whitespace-nowrap transition-all
-            ${activeSubcategory === subcat.id
-              ? 'bg-white text-black'
-              : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80'
+            ${
+              activeSubcategory === subcat.id
+                ? "bg-white text-black"
+                : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white/80"
             }
           `}
           style={{ fontWeight: 900 }}

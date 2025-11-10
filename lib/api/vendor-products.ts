@@ -11,7 +11,7 @@ import {
   BulkAIAutofillRequest,
   ProductStatus,
   ProductType,
-} from '@/lib/validations/product';
+} from "@/lib/validations/product";
 
 // API Response types
 export interface Product {
@@ -25,7 +25,7 @@ export interface Product {
   regular_price: number;
   status: ProductStatus;
   type: ProductType;
-  product_visibility: 'internal' | 'marketplace';
+  product_visibility: "internal" | "marketplace";
   vendor_id: string;
   primary_category_id: string;
   category?: string;
@@ -108,13 +108,13 @@ export class VendorProductsAPI {
   private headers: HeadersInit;
 
   constructor(authToken?: string) {
-    this.baseUrl = '/api/vendor/products';
+    this.baseUrl = "/api/vendor/products";
     this.headers = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     if (authToken) {
-      this.headers['Authorization'] = `Bearer ${authToken}`;
+      this.headers["Authorization"] = `Bearer ${authToken}`;
     }
   }
 
@@ -136,9 +136,9 @@ export class VendorProductsAPI {
    */
   async listProducts(): Promise<ListProductsResponse> {
     const response = await fetch(this.baseUrl, {
-      method: 'GET',
+      method: "GET",
       headers: this.headers,
-      credentials: 'include', // Include HTTP-only cookies
+      credentials: "include", // Include HTTP-only cookies
     });
 
     return this.handleResponse<ListProductsResponse>(response);
@@ -149,9 +149,9 @@ export class VendorProductsAPI {
    */
   async listProductsFull(): Promise<ListProductsResponse> {
     const response = await fetch(`${this.baseUrl}/full`, {
-      method: 'GET',
+      method: "GET",
       headers: this.headers,
-      credentials: 'include',
+      credentials: "include",
     });
 
     return this.handleResponse<ListProductsResponse>(response);
@@ -162,9 +162,9 @@ export class VendorProductsAPI {
    */
   async getProduct(productId: string): Promise<CreateProductResponse> {
     const response = await fetch(`${this.baseUrl}/${productId}`, {
-      method: 'GET',
+      method: "GET",
       headers: this.headers,
-      credentials: 'include',
+      credentials: "include",
     });
 
     return this.handleResponse<CreateProductResponse>(response);
@@ -173,11 +173,13 @@ export class VendorProductsAPI {
   /**
    * Create a new product
    */
-  async createProduct(productData: CreateProductRequest): Promise<CreateProductResponse> {
+  async createProduct(
+    productData: CreateProductRequest,
+  ): Promise<CreateProductResponse> {
     const response = await fetch(this.baseUrl, {
-      method: 'POST',
+      method: "POST",
       headers: this.headers,
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify(productData),
     });
 
@@ -189,12 +191,12 @@ export class VendorProductsAPI {
    */
   async updateProduct(
     productId: string,
-    productData: UpdateProductRequest
+    productData: UpdateProductRequest,
   ): Promise<UpdateProductResponse> {
     const response = await fetch(`${this.baseUrl}/${productId}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: this.headers,
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify(productData),
     });
 
@@ -206,9 +208,9 @@ export class VendorProductsAPI {
    */
   async deleteProduct(productId: string): Promise<DeleteProductResponse> {
     const response = await fetch(`${this.baseUrl}/${productId}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: this.headers,
-      credentials: 'include',
+      credentials: "include",
     });
 
     return this.handleResponse<DeleteProductResponse>(response);
@@ -217,14 +219,19 @@ export class VendorProductsAPI {
   /**
    * Get all unique custom field names from vendor's products
    */
-  async getCustomFields(): Promise<{ success: boolean; customFields: string[] }> {
+  async getCustomFields(): Promise<{
+    success: boolean;
+    customFields: string[];
+  }> {
     const response = await fetch(`${this.baseUrl}/custom-fields`, {
-      method: 'GET',
+      method: "GET",
       headers: this.headers,
-      credentials: 'include',
+      credentials: "include",
     });
 
-    return this.handleResponse<{ success: boolean; customFields: string[] }>(response);
+    return this.handleResponse<{ success: boolean; customFields: string[] }>(
+      response,
+    );
   }
 
   /**
@@ -232,12 +239,14 @@ export class VendorProductsAPI {
    */
   async getCategories(): Promise<{ success: boolean; categories: string[] }> {
     const response = await fetch(`${this.baseUrl}/categories`, {
-      method: 'GET',
+      method: "GET",
       headers: this.headers,
-      credentials: 'include',
+      credentials: "include",
     });
 
-    return this.handleResponse<{ success: boolean; categories: string[] }>(response);
+    return this.handleResponse<{ success: boolean; categories: string[] }>(
+      response,
+    );
   }
 
   /**
@@ -248,15 +257,15 @@ export class VendorProductsAPI {
     results: Array<{ success: boolean; product?: Product; error?: string }>;
   }> {
     const results = await Promise.allSettled(
-      products.map(product =>
-        this.createProduct(product as CreateProductRequest)
-      )
+      products.map((product) =>
+        this.createProduct(product as CreateProductRequest),
+      ),
     );
 
     return {
-      success: results.every(r => r.status === 'fulfilled'),
-      results: results.map(r => {
-        if (r.status === 'fulfilled') {
+      success: results.every((r) => r.status === "fulfilled"),
+      results: results.map((r) => {
+        if (r.status === "fulfilled") {
           return { success: true, product: r.value.product };
         }
         return { success: false, error: r.reason.message };
@@ -284,7 +293,8 @@ export const vendorProductsAPI = {
   listProducts: () => new VendorProductsAPI().listProducts(),
   listProductsFull: () => new VendorProductsAPI().listProductsFull(),
   getProduct: (id: string) => new VendorProductsAPI().getProduct(id),
-  createProduct: (data: CreateProductRequest) => new VendorProductsAPI().createProduct(data),
+  createProduct: (data: CreateProductRequest) =>
+    new VendorProductsAPI().createProduct(data),
   updateProduct: (id: string, data: UpdateProductRequest) =>
     new VendorProductsAPI().updateProduct(id, data),
   deleteProduct: (id: string) => new VendorProductsAPI().deleteProduct(id),

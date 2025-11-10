@@ -1,7 +1,7 @@
 /**
  * Advanced Rate Limiter for Remove.bg API
  * Based on: https://www.remove.bg/api#api-changelog
- * 
+ *
  * Rate Limit: 500 images/minute (resolution-dependent)
  * Adaptive concurrency with exponential backoff
  */
@@ -40,17 +40,17 @@ class RemoveBgRateLimiter {
    * Update rate limit state from API response headers
    */
   updateFromHeaders(headers: any) {
-    if (headers['x-ratelimit-limit']) {
-      this.state.limit = parseInt(headers['x-ratelimit-limit']);
+    if (headers["x-ratelimit-limit"]) {
+      this.state.limit = parseInt(headers["x-ratelimit-limit"]);
     }
-    if (headers['x-ratelimit-remaining']) {
-      this.state.remaining = parseInt(headers['x-ratelimit-remaining']);
+    if (headers["x-ratelimit-remaining"]) {
+      this.state.remaining = parseInt(headers["x-ratelimit-remaining"]);
     }
-    if (headers['x-ratelimit-reset']) {
-      this.state.reset = parseInt(headers['x-ratelimit-reset']) * 1000;
+    if (headers["x-ratelimit-reset"]) {
+      this.state.reset = parseInt(headers["x-ratelimit-reset"]) * 1000;
     }
-    if (headers['retry-after']) {
-      this.state.retryAfter = parseInt(headers['retry-after']) * 1000;
+    if (headers["retry-after"]) {
+      this.state.retryAfter = parseInt(headers["retry-after"]) * 1000;
     }
 
     // Auto-adjust concurrency based on remaining quota
@@ -76,24 +76,22 @@ class RemoveBgRateLimiter {
       // Very low quota - minimal concurrency
       this.maxConcurrency = 5;
     }
-
-    console.log(`⚙️ Adjusted concurrency to ${this.maxConcurrency} (${quotaPercentage.toFixed(1)}% quota remaining)`);
   }
 
   /**
    * Calculate optimal batch size based on resolution
    */
-  calculateBatchSize(imageSize: 'preview' | 'full' | 'auto' = 'full'): number {
+  calculateBatchSize(imageSize: "preview" | "full" | "auto" = "full"): number {
     // Resolution affects rate limit differently
     // Full/50MP images count more than preview
-    const creditMultiplier = imageSize === 'full' ? 1 : 0.5;
-    
+    const creditMultiplier = imageSize === "full" ? 1 : 0.5;
+
     // Calculate how many we can process in current window
     const timeUntilReset = this.state.reset - Date.now();
     const safeMargin = 0.8; // Use 80% of quota for safety
-    
+
     const availableInWindow = Math.floor(
-      (this.state.remaining * safeMargin) / creditMultiplier
+      (this.state.remaining * safeMargin) / creditMultiplier,
     );
 
     return Math.min(availableInWindow, this.maxConcurrency);
@@ -105,7 +103,7 @@ class RemoveBgRateLimiter {
   private async exponentialBackoff(retries: number): Promise<void> {
     const maxRetries = 5;
     if (retries >= maxRetries) {
-      throw new Error('Max retries exceeded');
+      throw new Error("Max retries exceeded");
     }
 
     // Exponential backoff: 2^retries + random jitter
@@ -113,9 +111,7 @@ class RemoveBgRateLimiter {
     const jitter = Math.random() * 1000;
     const delay = baseDelay + jitter;
 
-    console.log(`⏳ Exponential backoff: waiting ${(delay / 1000).toFixed(2)}s (retry ${retries + 1}/${maxRetries})`);
-    
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
 
   /**
@@ -124,7 +120,7 @@ class RemoveBgRateLimiter {
   async enqueue<T>(
     id: string,
     execute: () => Promise<T>,
-    priority: number = 0
+    priority: number = 0,
   ): Promise<T> {
     return new Promise((resolve, reject) => {
       this.queue.push({
@@ -156,10 +152,9 @@ class RemoveBgRateLimiter {
     while (this.queue.length > 0) {
       // Check if we need to wait for rate limit reset
       if (this.state.remaining <= 0 || this.state.retryAfter) {
-        const waitTime = this.state.retryAfter || (this.state.reset - Date.now());
+        const waitTime = this.state.retryAfter || this.state.reset - Date.now();
         if (waitTime > 0) {
-          console.log(`⏸️ Rate limit reached. Waiting ${(waitTime / 1000).toFixed(1)}s until reset...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
+          await new Promise((resolve) => setTimeout(resolve, waitTime));
           this.state.remaining = this.state.limit;
           this.state.retryAfter = null;
         }
@@ -183,12 +178,12 @@ class RemoveBgRateLimiter {
         });
 
         // Small delay between requests to avoid burst
-        await new Promise(resolve => setTimeout(resolve, 20));
+        await new Promise((resolve) => setTimeout(resolve, 20));
       }
 
       // Wait a bit before checking queue again
       if (this.queue.length > 0 && this.activeRequests >= this.maxConcurrency) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
       // Exit if queue is empty and no active requests
@@ -209,7 +204,10 @@ class RemoveBgRateLimiter {
       request.resolve(result);
     } catch (error: any) {
       // Check if it's a rate limit error (429)
-      if (error.response?.status === 429 || error.message.includes('rate limit')) {
+      if (
+        error.response?.status === 429 ||
+        error.message.includes("rate limit")
+      ) {
         if (request.retries < 5) {
           // Update state from headers
           if (error.response?.headers) {
@@ -223,10 +221,10 @@ class RemoveBgRateLimiter {
           request.retries++;
           request.priority += 10;
           this.queue.unshift(request); // Add to front
-          
-          console.log(`🔄 Retrying ${request.id} (attempt ${request.retries + 1}/5)`);
         } else {
-          request.reject(new Error(`Rate limit exceeded after ${request.retries} retries`));
+          request.reject(
+            new Error(`Rate limit exceeded after ${request.retries} retries`),
+          );
         }
       } else {
         // Other error - reject
@@ -245,7 +243,10 @@ class RemoveBgRateLimiter {
       maxConcurrency: this.maxConcurrency,
       remaining: this.state.remaining,
       limit: this.state.limit,
-      quotaPercentage: ((this.state.remaining / this.state.limit) * 100).toFixed(1),
+      quotaPercentage: (
+        (this.state.remaining / this.state.limit) *
+        100
+      ).toFixed(1),
     };
   }
 
@@ -262,4 +263,3 @@ class RemoveBgRateLimiter {
 
 // Singleton instance
 export const removeBgRateLimiter = new RemoveBgRateLimiter();
-

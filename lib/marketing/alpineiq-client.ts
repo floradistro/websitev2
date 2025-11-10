@@ -69,7 +69,7 @@ export class AlpineIQClient {
 
   constructor(config: AlpineIQConfig) {
     this.config = config;
-    this.baseUrl = config.baseUrl || 'https://lab.alpineiq.com';
+    this.baseUrl = config.baseUrl || "https://lab.alpineiq.com";
   }
 
   /**
@@ -78,15 +78,15 @@ export class AlpineIQClient {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: any
+    body?: any,
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
     const response = await fetch(url, {
       method,
       headers: {
-        'X-APIKEY': this.config.apiKey,
-        'Content-Type': 'application/json',
+        "X-APIKEY": this.config.apiKey,
+        "Content-Type": "application/json",
       },
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -95,7 +95,8 @@ export class AlpineIQClient {
 
     if (!response.ok || !data.success) {
       throw new Error(
-        data.errors?.[0]?.message || `AlpineIQ API error: ${response.statusText}`
+        data.errors?.[0]?.message ||
+          `AlpineIQ API error: ${response.statusText}`,
       );
     }
 
@@ -110,7 +111,7 @@ export class AlpineIQClient {
    * Get all campaigns
    */
   async getCampaigns(): Promise<AlpineIQCampaign[]> {
-    return this.request('GET', '/api/v2/campaigns');
+    return this.request("GET", "/api/v2/campaigns");
   }
 
   /**
@@ -118,8 +119,8 @@ export class AlpineIQClient {
    */
   async getCampaignStats(campaignId: string): Promise<any> {
     return this.request(
-      'GET',
-      `/api/v1.1/campaigns/${this.config.userId}/stats/${campaignId}`
+      "GET",
+      `/api/v1.1/campaigns/${this.config.userId}/stats/${campaignId}`,
     );
   }
 
@@ -131,7 +132,7 @@ export class AlpineIQClient {
    * Create or update a customer in AlpineIQ
    */
   async upsertCustomer(customer: AlpineIQCustomer): Promise<any> {
-    return this.request('POST', '/api/v2/contact', {
+    return this.request("POST", "/api/v2/contact", {
       email: customer.email,
       phone: customer.phone,
       firstName: customer.firstName,
@@ -147,8 +148,8 @@ export class AlpineIQClient {
   async lookupCustomerByPhone(phone: string): Promise<string | null> {
     try {
       const data = await this.request<{ contactID: string }>(
-        'GET',
-        `/api/v2/lookup/${phone}`
+        "GET",
+        `/api/v2/lookup/${phone}`,
       );
       return data.contactID;
     } catch (error) {
@@ -162,8 +163,8 @@ export class AlpineIQClient {
   async lookupCustomerByEmail(email: string): Promise<string | null> {
     try {
       const data = await this.request<{ contactID: string }>(
-        'GET',
-        `/api/v2/lookup/email/${email}`
+        "GET",
+        `/api/v2/lookup/email/${email}`,
       );
       return data.contactID;
     } catch (error) {
@@ -179,7 +180,11 @@ export class AlpineIQClient {
     phone?: string;
     name?: string;
   }): Promise<any[]> {
-    return this.request('POST', `/api/v1.1/contacts/search/${this.config.userId}`, query);
+    return this.request(
+      "POST",
+      `/api/v1.1/contacts/search/${this.config.userId}`,
+      query,
+    );
   }
 
   // ----------------------------------------------------------------------------
@@ -190,14 +195,14 @@ export class AlpineIQClient {
    * Get loyalty program configuration
    */
   async getLoyaltyConfig(): Promise<AlpineIQLoyaltyConfig> {
-    return this.request('GET', `/api/v2/loyalty/default/${this.config.userId}`);
+    return this.request("GET", `/api/v2/loyalty/default/${this.config.userId}`);
   }
 
   /**
    * Lookup customer loyalty status
    */
   async getLoyaltyStatus(emailOrPhone: string): Promise<any> {
-    return this.request('POST', `/api/v2/loyalty/lookup/${emailOrPhone}`, {});
+    return this.request("POST", `/api/v2/loyalty/lookup/${emailOrPhone}`, {});
   }
 
   /**
@@ -210,14 +215,14 @@ export class AlpineIQClient {
     orderId?: string;
   }): Promise<any> {
     return this.request(
-      'PUT',
+      "PUT",
       `/api/v1.1/adjust/loyaltyPoints/${this.config.userId}/${params.contactId}`,
       {
         value: params.points,
         note: params.note,
         cmpID: params.orderId,
         ts: Math.floor(Date.now() / 1000),
-      }
+      },
     );
   }
 
@@ -226,8 +231,8 @@ export class AlpineIQClient {
    */
   async getLoyaltyTimeline(contactId: string): Promise<any> {
     return this.request(
-      'GET',
-      `/api/v1.1/contact/loyaltyPoints/timeline/${this.config.userId}/${contactId}`
+      "GET",
+      `/api/v1.1/contact/loyaltyPoints/timeline/${this.config.userId}/${contactId}`,
     );
   }
 
@@ -276,7 +281,11 @@ export class AlpineIQClient {
       send_notification?: boolean;
     };
   }): Promise<any> {
-    return this.request('POST', `/api/v1.1/createUpdateSale/${this.config.userId}`, sale);
+    return this.request(
+      "POST",
+      `/api/v1.1/createUpdateSale/${this.config.userId}`,
+      sale,
+    );
   }
 
   /**
@@ -290,7 +299,7 @@ export class AlpineIQClient {
     address?: string;
     favoriteStore?: string;
   }): Promise<any> {
-    return this.request('POST', '/api/v2/loyalty', {
+    return this.request("POST", "/api/v2/loyalty", {
       uid: this.config.userId,
       email: member.email,
       mobilePhone: member.mobilePhone,
@@ -298,24 +307,27 @@ export class AlpineIQClient {
       lastName: member.lastName,
       address: member.address,
       favoriteStore: member.favoriteStore,
-      loyalty: true
+      loyalty: true,
     });
   }
 
   /**
    * Get all orders for a contact
    */
-  async getCustomerOrders(contactId: string, params?: {
-    start?: number;
-    limit?: number;
-  }): Promise<any[]> {
+  async getCustomerOrders(
+    contactId: string,
+    params?: {
+      start?: number;
+      limit?: number;
+    },
+  ): Promise<any[]> {
     const query = new URLSearchParams({
-      start: params?.start?.toString() || '0',
-      limit: params?.limit?.toString() || '100',
+      start: params?.start?.toString() || "0",
+      limit: params?.limit?.toString() || "100",
     });
     return this.request(
-      'GET',
-      `/api/v1.1/contact/orders/${this.config.userId}/${contactId}?${query}`
+      "GET",
+      `/api/v1.1/contact/orders/${this.config.userId}/${contactId}?${query}`,
     );
   }
 
@@ -331,10 +343,13 @@ export class AlpineIQClient {
     limit?: number;
   }): Promise<any[]> {
     const query = new URLSearchParams({
-      start: params?.start?.toString() || '0',
-      limit: params?.limit?.toString() || '100',
+      start: params?.start?.toString() || "0",
+      limit: params?.limit?.toString() || "100",
     });
-    const result = await this.request<any>('GET', `/api/v1.1/audiences/${this.config.userId}?${query}`);
+    const result = await this.request<any>(
+      "GET",
+      `/api/v1.1/audiences/${this.config.userId}?${query}`,
+    );
     return result.data || result;
   }
 
@@ -343,8 +358,8 @@ export class AlpineIQClient {
    */
   async getAudience(audienceId: string): Promise<any> {
     return this.request(
-      'GET',
-      `/api/v1.1/audience/${this.config.userId}/${audienceId}`
+      "GET",
+      `/api/v1.1/audience/${this.config.userId}/${audienceId}`,
     );
   }
 
@@ -352,7 +367,7 @@ export class AlpineIQClient {
    * Get all members of an audience
    */
   async getAudienceMembers(audienceId: string): Promise<string[]> {
-    return this.request('GET', `/api/v2/audience/members/${audienceId}`);
+    return this.request("GET", `/api/v2/audience/members/${audienceId}`);
   }
 
   /**
@@ -364,12 +379,12 @@ export class AlpineIQClient {
     contactIDs: string[];
   }): Promise<{ audienceId: string }> {
     const result = await this.request<{ id: string; audienceId: string }>(
-      'POST',
+      "POST",
       `/api/v1.1/audience/${this.config.userId}`,
       {
         name: params.name,
         contactIDs: params.contactIDs,
-      }
+      },
     );
     return { audienceId: result.id || result.audienceId };
   }
@@ -394,7 +409,7 @@ export class AlpineIQClient {
 
     // Create audience with matched contacts
     if (contactIDs.length === 0) {
-      throw new Error('No contacts found for provided phone numbers');
+      throw new Error("No contacts found for provided phone numbers");
     }
 
     const result = await this.createAudience({
@@ -425,7 +440,7 @@ export class AlpineIQClient {
     }
 
     if (contactIDs.length === 0) {
-      throw new Error('No contacts found for provided emails');
+      throw new Error("No contacts found for provided emails");
     }
 
     const result = await this.createAudience({
@@ -448,8 +463,8 @@ export class AlpineIQClient {
    */
   async getStores(): Promise<any[]> {
     const data = await this.request<{ stores: any[] }>(
-      'GET',
-      `/api/v1.1/stores/${this.config.userId}`
+      "GET",
+      `/api/v1.1/stores/${this.config.userId}`,
     );
     return data.stores;
   }
@@ -469,7 +484,7 @@ export class AlpineIQClient {
     };
     phone?: string;
   }): Promise<any> {
-    return this.request('POST', `/api/v1.1/stores/${this.config.userId}`, {
+    return this.request("POST", `/api/v1.1/stores/${this.config.userId}`, {
       name: store.name,
       nickname: store.nickname,
       addr: store.address,
@@ -485,7 +500,7 @@ export class AlpineIQClient {
    * Get all discount groups
    */
   async getDiscountGroups(): Promise<any[]> {
-    return this.request('GET', '/api/v2/discount/groups');
+    return this.request("GET", "/api/v2/discount/groups");
   }
 
   /**
@@ -496,8 +511,8 @@ export class AlpineIQClient {
     end: number; // Unix timestamp
   }): Promise<any[]> {
     return this.request(
-      'GET',
-      `/api/v1.1/discountRedemptions/${this.config.userId}/${params.start}/${params.end}`
+      "GET",
+      `/api/v1.1/discountRedemptions/${this.config.userId}/${params.start}/${params.end}`,
     );
   }
 
@@ -509,19 +524,23 @@ export class AlpineIQClient {
    * Set email opt-in status
    */
   async setEmailOptIn(email: string, optedIn: boolean): Promise<any> {
-    return this.request('POST', `/api/v2/optin/${email}`, {
+    return this.request("POST", `/api/v2/optin/${email}`, {
       optIn: optedIn,
-      channel: 'email',
+      channel: "email",
     });
   }
 
   /**
    * Set SMS opt-in status
    */
-  async setSMSOptIn(phone: string, optedIn: boolean, doubleOpt: boolean = false): Promise<any> {
-    return this.request('POST', `/api/v2/optin/${phone}`, {
+  async setSMSOptIn(
+    phone: string,
+    optedIn: boolean,
+    doubleOpt: boolean = false,
+  ): Promise<any> {
+    return this.request("POST", `/api/v2/optin/${phone}`, {
       optIn: optedIn,
-      channel: 'text',
+      channel: "text",
       doubleOpt,
     });
   }
@@ -530,7 +549,7 @@ export class AlpineIQClient {
    * Get opt-in status for email/phone
    */
   async getOptInStatus(emailOrPhone: string): Promise<any> {
-    return this.request('GET', `/api/v2/optin/${emailOrPhone}`);
+    return this.request("GET", `/api/v2/optin/${emailOrPhone}`);
   }
 
   // ----------------------------------------------------------------------------
@@ -545,11 +564,14 @@ export class AlpineIQClient {
     phone?: string;
   }): Promise<any> {
     if (params.contactId) {
-      return this.request('GET', `/api/v1.1/wallet/${this.config.userId}/${params.contactId}`);
+      return this.request(
+        "GET",
+        `/api/v1.1/wallet/${this.config.userId}/${params.contactId}`,
+      );
     } else if (params.phone) {
-      return this.request('GET', `/api/v1.1/walletOffers/${params.phone}`);
+      return this.request("GET", `/api/v1.1/walletOffers/${params.phone}`);
     }
-    throw new Error('Must provide contactId or phone');
+    throw new Error("Must provide contactId or phone");
   }
 
   /**
@@ -559,7 +581,10 @@ export class AlpineIQClient {
     apple?: string;
     google?: string;
   }> {
-    return this.request('GET', `/api/v1.1/walletPass/${this.config.userId}/${contactId}`);
+    return this.request(
+      "GET",
+      `/api/v1.1/walletPass/${this.config.userId}/${contactId}`,
+    );
   }
 
   // ----------------------------------------------------------------------------
@@ -577,31 +602,29 @@ export class AlpineIQClient {
     name: string;
   } | null> {
     // Get audiences to find "Signed Up" loyalty members audience
-    const response = await this.request<any>('GET', `/api/v1.1/audiences/${this.config.userId}`);
-
-    console.log('📊 Response from audiences endpoint:', response ? 'OK' : 'NULL');
+    const response = await this.request<any>(
+      "GET",
+      `/api/v1.1/audiences/${this.config.userId}`,
+    );
 
     const audiences = response.data || response;
-    console.log(`📊 Total audiences: ${audiences?.length || 0}`);
 
     if (!audiences || audiences.length === 0) {
-      console.log('⚠️  No audiences found');
       return null;
     }
 
     // Find the "Signed Up" audience (loyaltyMember = true)
     const loyaltyAudience = audiences.find((a: any) => {
-      const isSignedUp = a.name === 'Signed Up';
-      const hasLoyaltyTrait = a.traits?.some((t: any) => t.type === 'loyaltyMember' && t.value === true);
+      const isSignedUp = a.name === "Signed Up";
+      const hasLoyaltyTrait = a.traits?.some(
+        (t: any) => t.type === "loyaltyMember" && t.value === true,
+      );
       if (isSignedUp || hasLoyaltyTrait) {
-        console.log(`✅ Found loyalty audience: ${a.name} (ID: ${a.id}, Size: ${a.audienceSize})`);
       }
       return isSignedUp || hasLoyaltyTrait;
     });
 
     if (!loyaltyAudience) {
-      console.log('⚠️  No loyalty audience found in', audiences.length, 'audiences');
-      console.log('First 3 audience names:', audiences.slice(0, 3).map((a: any) => a.name).join(', '));
       return null;
     }
 
@@ -629,20 +652,20 @@ export class AlpineIQClient {
     try {
       // Use the loyalty lookup endpoint
       const response = await this.request<any>(
-        'POST',
+        "POST",
         `/api/v2/loyalty/lookup/${emailOrPhone}`,
-        {}
+        {},
       );
 
       if (response && response.contact) {
         return {
           id: response.contact.id || response.contact.universalID,
-          email: response.contact.email || '',
-          phone: response.contact.phone || '',
+          email: response.contact.email || "",
+          phone: response.contact.phone || "",
           firstName: response.contact.firstName,
           lastName: response.contact.lastName,
           points: response.wallet?.points || 0,
-          tier: response.wallet?.tier || 'Member',
+          tier: response.wallet?.tier || "Member",
           tierLevel: response.wallet?.tierLevel || 1,
           lifetimePoints: response.wallet?.lifetimePoints || 0,
         };
@@ -650,7 +673,9 @@ export class AlpineIQClient {
 
       return null;
     } catch (error) {
-      console.error(`Failed to lookup customer ${emailOrPhone}:`, error);
+      if (process.env.NODE_ENV === "development") {
+        console.error(`Failed to lookup customer ${emailOrPhone}:`, error);
+      }
       return null;
     }
   }
@@ -679,22 +704,22 @@ export class AlpineIQClient {
    */
   async createSMSCampaign(params: {
     campaignName: string;
-    messageContent: string;  // Must be approved template (e.g., "Special offer! {link}")
-    landingHTML?: string;    // Optional: HTML for landing page (if template has {link})
-    landingType?: string;    // Optional: 'custom' | 'template'
-    phoneList?: string[];    // Array of phone numbers
-    emailList?: string[];    // Or array of emails
-    contactIDs?: string[];   // Or array of contact IDs
-    audienceId?: string;     // Or use audience
-    startDate?: Date;        // When to send (default: now + 1 hour)
-    sendNow?: boolean;       // Send immediately
+    messageContent: string; // Must be approved template (e.g., "Special offer! {link}")
+    landingHTML?: string; // Optional: HTML for landing page (if template has {link})
+    landingType?: string; // Optional: 'custom' | 'template'
+    phoneList?: string[]; // Array of phone numbers
+    emailList?: string[]; // Or array of emails
+    contactIDs?: string[]; // Or array of contact IDs
+    audienceId?: string; // Or use audience
+    startDate?: Date; // When to send (default: now + 1 hour)
+    sendNow?: boolean; // Send immediately
   }): Promise<{ campaignId: string }> {
     const startDate = params.startDate || new Date(Date.now() + 3600000);
     const startTimestamp = Math.floor(startDate.getTime() / 1000);
 
     const payload: any = {
       campaignName: params.campaignName,
-      campaignType: 'TEXT',
+      campaignType: "TEXT",
       messageContent: params.messageContent,
       userId: this.config.userId,
       startDate: startTimestamp,
@@ -703,7 +728,7 @@ export class AlpineIQClient {
     // Add landing page if provided
     if (params.landingHTML) {
       payload.landingHTML = params.landingHTML;
-      payload.landingType = params.landingType || 'custom';
+      payload.landingType = params.landingType || "custom";
     }
 
     // Add targeting (at least one required)
@@ -713,9 +738,9 @@ export class AlpineIQClient {
     if (params.audienceId) payload.audienceId = params.audienceId;
 
     const result = await this.request<{ id: string; campaignId: string }>(
-      'POST',
-      '/api/v2/campaign',
-      payload
+      "POST",
+      "/api/v2/campaign",
+      payload,
     );
 
     return { campaignId: result.id || result.campaignId };
@@ -738,7 +763,7 @@ export class AlpineIQClient {
 
     const payload: any = {
       campaignName: params.campaignName,
-      campaignType: 'EMAIL',
+      campaignType: "EMAIL",
       messageContent: params.messageContent,
       subject: params.subject,
       userId: this.config.userId,
@@ -750,9 +775,9 @@ export class AlpineIQClient {
     if (params.audienceId) payload.audienceId = params.audienceId;
 
     const result = await this.request<{ id: string; campaignId: string }>(
-      'POST',
-      '/api/v2/campaign',
-      payload
+      "POST",
+      "/api/v2/campaign",
+      payload,
     );
 
     return { campaignId: result.id || result.campaignId };
@@ -764,15 +789,16 @@ export class AlpineIQClient {
    */
   async sendBulkSMS(params: {
     customers: Array<{ phone: string }>;
-    message: string;           // Approved template (e.g., "Special offer! {link}")
-    landingHTML?: string;      // Optional: Landing page HTML
+    message: string; // Approved template (e.g., "Special offer! {link}")
+    landingHTML?: string; // Optional: Landing page HTML
     campaignName?: string;
     sendAt?: Date;
   }): Promise<{ campaignId: string; recipientCount: number }> {
-    const phoneList = params.customers.map(c => c.phone).filter(Boolean);
+    const phoneList = params.customers.map((c) => c.phone).filter(Boolean);
 
     const result = await this.createSMSCampaign({
-      campaignName: params.campaignName || `SMS ${new Date().toLocaleDateString()}`,
+      campaignName:
+        params.campaignName || `SMS ${new Date().toLocaleDateString()}`,
       messageContent: params.message,
       landingHTML: params.landingHTML,
       phoneList,
@@ -795,10 +821,11 @@ export class AlpineIQClient {
     campaignName?: string;
     sendAt?: Date;
   }): Promise<{ campaignId: string; recipientCount: number }> {
-    const emailList = params.customers.map(c => c.email).filter(Boolean);
+    const emailList = params.customers.map((c) => c.email).filter(Boolean);
 
     const result = await this.createEmailCampaign({
-      campaignName: params.campaignName || `Email ${new Date().toLocaleDateString()}`,
+      campaignName:
+        params.campaignName || `Email ${new Date().toLocaleDateString()}`,
       subject: params.subject,
       messageContent: params.htmlContent,
       emailList,
@@ -823,7 +850,9 @@ export class AlpineIQClient {
       await this.getStores();
       return true;
     } catch (error) {
-      console.error('AlpineIQ connection test failed:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("AlpineIQ connection test failed:", error);
+      }
       return false;
     }
   }

@@ -1,1 +1,4 @@
-function o(n){return typeof n=="object"&&n!=null}export{o as a};
+function o(n) {
+  return typeof n == "object" && n != null;
+}
+export { o as a };

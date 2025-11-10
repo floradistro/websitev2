@@ -3,13 +3,13 @@
  * Create and manage customer segments
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { requireVendor } from "@/lib/auth/middleware";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 export async function GET(request: NextRequest) {
@@ -21,36 +21,43 @@ export async function GET(request: NextRequest) {
 
     // Get segments for this vendor
     const { data: segments, error } = await supabase
-      .from('customer_segments')
-      .select('*')
-      .eq('vendor_id', vendorId)
-      .order('created_at', { ascending: false });
+      .from("customer_segments")
+      .select("*")
+      .eq("vendor_id", vendorId)
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('Segments fetch error:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Segments fetch error:", error);
+      }
       return NextResponse.json(
-        { error: 'Failed to fetch segments', message: error.message },
-        { status: 500 }
+        { error: "Failed to fetch segments", message: error.message },
+        { status: 500 },
       );
     }
 
     // Calculate customer count for each segment
     const segmentsWithCounts = await Promise.all(
       (segments || []).map(async (segment) => {
-        const count = await calculateSegmentSize(vendorId, segment.segment_rules);
+        const count = await calculateSegmentSize(
+          vendorId,
+          segment.segment_rules,
+        );
         return {
           ...segment,
           customer_count: count,
         };
-      })
+      }),
     );
 
     return NextResponse.json(segmentsWithCounts);
   } catch (error: any) {
-    console.error('Segments API error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Segments API error:", error);
+    }
     return NextResponse.json(
-      { error: 'Failed to load segments', message: error.message },
-      { status: 500 }
+      { error: "Failed to load segments", message: error.message },
+      { status: 500 },
     );
   }
 }
@@ -67,16 +74,19 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!name) {
-      return NextResponse.json({ error: 'Segment name required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Segment name required" },
+        { status: 400 },
+      );
     }
 
     // Create segment
     const { data: segment, error: createError } = await supabase
-      .from('customer_segments')
+      .from("customer_segments")
       .insert({
         vendor_id: vendorId,
         name,
-        description: description || '',
+        description: description || "",
         segment_rules: rules || [],
         created_at: new Date().toISOString(),
       })
@@ -84,10 +94,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (createError) {
-      console.error('Segment creation error:', createError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Segment creation error:", createError);
+      }
       return NextResponse.json(
-        { error: 'Failed to create segment', message: createError.message },
-        { status: 500 }
+        { error: "Failed to create segment", message: createError.message },
+        { status: 500 },
       );
     }
 
@@ -102,10 +114,12 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('Segment creation error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Segment creation error:", error);
+    }
     return NextResponse.json(
-      { error: 'Failed to create segment', message: error.message },
-      { status: 500 }
+      { error: "Failed to create segment", message: error.message },
+      { status: 500 },
     );
   }
 }
@@ -113,51 +127,54 @@ export async function POST(request: NextRequest) {
 /**
  * Calculate segment size based on rules
  */
-async function calculateSegmentSize(vendorId: string, rules: any[]): Promise<number> {
+async function calculateSegmentSize(
+  vendorId: string,
+  rules: any[],
+): Promise<number> {
   if (!rules || rules.length === 0) {
     // No rules = all customers
     const { count } = await supabase
-      .from('customers')
-      .select('*', { count: 'exact', head: true })
-      .eq('vendor_id', vendorId);
+      .from("customers")
+      .select("*", { count: "exact", head: true })
+      .eq("vendor_id", vendorId);
     return count || 0;
   }
 
   // Build dynamic query based on rules
   let query = supabase
-    .from('customers')
-    .select('*', { count: 'exact', head: true })
-    .eq('vendor_id', vendorId);
+    .from("customers")
+    .select("*", { count: "exact", head: true })
+    .eq("vendor_id", vendorId);
 
   for (const rule of rules) {
     const { type, config } = rule;
 
     switch (type) {
-      case 'lifetime_value':
+      case "lifetime_value":
         if (config.min !== undefined) {
-          query = query.gte('lifetime_value', config.min);
+          query = query.gte("lifetime_value", config.min);
         }
         if (config.max !== undefined) {
-          query = query.lte('lifetime_value', config.max);
+          query = query.lte("lifetime_value", config.max);
         }
         break;
 
-      case 'order_count':
+      case "order_count":
         if (config.min !== undefined) {
-          query = query.gte('total_orders', config.min);
+          query = query.gte("total_orders", config.min);
         }
         break;
 
-      case 'last_order':
+      case "last_order":
         if (config.days_ago && config.operator) {
           const date = new Date();
           date.setDate(date.getDate() - parseInt(config.days_ago));
           const dateStr = date.toISOString();
 
-          if (config.operator === 'more than') {
-            query = query.lt('last_order_date', dateStr);
+          if (config.operator === "more than") {
+            query = query.lt("last_order_date", dateStr);
           } else {
-            query = query.gt('last_order_date', dateStr);
+            query = query.gt("last_order_date", dateStr);
           }
         }
         break;

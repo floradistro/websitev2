@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useRef } from 'react';
-import { Printer, Mail, X } from 'lucide-react';
+import { useRef } from "react";
+import { Printer, Mail, X } from "lucide-react";
 
 interface ReceiptItem {
   productName: string;
@@ -49,7 +49,6 @@ export function POSReceipt({
 
   const handleEmail = () => {
     // TODO: Email receipt
-    console.log('Email receipt - coming soon');
   };
 
   return (
@@ -57,7 +56,10 @@ export function POSReceipt({
       <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl max-w-md w-full overflow-hidden">
         {/* Header Actions */}
         <div className="flex items-center justify-between p-4 border-b border-white/5">
-          <h3 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
+          <h3
+            className="text-xs uppercase tracking-[0.15em] text-white font-black"
+            style={{ fontWeight: 900 }}
+          >
             Receipt
           </h3>
           <button
@@ -72,7 +74,10 @@ export function POSReceipt({
         <div ref={receiptRef} className="p-6 bg-white text-black print:p-8">
           {/* Business Header */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-black uppercase tracking-tight mb-1" style={{ fontWeight: 900 }}>
+            <h1
+              className="text-2xl font-black uppercase tracking-tight mb-1"
+              style={{ fontWeight: 900 }}
+            >
               {vendorName}
             </h1>
             <div className="text-xs uppercase tracking-[0.15em] text-black/60">
@@ -83,16 +88,24 @@ export function POSReceipt({
           {/* Order Info */}
           <div className="border-t border-b border-black/10 py-3 mb-4 space-y-1">
             <div className="flex justify-between text-xs">
-              <span className="uppercase tracking-[0.15em] text-black/60">Order</span>
+              <span className="uppercase tracking-[0.15em] text-black/60">
+                Order
+              </span>
               <span className="font-black">{orderNumber}</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="uppercase tracking-[0.15em] text-black/60">Date</span>
-              <span className="font-black">{transactionDate.toLocaleString()}</span>
+              <span className="uppercase tracking-[0.15em] text-black/60">
+                Date
+              </span>
+              <span className="font-black">
+                {transactionDate.toLocaleString()}
+              </span>
             </div>
-            {customerName && customerName !== 'Walk-In' && (
+            {customerName && customerName !== "Walk-In" && (
               <div className="flex justify-between text-xs">
-                <span className="uppercase tracking-[0.15em] text-black/60">Customer</span>
+                <span className="uppercase tracking-[0.15em] text-black/60">
+                  Customer
+                </span>
                 <span className="font-black">{customerName}</span>
               </div>
             )}
@@ -104,14 +117,20 @@ export function POSReceipt({
               <div key={index} className="mb-2">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <div className="text-xs font-black uppercase tracking-tight" style={{ fontWeight: 900 }}>
+                    <div
+                      className="text-xs font-black uppercase tracking-tight"
+                      style={{ fontWeight: 900 }}
+                    >
                       {item.productName}
                     </div>
                     <div className="text-[10px] text-black/60 uppercase tracking-[0.15em]">
                       {item.quantity} × ${item.unitPrice.toFixed(2)}
                     </div>
                   </div>
-                  <div className="text-sm font-black" style={{ fontWeight: 900 }}>
+                  <div
+                    className="text-sm font-black"
+                    style={{ fontWeight: 900 }}
+                  >
                     ${item.lineTotal.toFixed(2)}
                   </div>
                 </div>
@@ -122,35 +141,54 @@ export function POSReceipt({
           {/* Totals */}
           <div className="border-t border-black/10 pt-3 space-y-2 mb-4">
             <div className="flex justify-between text-xs">
-              <span className="uppercase tracking-[0.15em] text-black/60">Subtotal</span>
+              <span className="uppercase tracking-[0.15em] text-black/60">
+                Subtotal
+              </span>
               <span className="font-black">${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-xs">
-              <span className="uppercase tracking-[0.15em] text-black/60">Tax (8%)</span>
+              <span className="uppercase tracking-[0.15em] text-black/60">
+                Tax (8%)
+              </span>
               <span className="font-black">${taxAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-base border-t border-black/10 pt-2">
-              <span className="uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>Total</span>
-              <span className="font-black" style={{ fontWeight: 900 }}>${total.toFixed(2)}</span>
+              <span
+                className="uppercase tracking-[0.15em] font-black"
+                style={{ fontWeight: 900 }}
+              >
+                Total
+              </span>
+              <span className="font-black" style={{ fontWeight: 900 }}>
+                ${total.toFixed(2)}
+              </span>
             </div>
           </div>
 
           {/* Payment Info */}
           <div className="border-t border-black/10 pt-3 mb-6 space-y-1">
             <div className="flex justify-between text-xs">
-              <span className="uppercase tracking-[0.15em] text-black/60">Payment</span>
+              <span className="uppercase tracking-[0.15em] text-black/60">
+                Payment
+              </span>
               <span className="font-black uppercase">{paymentMethod}</span>
             </div>
             {cashTendered && (
               <>
                 <div className="flex justify-between text-xs">
-                  <span className="uppercase tracking-[0.15em] text-black/60">Cash</span>
+                  <span className="uppercase tracking-[0.15em] text-black/60">
+                    Cash
+                  </span>
                   <span className="font-black">${cashTendered.toFixed(2)}</span>
                 </div>
                 {changeGiven !== undefined && changeGiven > 0 && (
                   <div className="flex justify-between text-xs">
-                    <span className="uppercase tracking-[0.15em] text-black/60">Change</span>
-                    <span className="font-black">${changeGiven.toFixed(2)}</span>
+                    <span className="uppercase tracking-[0.15em] text-black/60">
+                      Change
+                    </span>
+                    <span className="font-black">
+                      ${changeGiven.toFixed(2)}
+                    </span>
                   </div>
                 )}
               </>
@@ -186,4 +224,3 @@ export function POSReceipt({
     </div>
   );
 }
-

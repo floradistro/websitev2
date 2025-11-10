@@ -11,9 +11,9 @@
  * - Change detection to avoid unnecessary syncs
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { AlpineIQClient, createAlpineIQClient } from './alpineiq-client';
-import crypto from 'crypto';
+import { createClient } from "@supabase/supabase-js";
+import { AlpineIQClient, createAlpineIQClient } from "./alpineiq-client";
+import crypto from "crypto";
 
 export interface SyncServiceConfig {
   vendorId: string;
@@ -39,17 +39,17 @@ export class AlpineIQSyncService {
   async initialize(): Promise<void> {
     // Check if vendor uses AlpineIQ
     const { data: vendor } = await this.supabase
-      .from('vendors')
-      .select('marketing_provider, marketing_config')
-      .eq('id', this.vendorId)
+      .from("vendors")
+      .select("marketing_provider, marketing_config")
+      .eq("id", this.vendorId)
       .single();
 
     if (!vendor) {
-      throw new Error('Vendor not found');
+      throw new Error("Vendor not found");
     }
 
     const vendorData = vendor as any;
-    this.isAlpineIQVendor = vendorData.marketing_provider === 'alpineiq';
+    this.isAlpineIQVendor = vendorData.marketing_provider === "alpineiq";
 
     if (this.isAlpineIQVendor) {
       // Initialize AlpineIQ client
@@ -58,12 +58,9 @@ export class AlpineIQSyncService {
       // Test connection
       const connected = await this.alpineiq.testConnection();
       if (!connected) {
-        throw new Error('Failed to connect to AlpineIQ');
+        throw new Error("Failed to connect to AlpineIQ");
       }
-
-      console.log(`✅ AlpineIQ sync initialized for vendor ${this.vendorId}`);
     } else {
-      console.log(`ℹ️  Vendor ${this.vendorId} uses built-in marketing system`);
     }
   }
 
@@ -72,13 +69,11 @@ export class AlpineIQSyncService {
    */
   startSync(): void {
     if (!this.isAlpineIQVendor || !this.alpineiq) {
-      console.log('Sync not started - vendor not using AlpineIQ');
       return;
     }
 
     this.syncCustomers();
     this.syncOrders();
-    console.log(`🔄 AlpineIQ sync started for vendor ${this.vendorId}`);
   }
 
   /**
@@ -87,7 +82,6 @@ export class AlpineIQSyncService {
   stopSync(): void {
     this.channels.forEach((channel) => channel.unsubscribe());
     this.channels = [];
-    console.log(`⏸️  AlpineIQ sync stopped for vendor ${this.vendorId}`);
   }
 
   // ----------------------------------------------------------------------------
@@ -101,29 +95,30 @@ export class AlpineIQSyncService {
     const channel = this.supabase
       .channel(`alpineiq_customers_${this.vendorId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*', // INSERT, UPDATE, DELETE
-          schema: 'public',
-          table: 'customers',
+          event: "*", // INSERT, UPDATE, DELETE
+          schema: "public",
+          table: "customers",
           filter: `vendor_id=eq.${this.vendorId}`,
         },
         async (payload) => {
-          console.log('Customer change detected:', payload.eventType, (payload.new as any)?.id);
-
-          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            await this.pushCustomerToAlpineIQ((payload.new as any));
-          } else if (payload.eventType === 'DELETE') {
+          if (
+            payload.eventType === "INSERT" ||
+            payload.eventType === "UPDATE"
+          ) {
+            await this.pushCustomerToAlpineIQ(payload.new as any);
+          } else if (payload.eventType === "DELETE") {
             // AlpineIQ doesn't support DELETE, just log it
             await this.logSync({
-              entity_type: 'customer',
+              entity_type: "customer",
               entity_id: (payload.old as any).id,
-              direction: 'to_alpineiq',
-              status: 'success',
-              payload: { note: 'Customer deleted locally, kept in AlpineIQ' },
+              direction: "to_alpineiq",
+              status: "success",
+              payload: { note: "Customer deleted locally, kept in AlpineIQ" },
             });
           }
-        }
+        },
       )
       .subscribe();
 
@@ -139,9 +134,9 @@ export class AlpineIQSyncService {
     try {
       // Check if already synced
       const { data: mappingData } = await this.supabase
-        .from('alpineiq_customer_mapping')
-        .select('*')
-        .eq('customer_id', customer.id)
+        .from("alpineiq_customer_mapping")
+        .select("*")
+        .eq("customer_id", customer.id)
         .single();
 
       // Create hash of current data
@@ -150,7 +145,6 @@ export class AlpineIQSyncService {
       // Skip if unchanged
       const mapping = mappingData as any;
       if (mapping && mapping.sync_hash === dataHash) {
-        console.log('Customer unchanged, skipping sync:', customer.id);
         return;
       }
 
@@ -161,18 +155,18 @@ export class AlpineIQSyncService {
         firstName: customer.first_name || undefined,
         lastName: customer.last_name || undefined,
         address: customer.address || undefined,
-        favoriteStore: undefined
+        favoriteStore: undefined,
       });
 
       // Get AlpineIQ contact ID from result
       const alpineiqCustomerId = result.contactID;
 
       if (!alpineiqCustomerId) {
-        throw new Error('Failed to get AlpineIQ contact ID from signup');
+        throw new Error("Failed to get AlpineIQ contact ID from signup");
       }
 
       // Save or update mapping
-      await this.supabase.from('alpineiq_customer_mapping').upsert({
+      await this.supabase.from("alpineiq_customer_mapping").upsert({
         vendor_id: this.vendorId,
         customer_id: customer.id,
         alpineiq_customer_id: alpineiqCustomerId,
@@ -182,30 +176,29 @@ export class AlpineIQSyncService {
 
       // Log success
       await this.logSync({
-        entity_type: 'customer',
+        entity_type: "customer",
         entity_id: customer.id,
-        direction: 'to_alpineiq',
-        status: 'success',
+        direction: "to_alpineiq",
+        status: "success",
         alpineiq_id: alpineiqCustomerId,
         payload: customer,
       });
-
-      console.log(`✅ Customer synced to AlpineIQ: ${customer.email} (ID: ${alpineiqCustomerId})`);
     } catch (error: any) {
-      console.error('Failed to sync customer:', error);
-
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to sync customer:", error);
+      }
       // Log failure
       await this.logSync({
-        entity_type: 'customer',
+        entity_type: "customer",
         entity_id: customer.id,
-        direction: 'to_alpineiq',
-        status: 'failed',
+        direction: "to_alpineiq",
+        status: "failed",
         error_message: error.message,
         payload: customer,
       });
 
       // Queue for retry
-      await this.queueRetry('customer', customer.id);
+      await this.queueRetry("customer", customer.id);
     }
   }
 
@@ -220,17 +213,16 @@ export class AlpineIQSyncService {
     const channel = this.supabase
       .channel(`alpineiq_orders_${this.vendorId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'orders',
+          event: "INSERT",
+          schema: "public",
+          table: "orders",
           filter: `vendor_id=eq.${this.vendorId}`,
         },
         async (payload) => {
-          console.log('Order created:', (payload.new as any).id);
-          await this.pushOrderToAlpineIQ((payload.new as any));
-        }
+          await this.pushOrderToAlpineIQ(payload.new as any);
+        },
       )
       .subscribe();
 
@@ -246,19 +238,20 @@ export class AlpineIQSyncService {
     try {
       // Get customer info
       const { data: customer } = await this.supabase
-        .from('customers')
-        .select('*')
-        .eq('id', order.customer_id)
+        .from("customers")
+        .select("*")
+        .eq("id", order.customer_id)
         .single();
 
       if (!customer) {
-        throw new Error('Customer not found');
+        throw new Error("Customer not found");
       }
 
       // Get order items with product details
       const { data: orderItems } = await this.supabase
-        .from('order_items')
-        .select(`
+        .from("order_items")
+        .select(
+          `
           *,
           products (
             name,
@@ -269,41 +262,47 @@ export class AlpineIQSyncService {
             thc_percentage,
             cbd_percentage
           )
-        `)
-        .eq('order_id', order.id);
+        `,
+        )
+        .eq("order_id", order.id);
 
       // Format items for Alpine IQ
       const items = (orderItems || []).map((item: any) => ({
-        sku: item.products?.sku || item.product_id || 'UNKNOWN',
-        size: item.variant_name || '',
-        category: item.products?.category || 'MISC',
-        subcategory: item.products?.subcategory || '',
-        brand: item.products?.brand || '',
-        name: item.products?.name || item.product_name || 'Product',
-        strain: item.products?.strain || '',
-        grade: 'A',
-        species: item.products?.cannabis_type || item.products?.species || '',
+        sku: item.products?.sku || item.product_id || "UNKNOWN",
+        size: item.variant_name || "",
+        category: item.products?.category || "MISC",
+        subcategory: item.products?.subcategory || "",
+        brand: item.products?.brand || "",
+        name: item.products?.name || item.product_name || "Product",
+        strain: item.products?.strain || "",
+        grade: "A",
+        species: item.products?.cannabis_type || item.products?.species || "",
         price: parseFloat(item.unit_price || 0),
         discount: parseFloat(item.discount_amount || 0),
         quantity: parseInt(item.quantity || 1),
-        customAttributes: item.products?.thc_percentage ? [{
-          key: 'THC',
-          value: `${item.products.thc_percentage}%`
-        }] : []
+        customAttributes: item.products?.thc_percentage
+          ? [
+              {
+                key: "THC",
+                value: `${item.products.thc_percentage}%`,
+              },
+            ]
+          : [],
       }));
 
       // Get location name
       const { data: location } = await this.supabase
-        .from('locations')
-        .select('name')
-        .eq('id', order.location_id)
+        .from("locations")
+        .select("name")
+        .eq("id", order.location_id)
         .single();
 
       // Format transaction date (Alpine IQ format: 'YYYY-MM-DD HH:mm:ss +0000')
-      const transactionDate = new Date(order.created_at)
-        .toISOString()
-        .replace('T', ' ')
-        .split('.')[0] + ' +0000';
+      const transactionDate =
+        new Date(order.created_at)
+          .toISOString()
+          .replace("T", " ")
+          .split(".")[0] + " +0000";
 
       // Create sale in AlpineIQ with correct format
       await this.alpineiq.createSale({
@@ -316,36 +315,39 @@ export class AlpineIQSyncService {
         visit: {
           pos_id: order.id,
           pos_user: customer.email,
-          pos_type: order.order_type === 'delivery' ? 'online' : 'in-store',
+          pos_type: order.order_type === "delivery" ? "online" : "in-store",
           transaction_date: transactionDate,
-          location: location?.name || 'Main Store',
+          location: location?.name || "Main Store",
           budtenderName: order.employee_name,
           budtenderID: order.employee_id,
           visit_details_attributes: items,
           transaction_total: parseFloat(order.total),
-          send_notification: false
-        }
+          send_notification: false,
+        },
       });
 
       // Log success
       await this.logSync({
-        entity_type: 'order',
+        entity_type: "order",
         entity_id: order.id,
-        direction: 'to_alpineiq',
-        status: 'success',
-        payload: { order_id: order.id, total: order.total, items: items.length },
+        direction: "to_alpineiq",
+        status: "success",
+        payload: {
+          order_id: order.id,
+          total: order.total,
+          items: items.length,
+        },
       });
-
-      console.log(`✅ Order synced to AlpineIQ: ${order.id} ($${order.total}, ${items.length} items)`);
     } catch (error: any) {
-      console.error('Failed to sync order:', error);
-
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to sync order:", error);
+      }
       // Log failure
       await this.logSync({
-        entity_type: 'order',
+        entity_type: "order",
         entity_id: order.id,
-        direction: 'to_alpineiq',
-        status: 'failed',
+        direction: "to_alpineiq",
+        status: "failed",
         error_message: error.message,
         payload: order,
       });
@@ -361,9 +363,9 @@ export class AlpineIQSyncService {
    */
   async syncCustomer(customerId: string): Promise<void> {
     const { data: customer } = await this.supabase
-      .from('customers')
-      .select('*')
-      .eq('id', customerId)
+      .from("customers")
+      .select("*")
+      .eq("id", customerId)
       .single();
 
     if (customer) {
@@ -376,9 +378,9 @@ export class AlpineIQSyncService {
    */
   async syncOrder(orderId: string): Promise<void> {
     const { data: order } = await this.supabase
-      .from('orders')
-      .select('*')
-      .eq('id', orderId)
+      .from("orders")
+      .select("*")
+      .eq("id", orderId)
       .single();
 
     if (order) {
@@ -391,22 +393,18 @@ export class AlpineIQSyncService {
    */
   async bulkSyncCustomers(limit = 100): Promise<void> {
     const { data: customers } = await this.supabase
-      .from('customers')
-      .select('*')
-      .eq('vendor_id', this.vendorId)
+      .from("customers")
+      .select("*")
+      .eq("vendor_id", this.vendorId)
       .limit(limit);
 
     if (!customers) return;
-
-    console.log(`Starting bulk sync of ${customers.length} customers...`);
 
     for (const customer of customers) {
       await this.pushCustomerToAlpineIQ(customer);
       // Rate limiting: 5 requests per second
       await this.sleep(200);
     }
-
-    console.log(`✅ Bulk sync complete: ${customers.length} customers`);
   }
 
   // ----------------------------------------------------------------------------
@@ -425,7 +423,7 @@ export class AlpineIQSyncService {
       birthdate: customer.birthdate,
     });
 
-    return crypto.createHash('sha256').update(data).digest('hex');
+    return crypto.createHash("sha256").update(data).digest("hex");
   }
 
   /**
@@ -440,7 +438,7 @@ export class AlpineIQSyncService {
     error_message?: string;
     payload?: any;
   }): Promise<void> {
-    await this.supabase.from('alpineiq_sync_log').insert({
+    await this.supabase.from("alpineiq_sync_log").insert({
       vendor_id: this.vendorId,
       ...log,
     });
@@ -449,26 +447,29 @@ export class AlpineIQSyncService {
   /**
    * Queue failed sync for retry
    */
-  private async queueRetry(entityType: string, entityId: string): Promise<void> {
+  private async queueRetry(
+    entityType: string,
+    entityId: string,
+  ): Promise<void> {
     // Update retry count in sync log
     const { data: log } = await this.supabase
-      .from('alpineiq_sync_log')
-      .select('*')
-      .eq('entity_type', entityType)
-      .eq('entity_id', entityId)
-      .eq('status', 'failed')
-      .order('created_at', { ascending: false })
+      .from("alpineiq_sync_log")
+      .select("*")
+      .eq("entity_type", entityType)
+      .eq("entity_id", entityId)
+      .eq("status", "failed")
+      .order("created_at", { ascending: false })
       .limit(1)
       .single();
 
     if (log) {
       await this.supabase
-        .from('alpineiq_sync_log')
+        .from("alpineiq_sync_log")
         .update({
-          status: 'retry',
+          status: "retry",
           retry_count: log.retry_count + 1,
         })
-        .eq('id', log.id);
+        .eq("id", log.id);
     }
 
     // TODO: Implement exponential backoff retry logic with job queue
@@ -490,18 +491,18 @@ export class AlpineIQSyncService {
     last_sync: string | null;
   }> {
     const { data: stats } = await this.supabase
-      .from('alpineiq_sync_log')
-      .select('status, created_at')
-      .eq('vendor_id', this.vendorId)
-      .order('created_at', { ascending: false });
+      .from("alpineiq_sync_log")
+      .select("status, created_at")
+      .eq("vendor_id", this.vendorId)
+      .order("created_at", { ascending: false });
 
     if (!stats) {
       return { total_synced: 0, total_failed: 0, last_sync: null };
     }
 
     return {
-      total_synced: stats.filter((s) => s.status === 'success').length,
-      total_failed: stats.filter((s) => s.status === 'failed').length,
+      total_synced: stats.filter((s) => s.status === "success").length,
+      total_failed: stats.filter((s) => s.status === "failed").length,
       last_sync: stats[0]?.created_at || null,
     };
   }
@@ -512,7 +513,7 @@ export class AlpineIQSyncService {
  */
 export async function createAlpineIQSyncService(
   vendorId: string,
-  config: { supabaseUrl: string; supabaseKey: string }
+  config: { supabaseUrl: string; supabaseKey: string },
 ): Promise<AlpineIQSyncService> {
   const service = new AlpineIQSyncService({
     vendorId,

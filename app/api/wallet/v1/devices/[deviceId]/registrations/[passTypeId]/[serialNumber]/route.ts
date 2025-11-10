@@ -12,15 +12,15 @@
  * - Get serial numbers for passes registered to a device
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 interface RouteParams {
@@ -38,29 +38,32 @@ export async function POST(request: NextRequest, segmentData: RouteParams) {
   const params = await segmentData.params;
   try {
     const { deviceId, passTypeId, serialNumber } = params;
-    const authHeader = request.headers.get('authorization');
+    const authHeader = request.headers.get("authorization");
 
     // Extract auth token
-    const authToken = authHeader?.replace('ApplePass ', '');
+    const authToken = authHeader?.replace("ApplePass ", "");
 
     if (!authToken) {
       return NextResponse.json(
-        { error: 'Authorization token required' },
-        { status: 401 }
+        { error: "Authorization token required" },
+        { status: 401 },
       );
     }
 
     // Verify pass exists and token is valid
     const { data: pass, error: passError } = await supabase
-      .from('wallet_passes')
-      .select('*')
-      .eq('serial_number', serialNumber)
-      .eq('authentication_token', authToken)
-      .eq('status', 'active')
+      .from("wallet_passes")
+      .select("*")
+      .eq("serial_number", serialNumber)
+      .eq("authentication_token", authToken)
+      .eq("status", "active")
       .single();
 
     if (passError || !pass) {
-      return NextResponse.json({ error: 'Invalid pass or token' }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid pass or token" },
+        { status: 401 },
+      );
     }
 
     // Get push token from request body
@@ -68,13 +71,16 @@ export async function POST(request: NextRequest, segmentData: RouteParams) {
     const pushToken = body.pushToken;
 
     if (!pushToken) {
-      return NextResponse.json({ error: 'Push token required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Push token required" },
+        { status: 400 },
+      );
     }
 
     // Update pass devices array
     const devices = Array.isArray(pass.devices) ? pass.devices : [];
     const existingDeviceIndex = devices.findIndex(
-      (d: any) => d.device_id === deviceId
+      (d: any) => d.device_id === deviceId,
     );
 
     if (existingDeviceIndex >= 0) {
@@ -95,29 +101,28 @@ export async function POST(request: NextRequest, segmentData: RouteParams) {
 
     // Update database
     await supabase
-      .from('wallet_passes')
+      .from("wallet_passes")
       .update({
         devices,
         added_to_wallet_at: pass.added_to_wallet_at || new Date().toISOString(),
       })
-      .eq('id', pass.id);
+      .eq("id", pass.id);
 
     // Log event
-    await supabase.from('wallet_pass_events').insert({
+    await supabase.from("wallet_pass_events").insert({
       pass_id: pass.id,
       customer_id: pass.customer_id,
-      event_type: 'device_registered',
+      event_type: "device_registered",
       device_id: deviceId,
       push_token: pushToken,
     });
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
-    console.error('Device registration error:', error);
-    return NextResponse.json(
-      { error: 'Registration failed' },
-      { status: 500 }
-    );
+    if (process.env.NODE_ENV === "development") {
+      console.error("Device registration error:", error);
+    }
+    return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
 }
 
@@ -128,26 +133,29 @@ export async function DELETE(request: NextRequest, segmentData: RouteParams) {
   const params = await segmentData.params;
   try {
     const { deviceId, serialNumber } = params;
-    const authHeader = request.headers.get('authorization');
-    const authToken = authHeader?.replace('ApplePass ', '');
+    const authHeader = request.headers.get("authorization");
+    const authToken = authHeader?.replace("ApplePass ", "");
 
     if (!authToken) {
       return NextResponse.json(
-        { error: 'Authorization token required' },
-        { status: 401 }
+        { error: "Authorization token required" },
+        { status: 401 },
       );
     }
 
     // Verify pass
     const { data: pass, error: passError } = await supabase
-      .from('wallet_passes')
-      .select('*')
-      .eq('serial_number', serialNumber)
-      .eq('authentication_token', authToken)
+      .from("wallet_passes")
+      .select("*")
+      .eq("serial_number", serialNumber)
+      .eq("authentication_token", authToken)
       .single();
 
     if (passError || !pass) {
-      return NextResponse.json({ error: 'Invalid pass or token' }, { status: 401 });
+      return NextResponse.json(
+        { error: "Invalid pass or token" },
+        { status: 401 },
+      );
     }
 
     // Remove device from array
@@ -156,24 +164,26 @@ export async function DELETE(request: NextRequest, segmentData: RouteParams) {
 
     // Update database
     await supabase
-      .from('wallet_passes')
+      .from("wallet_passes")
       .update({ devices: updatedDevices })
-      .eq('id', pass.id);
+      .eq("id", pass.id);
 
     // Log event
-    await supabase.from('wallet_pass_events').insert({
+    await supabase.from("wallet_pass_events").insert({
       pass_id: pass.id,
       customer_id: pass.customer_id,
-      event_type: 'device_unregistered',
+      event_type: "device_unregistered",
       device_id: deviceId,
     });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('Device unregistration error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Device unregistration error:", error);
+    }
     return NextResponse.json(
-      { error: 'Unregistration failed' },
-      { status: 500 }
+      { error: "Unregistration failed" },
+      { status: 500 },
     );
   }
 }

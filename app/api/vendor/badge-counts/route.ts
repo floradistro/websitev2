@@ -1,33 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const vendorId = searchParams.get('vendorId');
+    const vendorId = searchParams.get("vendorId");
 
     if (!vendorId) {
-      return NextResponse.json({ success: false, error: 'Missing vendorId' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Missing vendorId" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();
 
     // Count pending orders
     const { count: ordersCount } = await supabase
-      .from('orders')
-      .select('*', { count: 'exact', head: true })
-      .eq('vendor_id', vendorId)
-      .in('status', ['pending', 'processing', 'ready']);
+      .from("orders")
+      .select("*", { count: "exact", head: true })
+      .eq("vendor_id", vendorId)
+      .in("status", ["pending", "processing", "ready"]);
 
     // Count products with incomplete data (missing name or price)
-    const { count: incompleteProductsCount, error: productsError } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true })
-      .eq('vendor_id', vendorId)
-      .or('name.is.null,regular_price.is.null');
+    const { count: incompleteProductsCount, error: productsError } =
+      await supabase
+        .from("products")
+        .select("*", { count: "exact", head: true })
+        .eq("vendor_id", vendorId)
+        .or("name.is.null,regular_price.is.null");
 
     if (productsError) {
-      console.error('Products count error:', productsError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Products count error:", productsError);
+      }
     }
 
     const badgeCounts = {
@@ -37,7 +43,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, badgeCounts });
   } catch (error) {
-    console.error('Badge counts error:', error);
-    return NextResponse.json({ success: false, error: 'Failed to fetch badge counts' }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("Badge counts error:", error);
+    }
+    return NextResponse.json(
+      { success: false, error: "Failed to fetch badge counts" },
+      { status: 500 },
+    );
   }
 }

@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { X, Send, MessageCircle, User, Bot, Paperclip, Image as ImageIcon } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
+import {
+  X,
+  Send,
+  MessageCircle,
+  User,
+  Bot,
+  Paperclip,
+  Image as ImageIcon,
+} from "lucide-react";
 
 interface Message {
   id: number;
-  sender: 'user' | 'support';
+  sender: "user" | "support";
   text: string;
   timestamp: string;
   avatar?: string;
@@ -16,16 +24,19 @@ interface VendorSupportChatProps {
   onClose: () => void;
 }
 
-export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChatProps) {
+export default function VendorSupportChat({
+  isOpen,
+  onClose,
+}: VendorSupportChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      sender: 'support',
-      text: 'Hi there! Welcome to Yacht Club Vendor Support. How can we help you today?',
+      sender: "support",
+      text: "Hi there! Welcome to Yacht Club Vendor Support. How can we help you today?",
       timestamp: new Date().toISOString(),
-    }
+    },
   ]);
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const [typing, setTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -42,13 +53,13 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
 
     const newMessage: Message = {
       id: messages.length + 1,
-      sender: 'user',
+      sender: "user",
       text: inputText,
       timestamp: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, newMessage]);
-    setInputText('');
+    setMessages((prev) => [...prev, newMessage]);
+    setInputText("");
     setTyping(true);
 
     // Simulate support response
@@ -58,23 +69,23 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
         "That's a great question. Let me connect you with our product team.",
         "I can help with that. Could you provide your product ID or order number?",
         "Our team will review this and get back to you within 2 hours.",
-        "I've escalated this to our vendor success team. They'll reach out shortly."
+        "I've escalated this to our vendor success team. They'll reach out shortly.",
       ];
-      
+
       const supportMessage: Message = {
         id: messages.length + 2,
-        sender: 'support',
+        sender: "support",
         text: responses[Math.floor(Math.random() * responses.length)],
         timestamp: new Date().toISOString(),
       };
 
-      setMessages(prev => [...prev, supportMessage]);
+      setMessages((prev) => [...prev, supportMessage]);
       setTyping(false);
     }, 1500);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
@@ -85,25 +96,31 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
   return (
     <>
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998] animate-fadeIn"
         onClick={onClose}
       />
 
       {/* Chat Panel */}
-      <div 
+      <div
         className="fixed right-0 top-0 h-full w-full md:w-[420px] bg-[#0a0a0a] border-l border-white/5 z-[9999] flex flex-col"
-        style={{ animation: 'slideInRight 0.3s ease-out' }}
+        style={{ animation: "slideInRight 0.3s ease-out" }}
       >
         {/* Header */}
         <div className="border-b border-white/5 p-6 bg-black">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/5 flex items-center justify-center overflow-hidden">
-                <img src="/yacht-club-logo.png" alt="Yacht Club" className="w-full h-full object-contain p-1.5 opacity-80" />
+                <img
+                  src="/yacht-club-logo.png"
+                  alt="Yacht Club"
+                  className="w-full h-full object-contain p-1.5 opacity-80"
+                />
               </div>
               <div>
-                <h2 className="text-white text-sm uppercase tracking-[0.2em] font-light mb-1">Support</h2>
+                <h2 className="text-white text-sm uppercase tracking-[0.2em] font-light mb-1">
+                  Support
+                </h2>
                 <div className="flex items-center gap-2 text-xs text-white/40">
                   <div className="w-1.5 h-1.5 bg-green-500/80 rounded-full"></div>
                   <span className="uppercase tracking-wider">Online</span>
@@ -124,28 +141,34 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fadeIn`}
+              className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"} animate-fadeIn`}
             >
-              <div className={`max-w-[85%] flex flex-col ${message.sender === 'user' ? 'items-end' : 'items-start'}`}>
+              <div
+                className={`max-w-[85%] flex flex-col ${message.sender === "user" ? "items-end" : "items-start"}`}
+              >
                 {/* Sender Label */}
                 <div className="text-[10px] text-white/40 uppercase tracking-[0.15em] mb-1 px-1">
-                  {message.sender === 'user' ? 'You' : 'Flora Support'}
+                  {message.sender === "user" ? "You" : "Flora Support"}
                 </div>
-                
+
                 {/* Message */}
-                <div className={`px-4 py-3 ${
-                  message.sender === 'user'
-                    ? 'bg-white/5 border border-white/10'
-                    : 'bg-black border border-white/5'
-                }`}>
-                  <p className="text-sm text-white/90 leading-relaxed">{message.text}</p>
+                <div
+                  className={`px-4 py-3 ${
+                    message.sender === "user"
+                      ? "bg-white/5 border border-white/10"
+                      : "bg-black border border-white/5"
+                  }`}
+                >
+                  <p className="text-sm text-white/90 leading-relaxed">
+                    {message.text}
+                  </p>
                 </div>
-                
+
                 {/* Timestamp */}
                 <span className="text-[10px] text-white/30 mt-1 px-1 uppercase tracking-wider">
-                  {new Date(message.timestamp).toLocaleTimeString('en-US', { 
-                    hour: 'numeric', 
-                    minute: '2-digit' 
+                  {new Date(message.timestamp).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
                   })}
                 </span>
               </div>
@@ -161,9 +184,18 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
                 </div>
                 <div className="bg-black border border-white/5 px-4 py-3">
                   <div className="flex gap-1.5">
-                    <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    <div
+                      className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    ></div>
+                    <div
+                      className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    ></div>
+                    <div
+                      className="w-1.5 h-1.5 bg-white/60 rounded-full animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -234,4 +266,3 @@ export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChat
     </>
   );
 }
-

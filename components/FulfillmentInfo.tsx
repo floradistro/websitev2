@@ -1,7 +1,14 @@
 "use client";
 
-import { Store, MapPin, Truck, Package, Clock, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
+import {
+  Store,
+  MapPin,
+  Truck,
+  Package,
+  Clock,
+  CheckCircle,
+} from "lucide-react";
+import { useState } from "react";
 
 interface FulfillmentInfoProps {
   product: any;
@@ -11,45 +18,45 @@ interface FulfillmentInfoProps {
   compact?: boolean;
 }
 
-export default function FulfillmentInfo({ 
-  product, 
-  inventory = [], 
+export default function FulfillmentInfo({
+  product,
+  inventory = [],
   locations = [],
   onLocationSelect,
-  compact = false 
+  compact = false,
 }: FulfillmentInfoProps) {
   const [selectedLocation, setSelectedLocation] = useState<number | null>(null);
 
-  const fulfillmentType = product.fulfillment_type || 'retail';
+  const fulfillmentType = product.fulfillment_type || "retail";
   const vendor = product.vendor;
 
   // Get retail locations with stock
   const retailLocationsWithStock = inventory
-    .filter(inv => {
+    .filter((inv) => {
       const qty = parseFloat(inv.stock || inv.quantity || 0);
-      const loc = locations.find(l => l.id === inv.location_id);
-      return qty > 0 && loc && (loc.type === 'retail' || !loc.vendor_id);
+      const loc = locations.find((l) => l.id === inv.location_id);
+      return qty > 0 && loc && (loc.type === "retail" || !loc.vendor_id);
     })
-    .map(inv => {
-      const loc = locations.find(l => l.id === inv.location_id);
+    .map((inv) => {
+      const loc = locations.find((l) => l.id === inv.location_id);
       return {
         ...loc,
-        stock: parseFloat(inv.stock || inv.quantity || 0)
+        stock: parseFloat(inv.stock || inv.quantity || 0),
       };
     });
 
   // Get vendor locations with stock
   const vendorLocationsWithStock = inventory
-    .filter(inv => {
+    .filter((inv) => {
       const qty = parseFloat(inv.stock || inv.quantity || 0);
-      const loc = locations.find(l => l.id === inv.location_id);
-      return qty > 0 && loc && (loc.type === 'vendor' || loc.vendor_id);
+      const loc = locations.find((l) => l.id === inv.location_id);
+      return qty > 0 && loc && (loc.type === "vendor" || loc.vendor_id);
     })
-    .map(inv => {
-      const loc = locations.find(l => l.id === inv.location_id);
+    .map((inv) => {
+      const loc = locations.find((l) => l.id === inv.location_id);
       return {
         ...loc,
-        stock: parseFloat(inv.stock || inv.quantity || 0)
+        stock: parseFloat(inv.stock || inv.quantity || 0),
       };
     });
 
@@ -61,7 +68,7 @@ export default function FulfillmentInfo({
   };
 
   // === SCENARIO 1: Vendor-Only Fulfillment ===
-  if (fulfillmentType === 'vendor' && vendor) {
+  if (fulfillmentType === "vendor" && vendor) {
     return (
       <div className="bg-white/5 border border-white/10 p-4">
         <div className="flex items-start gap-3">
@@ -94,11 +101,12 @@ export default function FulfillmentInfo({
   }
 
   // === SCENARIO 2: Retail-Only (Your Stores) ===
-  if (fulfillmentType === 'retail' && retailLocationsWithStock.length > 0) {
+  if (fulfillmentType === "retail" && retailLocationsWithStock.length > 0) {
     if (compact) {
       return (
         <div className="text-xs text-white/60">
-          Available at {retailLocationsWithStock.length} {retailLocationsWithStock.length === 1 ? 'location' : 'locations'}
+          Available at {retailLocationsWithStock.length}{" "}
+          {retailLocationsWithStock.length === 1 ? "location" : "locations"}
         </div>
       );
     }
@@ -109,12 +117,12 @@ export default function FulfillmentInfo({
           📍 Select Pickup Location
         </div>
         <select
-          value={selectedLocation || ''}
+          value={selectedLocation || ""}
           onChange={(e) => handleLocationChange(parseInt(e.target.value))}
           className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-3 text-sm focus:outline-none focus:border-white/20"
         >
           <option value="">Choose location...</option>
-          {retailLocationsWithStock.map(loc => (
+          {retailLocationsWithStock.map((loc) => (
             <option key={loc.id} value={loc.id}>
               {loc.name} - {loc.stock.toFixed(1)}g in stock
             </option>
@@ -128,7 +136,7 @@ export default function FulfillmentInfo({
   }
 
   // === SCENARIO 3: Hybrid (Vendor Product + Stocked at Retail) ===
-  if (fulfillmentType === 'hybrid' && vendor) {
+  if (fulfillmentType === "hybrid" && vendor) {
     return (
       <div className="space-y-3">
         {/* Retail Options */}
@@ -139,15 +147,17 @@ export default function FulfillmentInfo({
               <div className="text-white/80 text-sm font-medium">
                 Available at Our Locations
               </div>
-              <span className="ml-auto text-xs text-green-500 font-medium">FASTEST</span>
+              <span className="ml-auto text-xs text-green-500 font-medium">
+                FASTEST
+              </span>
             </div>
             <select
-              value={selectedLocation || ''}
+              value={selectedLocation || ""}
               onChange={(e) => handleLocationChange(parseInt(e.target.value))}
               className="w-full bg-[#1a1a1a] border border-white/10 text-white px-4 py-3 text-sm focus:outline-none focus:border-white/20"
             >
               <option value="">Select location...</option>
-              {retailLocationsWithStock.map(loc => (
+              {retailLocationsWithStock.map((loc) => (
                 <option key={loc.id} value={loc.id}>
                   {loc.name} - {loc.stock.toFixed(1)}g
                 </option>
@@ -175,7 +185,9 @@ export default function FulfillmentInfo({
               <Clock size={12} />
               <span>Ships in 2-3 days</span>
               <span>•</span>
-              <span>{vendorLocationsWithStock[0].stock.toFixed(1)}g available</span>
+              <span>
+                {vendorLocationsWithStock[0].stock.toFixed(1)}g available
+              </span>
             </div>
           </div>
         )}
@@ -187,8 +199,9 @@ export default function FulfillmentInfo({
   return (
     <div className="bg-red-500/10 border border-red-500/20 p-4">
       <div className="text-red-500 text-sm font-medium mb-1">Out of Stock</div>
-      <div className="text-red-500/80 text-xs">Check back soon for availability</div>
+      <div className="text-red-500/80 text-xs">
+        Check back soon for availability
+      </div>
     </div>
   );
 }
-

@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { Fragment, ReactNode } from 'react';
-import { Menu, Transition } from '@headlessui/react';
-import { ChevronDown } from 'lucide-react';
-import { ds } from '@/lib/design-system';
+import { Fragment, ReactNode } from "react";
+import { Menu, Transition } from "@headlessui/react";
+import { ChevronDown } from "lucide-react";
+import { ds } from "@/lib/design-system";
 
 interface DropdownItem {
   label: string;
   onClick: () => void;
   icon?: ReactNode;
-  variant?: 'default' | 'danger';
+  variant?: "default" | "danger";
   disabled?: boolean;
 }
 
 interface DropdownProps {
   trigger: ReactNode;
   items: DropdownItem[];
-  align?: 'left' | 'right';
+  align?: "left" | "right";
   width?: string;
 }
 
@@ -29,7 +29,12 @@ interface DropdownProps {
  * - Design system fonts
  * - Smooth animations
  */
-export function Dropdown({ trigger, items, align = 'right', width = 'w-48' }: DropdownProps) {
+export function Dropdown({
+  trigger,
+  items,
+  align = "right",
+  width = "w-48",
+}: DropdownProps) {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <Menu.Button as="div" className="cursor-pointer">
@@ -46,7 +51,7 @@ export function Dropdown({ trigger, items, align = 'right', width = 'w-48' }: Dr
         leaveTo="transform opacity-0 scale-95"
       >
         <Menu.Items
-          className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} mt-1 ${width} origin-top-${align}
+          className={`absolute ${align === "right" ? "right-0" : "left-0"} mt-1 ${width} origin-top-${align}
             ${ds.colors.bg.primary} ${ds.colors.border.default} border ${ds.effects.radius.lg}
             ${ds.effects.shadow.lg}
             focus:outline-none z-50 overflow-hidden max-h-[70vh] overflow-y-auto`}
@@ -61,13 +66,15 @@ export function Dropdown({ trigger, items, align = 'right', width = 'w-48' }: Dr
                     className={`
                       w-full flex items-center gap-2 px-3 py-1.5 text-left
                       ${ds.typography.size.xs} ${ds.typography.weight.light}
-                      ${item.variant === 'danger' ? ds.colors.status.error : ds.colors.text.secondary}
-                      ${active && !item.disabled ? ds.colors.bg.hover : ''}
-                      ${item.disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                      ${item.variant === "danger" ? ds.colors.status.error : ds.colors.text.secondary}
+                      ${active && !item.disabled ? ds.colors.bg.hover : ""}
+                      ${item.disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}
                       transition-colors duration-150
                     `}
                   >
-                    {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
+                    {item.icon && (
+                      <span className="flex-shrink-0">{item.icon}</span>
+                    )}
                     <span className="truncate">{item.label}</span>
                   </button>
                 )}
@@ -83,7 +90,13 @@ export function Dropdown({ trigger, items, align = 'right', width = 'w-48' }: Dr
 /**
  * Compact dropdown trigger button
  */
-export function DropdownTrigger({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function DropdownTrigger({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <div
       className={`
@@ -96,7 +109,11 @@ export function DropdownTrigger({ children, className = '' }: { children: ReactN
       `}
     >
       {children}
-      <ChevronDown size={12} className={ds.colors.text.quaternary} strokeWidth={2} />
+      <ChevronDown
+        size={12}
+        className={ds.colors.text.quaternary}
+        strokeWidth={2}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
 
 /**
  * GET /api/vendor/website/deployments
@@ -19,17 +19,19 @@ export async function GET(request: NextRequest) {
 
     // Get recent deployments
     const { data: deployments, error } = await supabase
-      .from('vendor_deployments')
-      .select('*')
-      .eq('vendor_id', vendorId)
-      .order('started_at', { ascending: false })
+      .from("vendor_deployments")
+      .select("*")
+      .eq("vendor_id", vendorId)
+      .order("started_at", { ascending: false })
       .limit(20);
 
     if (error) {
-      console.error('Error fetching deployments:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching deployments:", error);
+      }
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch deployments' },
-        { status: 500 }
+        { success: false, error: "Failed to fetch deployments" },
+        { status: 500 },
       );
     }
 
@@ -38,14 +40,15 @@ export async function GET(request: NextRequest) {
       data: deployments || [],
     });
   } catch (error: any) {
-    console.error('Error in deployments endpoint:', error);
-
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in deployments endpoint:", error);
+    }
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Failed to fetch deployments',
+        error: error.message || "Failed to fetch deployments",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

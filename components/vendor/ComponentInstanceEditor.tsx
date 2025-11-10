@@ -5,11 +5,11 @@
 
 "use client";
 
-import React, { useState } from 'react';
-import { Upload, Image as ImageIcon, ExternalLink } from 'lucide-react';
-import { ProductSelectorDropdown } from './ProductSelectorDropdown';
-import { CategorySelectorDropdown } from './CategorySelectorDropdown';
-import { LocationSelectorDropdown } from './LocationSelectorDropdown';
+import React, { useState } from "react";
+import { Upload, Image as ImageIcon, ExternalLink } from "lucide-react";
+import { ProductSelectorDropdown } from "./ProductSelectorDropdown";
+import { CategorySelectorDropdown } from "./CategorySelectorDropdown";
+import { LocationSelectorDropdown } from "./LocationSelectorDropdown";
 
 interface ComponentInstanceEditorProps {
   instance: {
@@ -33,7 +33,7 @@ export function ComponentInstanceEditor({
   const [showLocationSelector, setShowLocationSelector] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showMediaLibrary, setShowMediaLibrary] = useState(false);
-  
+
   const handlePropChange = (propKey: string, value: any) => {
     if (onUpdate) {
       onUpdate({
@@ -44,7 +44,7 @@ export function ComponentInstanceEditor({
       });
     }
   };
-  
+
   const handleFieldBinding = (propKey: string, bindingKey: string) => {
     if (onUpdate) {
       onUpdate({
@@ -55,181 +55,232 @@ export function ComponentInstanceEditor({
       });
     }
   };
-  
+
   // Available bindings by context
   const availableBindings = [
-    { key: '', label: '(None - use static value)' },
-    { key: 'product_name', label: 'Product Name' },
-    { key: 'product_price', label: 'Product Price' },
-    { key: 'product_description', label: 'Product Description' },
-    { key: 'vendor_name', label: 'Store Name' },
-    { key: 'vendor_tagline', label: 'Store Tagline' },
+    { key: "", label: "(None - use static value)" },
+    { key: "product_name", label: "Product Name" },
+    { key: "product_price", label: "Product Price" },
+    { key: "product_description", label: "Product Description" },
+    { key: "vendor_name", label: "Store Name" },
+    { key: "vendor_tagline", label: "Store Tagline" },
   ];
-  
+
   // Handle image upload
   const handleImageUpload = async (file: File) => {
     setUploadingImage(true);
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folder', 'components');
-      
-      const response = await fetch('/api/vendor/media-library/upload', {
-        method: 'POST',
+      formData.append("file", file);
+      formData.append("folder", "components");
+
+      const response = await fetch("/api/vendor/media-library/upload", {
+        method: "POST",
         body: formData,
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success && data.file) {
-        handlePropChange('src', data.file.file_url);
+        handlePropChange("src", data.file.file_url);
       } else {
-        alert('Failed to upload image');
+        alert("Failed to upload image");
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      alert('Failed to upload image');
+      if (process.env.NODE_ENV === "development") {
+        console.error("Upload error:", error);
+      }
+      alert("Failed to upload image");
     } finally {
       setUploadingImage(false);
     }
   };
-  
+
   // Smart component prop schemas
-  const SMART_COMPONENT_PROPS: Record<string, Array<{key: string, label: string, type: string, description?: string}>> = {
+  const SMART_COMPONENT_PROPS: Record<
+    string,
+    Array<{ key: string; label: string; type: string; description?: string }>
+  > = {
     smart_hero: [
-      { key: 'headline', label: 'Headline', type: 'text', description: 'Override vendor name (optional)' },
-      { key: 'tagline', label: 'Tagline', type: 'textarea' },
-      { key: 'ctaText', label: 'Button Text', type: 'text' },
-      { key: 'ctaLink', label: 'Button Link', type: 'text' },
-      { key: 'showLogo', label: 'Show Logo', type: 'boolean' },
+      {
+        key: "headline",
+        label: "Headline",
+        type: "text",
+        description: "Override vendor name (optional)",
+      },
+      { key: "tagline", label: "Tagline", type: "textarea" },
+      { key: "ctaText", label: "Button Text", type: "text" },
+      { key: "ctaLink", label: "Button Link", type: "text" },
+      { key: "showLogo", label: "Show Logo", type: "boolean" },
     ],
     smart_features: [
-      { key: 'headline', label: 'Headline', type: 'text' },
-      { key: 'subheadline', label: 'Subheadline', type: 'text' },
-      { key: 'features', label: 'Features', type: 'json', description: 'Array of {icon, title, description}' },
-      { key: 'columns', label: 'Columns', type: 'number' },
+      { key: "headline", label: "Headline", type: "text" },
+      { key: "subheadline", label: "Subheadline", type: "text" },
+      {
+        key: "features",
+        label: "Features",
+        type: "json",
+        description: "Array of {icon, title, description}",
+      },
+      { key: "columns", label: "Columns", type: "number" },
     ],
     smart_faq: [
-      { key: 'headline', label: 'Headline', type: 'text' },
-      { key: 'subheadline', label: 'Subheadline', type: 'text' },
-      { key: 'faqs', label: 'FAQ Items', type: 'json', description: 'Array of {question, answer}' },
+      { key: "headline", label: "Headline", type: "text" },
+      { key: "subheadline", label: "Subheadline", type: "text" },
+      {
+        key: "faqs",
+        label: "FAQ Items",
+        type: "json",
+        description: "Array of {question, answer}",
+      },
     ],
     smart_product_grid: [
-      { key: 'headline', label: 'Headline', type: 'text' },
-      { key: 'subheadline', label: 'Subheadline', type: 'text' },
-      { key: 'maxProducts', label: 'Max Products', type: 'number' },
-      { key: 'columns', label: 'Columns', type: 'number' },
+      { key: "headline", label: "Headline", type: "text" },
+      { key: "subheadline", label: "Subheadline", type: "text" },
+      { key: "maxProducts", label: "Max Products", type: "number" },
+      { key: "columns", label: "Columns", type: "number" },
     ],
     smart_about: [
-      { key: 'headline', label: 'Headline', type: 'text' },
-      { key: 'subheadline', label: 'Subheadline', type: 'text' },
-      { key: 'mission', label: 'Mission', type: 'textarea' },
-      { key: 'story', label: 'Story', type: 'textarea' },
-      { key: 'values', label: 'Values', type: 'json', description: 'Array of {title, description}' },
+      { key: "headline", label: "Headline", type: "text" },
+      { key: "subheadline", label: "Subheadline", type: "text" },
+      { key: "mission", label: "Mission", type: "textarea" },
+      { key: "story", label: "Story", type: "textarea" },
+      {
+        key: "values",
+        label: "Values",
+        type: "json",
+        description: "Array of {title, description}",
+      },
     ],
     smart_contact: [
-      { key: 'headline', label: 'Headline', type: 'text' },
-      { key: 'subheadline', label: 'Subheadline', type: 'text' },
-      { key: 'email', label: 'Email', type: 'text' },
-      { key: 'phone', label: 'Phone', type: 'text' },
-      { key: 'hours', label: 'Hours', type: 'text' },
+      { key: "headline", label: "Headline", type: "text" },
+      { key: "subheadline", label: "Subheadline", type: "text" },
+      { key: "email", label: "Email", type: "text" },
+      { key: "phone", label: "Phone", type: "text" },
+      { key: "hours", label: "Hours", type: "text" },
     ],
     smart_legal_page: [
-      { key: 'headline', label: 'Headline', type: 'text' },
-      { key: 'pageType', label: 'Page Type', type: 'select', description: 'privacy, terms, or cookies' },
-      { key: 'lastUpdated', label: 'Last Updated', type: 'text' },
+      { key: "headline", label: "Headline", type: "text" },
+      {
+        key: "pageType",
+        label: "Page Type",
+        type: "select",
+        description: "privacy, terms, or cookies",
+      },
+      { key: "lastUpdated", label: "Last Updated", type: "text" },
     ],
     smart_shipping: [
-      { key: 'headline', label: 'Headline', type: 'text' },
-      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+      { key: "headline", label: "Headline", type: "text" },
+      { key: "subheadline", label: "Subheadline", type: "text" },
     ],
     smart_returns: [
-      { key: 'headline', label: 'Headline', type: 'text' },
-      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+      { key: "headline", label: "Headline", type: "text" },
+      { key: "subheadline", label: "Subheadline", type: "text" },
     ],
     smart_lab_results: [
-      { key: 'headline', label: 'Headline', type: 'text' },
-      { key: 'subheadline', label: 'Subheadline', type: 'text' },
+      { key: "headline", label: "Headline", type: "text" },
+      { key: "subheadline", label: "Subheadline", type: "text" },
     ],
   };
-  
+
   // Render editors based on component type
   const renderPropEditors = () => {
     const { component_key, props } = instance;
-    
+
     // If it's a smart component, use the schema
-    if (component_key.startsWith('smart_') && SMART_COMPONENT_PROPS[component_key]) {
+    if (
+      component_key.startsWith("smart_") &&
+      SMART_COMPONENT_PROPS[component_key]
+    ) {
       const schema = SMART_COMPONENT_PROPS[component_key];
-      
+
       return (
         <div className="space-y-4">
           {/* Smart Component Badge - WhaleTools Monochrome */}
           <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-1.5 h-1.5 bg-white/40 rounded-full" />
-              <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white" style={{ fontWeight: 900 }}>
+              <span
+                className="text-[10px] font-black uppercase tracking-[0.15em] text-white"
+                style={{ fontWeight: 900 }}
+              >
                 SMART COMPONENT
               </span>
             </div>
             <p className="text-[9px] text-white/40 leading-relaxed uppercase tracking-wider">
-              Auto-receives: <span className="text-white/60 font-mono">vendorId, vendorName, vendorLogo</span>
+              Auto-receives:{" "}
+              <span className="text-white/60 font-mono">
+                vendorId, vendorName, vendorLogo
+              </span>
             </p>
           </div>
-          
+
           {/* Editable Props */}
-          {schema.map(field => (
+          {schema.map((field) => (
             <div key={field.key}>
-              <label className="block text-[9px] text-white/40 uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+              <label
+                className="block text-[9px] text-white/40 uppercase tracking-[0.15em] mb-2 font-black"
+                style={{ fontWeight: 900 }}
+              >
                 {field.label}
               </label>
               {field.description && (
-                <p className="text-[8px] text-white/30 mb-2 uppercase tracking-wider">{field.description}</p>
+                <p className="text-[8px] text-white/30 mb-2 uppercase tracking-wider">
+                  {field.description}
+                </p>
               )}
-              
-              {field.type === 'text' && (
+
+              {field.type === "text" && (
                 <input
                   type="text"
-                  value={props[field.key] || ''}
+                  value={props[field.key] || ""}
                   onChange={(e) => handlePropChange(field.key, e.target.value)}
                   className="w-full bg-black border border-white/10 text-white px-3 py-2 text-xs rounded-xl focus:outline-none focus:border-white/20 hover:bg-white/5 transition-all"
                   placeholder={`ENTER ${field.label.toUpperCase()}...`}
                 />
               )}
-              
-              {field.type === 'textarea' && (
+
+              {field.type === "textarea" && (
                 <textarea
-                  value={props[field.key] || ''}
+                  value={props[field.key] || ""}
                   onChange={(e) => handlePropChange(field.key, e.target.value)}
                   rows={3}
                   className="w-full bg-black border border-white/10 text-white px-3 py-2 text-xs rounded-xl focus:outline-none focus:border-white/20 hover:bg-white/5 transition-all resize-none"
                   placeholder={`ENTER ${field.label.toUpperCase()}...`}
                 />
               )}
-              
-              {field.type === 'number' && (
+
+              {field.type === "number" && (
                 <input
                   type="number"
                   value={props[field.key] || 0}
-                  onChange={(e) => handlePropChange(field.key, parseInt(e.target.value))}
+                  onChange={(e) =>
+                    handlePropChange(field.key, parseInt(e.target.value))
+                  }
                   className="w-full bg-black border border-white/10 text-white px-3 py-2 text-xs rounded-xl focus:outline-none focus:border-white/20 hover:bg-white/5 transition-all"
                 />
               )}
-              
-              {field.type === 'boolean' && (
+
+              {field.type === "boolean" && (
                 <label className="flex items-center gap-3 cursor-pointer bg-white/5 border border-white/10 rounded-xl px-3 py-2 hover:bg-white/10 transition-all">
                   <input
                     type="checkbox"
                     checked={props[field.key] || false}
-                    onChange={(e) => handlePropChange(field.key, e.target.checked)}
+                    onChange={(e) =>
+                      handlePropChange(field.key, e.target.checked)
+                    }
                     className="w-4 h-4 bg-black border-white/20 rounded"
                   />
-                  <span className="text-[10px] text-white/60 uppercase tracking-wider font-black" style={{ fontWeight: 900 }}>
-                    {props[field.key] ? 'ENABLED' : 'DISABLED'}
+                  <span
+                    className="text-[10px] text-white/60 uppercase tracking-wider font-black"
+                    style={{ fontWeight: 900 }}
+                  >
+                    {props[field.key] ? "ENABLED" : "DISABLED"}
                   </span>
                 </label>
               )}
-              
-              {field.type === 'json' && (
+
+              {field.type === "json" && (
                 <textarea
                   value={JSON.stringify(props[field.key] || [], null, 2)}
                   onChange={(e) => {
@@ -245,10 +296,10 @@ export function ComponentInstanceEditor({
                   placeholder="JSON ARRAY..."
                 />
               )}
-              
-              {field.type === 'select' && field.key === 'pageType' && (
+
+              {field.type === "select" && field.key === "pageType" && (
                 <select
-                  value={props[field.key] || ''}
+                  value={props[field.key] || ""}
                   onChange={(e) => handlePropChange(field.key, e.target.value)}
                   className="w-full bg-black border border-white/10 text-white px-3 py-2 text-[10px] uppercase tracking-wider font-black rounded-xl focus:outline-none focus:border-white/20 hover:bg-white/5 transition-all cursor-pointer"
                   style={{ fontWeight: 900 }}
@@ -264,41 +315,45 @@ export function ComponentInstanceEditor({
         </div>
       );
     }
-    
+
     // Fallback for legacy/atomic components (shouldn't be used anymore)
     // Image/Logo component
-    if (component_key === 'image') {
+    if (component_key === "image") {
       return (
         <>
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Preview</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Preview
+            </label>
             {props.src && (
               <div className="w-full h-32 bg-black border border-[#1a1a1a] flex items-center justify-center overflow-hidden mb-3">
-                <img 
-                  src={props.src} 
-                  alt={props.alt || 'Preview'} 
+                <img
+                  src={props.src}
+                  alt={props.alt || "Preview"}
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
             )}
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Source</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Source
+            </label>
             <input
               type="text"
-              value={props.src || ''}
-              onChange={(e) => handlePropChange('src', e.target.value)}
+              value={props.src || ""}
+              onChange={(e) => handlePropChange("src", e.target.value)}
               placeholder="/path/to/image.jpg"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 font-mono focus:outline-none focus:border-[#2a2a2a]"
             />
           </div>
-          
+
           <div className="flex gap-2">
             <label className="flex-1 cursor-pointer">
               <div className="flex items-center justify-center gap-1.5 border border-[#1a1a1a] hover:bg-[#1a1a1a] text-neutral-500 hover:text-neutral-400 px-2 py-1 text-[9px] transition-colors">
                 <Upload size={10} />
-                <span>{uploadingImage ? 'Uploading...' : 'Upload'}</span>
+                <span>{uploadingImage ? "Uploading..." : "Upload"}</span>
               </div>
               <input
                 type="file"
@@ -311,7 +366,7 @@ export function ComponentInstanceEditor({
                 disabled={uploadingImage}
               />
             </label>
-            
+
             <button
               onClick={() => setShowMediaLibrary(true)}
               className="flex items-center gap-1.5 border border-[#1a1a1a] hover:bg-[#1a1a1a] text-neutral-500 hover:text-neutral-400 px-2 py-1 text-[9px] transition-colors"
@@ -320,23 +375,27 @@ export function ComponentInstanceEditor({
               <span>Library</span>
             </button>
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Alt Text</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Alt Text
+            </label>
             <input
               type="text"
-              value={props.alt || ''}
-              onChange={(e) => handlePropChange('alt', e.target.value)}
+              value={props.alt || ""}
+              onChange={(e) => handlePropChange("alt", e.target.value)}
               placeholder="Description for accessibility"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             />
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Aspect Ratio</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Aspect Ratio
+            </label>
             <select
-              value={props.aspect || 'auto'}
-              onChange={(e) => handlePropChange('aspect', e.target.value)}
+              value={props.aspect || "auto"}
+              onChange={(e) => handlePropChange("aspect", e.target.value)}
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             >
               <option value="auto">Auto</option>
@@ -347,13 +406,15 @@ export function ComponentInstanceEditor({
               <option value="3:4">3:4 (Portrait)</option>
             </select>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Fit</label>
+              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                Fit
+              </label>
               <select
-                value={props.fit || 'cover'}
-                onChange={(e) => handlePropChange('fit', e.target.value)}
+                value={props.fit || "cover"}
+                onChange={(e) => handlePropChange("fit", e.target.value)}
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
               >
                 <option value="contain">Contain</option>
@@ -362,12 +423,14 @@ export function ComponentInstanceEditor({
                 <option value="none">None</option>
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Radius</label>
+              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                Radius
+              </label>
               <select
-                value={props.radius || 'none'}
-                onChange={(e) => handlePropChange('radius', e.target.value)}
+                value={props.radius || "none"}
+                onChange={(e) => handlePropChange("radius", e.target.value)}
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
               >
                 <option value="none">None</option>
@@ -379,12 +442,14 @@ export function ComponentInstanceEditor({
               </select>
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Position</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Position
+            </label>
             <select
-              value={props.position || 'center'}
-              onChange={(e) => handlePropChange('position', e.target.value)}
+              value={props.position || "center"}
+              onChange={(e) => handlePropChange("position", e.target.value)}
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             >
               <option value="center">Center</option>
@@ -394,13 +459,13 @@ export function ComponentInstanceEditor({
               <option value="right">Right</option>
             </select>
           </div>
-          
+
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-[9px] text-neutral-600">
               <input
                 type="checkbox"
                 checked={props.priority === true}
-                onChange={(e) => handlePropChange('priority', e.target.checked)}
+                onChange={(e) => handlePropChange("priority", e.target.checked)}
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Priority (Load immediately)
@@ -409,35 +474,41 @@ export function ComponentInstanceEditor({
         </>
       );
     }
-    
+
     // Text component
-    if (component_key === 'text') {
-      const contentBinding = instance.field_bindings?.content || '';
-      
+    if (component_key === "text") {
+      const contentBinding = instance.field_bindings?.content || "";
+
       return (
         <>
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Content</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Content
+            </label>
             <textarea
-              value={props.content || ''}
-              onChange={(e) => handlePropChange('content', e.target.value)}
+              value={props.content || ""}
+              onChange={(e) => handlePropChange("content", e.target.value)}
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
               rows={3}
               disabled={!!contentBinding}
             />
             {contentBinding && (
-              <p className="text-[9px] text-white/60 mt-1 uppercase tracking-wider">Bound to: {contentBinding}</p>
+              <p className="text-[9px] text-white/60 mt-1 uppercase tracking-wider">
+                Bound to: {contentBinding}
+              </p>
             )}
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Dynamic Binding</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Dynamic Binding
+            </label>
             <select
               value={contentBinding}
-              onChange={(e) => handleFieldBinding('content', e.target.value)}
+              onChange={(e) => handleFieldBinding("content", e.target.value)}
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             >
-              {availableBindings.map(binding => (
+              {availableBindings.map((binding) => (
                 <option key={binding.key} value={binding.key}>
                   {binding.label}
                 </option>
@@ -447,12 +518,14 @@ export function ComponentInstanceEditor({
               Bind to dynamic data (overrides static content)
             </p>
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Variant</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Variant
+            </label>
             <select
-              value={props.variant || 'paragraph'}
-              onChange={(e) => handlePropChange('variant', e.target.value)}
+              value={props.variant || "paragraph"}
+              onChange={(e) => handlePropChange("variant", e.target.value)}
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             >
               <option value="headline">Headline</option>
@@ -462,13 +535,15 @@ export function ComponentInstanceEditor({
               <option value="caption">Caption</option>
             </select>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Size</label>
+              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                Size
+              </label>
               <select
-                value={props.size || 'md'}
-                onChange={(e) => handlePropChange('size', e.target.value)}
+                value={props.size || "md"}
+                onChange={(e) => handlePropChange("size", e.target.value)}
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
               >
                 <option value="xs">XS</option>
@@ -481,12 +556,14 @@ export function ComponentInstanceEditor({
                 <option value="4xl">4XL</option>
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Align</label>
+              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                Align
+              </label>
               <select
-                value={props.align || 'left'}
-                onChange={(e) => handlePropChange('align', e.target.value)}
+                value={props.align || "left"}
+                onChange={(e) => handlePropChange("align", e.target.value)}
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
               >
                 <option value="left">Left</option>
@@ -495,13 +572,15 @@ export function ComponentInstanceEditor({
               </select>
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Color</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Color
+            </label>
             <input
               type="text"
-              value={props.color || ''}
-              onChange={(e) => handlePropChange('color', e.target.value)}
+              value={props.color || ""}
+              onChange={(e) => handlePropChange("color", e.target.value)}
               placeholder="#ffffff"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a] font-mono"
             />
@@ -509,38 +588,44 @@ export function ComponentInstanceEditor({
         </>
       );
     }
-    
+
     // Button component
-    if (component_key === 'button') {
+    if (component_key === "button") {
       return (
         <>
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Button Text</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Button Text
+            </label>
             <input
               type="text"
-              value={props.text || ''}
-              onChange={(e) => handlePropChange('text', e.target.value)}
+              value={props.text || ""}
+              onChange={(e) => handlePropChange("text", e.target.value)}
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             />
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Link URL</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Link URL
+            </label>
             <input
               type="text"
-              value={props.href || ''}
-              onChange={(e) => handlePropChange('href', e.target.value)}
+              value={props.href || ""}
+              onChange={(e) => handlePropChange("href", e.target.value)}
               placeholder="/shop"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Variant</label>
+              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                Variant
+              </label>
               <select
-                value={props.variant || 'primary'}
-                onChange={(e) => handlePropChange('variant', e.target.value)}
+                value={props.variant || "primary"}
+                onChange={(e) => handlePropChange("variant", e.target.value)}
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
               >
                 <option value="primary">Primary</option>
@@ -549,12 +634,14 @@ export function ComponentInstanceEditor({
                 <option value="outline">Outline</option>
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Size</label>
+              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                Size
+              </label>
               <select
-                value={props.size || 'md'}
-                onChange={(e) => handlePropChange('size', e.target.value)}
+                value={props.size || "md"}
+                onChange={(e) => handlePropChange("size", e.target.value)}
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
               >
                 <option value="sm">SM</option>
@@ -567,15 +654,17 @@ export function ComponentInstanceEditor({
         </>
       );
     }
-    
+
     // Spacer component
-    if (component_key === 'spacer') {
+    if (component_key === "spacer") {
       return (
         <div>
-          <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Size</label>
+          <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+            Size
+          </label>
           <select
-            value={props.size || 'md'}
-            onChange={(e) => handlePropChange('size', e.target.value)}
+            value={props.size || "md"}
+            onChange={(e) => handlePropChange("size", e.target.value)}
             className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
           >
             <option value="xs">XS (8px)</option>
@@ -588,28 +677,32 @@ export function ComponentInstanceEditor({
         </div>
       );
     }
-    
+
     // Icon component
-    if (component_key === 'icon') {
+    if (component_key === "icon") {
       return (
         <>
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Icon (emoji)</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Icon (emoji)
+            </label>
             <input
               type="text"
-              value={props.name || ''}
-              onChange={(e) => handlePropChange('name', e.target.value)}
+              value={props.name || ""}
+              onChange={(e) => handlePropChange("name", e.target.value)}
               placeholder="🚀"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a] text-center text-2xl"
               maxLength={2}
             />
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Size</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Size
+            </label>
             <select
-              value={props.size || 'md'}
-              onChange={(e) => handlePropChange('size', e.target.value)}
+              value={props.size || "md"}
+              onChange={(e) => handlePropChange("size", e.target.value)}
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             >
               <option value="sm">Small</option>
@@ -622,45 +715,55 @@ export function ComponentInstanceEditor({
         </>
       );
     }
-    
+
     // Smart Product Grid
-    if (component_key === 'smart_product_grid') {
+    if (component_key === "smart_product_grid") {
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">🛍️ Auto-fetches products from database</p>
+            <p className="text-[9px] text-neutral-600">
+              🛍️ Auto-fetches products from database
+            </p>
           </div>
-          
+
           {/* Content */}
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Headline (optional)</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Headline (optional)
+            </label>
             <input
               type="text"
-              value={props.headline || ''}
-              onChange={(e) => handlePropChange('headline', e.target.value)}
+              value={props.headline || ""}
+              onChange={(e) => handlePropChange("headline", e.target.value)}
               placeholder="Featured Products"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             />
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Subheadline (optional)</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Subheadline (optional)
+            </label>
             <input
               type="text"
-              value={props.subheadline || ''}
-              onChange={(e) => handlePropChange('subheadline', e.target.value)}
+              value={props.subheadline || ""}
+              onChange={(e) => handlePropChange("subheadline", e.target.value)}
               placeholder="Check out our latest products"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             />
           </div>
-          
+
           {/* Layout */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Columns</label>
+              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                Columns
+              </label>
               <select
                 value={props.columns || 3}
-                onChange={(e) => handlePropChange('columns', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handlePropChange("columns", parseInt(e.target.value))
+                }
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
               >
                 <option value="2">2 Columns</option>
@@ -669,26 +772,32 @@ export function ComponentInstanceEditor({
                 <option value="5">5 Columns</option>
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Max Products</label>
+              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                Max Products
+              </label>
               <input
                 type="number"
                 value={props.maxProducts || 12}
-                onChange={(e) => handlePropChange('maxProducts', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handlePropChange("maxProducts", parseInt(e.target.value))
+                }
                 min="1"
                 max="100"
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
               />
             </div>
           </div>
-          
+
           {/* Card Style */}
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Card Style</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Card Style
+            </label>
             <select
-              value={props.cardStyle || 'minimal'}
-              onChange={(e) => handlePropChange('cardStyle', e.target.value)}
+              value={props.cardStyle || "minimal"}
+              onChange={(e) => handlePropChange("cardStyle", e.target.value)}
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             >
               <option value="minimal">Minimal</option>
@@ -696,77 +805,85 @@ export function ComponentInstanceEditor({
               <option value="elevated">Elevated (shadow)</option>
             </select>
           </div>
-          
+
           {/* Product Selection */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-[9px] text-neutral-600">Select Specific Products</label>
+              <label className="block text-[9px] text-neutral-600">
+                Select Specific Products
+              </label>
               <button
                 onClick={() => setShowProductSelector(!showProductSelector)}
                 className="text-[9px] text-white/60 hover:text-white uppercase tracking-wider"
               >
-                {showProductSelector ? 'Hide' : 'Show'} Selector
+                {showProductSelector ? "Hide" : "Show"} Selector
               </button>
             </div>
-            
+
             {showProductSelector ? (
               <ProductSelectorDropdown
                 vendorId={props.vendorId}
                 selectedProductIds={props.selectedProductIds || []}
-                onChange={(ids) => handlePropChange('selectedProductIds', ids)}
+                onChange={(ids) => handlePropChange("selectedProductIds", ids)}
               />
             ) : (
               <div className="text-[9px] text-neutral-600">
-                {(props.selectedProductIds?.length || 0) > 0 
+                {(props.selectedProductIds?.length || 0) > 0
                   ? `${props.selectedProductIds.length} product(s) selected`
-                  : 'All products (click Show to filter)'}
+                  : "All products (click Show to filter)"}
               </div>
             )}
           </div>
-          
+
           {/* Category Filter */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-[9px] text-neutral-600">Filter by Categories</label>
+              <label className="block text-[9px] text-neutral-600">
+                Filter by Categories
+              </label>
               <button
                 onClick={() => setShowCategorySelector(!showCategorySelector)}
                 className="text-[9px] text-white/60 hover:text-white uppercase tracking-wider"
               >
-                {showCategorySelector ? 'Hide' : 'Show'} Selector
+                {showCategorySelector ? "Hide" : "Show"} Selector
               </button>
             </div>
-            
+
             {showCategorySelector ? (
               <CategorySelectorDropdown
                 selectedCategoryIds={props.selectedCategoryIds || []}
-                onChange={(ids) => handlePropChange('selectedCategoryIds', ids)}
+                onChange={(ids) => handlePropChange("selectedCategoryIds", ids)}
               />
             ) : (
               <div className="text-[9px] text-neutral-600">
-                {(props.selectedCategoryIds?.length || 0) > 0 
-                  ? `${props.selectedCategoryIds.length} categor${props.selectedCategoryIds.length === 1 ? 'y' : 'ies'} selected`
-                  : 'All categories (click Show to filter)'}
+                {(props.selectedCategoryIds?.length || 0) > 0
+                  ? `${props.selectedCategoryIds.length} categor${props.selectedCategoryIds.length === 1 ? "y" : "ies"} selected`
+                  : "All categories (click Show to filter)"}
               </div>
             )}
           </div>
-          
+
           {/* Options */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-[9px] text-neutral-600">
               <input
                 type="checkbox"
                 checked={props.showPrice !== false}
-                onChange={(e) => handlePropChange('showPrice', e.target.checked)}
+                onChange={(e) =>
+                  handlePropChange("showPrice", e.target.checked)
+                }
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Price
             </label>
-            
+
             <label className="flex items-center gap-2 text-[9px] text-neutral-600">
               <input
                 type="checkbox"
                 checked={props.showQuickAdd !== false}
-                onChange={(e) => handlePropChange('showQuickAdd', e.target.checked)}
+                onChange={(e) =>
+                  handlePropChange("showQuickAdd", e.target.checked)
+                }
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Quick Add Button
@@ -775,66 +892,82 @@ export function ComponentInstanceEditor({
         </>
       );
     }
-    
+
     // Smart Product Detail
-    if (component_key === 'smart_product_detail') {
+    if (component_key === "smart_product_detail") {
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">🏷️ Auto-fetches product data from URL</p>
-            <p className="text-[9px] text-neutral-600 mt-1">Product determined by URL slug</p>
+            <p className="text-[9px] text-neutral-600">
+              🏷️ Auto-fetches product data from URL
+            </p>
+            <p className="text-[9px] text-neutral-600 mt-1">
+              Product determined by URL slug
+            </p>
           </div>
-          
+
           {/* Override Product Slug */}
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Override Product Slug (optional)</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Override Product Slug (optional)
+            </label>
             <input
               type="text"
-              value={props.productSlug || ''}
-              onChange={(e) => handlePropChange('productSlug', e.target.value)}
+              value={props.productSlug || ""}
+              onChange={(e) => handlePropChange("productSlug", e.target.value)}
               placeholder="Leave empty to use URL"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             />
-            <p className="text-[9px] text-neutral-600 mt-1">Override URL slug to show specific product</p>
+            <p className="text-[9px] text-neutral-600 mt-1">
+              Override URL slug to show specific product
+            </p>
           </div>
-          
+
           {/* Display Options */}
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-[9px] text-neutral-600">
               <input
                 type="checkbox"
                 checked={props.showGallery !== false}
-                onChange={(e) => handlePropChange('showGallery', e.target.checked)}
+                onChange={(e) =>
+                  handlePropChange("showGallery", e.target.checked)
+                }
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Image Gallery
             </label>
-            
+
             <label className="flex items-center gap-2 text-[9px] text-neutral-600">
               <input
                 type="checkbox"
                 checked={props.showPricingTiers !== false}
-                onChange={(e) => handlePropChange('showPricingTiers', e.target.checked)}
+                onChange={(e) =>
+                  handlePropChange("showPricingTiers", e.target.checked)
+                }
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Pricing Tiers Dropdown
             </label>
-            
+
             <label className="flex items-center gap-2 text-[9px] text-neutral-600">
               <input
                 type="checkbox"
                 checked={props.showFields !== false}
-                onChange={(e) => handlePropChange('showFields', e.target.checked)}
+                onChange={(e) =>
+                  handlePropChange("showFields", e.target.checked)
+                }
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Blueprint Fields
             </label>
-            
+
             <label className="flex items-center gap-2 text-[9px] text-neutral-600">
               <input
                 type="checkbox"
                 checked={props.showAddToCart !== false}
-                onChange={(e) => handlePropChange('showAddToCart', e.target.checked)}
+                onChange={(e) =>
+                  handlePropChange("showAddToCart", e.target.checked)
+                }
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Add to Cart Button
@@ -843,79 +976,89 @@ export function ComponentInstanceEditor({
         </>
       );
     }
-    
+
     // Smart Locations
-    if (component_key === 'smart_locations') {
+    if (component_key === "smart_locations") {
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">📍 Auto-fetches store locations</p>
+            <p className="text-[9px] text-neutral-600">
+              📍 Auto-fetches store locations
+            </p>
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Headline (optional)</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Headline (optional)
+            </label>
             <input
               type="text"
-              value={props.headline || ''}
-              onChange={(e) => handlePropChange('headline', e.target.value)}
+              value={props.headline || ""}
+              onChange={(e) => handlePropChange("headline", e.target.value)}
               placeholder="Visit us in person"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             />
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Subheadline (optional)</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Subheadline (optional)
+            </label>
             <input
               type="text"
-              value={props.subheadline || ''}
-              onChange={(e) => handlePropChange('subheadline', e.target.value)}
+              value={props.subheadline || ""}
+              onChange={(e) => handlePropChange("subheadline", e.target.value)}
               placeholder="Find a store near you"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             />
           </div>
-          
+
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-[9px] text-neutral-600">Select Specific Locations</label>
+              <label className="block text-[9px] text-neutral-600">
+                Select Specific Locations
+              </label>
               <button
                 onClick={() => setShowLocationSelector(!showLocationSelector)}
                 className="text-[9px] text-white/60 hover:text-white uppercase tracking-wider"
               >
-                {showLocationSelector ? 'Hide' : 'Show'} Selector
+                {showLocationSelector ? "Hide" : "Show"} Selector
               </button>
             </div>
-            
+
             {showLocationSelector ? (
               <LocationSelectorDropdown
                 vendorId={props.vendorId}
                 selectedLocationIds={props.selectedLocationIds || []}
-                onChange={(ids) => handlePropChange('selectedLocationIds', ids)}
+                onChange={(ids) => handlePropChange("selectedLocationIds", ids)}
               />
             ) : (
               <div className="text-[9px] text-neutral-600">
-                {(props.selectedLocationIds?.length || 0) > 0 
+                {(props.selectedLocationIds?.length || 0) > 0
                   ? `${props.selectedLocationIds.length} location(s) selected`
-                  : 'All locations (click Show to filter)'}
+                  : "All locations (click Show to filter)"}
               </div>
             )}
           </div>
-          
+
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-[9px] text-neutral-600">
               <input
                 type="checkbox"
                 checked={props.showMap === true}
-                onChange={(e) => handlePropChange('showMap', e.target.checked)}
+                onChange={(e) => handlePropChange("showMap", e.target.checked)}
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Map
             </label>
-            
+
             <label className="flex items-center gap-2 text-[9px] text-neutral-600">
               <input
                 type="checkbox"
                 checked={props.showDirections !== false}
-                onChange={(e) => handlePropChange('showDirections', e.target.checked)}
+                onChange={(e) =>
+                  handlePropChange("showDirections", e.target.checked)
+                }
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Directions Links
@@ -924,44 +1067,56 @@ export function ComponentInstanceEditor({
         </>
       );
     }
-    
+
     // Smart Reviews
-    if (component_key === 'smart_reviews') {
+    if (component_key === "smart_reviews") {
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">⭐ Auto-fetches customer reviews</p>
+            <p className="text-[9px] text-neutral-600">
+              ⭐ Auto-fetches customer reviews
+            </p>
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Headline (optional)</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Headline (optional)
+            </label>
             <input
               type="text"
-              value={props.headline || ''}
-              onChange={(e) => handlePropChange('headline', e.target.value)}
+              value={props.headline || ""}
+              onChange={(e) => handlePropChange("headline", e.target.value)}
               placeholder="Customer Reviews"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Limit</label>
+              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                Limit
+              </label>
               <input
                 type="number"
                 value={props.limit || 6}
-                onChange={(e) => handlePropChange('limit', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handlePropChange("limit", parseInt(e.target.value))
+                }
                 min="1"
                 max="20"
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
               />
             </div>
-            
+
             <div>
-              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Min Rating</label>
+              <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                Min Rating
+              </label>
               <select
                 value={props.minRating || 1}
-                onChange={(e) => handlePropChange('minRating', parseInt(e.target.value))}
+                onChange={(e) =>
+                  handlePropChange("minRating", parseInt(e.target.value))
+                }
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
               >
                 <option value="1">1+ Stars</option>
@@ -972,24 +1127,30 @@ export function ComponentInstanceEditor({
               </select>
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Product ID (optional)</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Product ID (optional)
+            </label>
             <input
               type="text"
-              value={props.productId || ''}
-              onChange={(e) => handlePropChange('productId', e.target.value)}
+              value={props.productId || ""}
+              onChange={(e) => handlePropChange("productId", e.target.value)}
               placeholder="Leave empty for all vendor reviews"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500 font-mono"
             />
-            <p className="text-[9px] text-neutral-600 mt-1">Show reviews for specific product</p>
+            <p className="text-[9px] text-neutral-600 mt-1">
+              Show reviews for specific product
+            </p>
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Layout</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Layout
+            </label>
             <select
-              value={props.layout || 'grid'}
-              onChange={(e) => handlePropChange('layout', e.target.value)}
+              value={props.layout || "grid"}
+              onChange={(e) => handlePropChange("layout", e.target.value)}
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             >
               <option value="grid">Grid</option>
@@ -1000,82 +1161,102 @@ export function ComponentInstanceEditor({
         </>
       );
     }
-    
+
     // Smart Header
-    if (component_key === 'smart_header') {
+    if (component_key === "smart_header") {
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">🔝 Smart Header - Full Control</p>
+            <p className="text-[9px] text-neutral-600">
+              🔝 Smart Header - Full Control
+            </p>
           </div>
-          
+
           {/* Logo */}
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Logo URL</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Logo URL
+            </label>
             <input
               type="text"
-              value={props.logoUrl || ''}
-              onChange={(e) => handlePropChange('logoUrl', e.target.value)}
+              value={props.logoUrl || ""}
+              onChange={(e) => handlePropChange("logoUrl", e.target.value)}
               placeholder="/logo.png"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500 font-mono"
             />
           </div>
-          
+
           {/* Vendor Info (read-only) */}
           <div className="border border-[#1a1a1a] p-2">
-            <p className="text-[9px] text-neutral-600 mb-1">Vendor Info (Auto)</p>
-            <p className="text-[9px] text-neutral-600">Name: {props.vendorName}</p>
-            <p className="text-[9px] text-neutral-600">Slug: {props.vendorSlug}</p>
+            <p className="text-[9px] text-neutral-600 mb-1">
+              Vendor Info (Auto)
+            </p>
+            <p className="text-[9px] text-neutral-600">
+              Name: {props.vendorName}
+            </p>
+            <p className="text-[9px] text-neutral-600">
+              Slug: {props.vendorSlug}
+            </p>
           </div>
-          
+
           {/* Announcement Bar */}
           <div className="border-t border-[#1a1a1a] pt-3 mt-2">
             <label className="flex items-center gap-2 text-[9px] text-neutral-600 mb-2">
               <input
                 type="checkbox"
                 checked={props.showAnnouncement !== false}
-                onChange={(e) => handlePropChange('showAnnouncement', e.target.checked)}
+                onChange={(e) =>
+                  handlePropChange("showAnnouncement", e.target.checked)
+                }
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Announcement Bar
             </label>
-            
+
             {props.showAnnouncement !== false && (
               <div>
-                <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Announcement Text</label>
+                <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+                  Announcement Text
+                </label>
                 <input
                   type="text"
-                  value={props.announcementText || ''}
-                  onChange={(e) => handlePropChange('announcementText', e.target.value)}
+                  value={props.announcementText || ""}
+                  onChange={(e) =>
+                    handlePropChange("announcementText", e.target.value)
+                  }
                   placeholder="Free shipping over $45"
                   className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
                 />
               </div>
             )}
           </div>
-          
+
           {/* Navigation Links */}
           <div className="border-t border-[#1a1a1a] pt-3 mt-2">
-            <label className="block text-[9px] text-neutral-600 mb-2">Navigation Links</label>
+            <label className="block text-[9px] text-neutral-600 mb-2">
+              Navigation Links
+            </label>
             <div className="space-y-2">
               {(props.navLinks || []).map((link: any, idx: number) => (
                 <div key={idx} className="border border-[#1a1a1a] p-2">
                   <div className="flex items-center gap-2 mb-1">
                     <input
                       type="text"
-                      value={link.label || ''}
+                      value={link.label || ""}
                       onChange={(e) => {
                         const newLinks = [...(props.navLinks || [])];
                         newLinks[idx] = { ...link, label: e.target.value };
-                        handlePropChange('navLinks', newLinks);
+                        handlePropChange("navLinks", newLinks);
                       }}
                       placeholder="Label"
                       className="flex-1 bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
                     />
                     <button
                       onClick={() => {
-                        const newLinks = (props.navLinks || []).filter((_: any, i: number) => i !== idx);
-                        handlePropChange('navLinks', newLinks);
+                        const newLinks = (props.navLinks || []).filter(
+                          (_: any, i: number) => i !== idx,
+                        );
+                        handlePropChange("navLinks", newLinks);
                       }}
                       className="px-2 py-1 text-[9px] text-neutral-600 hover:text-neutral-400"
                     >
@@ -1084,11 +1265,11 @@ export function ComponentInstanceEditor({
                   </div>
                   <input
                     type="text"
-                    value={link.href || ''}
+                    value={link.href || ""}
                     onChange={(e) => {
                       const newLinks = [...(props.navLinks || [])];
                       newLinks[idx] = { ...link, href: e.target.value };
-                      handlePropChange('navLinks', newLinks);
+                      handlePropChange("navLinks", newLinks);
                     }}
                     placeholder="/path"
                     className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500 font-mono"
@@ -1099,8 +1280,11 @@ export function ComponentInstanceEditor({
                       checked={link.showDropdown === true}
                       onChange={(e) => {
                         const newLinks = [...(props.navLinks || [])];
-                        newLinks[idx] = { ...link, showDropdown: e.target.checked };
-                        handlePropChange('navLinks', newLinks);
+                        newLinks[idx] = {
+                          ...link,
+                          showDropdown: e.target.checked,
+                        };
+                        handlePropChange("navLinks", newLinks);
                       }}
                       className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
                     />
@@ -1108,11 +1292,14 @@ export function ComponentInstanceEditor({
                   </label>
                 </div>
               ))}
-              
+
               <button
                 onClick={() => {
-                  const newLinks = [...(props.navLinks || []), { label: 'New Link', href: '/page', showDropdown: false }];
-                  handlePropChange('navLinks', newLinks);
+                  const newLinks = [
+                    ...(props.navLinks || []),
+                    { label: "New Link", href: "/page", showDropdown: false },
+                  ];
+                  handlePropChange("navLinks", newLinks);
                 }}
                 className="w-full border border-[#1a1a1a] hover:bg-[#1a1a1a] text-neutral-600 hover:text-neutral-400 px-2 py-1 text-[9px] transition-colors"
               >
@@ -1120,89 +1307,113 @@ export function ComponentInstanceEditor({
               </button>
             </div>
           </div>
-          
+
           {/* Feature Toggles */}
           <div className="border-t border-[#1a1a1a] pt-3 mt-2">
-            <label className="block text-[9px] text-neutral-600 mb-2">Features</label>
+            <label className="block text-[9px] text-neutral-600 mb-2">
+              Features
+            </label>
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-[9px] text-neutral-600">
                 <input
                   type="checkbox"
                   checked={props.showSearch !== false}
-                  onChange={(e) => handlePropChange('showSearch', e.target.checked)}
+                  onChange={(e) =>
+                    handlePropChange("showSearch", e.target.checked)
+                  }
                   className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
                 />
                 Show Search
               </label>
-              
+
               <label className="flex items-center gap-2 text-[9px] text-neutral-600">
                 <input
                   type="checkbox"
                   checked={props.showCart !== false}
-                  onChange={(e) => handlePropChange('showCart', e.target.checked)}
+                  onChange={(e) =>
+                    handlePropChange("showCart", e.target.checked)
+                  }
                   className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
                 />
                 Show Cart
               </label>
-              
+
               <label className="flex items-center gap-2 text-[9px] text-neutral-600">
                 <input
                   type="checkbox"
                   checked={props.showAccount !== false}
-                  onChange={(e) => handlePropChange('showAccount', e.target.checked)}
+                  onChange={(e) =>
+                    handlePropChange("showAccount", e.target.checked)
+                  }
                   className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
                 />
                 Show Account
               </label>
             </div>
           </div>
-          
+
           {/* Behavior */}
           <div className="border-t border-[#1a1a1a] pt-3 mt-2">
-            <label className="block text-[9px] text-neutral-600 mb-2">Behavior</label>
+            <label className="block text-[9px] text-neutral-600 mb-2">
+              Behavior
+            </label>
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-[9px] text-neutral-600">
                 <input
                   type="checkbox"
                   checked={props.sticky !== false}
-                  onChange={(e) => handlePropChange('sticky', e.target.checked)}
+                  onChange={(e) => handlePropChange("sticky", e.target.checked)}
                   className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
                 />
                 Sticky (Fixed to top)
               </label>
-              
+
               <label className="flex items-center gap-2 text-[9px] text-neutral-600">
                 <input
                   type="checkbox"
                   checked={props.hideOnScroll !== false}
-                  onChange={(e) => handlePropChange('hideOnScroll', e.target.checked)}
+                  onChange={(e) =>
+                    handlePropChange("hideOnScroll", e.target.checked)
+                  }
                   className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
                 />
                 Hide on Scroll Down
               </label>
             </div>
           </div>
-          
+
           {/* Styling */}
           <div className="border-t border-[#1a1a1a] pt-3 mt-2">
-            <label className="block text-[9px] text-neutral-600 mb-2">Styling (Advanced)</label>
+            <label className="block text-[9px] text-neutral-600 mb-2">
+              Styling (Advanced)
+            </label>
             <div className="space-y-2">
               <div>
-                <label className="block text-[9px] text-neutral-600 mb-1">Background</label>
+                <label className="block text-[9px] text-neutral-600 mb-1">
+                  Background
+                </label>
                 <input
                   type="text"
-                  value={props.backgroundColor || 'bg-black/40 backdrop-blur-3xl'}
-                  onChange={(e) => handlePropChange('backgroundColor', e.target.value)}
+                  value={
+                    props.backgroundColor || "bg-black/40 backdrop-blur-3xl"
+                  }
+                  onChange={(e) =>
+                    handlePropChange("backgroundColor", e.target.value)
+                  }
                   className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 font-mono"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-[9px] text-neutral-600 mb-1">Text Color</label>
+                <label className="block text-[9px] text-neutral-600 mb-1">
+                  Text Color
+                </label>
                 <input
                   type="text"
-                  value={props.textColor || 'text-neutral-400'}
-                  onChange={(e) => handlePropChange('textColor', e.target.value)}
+                  value={props.textColor || "text-neutral-400"}
+                  onChange={(e) =>
+                    handlePropChange("textColor", e.target.value)
+                  }
                   className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 font-mono"
                 />
               </div>
@@ -1211,24 +1422,26 @@ export function ComponentInstanceEditor({
         </>
       );
     }
-    
+
     // Smart Footer
-    if (component_key === 'smart_footer') {
+    if (component_key === "smart_footer") {
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">🔚 Smart Footer - Full Control</p>
+            <p className="text-[9px] text-neutral-600">
+              🔚 Smart Footer - Full Control
+            </p>
           </div>
-          
+
           <div className="text-[9px] text-neutral-600">
             Footer editor coming soon. For now, edit the raw JSON below.
           </div>
         </>
       );
     }
-    
+
     // Other smart components - show info only
-    if (component_key.startsWith('smart_')) {
+    if (component_key.startsWith("smart_")) {
       return (
         <div className="border border-[#1a1a1a] p-3">
           <p className="text-[9px] text-neutral-600">
@@ -1240,46 +1453,54 @@ export function ComponentInstanceEditor({
         </div>
       );
     }
-    
+
     // Divider component
-    if (component_key === 'divider') {
+    if (component_key === "divider") {
       return (
         <>
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Color</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Color
+            </label>
             <div className="flex gap-2">
               <input
                 type="color"
-                value={props.color || '#333333'}
-                onChange={(e) => handlePropChange('color', e.target.value)}
+                value={props.color || "#333333"}
+                onChange={(e) => handlePropChange("color", e.target.value)}
                 className="w-10 h-8 rounded border border-neutral-700 bg-neutral-900"
               />
               <input
                 type="text"
-                value={props.color || '#333333'}
-                onChange={(e) => handlePropChange('color', e.target.value)}
+                value={props.color || "#333333"}
+                onChange={(e) => handlePropChange("color", e.target.value)}
                 className="flex-1 bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500 font-mono"
               />
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Thickness (px)</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Thickness (px)
+            </label>
             <input
               type="number"
               value={props.thickness || 1}
-              onChange={(e) => handlePropChange('thickness', parseInt(e.target.value))}
+              onChange={(e) =>
+                handlePropChange("thickness", parseInt(e.target.value))
+              }
               min="1"
               max="10"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             />
           </div>
-          
+
           <div>
-            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Spacing</label>
+            <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+              Spacing
+            </label>
             <select
-              value={props.spacing || 'md'}
-              onChange={(e) => handlePropChange('spacing', e.target.value)}
+              value={props.spacing || "md"}
+              onChange={(e) => handlePropChange("spacing", e.target.value)}
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"
             >
               <option value="xs">XS (8px)</option>
@@ -1292,11 +1513,13 @@ export function ComponentInstanceEditor({
         </>
       );
     }
-    
+
     // Generic JSON editor for other components
     return (
       <div>
-        <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">Props (JSON)</label>
+        <label className="block text-[9px] text-neutral-600 uppercase tracking-wider mb-1.5">
+          Props (JSON)
+        </label>
         <textarea
           value={JSON.stringify(props, null, 2)}
           onChange={(e) => {
@@ -1313,14 +1536,17 @@ export function ComponentInstanceEditor({
       </div>
     );
   };
-  
+
   return (
     <div className="space-y-4">
       {/* Header - WhaleTools Monochrome */}
       <div className="pb-3 border-b border-white/10">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-[11px] text-white font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
-            {instance.component_key.replace('smart_', '')}
+          <h4
+            className="text-[11px] text-white font-black uppercase tracking-[0.15em]"
+            style={{ fontWeight: 900 }}
+          >
+            {instance.component_key.replace("smart_", "")}
           </h4>
           <button
             onClick={onDelete}
@@ -1330,34 +1556,52 @@ export function ComponentInstanceEditor({
             DELETE
           </button>
         </div>
-        <p className="text-[9px] text-white/40 uppercase tracking-wider">Position: #{instance.position_order}</p>
-        
+        <p className="text-[9px] text-white/40 uppercase tracking-wider">
+          Position: #{instance.position_order}
+        </p>
+
         {/* Current Values Summary - WhaleTools Monochrome */}
         {Object.keys(instance.props).length > 0 && (
           <div className="bg-black border border-white/10 rounded-2xl p-3 mt-3">
-            <div className="text-[9px] text-white/40 uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+            <div
+              className="text-[9px] text-white/40 uppercase tracking-[0.15em] mb-2 font-black"
+              style={{ fontWeight: 900 }}
+            >
               CURRENT VALUES
             </div>
             <div className="space-y-1.5">
-              {Object.entries(instance.props).slice(0, 4).map(([key, value]) => (
-                <div key={key} className="flex items-start gap-2">
-                  <span className="text-[10px] text-white/40 font-mono flex-shrink-0 min-w-[70px] uppercase tracking-wider">{key}:</span>
-                  <span className="text-[10px] text-white/60 break-all flex-1">
-                    {typeof value === 'string' 
-                      ? value.length > 35 ? `"${value.slice(0, 35)}..."` : `"${value}"`
-                      : typeof value === 'boolean'
-                        ? value ? 'TRUE' : 'FALSE'
-                        : typeof value === 'number'
-                          ? value
-                          : typeof value === 'object' && Array.isArray(value)
-                            ? `[${value.length}]`
-                            : typeof value === 'object'
-                              ? <span className="text-white/60">{'{...}'}</span>
-                              : String(value)
-                    }
-                  </span>
-                </div>
-              ))}
+              {Object.entries(instance.props)
+                .slice(0, 4)
+                .map(([key, value]) => (
+                  <div key={key} className="flex items-start gap-2">
+                    <span className="text-[10px] text-white/40 font-mono flex-shrink-0 min-w-[70px] uppercase tracking-wider">
+                      {key}:
+                    </span>
+                    <span className="text-[10px] text-white/60 break-all flex-1">
+                      {typeof value === "string" ? (
+                        value.length > 35 ? (
+                          `"${value.slice(0, 35)}..."`
+                        ) : (
+                          `"${value}"`
+                        )
+                      ) : typeof value === "boolean" ? (
+                        value ? (
+                          "TRUE"
+                        ) : (
+                          "FALSE"
+                        )
+                      ) : typeof value === "number" ? (
+                        value
+                      ) : typeof value === "object" && Array.isArray(value) ? (
+                        `[${value.length}]`
+                      ) : typeof value === "object" ? (
+                        <span className="text-white/60">{"{...}"}</span>
+                      ) : (
+                        String(value)
+                      )}
+                    </span>
+                  </div>
+                ))}
               {Object.keys(instance.props).length > 4 && (
                 <div className="text-[8px] text-white/20 mt-1 text-center pt-2 border-t border-white/5 uppercase tracking-wider">
                   +{Object.keys(instance.props).length - 4} MORE
@@ -1367,12 +1611,9 @@ export function ComponentInstanceEditor({
           </div>
         )}
       </div>
-      
+
       {/* Property Editors */}
-      <div className="space-y-5">
-        {renderPropEditors()}
-      </div>
+      <div className="space-y-5">{renderPropEditors()}</div>
     </div>
   );
 }
-

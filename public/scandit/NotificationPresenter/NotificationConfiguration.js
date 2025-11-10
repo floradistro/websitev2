@@ -1,1 +1,1 @@
-export{a as NotificationConfiguration}from'../chunks/chunk-KUVVZN66.js';
+export { a as NotificationConfiguration } from "../chunks/chunk-KUVVZN66.js";

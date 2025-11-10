@@ -1,14 +1,17 @@
 "use client";
 
-import Image from 'next/image';
-import { useState } from 'react';
+import Image from "next/image";
+import { useState } from "react";
 
 interface ProductGalleryProps {
   images: Array<{ src: string; alt?: string }>;
   productName: string;
 }
 
-export default function ProductGallery({ images, productName }: ProductGalleryProps) {
+export default function ProductGallery({
+  images,
+  productName,
+}: ProductGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   if (!images || images.length === 0) {
@@ -24,7 +27,7 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
       {/* Main Image */}
       <div className="relative w-full aspect-square bg-white/5 rounded-lg overflow-hidden">
         <Image
-          src={images[selectedIndex]?.src || ''}
+          src={images[selectedIndex]?.src || ""}
           alt={images[selectedIndex]?.alt || productName}
           fill
           className="object-contain"
@@ -40,7 +43,9 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
               key={index}
               onClick={() => setSelectedIndex(index)}
               className={`relative aspect-square bg-white/5 rounded-lg overflow-hidden border-2 transition-colors ${
-                selectedIndex === index ? 'border-white' : 'border-transparent hover:border-white/40'
+                selectedIndex === index
+                  ? "border-white"
+                  : "border-transparent hover:border-white/40"
               }`}
             >
               <Image
@@ -57,4 +62,3 @@ export default function ProductGallery({ images, productName }: ProductGalleryPr
     </div>
   );
 }
-

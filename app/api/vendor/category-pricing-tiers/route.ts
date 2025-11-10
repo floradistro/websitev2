@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * Dynamically fetch available pricing tiers for categories based on actual pricing blueprints.
@@ -21,23 +21,26 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const vendorId = searchParams.get('vendor_id');
-    const categoriesParam = searchParams.get('categories');
+    const vendorId = searchParams.get("vendor_id");
+    const categoriesParam = searchParams.get("categories");
 
     if (!vendorId) {
       return NextResponse.json(
-        { success: false, error: 'vendor_id is required' },
-        { status: 400 }
+        { success: false, error: "vendor_id is required" },
+        { status: 400 },
       );
     }
 
-    const requestedCategories = categoriesParam ? categoriesParam.split(',').map(c => c.trim()) : [];
+    const requestedCategories = categoriesParam
+      ? categoriesParam.split(",").map((c) => c.trim())
+      : [];
     const supabase = getServiceSupabase();
 
     // Fetch products with their pricing blueprint assignments for this vendor
     const { data: products, error: productsError } = await supabase
-      .from('products')
-      .select(`
+      .from("products")
+      .select(
+        `
         id,
         primary_category_id,
         categories!products_primary_category_id_fkey(id, name),
@@ -48,21 +51,27 @@ export async function GET(request: NextRequest) {
             price_breaks
           )
         )
-      `)
-      .eq('vendor_id', vendorId);
+      `,
+      )
+      .eq("vendor_id", vendorId);
 
     if (productsError) {
-      console.error('[category-pricing-tiers] Error fetching products:', productsError);
+      if (process.env.NODE_ENV === "development") {
+        console.error(
+          "[category-pricing-tiers] Error fetching products:",
+          productsError,
+        );
+      }
       return NextResponse.json(
         { success: false, error: productsError.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     if (!products || products.length === 0) {
       return NextResponse.json({
         success: true,
-        tiers: {}
+        tiers: {},
       });
     }
 
@@ -85,7 +94,10 @@ export async function GET(request: NextRequest) {
       const assignments = product.product_pricing_assignments || [];
       for (const assignment of assignments) {
         const blueprint = assignment.pricing_tier_blueprints as any;
-        if (!blueprint?.price_breaks || !Array.isArray(blueprint.price_breaks)) {
+        if (
+          !blueprint?.price_breaks ||
+          !Array.isArray(blueprint.price_breaks)
+        ) {
           continue;
         }
 
@@ -111,7 +123,7 @@ export async function GET(request: NextRequest) {
       for (const category of requestedCategories) {
         // Case-insensitive lookup
         const matchingKey = Object.keys(result).find(
-          key => key.toLowerCase() === category.toLowerCase()
+          (key) => key.toLowerCase() === category.toLowerCase(),
         );
         if (matchingKey && result[matchingKey]) {
           filtered[matchingKey] = result[matchingKey];
@@ -122,14 +134,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      tiers: result
+      tiers: result,
     });
-
   } catch (error: any) {
-    console.error('[category-pricing-tiers] Unexpected error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("[category-pricing-tiers] Unexpected error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: error.message || 'Internal server error' },
-      { status: 500 }
+      { success: false, error: error.message || "Internal server error" },
+      { status: 500 },
     );
   }
 }

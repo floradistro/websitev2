@@ -5,29 +5,39 @@ import crypto from "crypto";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const signatureHeader = request.headers.get('x-anet-signature');
-    
+    const signatureHeader = request.headers.get("x-anet-signature");
+
     // Validate webhook signature
     const signatureKey = process.env.AUTHORIZENET_SIGNATURE_KEY;
-    
+
     if (!signatureKey) {
-      console.error('Signature key not configured');
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+      if (process.env.NODE_ENV === "development") {
+        console.error("Signature key not configured");
+      }
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 },
+      );
     }
 
     // Validate signature
     if (signatureHeader) {
-      const signature = signatureHeader.split('=')[1];
+      const signature = signatureHeader.split("=")[1];
       const payload = JSON.stringify(body);
       const hash = crypto
-        .createHmac('sha512', signatureKey)
+        .createHmac("sha512", signatureKey)
         .update(payload)
-        .digest('hex')
+        .digest("hex")
         .toUpperCase();
 
       if (hash !== signature.toUpperCase()) {
-        console.error('Invalid webhook signature');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+        if (process.env.NODE_ENV === "development") {
+          console.error("Invalid webhook signature");
+        }
+        return NextResponse.json(
+          { error: "Invalid signature" },
+          { status: 401 },
+        );
       }
     }
 
@@ -35,47 +45,40 @@ export async function POST(request: NextRequest) {
     const eventType = body.eventType;
     const payload = body.payload;
 
-    console.log('Authorize.net webhook received:', eventType);
-
     // Handle different webhook events
     switch (eventType) {
-      
       // ============================================================
       // PAYMENT SUCCESS
       // ============================================================
-      case 'net.authorize.payment.authcapture.created':
-      case 'net.authorize.payment.authorization.created': {
+      case "net.authorize.payment.authcapture.created":
+      case "net.authorize.payment.authorization.created": {
         const transactionId = payload.id;
-        
+
         // Find order by transaction ID
         const { data: order, error: findError } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('transaction_id', transactionId)
+          .from("orders")
+          .select("*")
+          .eq("transaction_id", transactionId)
           .single();
 
         if (order) {
           // Update order status
           await supabase
-            .from('orders')
+            .from("orders")
             .update({
-              payment_status: 'paid',
-              status: 'processing',
-              paid_date: new Date().toISOString()
+              payment_status: "paid",
+              status: "processing",
+              paid_date: new Date().toISOString(),
             })
-            .eq('id', order.id);
+            .eq("id", order.id);
 
           // Add status history
-          await supabase
-            .from('order_status_history')
-            .insert({
-              order_id: order.id,
-              from_status: order.status,
-              to_status: 'processing',
-              note: 'Payment confirmed via webhook'
-            });
-
-          console.log(`Order ${order.order_number} marked as paid`);
+          await supabase.from("order_status_history").insert({
+            order_id: order.id,
+            from_status: order.status,
+            to_status: "processing",
+            note: "Payment confirmed via webhook",
+          });
         }
         break;
       }
@@ -83,14 +86,14 @@ export async function POST(request: NextRequest) {
       // ============================================================
       // REFUND
       // ============================================================
-      case 'net.authorize.payment.refund.created': {
+      case "net.authorize.payment.refund.created": {
         const transactionId = payload.authorizationAmount;
         const refundAmount = parseFloat(payload.amount) || 0;
 
         const { data: order } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('transaction_id', transactionId)
+          .from("orders")
+          .select("*")
+          .eq("transaction_id", transactionId)
           .single();
 
         if (order) {
@@ -98,41 +101,35 @@ export async function POST(request: NextRequest) {
 
           // Update order
           await supabase
-            .from('orders')
+            .from("orders")
             .update({
-              payment_status: isFullRefund ? 'refunded' : 'partially_refunded',
+              payment_status: isFullRefund ? "refunded" : "partially_refunded",
               refund_amount: refundAmount,
-              status: isFullRefund ? 'refunded' : order.status
+              status: isFullRefund ? "refunded" : order.status,
             })
-            .eq('id', order.id);
+            .eq("id", order.id);
 
           // Create refund record
-          await supabase
-            .from('order_refunds')
-            .insert({
-              order_id: order.id,
-              amount: refundAmount,
-              reason: 'Refund processed via Authorize.net',
-              refund_method: 'authorize_net',
-              status: 'completed'
-            });
-
-          // Add to status history
-          await supabase
-            .from('order_status_history')
-            .insert({
-              order_id: order.id,
-              from_status: order.status,
-              to_status: isFullRefund ? 'refunded' : order.status,
-              note: `Refund processed: $${refundAmount}`
-            });
-
-          // Update customer stats
-          await supabase.rpc('update_customer_stats', {
-            p_customer_id: order.customer_id
+          await supabase.from("order_refunds").insert({
+            order_id: order.id,
+            amount: refundAmount,
+            reason: "Refund processed via Authorize.net",
+            refund_method: "authorize_net",
+            status: "completed",
           });
 
-          console.log(`Order ${order.order_number} refunded: $${refundAmount}`);
+          // Add to status history
+          await supabase.from("order_status_history").insert({
+            order_id: order.id,
+            from_status: order.status,
+            to_status: isFullRefund ? "refunded" : order.status,
+            note: `Refund processed: $${refundAmount}`,
+          });
+
+          // Update customer stats
+          await supabase.rpc("update_customer_stats", {
+            p_customer_id: order.customer_id,
+          });
         }
         break;
       }
@@ -140,34 +137,30 @@ export async function POST(request: NextRequest) {
       // ============================================================
       // VOID
       // ============================================================
-      case 'net.authorize.payment.void.created': {
+      case "net.authorize.payment.void.created": {
         const transactionId = payload.id;
 
         const { data: order } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('transaction_id', transactionId)
+          .from("orders")
+          .select("*")
+          .eq("transaction_id", transactionId)
           .single();
 
         if (order) {
           await supabase
-            .from('orders')
+            .from("orders")
             .update({
-              payment_status: 'failed',
-              status: 'cancelled'
+              payment_status: "failed",
+              status: "cancelled",
             })
-            .eq('id', order.id);
+            .eq("id", order.id);
 
-          await supabase
-            .from('order_status_history')
-            .insert({
-              order_id: order.id,
-              from_status: order.status,
-              to_status: 'cancelled',
-              note: 'Payment voided'
-            });
-
-          console.log(`Order ${order.order_number} voided`);
+          await supabase.from("order_status_history").insert({
+            order_id: order.id,
+            from_status: order.status,
+            to_status: "cancelled",
+            note: "Payment voided",
+          });
         }
         break;
       }
@@ -175,54 +168,48 @@ export async function POST(request: NextRequest) {
       // ============================================================
       // CHARGEBACK / DISPUTE
       // ============================================================
-      case 'net.authorize.customer.dispute.created':
-      case 'net.authorize.customer.dispute.updated': {
+      case "net.authorize.customer.dispute.created":
+      case "net.authorize.customer.dispute.updated": {
         const transactionId = payload.transactionId;
         const disputeStatus = payload.caseStatus;
 
         const { data: order } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('transaction_id', transactionId)
+          .from("orders")
+          .select("*")
+          .eq("transaction_id", transactionId)
           .single();
 
         if (order) {
           // Update order to disputed
           await supabase
-            .from('orders')
+            .from("orders")
             .update({
-              payment_status: 'disputed',
-              status: 'on-hold',
+              payment_status: "disputed",
+              status: "on-hold",
               metadata: {
                 ...order.metadata,
                 dispute: {
                   status: disputeStatus,
                   date: new Date().toISOString(),
-                  reason: payload.reasonCode || 'Unknown'
-                }
-              }
+                  reason: payload.reasonCode || "Unknown",
+                },
+              },
             })
-            .eq('id', order.id);
+            .eq("id", order.id);
 
-          await supabase
-            .from('order_notes')
-            .insert({
-              order_id: order.id,
-              note: `⚠️ DISPUTE FILED: ${disputeStatus} - Reason: ${payload.reasonCode || 'Unknown'}`,
-              note_type: 'system',
-              is_customer_visible: false
-            });
+          await supabase.from("order_notes").insert({
+            order_id: order.id,
+            note: `⚠️ DISPUTE FILED: ${disputeStatus} - Reason: ${payload.reasonCode || "Unknown"}`,
+            note_type: "system",
+            is_customer_visible: false,
+          });
 
-          await supabase
-            .from('order_status_history')
-            .insert({
-              order_id: order.id,
-              from_status: order.status,
-              to_status: 'on-hold',
-              note: `Chargeback/dispute filed: ${disputeStatus}`
-            });
-
-          console.log(`⚠️ DISPUTE: Order ${order.order_number} - ${disputeStatus}`);
+          await supabase.from("order_status_history").insert({
+            order_id: order.id,
+            from_status: order.status,
+            to_status: "on-hold",
+            note: `Chargeback/dispute filed: ${disputeStatus}`,
+          });
         }
         break;
       }
@@ -230,36 +217,32 @@ export async function POST(request: NextRequest) {
       // ============================================================
       // PAYMENT DECLINED
       // ============================================================
-      case 'net.authorize.payment.authorization.declined':
-      case 'net.authorize.payment.fraud.declined': {
+      case "net.authorize.payment.authorization.declined":
+      case "net.authorize.payment.fraud.declined": {
         const transactionId = payload.id;
-        const declineReason = payload.responseCode || 'Unknown';
+        const declineReason = payload.responseCode || "Unknown";
 
         const { data: order } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('transaction_id', transactionId)
+          .from("orders")
+          .select("*")
+          .eq("transaction_id", transactionId)
           .single();
 
         if (order) {
           await supabase
-            .from('orders')
+            .from("orders")
             .update({
-              payment_status: 'failed',
-              status: 'failed'
+              payment_status: "failed",
+              status: "failed",
             })
-            .eq('id', order.id);
+            .eq("id", order.id);
 
-          await supabase
-            .from('order_notes')
-            .insert({
-              order_id: order.id,
-              note: `Payment declined: ${declineReason}`,
-              note_type: 'system',
-              is_customer_visible: false
-            });
-
-          console.log(`Payment declined for order ${order.order_number}`);
+          await supabase.from("order_notes").insert({
+            order_id: order.id,
+            note: `Payment declined: ${declineReason}`,
+            note_type: "system",
+            is_customer_visible: false,
+          });
         }
         break;
       }
@@ -267,40 +250,36 @@ export async function POST(request: NextRequest) {
       // ============================================================
       // FRAUD DETECTION
       // ============================================================
-      case 'net.authorize.payment.fraud.held': {
+      case "net.authorize.payment.fraud.held": {
         const transactionId = payload.id;
 
         const { data: order } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('transaction_id', transactionId)
+          .from("orders")
+          .select("*")
+          .eq("transaction_id", transactionId)
           .single();
 
         if (order) {
           await supabase
-            .from('orders')
+            .from("orders")
             .update({
-              status: 'on-hold',
+              status: "on-hold",
               metadata: {
                 ...order.metadata,
                 fraud_hold: {
                   date: new Date().toISOString(),
-                  reason: 'Flagged by fraud detection'
-                }
-              }
+                  reason: "Flagged by fraud detection",
+                },
+              },
             })
-            .eq('id', order.id);
+            .eq("id", order.id);
 
-          await supabase
-            .from('order_notes')
-            .insert({
-              order_id: order.id,
-              note: '⚠️ FRAUD ALERT: Payment held for review',
-              note_type: 'system',
-              is_customer_visible: false
-            });
-
-          console.log(`⚠️ FRAUD HOLD: Order ${order.order_number}`);
+          await supabase.from("order_notes").insert({
+            order_id: order.id,
+            note: "⚠️ FRAUD ALERT: Payment held for review",
+            note_type: "system",
+            is_customer_visible: false,
+          });
         }
         break;
       }
@@ -308,36 +287,34 @@ export async function POST(request: NextRequest) {
       // ============================================================
       // SUBSCRIPTION EVENTS (if you add recurring billing later)
       // ============================================================
-      case 'net.authorize.customer.subscription.created':
-      case 'net.authorize.customer.subscription.updated':
-      case 'net.authorize.customer.subscription.cancelled':
-      case 'net.authorize.customer.subscription.expiring':
-      case 'net.authorize.customer.subscription.suspended': {
+      case "net.authorize.customer.subscription.created":
+      case "net.authorize.customer.subscription.updated":
+      case "net.authorize.customer.subscription.cancelled":
+      case "net.authorize.customer.subscription.expiring":
+      case "net.authorize.customer.subscription.suspended": {
         // Log for future subscription implementation
-        console.log('Subscription event received:', eventType, payload);
+
         break;
       }
 
       default:
-        console.log('Unhandled webhook event:', eventType);
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Webhook processed',
-      eventType 
+    return NextResponse.json({
+      success: true,
+      message: "Webhook processed",
+      eventType,
     });
-
   } catch (error: any) {
-    console.error('Webhook error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Webhook error:", error);
+    }
     return NextResponse.json(
-      { error: error.message || 'Webhook processing failed' },
-      { status: 500 }
+      { error: error.message || "Webhook processing failed" },
+      { status: 500 },
     );
   }
 }
 
 // Allow Authorize.net to POST without CSRF
-export const runtime = 'nodejs';
-
-
+export const runtime = "nodejs";

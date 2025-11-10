@@ -1,1 +1,1 @@
-export{a as isObject}from'../../chunks/chunk-FGO2SSRS.js';
+export { a as isObject } from "../../chunks/chunk-FGO2SSRS.js";

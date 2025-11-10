@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-import { requireVendor } from '@/lib/auth/middleware';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
+import { requireVendor } from "@/lib/auth/middleware";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {
   if (!openai) {
     openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || '',
+      apiKey: process.env.OPENAI_API_KEY || "",
     });
   }
   return openai;
@@ -26,105 +26,108 @@ export async function POST(request: NextRequest) {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const { imageUrl, fileName, instructions, size = '1024x1024', quality = 'standard', style = 'vivid' } = body;
+    const {
+      imageUrl,
+      fileName,
+      instructions,
+      size = "1024x1024",
+      quality = "standard",
+      style = "vivid",
+    } = body;
 
     if (!imageUrl) {
-      return NextResponse.json({ error: 'Image URL required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Image URL required" },
+        { status: 400 },
+      );
     }
-
-    console.log('🔍 Analyzing image with GPT-4 Vision:', fileName);
 
     // Step 1: Analyze the image with GPT-4 Vision to create a prompt
     const basePrompt = instructions
       ? `Analyze this image and create a detailed DALL-E prompt to recreate it with these modifications: "${instructions}". Focus on: composition, style, colors, mood, subjects, lighting, and key visual elements. Make the prompt vivid and detailed (2-3 sentences max). Do not include any preamble, just the prompt.`
-      : 'Analyze this image and create a detailed DALL-E prompt to recreate it. Focus on: composition, style, colors, mood, subjects, lighting, and key visual elements. Make the prompt vivid and detailed (2-3 sentences max). Do not include any preamble, just the prompt.';
+      : "Analyze this image and create a detailed DALL-E prompt to recreate it. Focus on: composition, style, colors, mood, subjects, lighting, and key visual elements. Make the prompt vivid and detailed (2-3 sentences max). Do not include any preamble, just the prompt.";
 
     const visionResponse = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o',
+      model: "gpt-4o",
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: [
             {
-              type: 'text',
-              text: basePrompt
+              type: "text",
+              text: basePrompt,
             },
             {
-              type: 'image_url',
+              type: "image_url",
               image_url: {
                 url: imageUrl,
-                detail: 'high'
-              }
-            }
-          ]
-        }
+                detail: "high",
+              },
+            },
+          ],
+        },
       ],
-      max_tokens: 300
+      max_tokens: 300,
     });
 
     const generatedPrompt = visionResponse.choices[0]?.message?.content?.trim();
 
     if (!generatedPrompt) {
-      throw new Error('Failed to generate prompt from image');
+      throw new Error("Failed to generate prompt from image");
     }
-
-    console.log('✨ Generated prompt:', generatedPrompt);
 
     // Step 2: Generate new image with DALL-E using the generated prompt
     const dalleResponse = await getOpenAI().images.generate({
-      model: 'dall-e-3',
+      model: "dall-e-3",
       prompt: generatedPrompt,
       n: 1,
-      size: size as '1024x1024' | '1024x1792' | '1792x1024',
-      quality: quality as 'standard' | 'hd',
-      style: style as 'vivid' | 'natural',
+      size: size as "1024x1024" | "1024x1792" | "1792x1024",
+      quality: quality as "standard" | "hd",
+      style: style as "vivid" | "natural",
     });
 
     const imageData = dalleResponse.data?.[0];
     if (!imageData?.url) {
-      throw new Error('No image URL returned from DALL-E');
+      throw new Error("No image URL returned from DALL-E");
     }
 
     const newImageUrl = imageData.url;
-    console.log('✅ DALL-E image generated:', newImageUrl);
 
     // Step 3: Download the generated image
     const imageResponse = await fetch(newImageUrl);
     const imageBuffer = await imageResponse.arrayBuffer();
-    const imageBlob = new Blob([imageBuffer], { type: 'image/png' });
+    const imageBlob = new Blob([imageBuffer], { type: "image/png" });
 
     // Step 4: Generate filename with "-reimagined" suffix
     const timestamp = Date.now();
-    const fileNameWithoutExt = (fileName || 'image').replace(/\.[^/.]+$/, '');
+    const fileNameWithoutExt = (fileName || "image").replace(/\.[^/.]+$/, "");
     const newFileName = `${fileNameWithoutExt}-reimagined-${timestamp}.png`;
-
-    console.log('💾 Saving to Supabase:', newFileName);
 
     // Step 5: Upload to Supabase
     const supabase = getServiceSupabase();
     const filePath = `${vendorId}/${newFileName}`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('vendor-product-images')
+      .from("vendor-product-images")
       .upload(filePath, imageBlob, {
-        contentType: 'image/png',
-        cacheControl: '3600',
+        contentType: "image/png",
+        cacheControl: "3600",
         upsert: false,
       });
 
     if (uploadError) {
-      console.error('❌ Upload error:', uploadError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Upload error:", uploadError);
+      }
       throw uploadError;
     }
 
     // Step 6: Get public URL
     const { data: urlData } = supabase.storage
-      .from('vendor-product-images')
+      .from("vendor-product-images")
       .getPublicUrl(filePath);
 
     const publicUrl = urlData.publicUrl;
-
-    console.log('✅ Reimagined image saved:', publicUrl);
 
     return NextResponse.json({
       success: true,
@@ -132,16 +135,18 @@ export async function POST(request: NextRequest) {
         name: newFileName,
         url: publicUrl,
         size: imageBlob.size,
-        type: 'image/png',
+        type: "image/png",
         generated_prompt: generatedPrompt,
         revised_prompt: imageData?.revised_prompt,
       },
     });
   } catch (error: any) {
-    console.error('❌ Reimagine error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Reimagine error:", error);
+    }
     return NextResponse.json(
-      { error: error.message || 'Failed to reimagine image' },
-      { status: 500 }
+      { error: error.message || "Failed to reimagine image" },
+      { status: 500 },
     );
   }
 }
@@ -155,13 +160,20 @@ export async function PUT(request: NextRequest) {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const { files, instructions, size = '1024x1024', quality = 'standard', style = 'vivid' } = body;
+    const {
+      files,
+      instructions,
+      size = "1024x1024",
+      quality = "standard",
+      style = "vivid",
+    } = body;
 
     if (!files || !Array.isArray(files) || files.length === 0) {
-      return NextResponse.json({ error: 'Files array required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Files array required" },
+        { status: 400 },
+      );
     }
-
-    console.log(`🔵 Bulk reimagining ${files.length} images${instructions ? ` with instructions: ${instructions}` : ''}`);
 
     const results: any[] = [];
     const errors: any[] = [];
@@ -169,26 +181,29 @@ export async function PUT(request: NextRequest) {
     // Process sequentially to avoid rate limits
     for (const file of files) {
       try {
-        const response = await fetch(`${request.nextUrl.origin}/api/vendor/media/reimagine`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-vendor-id': vendorId,
+        const response = await fetch(
+          `${request.nextUrl.origin}/api/vendor/media/reimagine`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-vendor-id": vendorId,
+            },
+            body: JSON.stringify({
+              imageUrl: file.url,
+              fileName: file.name,
+              instructions,
+              size,
+              quality,
+              style,
+            }),
           },
-          body: JSON.stringify({
-            imageUrl: file.url,
-            fileName: file.name,
-            instructions,
-            size,
-            quality,
-            style,
-          }),
-        });
+        );
 
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to reimagine image');
+          throw new Error(data.error || "Failed to reimagine image");
         }
 
         results.push({
@@ -198,10 +213,10 @@ export async function PUT(request: NextRequest) {
           url: data.file.url,
           prompt: data.file.generated_prompt,
         });
-
-        console.log(`✅ Completed ${results.length}/${files.length}: ${file.name}`);
       } catch (err: any) {
-        console.error(`❌ Failed ${file.name}:`, err);
+        if (process.env.NODE_ENV === "development") {
+          console.error(`❌ Failed ${file.name}:`, err);
+        }
         errors.push({
           fileName: file.name,
           error: err.message,
@@ -210,11 +225,9 @@ export async function PUT(request: NextRequest) {
 
       // Add delay between requests to avoid rate limits
       if (files.indexOf(file) < files.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
-
-    console.log(`✅ Bulk reimagine complete: ${results.length} success, ${errors.length} failed`);
 
     return NextResponse.json({
       success: true,
@@ -224,7 +237,9 @@ export async function PUT(request: NextRequest) {
       errors,
     });
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

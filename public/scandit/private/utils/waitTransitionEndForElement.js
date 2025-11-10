@@ -1,1 +1,1 @@
-export{a as waitTransitionEndForElement}from'../../chunks/chunk-2HTI5D6Y.js';
+export { a as waitTransitionEndForElement } from "../../chunks/chunk-2HTI5D6Y.js";

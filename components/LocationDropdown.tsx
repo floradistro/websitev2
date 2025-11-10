@@ -26,12 +26,13 @@ export default function LocationDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Filter active locations (handle both "1" string and true boolean)
-  const activeLocations = locations.filter((loc) => 
-    loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true
+  const activeLocations = locations.filter(
+    (loc) =>
+      loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true,
   );
-  
+
   const selectedLocationData = activeLocations.find(
-    (loc) => loc.id?.toString() === selectedLocation
+    (loc) => loc.id?.toString() === selectedLocation,
   );
 
   useEffect(() => {
@@ -54,7 +55,11 @@ export default function LocationDropdown({
         onClick={() => setIsOpen(!isOpen)}
         className="relative z-[200] inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 sm:py-2 bg-transparent border border-white/20 hover:border-white/40 transition-all duration-300 text-[10px] sm:text-[11px] font-normal uppercase tracking-[0.1em] group text-white rounded"
       >
-        <MapPin size={12} strokeWidth={2} className="text-white/60 group-hover:text-white transition-colors sm:w-3.5 sm:h-3.5" />
+        <MapPin
+          size={12}
+          strokeWidth={2}
+          className="text-white/60 group-hover:text-white transition-colors sm:w-3.5 sm:h-3.5"
+        />
         <span className="whitespace-nowrap max-w-[90px] sm:max-w-none truncate">
           {selectedLocationData
             ? `${selectedLocationData.name}`
@@ -80,8 +85,14 @@ export default function LocationDropdown({
               className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors duration-200 text-left group"
             >
               <div className="flex items-center space-x-3">
-                <MapPin size={14} strokeWidth={2} className="text-white/40 group-hover:text-white/70 transition-colors" />
-                <span className="text-[11px] font-normal uppercase tracking-[0.12em] text-white">All Locations</span>
+                <MapPin
+                  size={14}
+                  strokeWidth={2}
+                  className="text-white/40 group-hover:text-white/70 transition-colors"
+                />
+                <span className="text-[11px] font-normal uppercase tracking-[0.12em] text-white">
+                  All Locations
+                </span>
               </div>
               {!selectedLocation && (
                 <Check size={14} strokeWidth={2} className="text-white" />
@@ -100,9 +111,15 @@ export default function LocationDropdown({
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors duration-200 text-left group"
               >
                 <div className="flex items-center space-x-3">
-                  <MapPin size={14} strokeWidth={2} className="text-white/40 group-hover:text-white/70 transition-colors" />
+                  <MapPin
+                    size={14}
+                    strokeWidth={2}
+                    className="text-white/40 group-hover:text-white/70 transition-colors"
+                  />
                   <div>
-                    <p className="text-[11px] font-normal uppercase tracking-[0.12em] text-white">{location.name}</p>
+                    <p className="text-[11px] font-normal uppercase tracking-[0.12em] text-white">
+                      {location.name}
+                    </p>
                     {(location.city || location.state) && (
                       <p className="text-[10px] text-white/50 font-normal tracking-wide mt-0.5">
                         {location.city}
@@ -123,4 +140,3 @@ export default function LocationDropdown({
     </div>
   );
 }
-

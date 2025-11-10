@@ -3,15 +3,15 @@
  * Displays a group of products under a subcategory header
  */
 
-import { MinimalProductCard } from './MinimalProductCard';
-import { ListProductCard } from './ListProductCard';
-import { CompactListProductCard } from './CompactListProductCard';
+import { MinimalProductCard } from "./MinimalProductCard";
+import { ListProductCard } from "./ListProductCard";
+import { CompactListProductCard } from "./CompactListProductCard";
 
 interface SubcategoryGroupProps {
   subcategoryName: string;
   products: any[];
   theme: any;
-  displayMode: 'grid' | 'list';
+  displayMode: "grid" | "list";
   gridColumns: number;
   gridRows: number;
   visiblePriceBreaks: string[];
@@ -21,7 +21,7 @@ interface SubcategoryGroupProps {
   displayConfig?: any;
   startIndex?: number;
   useCompactCards?: boolean;
-  splitSide?: 'left' | 'right';
+  splitSide?: "left" | "right";
 }
 
 export function SubcategoryGroup({
@@ -53,15 +53,14 @@ export function SubcategoryGroup({
   }>;
 
   // Create a map of break_id to price break info (for labels)
-  const priceBreakMap = new Map(
-    priceBreaks.map((pb) => [pb.break_id, pb])
-  );
+  const priceBreakMap = new Map(priceBreaks.map((pb) => [pb.break_id, pb]));
 
   // Filter to only show enabled pricing breaks that are in visiblePriceBreaks
   const enabledPrices = Object.entries(pricingTiers)
     .filter(([breakId, breakData]: [string, any]) => {
       const isEnabled = breakData?.enabled !== false;
-      const isVisible = visiblePriceBreaks.length === 0 || visiblePriceBreaks.includes(breakId);
+      const isVisible =
+        visiblePriceBreaks.length === 0 || visiblePriceBreaks.includes(breakId);
       return isEnabled && isVisible;
     })
     .map(([breakId, breakData]: [string, any]) => {
@@ -70,9 +69,9 @@ export function SubcategoryGroup({
         breakId,
         label: priceBreak?.label || breakId,
         qty: priceBreak?.qty || 1,
-        unit: priceBreak?.unit || '',
+        unit: priceBreak?.unit || "",
         price: breakData.price,
-        sortOrder: priceBreak?.sort_order || 999
+        sortOrder: priceBreak?.sort_order || 999,
       };
     })
     .sort((a, b) => {
@@ -94,7 +93,7 @@ export function SubcategoryGroup({
             className="font-bold uppercase tracking-wider"
             style={{
               color: theme.styles.productName.color,
-              fontSize: 'clamp(1.25rem, 2.5vw, 2.5rem)',
+              fontSize: "clamp(1.25rem, 2.5vw, 2.5rem)",
               lineHeight: 1.2,
               opacity: 0.95,
             }}
@@ -107,17 +106,21 @@ export function SubcategoryGroup({
             <div className="flex items-baseline gap-3 flex-wrap">
               {enabledPrices.map((priceInfo) => {
                 // Format the display label
-                const displayLabel = priceInfo.unit === 'unit'
-                  ? `${priceInfo.label}`
-                  : `${priceInfo.label}${priceInfo.unit}`;
+                const displayLabel =
+                  priceInfo.unit === "unit"
+                    ? `${priceInfo.label}`
+                    : `${priceInfo.label}${priceInfo.unit}`;
 
                 return (
-                  <div key={priceInfo.breakId} className="flex items-baseline gap-1.5">
+                  <div
+                    key={priceInfo.breakId}
+                    className="flex items-baseline gap-1.5"
+                  >
                     <span
                       className="font-medium uppercase tracking-wide"
                       style={{
                         color: theme.styles.productDescription.color,
-                        fontSize: 'clamp(0.75rem, 1.5vw, 1.25rem)',
+                        fontSize: "clamp(0.75rem, 1.5vw, 1.25rem)",
                         opacity: 0.7,
                       }}
                     >
@@ -127,7 +130,7 @@ export function SubcategoryGroup({
                       className="font-black"
                       style={{
                         color: theme.styles.price.color,
-                        fontSize: 'clamp(1rem, 2vw, 1.75rem)',
+                        fontSize: "clamp(1rem, 2vw, 1.75rem)",
                       }}
                     >
                       ${priceInfo.price}
@@ -141,10 +144,12 @@ export function SubcategoryGroup({
       </div>
 
       {/* Products Grid/List */}
-      {displayMode === 'list' ? (
+      {displayMode === "list" ? (
         <div className="flex flex-col gap-2">
           {products.map((product: any, idx: number) => {
-            const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
+            const CardComponent = useCompactCards
+              ? CompactListProductCard
+              : ListProductCard;
             return (
               <CardComponent
                 key={product.id}
@@ -164,7 +169,7 @@ export function SubcategoryGroup({
           className="grid gap-2"
           style={{
             gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
-            gridAutoRows: 'minmax(0, 1fr)',
+            gridAutoRows: "minmax(0, 1fr)",
           }}
         >
           {products.map((product: any, idx: number) => (

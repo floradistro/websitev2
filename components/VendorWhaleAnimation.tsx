@@ -23,7 +23,7 @@ function VendorWhaleAnimation() {
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const loadP5 = async () => {
       const p5 = (await import("p5")).default;
@@ -60,7 +60,7 @@ function VendorWhaleAnimation() {
         p.draw = () => {
           p.clear();
           time += 0.003;
-          
+
           const isMobile = p.windowWidth < 768;
           const connectionDistance = isMobile ? 800 : 200;
 
@@ -81,15 +81,15 @@ function VendorWhaleAnimation() {
           }
 
           // Draw bubbles
-          
+
           for (let bubble of bubbles) {
             let pulse = p.sin(time * 2 + bubble.offset) * 0.5 + 0.5;
-            
+
             // Outer glow layers
             p.noStroke();
             p.fill(255, 255, 255, (2 + pulse * 2) * (isMobile ? 0.3 : 1));
             p.circle(bubble.x, bubble.y, bubble.size * 2.5);
-            
+
             p.fill(255, 255, 255, (4 + pulse * 4) * (isMobile ? 0.3 : 1));
             p.circle(bubble.x, bubble.y, bubble.size * 1.8);
 
@@ -107,36 +107,52 @@ function VendorWhaleAnimation() {
             p.stroke(255, 255, 255, (25 + pulse * 20) * (isMobile ? 0.3 : 1));
             p.strokeWeight(isMobile ? 3 : 1);
             p.arc(
-              bubble.x - bubble.size * 0.15, 
-              bubble.y - bubble.size * 0.15, 
-              bubble.size * 0.4, 
-              bubble.size * 0.4, 
-              p.PI, 
-              p.PI + p.HALF_PI
+              bubble.x - bubble.size * 0.15,
+              bubble.y - bubble.size * 0.15,
+              bubble.size * 0.4,
+              bubble.size * 0.4,
+              p.PI,
+              p.PI + p.HALF_PI,
             );
 
             // Tiny reflection dot
             p.noStroke();
             p.fill(255, 255, 255, 40 + pulse * 30);
-            p.circle(bubble.x - bubble.size * 0.2, bubble.y - bubble.size * 0.2, bubble.size * 0.15);
+            p.circle(
+              bubble.x - bubble.size * 0.2,
+              bubble.y - bubble.size * 0.2,
+              bubble.size * 0.15,
+            );
           }
 
           // Draw wavy connections between nearby bubbles
           for (let i = 0; i < bubbles.length; i++) {
             for (let j = i + 1; j < bubbles.length; j++) {
-              let d = p.dist(bubbles[i].x, bubbles[i].y, bubbles[j].x, bubbles[j].y);
+              let d = p.dist(
+                bubbles[i].x,
+                bubbles[i].y,
+                bubbles[j].x,
+                bubbles[j].y,
+              );
               if (d < connectionDistance) {
-                let alpha = p.map(d, 0, connectionDistance, isMobile ? 3 : 6, 0);
+                let alpha = p.map(
+                  d,
+                  0,
+                  connectionDistance,
+                  isMobile ? 3 : 6,
+                  0,
+                );
                 p.stroke(255, 255, 255, alpha * (isMobile ? 0.2 : 1));
                 p.strokeWeight(isMobile ? 3 : 0.5);
                 p.noFill();
-                
+
                 // Gentle wavy line
                 p.beginShape();
                 for (let t = 0; t <= 1; t += 0.1) {
                   let x = p.lerp(bubbles[i].x, bubbles[j].x, t);
                   let y = p.lerp(bubbles[i].y, bubbles[j].y, t);
-                  let wave = p.sin(t * p.PI * 3 + time * 2) * (isMobile ? 8 : 5);
+                  let wave =
+                    p.sin(t * p.PI * 3 + time * 2) * (isMobile ? 8 : 5);
                   p.vertex(x + wave, y);
                 }
                 p.endShape();
@@ -149,12 +165,17 @@ function VendorWhaleAnimation() {
           try {
             const newWidth = p.windowWidth;
             const newHeight = p.windowHeight;
-            
+
             // Only resize if we have valid dimensions
-            if (typeof newWidth === 'number' && typeof newHeight === 'number' &&
-                newWidth > 0 && newHeight > 0 && 
-                Number.isFinite(newWidth) && Number.isFinite(newHeight) &&
-                (newWidth !== p.width || newHeight !== p.height)) {
+            if (
+              typeof newWidth === "number" &&
+              typeof newHeight === "number" &&
+              newWidth > 0 &&
+              newHeight > 0 &&
+              Number.isFinite(newWidth) &&
+              Number.isFinite(newHeight) &&
+              (newWidth !== p.width || newHeight !== p.height)
+            ) {
               p.resizeCanvas(newWidth, newHeight);
             }
           } catch (e) {
@@ -169,7 +190,7 @@ function VendorWhaleAnimation() {
     loadP5();
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (sketchRef.current) {
         sketchRef.current.noLoop();
         sketchRef.current.remove();
@@ -179,19 +200,18 @@ function VendorWhaleAnimation() {
   }, []);
 
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       className="fixed inset-0 pointer-events-none overflow-hidden"
-      style={{ 
-        zIndex: 0, 
-        width: '100vw', 
-        height: '100vh',
-        willChange: 'transform',
-        transform: 'translateZ(0)'
+      style={{
+        zIndex: 0,
+        width: "100vw",
+        height: "100vh",
+        willChange: "transform",
+        transform: "translateZ(0)",
       }}
     />
   );
 }
 
 export default VendorWhaleAnimation;
-

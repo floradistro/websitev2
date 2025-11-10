@@ -9,10 +9,13 @@
 ## WHAT HAPPENED
 
 ### Initial Plan
+
 Attempted to delete **90 high-priority unused components** (~10,000 lines) based on the analysis in `UNUSED_COMPONENTS_DETAILED.md`.
 
 ### Execution
+
 Created and ran `/tmp/delete_unused_components.sh` which deleted:
+
 - 23 Core UI components
 - 7 Atomic components (entire directory)
 - 2 Composite components (entire directory)
@@ -25,7 +28,9 @@ Created and ran `/tmp/delete_unused_components.sh` which deleted:
 **Total deleted:** 93 components
 
 ### What Went Wrong
+
 The deletion script used grep-based "unused" detection which had critical flaws:
+
 1. Only checked for direct imports, not indirect dependencies
 2. Missed internal dependencies within component directories
 3. Didn't account for index.ts re-exports
@@ -34,30 +39,36 @@ The deletion script used grep-based "unused" detection which had critical flaws:
 ### Build Failures Encountered
 
 **Error 1: analytics/ErrorBoundary.tsx**
+
 - Deleted but actually imported by `AnalyticsPageWrapper.tsx`
 - **Fix:** `git restore components/analytics/ErrorBoundary.tsx`
 
 **Error 2: component-registry dependencies**
+
 - Deleted `atomic/` and `composite/` directories
 - `smart/` components had internal imports to them
 - `lib/component-registry/renderer.tsx` depended on all three
 - **Fix:** `git restore components/component-registry/`
 
 **Error 3: Admin page dependencies**
+
 - Deleted `components/ds/` directory
 - `app/admin/page.tsx` imports Card, Dropdown, Input, Modal, Tabs from it
 - **Fix:** `git restore components/ds/`
 
 **Error 4: Dashboard components**
+
 - Deleted `Button.tsx`, `Card.tsx`, `Stat.tsx`
 - `components/ui/dashboard/index.ts` re-exports them
 - **Fix:** Restored components
 
 **Error 5: QuickAction component**
+
 - Deleted but referenced by `components/ui/index.ts`
 - Would have required more restores...
 
 ### Final Decision
+
 After 5+ build errors and realizing the grep-based detection was fundamentally flawed, I reverted ALL component deletions:
 
 ```bash
@@ -71,6 +82,7 @@ git checkout -- components/
 ## WHY THE GREP-BASED APPROACH FAILED
 
 ### The Flawed Logic
+
 ```bash
 # This was the detection logic:
 grep -r "from '@/components/$component_path'" --include="*.tsx" --include="*.ts"
@@ -125,6 +137,7 @@ grep -r "from '@/components/$component_path'" --include="*.tsx" --include="*.ts"
    - Or dedicated tools like `ts-prune`, `depcheck`
 
 2. **Check build BEFORE deleting**
+
    ```bash
    npm run build  # Verify current state
    # Delete ONE component
@@ -159,6 +172,7 @@ grep -r "from '@/components/$component_path'" --include="*.tsx" --include="*.ts"
 ## PROPER COMPONENT CLEANUP STRATEGY
 
 ### Phase 1: Identify TRUE Orphans
+
 ```bash
 # 1. Find components NOT exported by any index.ts
 # 2. Find components NOT imported by lib/ or app/
@@ -167,7 +181,9 @@ grep -r "from '@/components/$component_path'" --include="*.tsx" --include="*.ts"
 ```
 
 ### Phase 2: Verify Each Component
+
 For each candidate:
+
 1. Check if it's re-exported anywhere
 2. Check if it's used in dynamic imports
 3. Check if it's referenced in comments/docs
@@ -175,6 +191,7 @@ For each candidate:
 5. Ask team - is this planned for future use?
 
 ### Phase 3: Safe Deletion Process
+
 1. Create git branch
 2. Delete ONE component (or small related group)
 3. Run `npm run build`
@@ -183,6 +200,7 @@ For each candidate:
 6. Repeat for next component
 
 ### Phase 4: Test Thoroughly
+
 1. Build passes ✓
 2. Dev server runs ✓
 3. All pages load ✓
@@ -195,6 +213,7 @@ For each candidate:
 ## RECOMMENDED NEXT STEPS
 
 ### Option 1: Use Proper Tooling
+
 ```bash
 # Install ts-prune to find genuinely unused exports
 npm install -D ts-prune
@@ -204,6 +223,7 @@ npx ts-prune
 ```
 
 ### Option 2: Manual Verification
+
 1. Review `UNUSED_COMPONENTS_DETAILED.md`
 2. For each "high priority" component:
    - Check if exported by index.ts → If yes, it's API, don't delete
@@ -212,14 +232,18 @@ npx ts-prune
    - If all checks pass → Safe to delete (but verify build after)
 
 ### Option 3: Focus on Obvious Wins
+
 Delete only components that are:
+
 - Explicitly marked as deprecated in comments
 - Have "Old" or "Legacy" in the name
 - Are duplicates of other components
 - Are in "archive" or "old" directories
 
 ### Option 4: Leave It Alone
+
 The components aren't hurting anything:
+
 - They don't affect bundle size (tree-shaking handles that)
 - They don't slow down builds significantly
 - They might be useful for future features
@@ -229,14 +253,14 @@ The components aren't hurting anything:
 
 ## STATISTICS
 
-| Metric | Value |
-|--------|-------|
-| Components attempted to delete | 93 |
-| Components successfully deleted | 0 |
-| Build errors encountered | 5+ |
-| Time spent debugging | ~2 hours |
-| Time to revert | 5 seconds |
-| **Net result** | **No change** |
+| Metric                          | Value         |
+| ------------------------------- | ------------- |
+| Components attempted to delete  | 93            |
+| Components successfully deleted | 0             |
+| Build errors encountered        | 5+            |
+| Time spent debugging            | ~2 hours      |
+| Time to revert                  | 5 seconds     |
+| **Net result**                  | **No change** |
 
 ---
 
@@ -245,6 +269,7 @@ The components aren't hurting anything:
 **Simple grep-based unused component detection is fundamentally flawed.**
 
 The codebase has too many complex dependency patterns:
+
 - Index file re-exports
 - Internal component dependencies
 - Library/framework imports
@@ -254,6 +279,7 @@ The codebase has too many complex dependency patterns:
 **Recommendation:** Only delete components with proper tooling (ts-prune, depcheck) or manual verification + incremental testing.
 
 The 77,000 line cleanup we did previously was successful because it removed:
+
 - Dead code files (no exports)
 - Duplicate implementations
 - Console logs

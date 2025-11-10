@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Scan } from 'lucide-react';
-import { POSCustomerSelector } from './POSCustomerSelector';
-import { POSIDScanner } from './POSIDScanner';
-import { NewCustomerForm } from './POSNewCustomerForm';
+import { useState } from "react";
+import { Scan } from "lucide-react";
+import { POSCustomerSelector } from "./POSCustomerSelector";
+import { POSIDScanner } from "./POSIDScanner";
+import { NewCustomerForm } from "./POSNewCustomerForm";
 
 interface Customer {
   id: string;
@@ -64,7 +64,9 @@ export function POSCart({
   taxError,
   isProcessing = false,
 }: POSCartProps) {
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null,
+  );
   const [showIDScanner, setShowIDScanner] = useState(false);
   const [prefilledData, setPrefilledData] = useState<any>(null);
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
@@ -79,7 +81,10 @@ export function POSCart({
     <div className="flex flex-col h-full bg-[#0a0a0a]">
       {/* Header */}
       <div className="flex-shrink-0 px-4 py-4 border-b border-white/5">
-        <h3 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
+        <h3
+          className="text-xs uppercase tracking-[0.15em] text-white font-black"
+          style={{ fontWeight: 900 }}
+        >
           Cart
         </h3>
         <div className="text-white/40 text-[10px] mt-1 uppercase tracking-wider">
@@ -95,7 +100,6 @@ export function POSCart({
           </label>
           <button
             onClick={() => {
-              console.log('🔵 Scan ID button clicked!');
               setShowIDScanner(true);
             }}
             className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-1.5"
@@ -141,15 +145,19 @@ export function POSCart({
         className="flex-1 overflow-y-auto px-4 py-3 space-y-2"
         style={{
           minHeight: 0,
-          WebkitOverflowScrolling: 'touch',
-          overscrollBehavior: 'contain'
+          WebkitOverflowScrolling: "touch",
+          overscrollBehavior: "contain",
         }}
       >
         {items.length === 0 ? (
           <div className="text-center py-20 text-white/40">
             <div className="text-5xl mb-4">🛒</div>
-            <div className="text-[10px] uppercase tracking-[0.15em] text-white/60">Cart is empty</div>
-            <div className="text-[10px] text-white/40 mt-1">Add products to start</div>
+            <div className="text-[10px] uppercase tracking-[0.15em] text-white/60">
+              Cart is empty
+            </div>
+            <div className="text-[10px] text-white/40 mt-1">
+              Add products to start
+            </div>
           </div>
         ) : (
           items.map((item) => (
@@ -162,11 +170,17 @@ export function POSCart({
                 <div
                   className="absolute top-2 right-2 px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider"
                   style={{
-                    backgroundColor: item.badgeColor === 'red' ? '#ef4444' :
-                                   item.badgeColor === 'orange' ? '#f97316' :
-                                   item.badgeColor === 'green' ? '#22c55e' :
-                                   item.badgeColor === 'blue' ? '#3b82f6' : '#ef4444',
-                    color: 'white'
+                    backgroundColor:
+                      item.badgeColor === "red"
+                        ? "#ef4444"
+                        : item.badgeColor === "orange"
+                          ? "#f97316"
+                          : item.badgeColor === "green"
+                            ? "#22c55e"
+                            : item.badgeColor === "blue"
+                              ? "#3b82f6"
+                              : "#ef4444",
+                    color: "white",
                   }}
                 >
                   {item.badgeText}
@@ -175,7 +189,12 @@ export function POSCart({
 
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <div className="text-white font-black text-xs uppercase tracking-tight" style={{ fontWeight: 900 }}>{item.productName}</div>
+                  <div
+                    className="text-white font-black text-xs uppercase tracking-tight"
+                    style={{ fontWeight: 900 }}
+                  >
+                    {item.productName}
+                  </div>
 
                   {/* Show original price if on sale */}
                   {item.originalPrice && item.originalPrice > item.unitPrice ? (
@@ -200,31 +219,41 @@ export function POSCart({
                   ✕
                 </button>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() => onUpdateQuantity(item.productId, item.quantity - 1)}
+                    onClick={() =>
+                      onUpdateQuantity(item.productId, item.quantity - 1)
+                    }
                     disabled={item.quantity <= 1}
                     className="w-8 h-8 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-black hover:bg-white/10 hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center"
                     style={{ fontWeight: 900 }}
                   >
                     −
                   </button>
-                  <div className="w-12 text-white text-xs font-black text-center" style={{ fontWeight: 900 }}>
+                  <div
+                    className="w-12 text-white text-xs font-black text-center"
+                    style={{ fontWeight: 900 }}
+                  >
                     {item.quantity}
                   </div>
                   <button
-                    onClick={() => onUpdateQuantity(item.productId, item.quantity + 1)}
+                    onClick={() =>
+                      onUpdateQuantity(item.productId, item.quantity + 1)
+                    }
                     className="w-8 h-8 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-black hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center"
                     style={{ fontWeight: 900 }}
                   >
                     +
                   </button>
                 </div>
-                
+
                 <div className="text-right">
-                  <div className="text-white font-black text-sm tracking-tight" style={{ fontWeight: 900 }}>
+                  <div
+                    className="text-white font-black text-sm tracking-tight"
+                    style={{ fontWeight: 900 }}
+                  >
                     ${item.lineTotal.toFixed(2)}
                   </div>
                   {item.discount && item.discount > 0 && (
@@ -244,7 +273,9 @@ export function POSCart({
         <div className="flex-shrink-0 border-t border-white/5 px-4 py-3 space-y-2 bg-black">
           {taxError && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-3">
-              <div className="text-red-400 text-[10px] uppercase tracking-wider font-bold mb-1">TAX ERROR</div>
+              <div className="text-red-400 text-[10px] uppercase tracking-wider font-bold mb-1">
+                TAX ERROR
+              </div>
               <div className="text-red-300 text-[9px]">{taxError}</div>
             </div>
           )}
@@ -259,8 +290,13 @@ export function POSCart({
               {taxBreakdown.map((tax, idx) => {
                 const taxAmt = subtotal * (tax.rate / 100);
                 return (
-                  <div key={idx} className="flex justify-between text-white/50 text-[9px] uppercase tracking-[0.15em] pl-2">
-                    <span>{tax.name} ({tax.rate}%)</span>
+                  <div
+                    key={idx}
+                    className="flex justify-between text-white/50 text-[9px] uppercase tracking-[0.15em] pl-2"
+                  >
+                    <span>
+                      {tax.name} ({tax.rate}%)
+                    </span>
                     <span>${taxAmt.toFixed(2)}</span>
                   </div>
                 );
@@ -277,7 +313,10 @@ export function POSCart({
             </div>
           )}
 
-          <div className="flex justify-between text-white font-black text-lg pt-2 border-t border-white/5 tracking-tight" style={{ fontWeight: 900 }}>
+          <div
+            className="flex justify-between text-white font-black text-lg pt-2 border-t border-white/5 tracking-tight"
+            style={{ fontWeight: 900 }}
+          >
             <span>TOTAL</span>
             <span>${total.toFixed(2)}</span>
           </div>
@@ -289,13 +328,19 @@ export function POSCart({
         {items.length > 0 && (
           <>
             <button
-              onClick={() => taxError ? alert(taxError) : onCheckout(selectedCustomer)}
+              onClick={() =>
+                taxError ? alert(taxError) : onCheckout(selectedCustomer)
+              }
               disabled={isProcessing || !!taxError}
               className="w-full bg-white/10 text-white border-2 border-white/20 rounded-2xl px-4 py-4 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               style={{ fontWeight: 900 }}
               title={taxError || undefined}
             >
-              {isProcessing ? 'Processing...' : taxError ? 'TAX ERROR' : `Charge $${total.toFixed(2)}`}
+              {isProcessing
+                ? "Processing..."
+                : taxError
+                  ? "TAX ERROR"
+                  : `Charge $${total.toFixed(2)}`}
             </button>
 
             <div className="flex gap-2">
@@ -354,4 +399,3 @@ export function POSCart({
     </div>
   );
 }
-

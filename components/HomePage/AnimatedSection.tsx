@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
+import { motion } from "framer-motion";
+import { ReactNode } from "react";
 
 interface AnimatedSectionProps {
   children: ReactNode;
@@ -10,7 +10,12 @@ interface AnimatedSectionProps {
   id?: string;
 }
 
-export function AnimatedSection({ children, delay = 0, className = '', id }: AnimatedSectionProps) {
+export function AnimatedSection({
+  children,
+  delay = 0,
+  className = "",
+  id,
+}: AnimatedSectionProps) {
   return (
     <motion.div
       id={id}
@@ -20,7 +25,7 @@ export function AnimatedSection({ children, delay = 0, className = '', id }: Ani
       transition={{
         duration: 0.8,
         delay,
-        ease: [0.21, 0.45, 0.27, 0.9] // Custom easing for smooth feel
+        ease: [0.21, 0.45, 0.27, 0.9], // Custom easing for smooth feel
       }}
       className={className}
     >
@@ -29,7 +34,13 @@ export function AnimatedSection({ children, delay = 0, className = '', id }: Ani
   );
 }
 
-export function AnimatedGrid({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function AnimatedGrid({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <motion.div
       initial="hidden"
@@ -38,9 +49,9 @@ export function AnimatedGrid({ children, className = '' }: { children: ReactNode
       variants={{
         visible: {
           transition: {
-            staggerChildren: 0.08
-          }
-        }
+            staggerChildren: 0.08,
+          },
+        },
       }}
       className={className}
     >
@@ -49,7 +60,13 @@ export function AnimatedGrid({ children, className = '' }: { children: ReactNode
   );
 }
 
-export function AnimatedGridItem({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function AnimatedGridItem({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   return (
     <motion.div
       variants={{
@@ -59,9 +76,9 @@ export function AnimatedGridItem({ children, className = '' }: { children: React
           y: 0,
           transition: {
             duration: 0.6,
-            ease: [0.21, 0.45, 0.27, 0.9]
-          }
-        }
+            ease: [0.21, 0.45, 0.27, 0.9],
+          },
+        },
       }}
       className={className}
     >

@@ -3,7 +3,7 @@
  * Works across all dashboards
  */
 
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon } from "lucide-react";
 
 interface StatProps {
   label: string;
@@ -24,7 +24,7 @@ export function Stat({
   sublabel,
   icon: Icon,
   delay,
-  className = '',
+  className = "",
   trend,
 }: StatProps) {
   return (
@@ -42,7 +42,6 @@ export function Stat({
        
         ${className}
       `}
-     
     >
       <div className="flex items-center justify-between mb-4">
         <span className="text-white/40 text-[11px] uppercase tracking-[0.2em] font-light">
@@ -57,12 +56,13 @@ export function Stat({
         )}
       </div>
       <div className="flex items-baseline gap-2">
-        <div className="text-3xl font-thin text-white/90">
-          {value}
-        </div>
+        <div className="text-3xl font-thin text-white/90">{value}</div>
         {trend && (
-          <span className={`text-xs font-medium ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}>
-            {trend.isPositive ? '+' : ''}{trend.value}%
+          <span
+            className={`text-xs font-medium ${trend.isPositive ? "text-green-500" : "text-red-500"}`}
+          >
+            {trend.isPositive ? "+" : ""}
+            {trend.value}%
           </span>
         )}
       </div>
@@ -74,4 +74,3 @@ export function Stat({
     </div>
   );
 }
-

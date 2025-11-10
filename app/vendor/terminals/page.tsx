@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Smartphone,
   Plus,
@@ -12,12 +12,12 @@ import {
   MapPin,
   CheckCircle2,
   XCircle,
-  Activity
-} from 'lucide-react';
-import { useAppAuth } from '@/context/AppAuthContext';
-import axios from 'axios';
-import { showNotification } from '@/components/NotificationToast';
-import AdminModal from '@/components/AdminModal';
+  Activity,
+} from "lucide-react";
+import { useAppAuth } from "@/context/AppAuthContext";
+import axios from "axios";
+import { showNotification } from "@/components/NotificationToast";
+import AdminModal from "@/components/AdminModal";
 
 interface Terminal {
   register_id: string;
@@ -50,15 +50,15 @@ export default function VendorTerminals() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTerminal, setEditingTerminal] = useState<Terminal | null>(null);
-  const [filterLocation, setFilterLocation] = useState<string>('all');
+  const [filterLocation, setFilterLocation] = useState<string>("all");
 
   // New terminal form state
   const [newTerminal, setNewTerminal] = useState({
-    location_id: '',
-    register_name: '',
-    device_name: '',
-    hardware_model: 'Dejavoo P8',
-    device_type: 'android_tablet',
+    location_id: "",
+    register_name: "",
+    device_name: "",
+    hardware_model: "Dejavoo P8",
+    device_type: "android_tablet",
   });
 
   useEffect(() => {
@@ -71,18 +71,21 @@ export default function VendorTerminals() {
   async function loadTerminals() {
     try {
       setLoading(true);
-      const params = filterLocation !== 'all' ? `?location_id=${filterLocation}` : '';
+      const params =
+        filterLocation !== "all" ? `?location_id=${filterLocation}` : "";
       const response = await axios.get(`/api/vendor/terminals${params}`);
 
       if (response.data.terminals) {
         setTerminals(response.data.terminals);
       }
     } catch (error) {
-      console.error('Error loading terminals:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading terminals:", error);
+      }
       showNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to load terminals'
+        type: "error",
+        title: "Error",
+        message: "Failed to load terminals",
       });
     } finally {
       setLoading(false);
@@ -91,12 +94,14 @@ export default function VendorTerminals() {
 
   async function loadLocations() {
     try {
-      const response = await axios.get('/api/vendor/locations');
+      const response = await axios.get("/api/vendor/locations");
       if (response.data.success) {
         setLocations(response.data.locations || []);
       }
     } catch (error) {
-      console.error('Error loading locations:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading locations:", error);
+      }
     }
   }
 
@@ -110,39 +115,39 @@ export default function VendorTerminals() {
     try {
       if (!newTerminal.location_id || !newTerminal.register_name) {
         showNotification({
-          type: 'error',
-          title: 'Error',
-          message: 'Please fill in all required fields'
+          type: "error",
+          title: "Error",
+          message: "Please fill in all required fields",
         });
         return;
       }
 
-      const response = await axios.post('/api/vendor/terminals', {
-        action: 'create',
+      const response = await axios.post("/api/vendor/terminals", {
+        action: "create",
         ...newTerminal,
       });
 
       if (response.data.terminal) {
         showNotification({
-          type: 'success',
-          title: 'Terminal Created',
-          message: 'New terminal added successfully'
+          type: "success",
+          title: "Terminal Created",
+          message: "New terminal added successfully",
         });
         setShowAddModal(false);
         setNewTerminal({
-          location_id: '',
-          register_name: '',
-          device_name: '',
-          hardware_model: 'Dejavoo P8',
-          device_type: 'android_tablet',
+          location_id: "",
+          register_name: "",
+          device_name: "",
+          hardware_model: "Dejavoo P8",
+          device_type: "android_tablet",
         });
         loadTerminals();
       }
     } catch (error: any) {
       showNotification({
-        type: 'error',
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to create terminal'
+        type: "error",
+        title: "Error",
+        message: error.response?.data?.error || "Failed to create terminal",
       });
     }
   }
@@ -151,8 +156,8 @@ export default function VendorTerminals() {
     if (!editingTerminal) return;
 
     try {
-      const response = await axios.post('/api/vendor/terminals', {
-        action: 'update',
+      const response = await axios.post("/api/vendor/terminals", {
+        action: "update",
         id: editingTerminal.register_id,
         register_name: editingTerminal.register_name,
         device_name: editingTerminal.device_name,
@@ -161,9 +166,9 @@ export default function VendorTerminals() {
 
       if (response.data.terminal) {
         showNotification({
-          type: 'success',
-          title: 'Terminal Updated',
-          message: 'Terminal updated successfully'
+          type: "success",
+          title: "Terminal Updated",
+          message: "Terminal updated successfully",
         });
         setShowEditModal(false);
         setEditingTerminal(null);
@@ -171,61 +176,66 @@ export default function VendorTerminals() {
       }
     } catch (error: any) {
       showNotification({
-        type: 'error',
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to update terminal'
+        type: "error",
+        title: "Error",
+        message: error.response?.data?.error || "Failed to update terminal",
       });
     }
   }
 
   async function toggleTerminalStatus(terminal: Terminal) {
     try {
-      const action = terminal.register_status === 'active' ? 'deactivate' : 'activate';
+      const action =
+        terminal.register_status === "active" ? "deactivate" : "activate";
 
-      const response = await axios.post('/api/vendor/terminals', {
+      const response = await axios.post("/api/vendor/terminals", {
         action,
         id: terminal.register_id,
       });
 
       if (response.data.terminal) {
         showNotification({
-          type: 'success',
-          title: 'Status Updated',
-          message: `Terminal ${action}d successfully`
+          type: "success",
+          title: "Status Updated",
+          message: `Terminal ${action}d successfully`,
         });
         loadTerminals();
       }
     } catch (error: any) {
       showNotification({
-        type: 'error',
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to update status'
+        type: "error",
+        title: "Error",
+        message: error.response?.data?.error || "Failed to update status",
       });
     }
   }
 
   async function deleteTerminal(terminal: Terminal) {
-    if (!confirm(`Are you sure you want to delete terminal "${terminal.register_name}"?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete terminal "${terminal.register_name}"?`,
+      )
+    ) {
       return;
     }
 
     try {
-      const response = await axios.post('/api/vendor/terminals', {
-        action: 'delete',
+      const response = await axios.post("/api/vendor/terminals", {
+        action: "delete",
         id: terminal.register_id,
       });
 
       showNotification({
-        type: 'success',
-        title: 'Terminal Deleted',
-        message: 'Terminal deleted successfully'
+        type: "success",
+        title: "Terminal Deleted",
+        message: "Terminal deleted successfully",
       });
       loadTerminals();
     } catch (error: any) {
       showNotification({
-        type: 'error',
-        title: 'Error',
-        message: error.response?.data?.error || 'Failed to delete terminal'
+        type: "error",
+        title: "Error",
+        message: error.response?.data?.error || "Failed to delete terminal",
       });
     }
   }
@@ -254,8 +264,12 @@ export default function VendorTerminals() {
                 <Smartphone className="w-8 h-8 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">POS Terminals</h1>
-                <p className="text-gray-600 mt-1">Manage your point-of-sale devices and registers</p>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  POS Terminals
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  Manage your point-of-sale devices and registers
+                </p>
               </div>
             </div>
             <button
@@ -271,7 +285,9 @@ export default function VendorTerminals() {
         {/* Filter */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium text-gray-700">Filter by Location:</label>
+            <label className="text-sm font-medium text-gray-700">
+              Filter by Location:
+            </label>
             <select
               value={filterLocation}
               onChange={(e) => setFilterLocation(e.target.value)}
@@ -296,8 +312,12 @@ export default function VendorTerminals() {
         ) : filteredTerminals.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <Smartphone className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No terminals found</h3>
-            <p className="text-gray-600 mb-6">Get started by adding your first POS terminal</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No terminals found
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Get started by adding your first POS terminal
+            </p>
             <button
               onClick={() => setShowAddModal(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
@@ -316,19 +336,23 @@ export default function VendorTerminals() {
                 <div className="p-6">
                   {/* Status Badge */}
                   <div className="flex items-center justify-between mb-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      terminal.register_status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {terminal.register_status === 'active' ? (
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        terminal.register_status === "active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {terminal.register_status === "active" ? (
                         <CheckCircle2 className="w-3 h-3 mr-1" />
                       ) : (
                         <XCircle className="w-3 h-3 mr-1" />
                       )}
                       {terminal.register_status}
                     </span>
-                    <Activity className={`w-5 h-5 ${terminal.last_active_at ? 'text-green-500' : 'text-gray-400'}`} />
+                    <Activity
+                      className={`w-5 h-5 ${terminal.last_active_at ? "text-green-500" : "text-gray-400"}`}
+                    />
                   </div>
 
                   {/* Terminal Info */}
@@ -336,7 +360,9 @@ export default function VendorTerminals() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
                       {terminal.register_name}
                     </h3>
-                    <p className="text-sm text-gray-600 font-mono">{terminal.register_number}</p>
+                    <p className="text-sm text-gray-600 font-mono">
+                      {terminal.register_number}
+                    </p>
                   </div>
 
                   {/* Device Info */}
@@ -369,16 +395,25 @@ export default function VendorTerminals() {
                   {/* Dejavoo Info */}
                   {terminal.merchant_id && (
                     <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                      <p className="text-xs text-gray-500 font-semibold mb-1">Dejavoo Config</p>
-                      <p className="text-xs text-gray-600">MID: {terminal.merchant_id}</p>
-                      {terminal.v_number && <p className="text-xs text-gray-600">V#: {terminal.v_number}</p>}
+                      <p className="text-xs text-gray-500 font-semibold mb-1">
+                        Dejavoo Config
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        MID: {terminal.merchant_id}
+                      </p>
+                      {terminal.v_number && (
+                        <p className="text-xs text-gray-600">
+                          V#: {terminal.v_number}
+                        </p>
+                      )}
                     </div>
                   )}
 
                   {/* Last Active */}
                   {terminal.last_active_at && (
                     <div className="text-xs text-gray-500 mb-4">
-                      Last active: {new Date(terminal.last_active_at).toLocaleString()}
+                      Last active:{" "}
+                      {new Date(terminal.last_active_at).toLocaleString()}
                     </div>
                   )}
 
@@ -397,12 +432,12 @@ export default function VendorTerminals() {
                     <button
                       onClick={() => toggleTerminalStatus(terminal)}
                       className={`flex-1 inline-flex items-center justify-center px-3 py-2 border rounded-md text-sm font-medium ${
-                        terminal.register_status === 'active'
-                          ? 'border-red-300 text-red-700 bg-white hover:bg-red-50'
-                          : 'border-green-300 text-green-700 bg-white hover:bg-green-50'
+                        terminal.register_status === "active"
+                          ? "border-red-300 text-red-700 bg-white hover:bg-red-50"
+                          : "border-green-300 text-green-700 bg-white hover:bg-green-50"
                       }`}
                     >
-                      {terminal.register_status === 'active' ? (
+                      {terminal.register_status === "active" ? (
                         <>
                           <PowerOff className="w-4 h-4 mr-1" />
                           Deactivate
@@ -441,7 +476,9 @@ export default function VendorTerminals() {
             </label>
             <select
               value={newTerminal.location_id}
-              onChange={(e) => setNewTerminal({ ...newTerminal, location_id: e.target.value })}
+              onChange={(e) =>
+                setNewTerminal({ ...newTerminal, location_id: e.target.value })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               required
             >
@@ -461,7 +498,12 @@ export default function VendorTerminals() {
             <input
               type="text"
               value={newTerminal.register_name}
-              onChange={(e) => setNewTerminal({ ...newTerminal, register_name: e.target.value })}
+              onChange={(e) =>
+                setNewTerminal({
+                  ...newTerminal,
+                  register_name: e.target.value,
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="e.g., Front Counter, Mobile 1"
               required
@@ -475,7 +517,9 @@ export default function VendorTerminals() {
             <input
               type="text"
               value={newTerminal.device_name}
-              onChange={(e) => setNewTerminal({ ...newTerminal, device_name: e.target.value })}
+              onChange={(e) =>
+                setNewTerminal({ ...newTerminal, device_name: e.target.value })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="e.g., Dejavoo P8 #1"
             />
@@ -487,7 +531,12 @@ export default function VendorTerminals() {
             </label>
             <select
               value={newTerminal.hardware_model}
-              onChange={(e) => setNewTerminal({ ...newTerminal, hardware_model: e.target.value })}
+              onChange={(e) =>
+                setNewTerminal({
+                  ...newTerminal,
+                  hardware_model: e.target.value,
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="Dejavoo P8">Dejavoo P8</option>
@@ -532,7 +581,12 @@ export default function VendorTerminals() {
               <input
                 type="text"
                 value={editingTerminal.register_name}
-                onChange={(e) => setEditingTerminal({ ...editingTerminal, register_name: e.target.value })}
+                onChange={(e) =>
+                  setEditingTerminal({
+                    ...editingTerminal,
+                    register_name: e.target.value,
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -543,8 +597,13 @@ export default function VendorTerminals() {
               </label>
               <input
                 type="text"
-                value={editingTerminal.device_name || ''}
-                onChange={(e) => setEditingTerminal({ ...editingTerminal, device_name: e.target.value })}
+                value={editingTerminal.device_name || ""}
+                onChange={(e) =>
+                  setEditingTerminal({
+                    ...editingTerminal,
+                    device_name: e.target.value,
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -555,8 +614,13 @@ export default function VendorTerminals() {
               </label>
               <input
                 type="text"
-                value={editingTerminal.hardware_model || ''}
-                onChange={(e) => setEditingTerminal({ ...editingTerminal, hardware_model: e.target.value })}
+                value={editingTerminal.hardware_model || ""}
+                onChange={(e) =>
+                  setEditingTerminal({
+                    ...editingTerminal,
+                    hardware_model: e.target.value,
+                  })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               />
             </div>

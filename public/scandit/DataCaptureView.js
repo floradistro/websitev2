@@ -1,1 +1,1 @@
-export{a as DataCaptureView}from'./chunks/chunk-BPNTTDTU.js';
+export { a as DataCaptureView } from "./chunks/chunk-BPNTTDTU.js";

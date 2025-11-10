@@ -3,19 +3,19 @@
  * This file provides TypeScript definitions for the Authorize.net SDK
  */
 
-declare module 'authorizenet' {
+declare module "authorizenet" {
   export namespace APIContracts {
     enum MessageTypeEnum {
-      OK = 'Ok',
-      ERROR = 'Error'
+      OK = "Ok",
+      ERROR = "Error",
     }
 
     enum TransactionTypeEnum {
-      AUTHCAPTURETRANSACTION = 'authCaptureTransaction',
-      AUTHONLYTRANSACTION = 'authOnlyTransaction',
-      CAPTUREONLYTRANSACTION = 'captureOnlyTransaction',
-      REFUNDTRANSACTION = 'refundTransaction',
-      VOIDTRANSACTION = 'voidTransaction'
+      AUTHCAPTURETRANSACTION = "authCaptureTransaction",
+      AUTHONLYTRANSACTION = "authOnlyTransaction",
+      CAPTUREONLYTRANSACTION = "captureOnlyTransaction",
+      REFUNDTRANSACTION = "refundTransaction",
+      VOIDTRANSACTION = "voidTransaction",
     }
 
     class MerchantAuthenticationType {

@@ -1,1 +1,8 @@
-var e=class{constructor(){this.promise=new Promise((i,o)=>{this.reject=o,this.resolve=i;});}};export{e as a};
+var e = class {
+  constructor() {
+    this.promise = new Promise((i, o) => {
+      ((this.reject = o), (this.resolve = i));
+    });
+  }
+};
+export { e as a };

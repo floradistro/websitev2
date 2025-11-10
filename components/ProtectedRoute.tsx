@@ -21,7 +21,9 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
-        <div className="text-white text-sm uppercase tracking-wider">Loading...</div>
+        <div className="text-white text-sm uppercase tracking-wider">
+          Loading...
+        </div>
       </div>
     );
   }
@@ -32,4 +34,3 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   return <>{children}</>;
 }
-

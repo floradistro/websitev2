@@ -1,11 +1,10 @@
 /// <reference types="emscripten" />
-import { C as ContextBridgeApi } from './common-4FJYEFaM.js';
+import { C as ContextBridgeApi } from "./common-4FJYEFaM.js";
 
 declare const K: string;
 
 /* eslint-disable no-var,vars-on-top */
 // var declarations needed to define global properties
-
 
 declare global {
   var VERSION: string;
@@ -38,8 +37,11 @@ declare global {
     [K]?: ContextBridgeApi;
   }
   interface FinalizationRegistry<Target = object, HeldValue = any> {
-    register(target: Target, heldValue: HeldValue, unregisterToken?: object): void;
+    register(
+      target: Target,
+      heldValue: HeldValue,
+      unregisterToken?: object,
+    ): void;
     unregister(unregisterToken: object): boolean;
   }
-
 }

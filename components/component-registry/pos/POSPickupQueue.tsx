@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { motion, AnimatePresence } from 'framer-motion';
-import { POSModal } from './POSModal';
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
+import { POSModal } from "./POSModal";
 
 interface OrderItem {
   id: string;
@@ -46,7 +46,7 @@ interface PickupOrder {
   shipped_date?: string;
 }
 
-type OrderType = 'pickup' | 'shipping' | 'instore';
+type OrderType = "pickup" | "shipping" | "instore";
 
 interface POSPickupQueueProps {
   locationId: string;
@@ -63,28 +63,42 @@ export function POSPickupQueue({
   refreshInterval = 30,
   enableSound = true,
 }: POSPickupQueueProps) {
-  const [activeTab, setActiveTab] = useState<OrderType>('instore');
+  const [activeTab, setActiveTab] = useState<OrderType>("instore");
   const [pickupOrders, setPickupOrders] = useState<PickupOrder[]>([]);
   const [shippingOrders, setShippingOrders] = useState<PickupOrder[]>([]);
   const [instoreOrders, setInstoreOrders] = useState<PickupOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fulfilling, setFulfilling] = useState<string | null>(null);
-  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
-  const [modal, setModal] = useState<{isOpen: boolean; title: string; message: string; type: 'success'|'error'|'info'}>({
-    isOpen: false, title: '', message: '', type: 'info'
+  const [notificationPermission, setNotificationPermission] =
+    useState<NotificationPermission>("default");
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error" | "info";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
   });
 
   // Get active orders based on tab
-  const orders = activeTab === 'pickup' ? pickupOrders : (activeTab === 'shipping' ? shippingOrders : instoreOrders);
+  const orders =
+    activeTab === "pickup"
+      ? pickupOrders
+      : activeTab === "shipping"
+        ? shippingOrders
+        : instoreOrders;
 
   // Request notification permission on mount
   useEffect(() => {
-    if ('Notification' in window) {
+    if ("Notification" in window) {
       setNotificationPermission(Notification.permission);
-      
-      if (Notification.permission === 'default') {
-        Notification.requestPermission().then(permission => {
+
+      if (Notification.permission === "default") {
+        Notification.requestPermission().then((permission) => {
           setNotificationPermission(permission);
         });
       }
@@ -93,15 +107,15 @@ export function POSPickupQueue({
 
   // Show browser notification
   const showNotification = (order: PickupOrder) => {
-    if ('Notification' in window && Notification.permission === 'granted') {
+    if ("Notification" in window && Notification.permission === "granted") {
       const customerName = order.customers
         ? `${order.customers.first_name} ${order.customers.last_name}`
-        : 'Walk-In Customer';
+        : "Walk-In Customer";
 
-      const notification = new Notification('New Pickup Order!', {
+      const notification = new Notification("New Pickup Order!", {
         body: `${customerName}\n$${order.total_amount.toFixed(2)} - ${order.order_items.length} items`,
-        icon: '/icons/pos-192.png',
-        badge: '/icons/pos-192.png',
+        icon: "/icons/pos-192.png",
+        badge: "/icons/pos-192.png",
         tag: order.id,
         requireInteraction: true,
       });
@@ -118,98 +132,113 @@ export function POSPickupQueue({
 
   // Play notification sound
   const playSound = () => {
-    if (enableSound && typeof window !== 'undefined') {
+    if (enableSound && typeof window !== "undefined") {
       // Simple beep using Web Audio API
       try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioContext = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
-        
+
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
-        
+
         oscillator.frequency.value = 800;
-        oscillator.type = 'sine';
+        oscillator.type = "sine";
         gainNode.gain.value = 0.3;
-        
+
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + 0.2);
-      } catch (e) {
-        console.log('Could not play sound:', e);
-      }
+      } catch (e) {}
     }
   };
 
   // Load pickup orders via API
   const loadPickupOrders = useCallback(async () => {
     try {
-      const response = await fetch(`/api/pos/orders/pickup?locationId=${locationId}`);
+      const response = await fetch(
+        `/api/pos/orders/pickup?locationId=${locationId}`,
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to load pickup orders');
+        throw new Error(errorData.error || "Failed to load pickup orders");
       }
 
       const { orders } = await response.json();
-      setPickupOrders(orders as PickupOrder[] || []);
+      setPickupOrders((orders as PickupOrder[]) || []);
       setError(null);
     } catch (err: any) {
-      console.error('Error loading pickup orders:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading pickup orders:", err);
+      }
       setError(err.message);
     }
   }, [locationId]);
 
   // Load shipping orders via API
   const loadShippingOrders = useCallback(async () => {
-    console.log('🚢 Loading shipping orders for location:', locationId);
     try {
-      const response = await fetch(`/api/pos/orders/shipping?locationId=${locationId}`);
+      const response = await fetch(
+        `/api/pos/orders/shipping?locationId=${locationId}`,
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ Shipping orders API error:', errorData);
-        throw new Error(errorData.error || 'Failed to load shipping orders');
+        if (process.env.NODE_ENV === "development") {
+          console.error("❌ Shipping orders API error:", errorData);
+        }
+        throw new Error(errorData.error || "Failed to load shipping orders");
       }
 
       const { orders } = await response.json();
-      console.log('✅ Loaded shipping orders:', orders.length);
-      setShippingOrders(orders as PickupOrder[] || []);
+
+      setShippingOrders((orders as PickupOrder[]) || []);
       setError(null);
     } catch (err: any) {
-      console.error('Error loading shipping orders:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading shipping orders:", err);
+      }
       setError(err.message);
     }
   }, [locationId]);
 
   // Load in-store orders (POS sales) via API
   const loadInstoreOrders = useCallback(async () => {
-    console.log('🏪 Loading in-store orders for location:', locationId);
     try {
-      const response = await fetch(`/api/pos/orders/instore?locationId=${locationId}`);
+      const response = await fetch(
+        `/api/pos/orders/instore?locationId=${locationId}`,
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ In-store orders API error:', errorData);
-        throw new Error(errorData.error || 'Failed to load in-store orders');
+        if (process.env.NODE_ENV === "development") {
+          console.error("❌ In-store orders API error:", errorData);
+        }
+        throw new Error(errorData.error || "Failed to load in-store orders");
       }
 
       const { orders } = await response.json();
-      console.log('✅ Loaded in-store orders:', orders.length);
-      setInstoreOrders(orders as PickupOrder[] || []);
+
+      setInstoreOrders((orders as PickupOrder[]) || []);
       setError(null);
     } catch (err: any) {
-      console.error('Error loading in-store orders:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading in-store orders:", err);
+      }
       setError(err.message);
     }
   }, [locationId]);
 
   // Load all orders
   const loadAllOrders = useCallback(async () => {
-    console.log('📦 Loading all orders (pickup + shipping + in-store)...');
     setLoading(true);
-    await Promise.all([loadPickupOrders(), loadShippingOrders(), loadInstoreOrders()]);
+    await Promise.all([
+      loadPickupOrders(),
+      loadShippingOrders(),
+      loadInstoreOrders(),
+    ]);
     setLoading(false);
-    console.log('✅ All orders loaded');
   }, [loadPickupOrders, loadShippingOrders, loadInstoreOrders]);
 
   // Initial load
@@ -233,47 +262,42 @@ export function POSPickupQueue({
     const channel = supabase
       .channel(`pickup-orders-${locationId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'orders',
+          event: "INSERT",
+          schema: "public",
+          table: "orders",
           filter: `pickup_location_id=eq.${locationId}`,
         },
         (payload) => {
-          console.log('🆕 New pickup order received!', payload);
-          
           // Show browser notification
           if (payload.new) {
             showNotification(payload.new as PickupOrder);
           }
-          
+
           // Play notification sound
-          if (enableSound && typeof Audio !== 'undefined') {
+          if (enableSound && typeof Audio !== "undefined") {
             try {
-              const audio = new Audio('/sounds/notification.mp3');
-              audio.play().catch(e => console.log('Could not play sound:', e));
-            } catch (e) {
-              console.log('Audio not supported:', e);
-            }
+              const audio = new Audio("/sounds/notification.mp3");
+              audio.play().catch(() => {});
+            } catch (e) {}
           }
 
           // Reload orders
           loadPickupOrders();
-        }
+        },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'orders',
+          event: "UPDATE",
+          schema: "public",
+          table: "orders",
           filter: `pickup_location_id=eq.${locationId}`,
         },
         (payload) => {
-          console.log('Order updated:', payload);
           loadPickupOrders();
-        }
+        },
       )
       .subscribe();
 
@@ -290,9 +314,9 @@ export function POSPickupQueue({
 
     try {
       // Fulfill via API (updates order status + creates POS transaction)
-      const response = await fetch('/api/pos/sales/fulfill', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/pos/sales/fulfill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderId,
           locationId,
@@ -301,35 +325,39 @@ export function POSPickupQueue({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fulfill order');
+        throw new Error(errorData.error || "Failed to fulfill order");
       }
 
       // Remove from the appropriate queue
-      if (activeTab === 'pickup') {
-        setPickupOrders(prev => prev.filter(o => o.id !== orderId));
+      if (activeTab === "pickup") {
+        setPickupOrders((prev) => prev.filter((o) => o.id !== orderId));
       } else {
-        setShippingOrders(prev => prev.filter(o => o.id !== orderId));
+        setShippingOrders((prev) => prev.filter((o) => o.id !== orderId));
       }
 
       // Show success message
-      const successTitle = activeTab === 'shipping' ? 'Order Shipped' : 'Order Ready';
-      const successMessage = activeTab === 'shipping'
-        ? `Order ${orderNumber} has been marked as shipped!`
-        : `Order ${orderNumber} is ready for pickup!`;
+      const successTitle =
+        activeTab === "shipping" ? "Order Shipped" : "Order Ready";
+      const successMessage =
+        activeTab === "shipping"
+          ? `Order ${orderNumber} has been marked as shipped!`
+          : `Order ${orderNumber} is ready for pickup!`;
 
       setModal({
         isOpen: true,
         title: successTitle,
         message: successMessage,
-        type: 'success',
+        type: "success",
       });
     } catch (err: any) {
-      console.error('Error fulfilling order:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fulfilling order:", err);
+      }
       setModal({
         isOpen: true,
-        title: 'Error',
-        message: err.message || 'Failed to fulfill order',
-        type: 'error',
+        title: "Error",
+        message: err.message || "Failed to fulfill order",
+        type: "error",
       });
     } finally {
       setFulfilling(null);
@@ -343,11 +371,12 @@ export function POSPickupQueue({
     const diffMs = now.getTime() - orderTime.getTime();
     const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
-    
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60)
+      return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
+
     const diffHours = Math.floor(diffMins / 60);
-    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
   };
 
   if (loading) {
@@ -385,7 +414,10 @@ export function POSPickupQueue({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-black text-white uppercase tracking-tight" style={{ fontWeight: 900 }}>
+          <h2
+            className="text-2xl font-black text-white uppercase tracking-tight"
+            style={{ fontWeight: 900 }}
+          >
             Order Fulfillment
           </h2>
           <p className="text-white/40 text-sm mt-1">{locationName}</p>
@@ -393,9 +425,16 @@ export function POSPickupQueue({
         <div className="flex items-center gap-4">
           <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3 text-center">
             <div className="text-white/40 text-xs uppercase tracking-wide">
-              {activeTab === 'pickup' ? 'Pickup Ready' : (activeTab === 'shipping' ? 'To Ship' : 'Today\'s Sales')}
+              {activeTab === "pickup"
+                ? "Pickup Ready"
+                : activeTab === "shipping"
+                  ? "To Ship"
+                  : "Today's Sales"}
             </div>
-            <div className="text-white font-black text-2xl mt-1" style={{ fontWeight: 900 }}>
+            <div
+              className="text-white font-black text-2xl mt-1"
+              style={{ fontWeight: 900 }}
+            >
               {orders.length}
             </div>
           </div>
@@ -411,55 +450,67 @@ export function POSPickupQueue({
       {/* Tabs */}
       <div className="flex gap-2 border-b border-white/10 pb-4">
         <button
-          onClick={() => setActiveTab('instore')}
+          onClick={() => setActiveTab("instore")}
           className={`px-6 py-3 rounded-xl font-black uppercase text-sm transition-all ${
-            activeTab === 'instore'
-              ? 'bg-white/20 text-white border-2 border-white/30'
-              : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border-2 border-transparent'
+            activeTab === "instore"
+              ? "bg-white/20 text-white border-2 border-white/30"
+              : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border-2 border-transparent"
           }`}
           style={{ fontWeight: 900 }}
         >
           In Store
           {instoreOrders.length > 0 && (
-            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-              activeTab === 'instore' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
-            }`}>
+            <span
+              className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                activeTab === "instore"
+                  ? "bg-white/20 text-white"
+                  : "bg-white/10 text-white/60"
+              }`}
+            >
               {instoreOrders.length}
             </span>
           )}
         </button>
         <button
-          onClick={() => setActiveTab('pickup')}
+          onClick={() => setActiveTab("pickup")}
           className={`px-6 py-3 rounded-xl font-black uppercase text-sm transition-all ${
-            activeTab === 'pickup'
-              ? 'bg-white/20 text-white border-2 border-white/30'
-              : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border-2 border-transparent'
+            activeTab === "pickup"
+              ? "bg-white/20 text-white border-2 border-white/30"
+              : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border-2 border-transparent"
           }`}
           style={{ fontWeight: 900 }}
         >
           Pickup Orders
           {pickupOrders.length > 0 && (
-            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-              activeTab === 'pickup' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
-            }`}>
+            <span
+              className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                activeTab === "pickup"
+                  ? "bg-white/20 text-white"
+                  : "bg-white/10 text-white/60"
+              }`}
+            >
               {pickupOrders.length}
             </span>
           )}
         </button>
         <button
-          onClick={() => setActiveTab('shipping')}
+          onClick={() => setActiveTab("shipping")}
           className={`px-6 py-3 rounded-xl font-black uppercase text-sm transition-all ${
-            activeTab === 'shipping'
-              ? 'bg-white/20 text-white border-2 border-white/30'
-              : 'bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border-2 border-transparent'
+            activeTab === "shipping"
+              ? "bg-white/20 text-white border-2 border-white/30"
+              : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white border-2 border-transparent"
           }`}
           style={{ fontWeight: 900 }}
         >
           Shipping Orders
           {shippingOrders.length > 0 && (
-            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-              activeTab === 'shipping' ? 'bg-white/20 text-white' : 'bg-white/10 text-white/60'
-            }`}>
+            <span
+              className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                activeTab === "shipping"
+                  ? "bg-white/20 text-white"
+                  : "bg-white/10 text-white/60"
+              }`}
+            >
               {shippingOrders.length}
             </span>
           )}
@@ -470,10 +521,18 @@ export function POSPickupQueue({
       {orders.length === 0 ? (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
           <div className="text-white/40 text-lg mb-2">
-            No {activeTab === 'pickup' ? 'Pickup' : (activeTab === 'shipping' ? 'Shipping' : 'In-Store')} Orders
+            No{" "}
+            {activeTab === "pickup"
+              ? "Pickup"
+              : activeTab === "shipping"
+                ? "Shipping"
+                : "In-Store"}{" "}
+            Orders
           </div>
           <div className="text-white/20 text-sm">
-            {activeTab === 'instore' ? 'Completed POS sales will appear here' : 'New orders will appear here in real-time'}
+            {activeTab === "instore"
+              ? "Completed POS sales will appear here"
+              : "New orders will appear here in real-time"}
           </div>
         </div>
       ) : (
@@ -490,14 +549,18 @@ export function POSPickupQueue({
               {/* Order Header */}
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <div className="text-white font-black text-xl" style={{ fontWeight: 900 }}>
+                  <div
+                    className="text-white font-black text-xl"
+                    style={{ fontWeight: 900 }}
+                  >
                     Order #{order.order_number}
                   </div>
                   <div className="text-white/80 text-lg mt-1">
                     {order.customers
                       ? `${order.customers.first_name} ${order.customers.last_name}`
-                      : (order.billing_address?.name || order.metadata?.customer_name || 'Walk-In Customer')
-                    }
+                      : order.billing_address?.name ||
+                        order.metadata?.customer_name ||
+                        "Walk-In Customer"}
                   </div>
                   {order.customers?.phone && (
                     <div className="text-white/40 text-sm mt-1">
@@ -509,13 +572,22 @@ export function POSPickupQueue({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-white font-black text-3xl" style={{ fontWeight: 900 }}>
+                  <div
+                    className="text-white font-black text-3xl"
+                    style={{ fontWeight: 900 }}
+                  >
                     ${order.total_amount.toFixed(2)}
                   </div>
-                  <div className={`text-sm font-bold mt-1 ${
-                    order.payment_status === 'paid' ? 'text-green-500' : 'text-yellow-500'
-                  }`}>
-                    {order.payment_status === 'paid' ? 'PREPAID ✓' : order.payment_status.toUpperCase()}
+                  <div
+                    className={`text-sm font-bold mt-1 ${
+                      order.payment_status === "paid"
+                        ? "text-green-500"
+                        : "text-yellow-500"
+                    }`}
+                  >
+                    {order.payment_status === "paid"
+                      ? "PREPAID ✓"
+                      : order.payment_status.toUpperCase()}
                   </div>
                 </div>
               </div>
@@ -523,11 +595,17 @@ export function POSPickupQueue({
               {/* Order Items */}
               <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
                 {order.order_items.map((item) => (
-                  <div key={item.id} className="flex justify-between text-white/60 text-sm">
+                  <div
+                    key={item.id}
+                    className="flex justify-between text-white/60 text-sm"
+                  >
                     <span>
-                      {item.product_name} <span className="text-white/40">({item.quantity}x)</span>
+                      {item.product_name}{" "}
+                      <span className="text-white/40">({item.quantity}x)</span>
                     </span>
-                    <span className="font-bold">${item.line_total.toFixed(2)}</span>
+                    <span className="font-bold">
+                      ${item.line_total.toFixed(2)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -542,12 +620,14 @@ export function POSPickupQueue({
                   <span>Tax</span>
                   <span>${order.tax_amount.toFixed(2)}</span>
                 </div>
-                {activeTab === 'shipping' && order.shipping_amount !== undefined && order.shipping_amount > 0 && (
-                  <div className="flex justify-between text-white/60">
-                    <span>Shipping</span>
-                    <span>${order.shipping_amount.toFixed(2)}</span>
-                  </div>
-                )}
+                {activeTab === "shipping" &&
+                  order.shipping_amount !== undefined &&
+                  order.shipping_amount > 0 && (
+                    <div className="flex justify-between text-white/60">
+                      <span>Shipping</span>
+                      <span>${order.shipping_amount.toFixed(2)}</span>
+                    </div>
+                  )}
                 <div className="flex justify-between text-white font-bold pt-2 border-t border-white/10">
                   <span>Total</span>
                   <span>${order.total_amount.toFixed(2)}</span>
@@ -555,15 +635,26 @@ export function POSPickupQueue({
               </div>
 
               {/* Shipping Info (for shipping orders) */}
-              {activeTab === 'shipping' && order.shipping_address && (
+              {activeTab === "shipping" && order.shipping_address && (
                 <div className="bg-white/5 rounded-xl p-4 mb-4 space-y-2">
-                  <div className="text-white/40 text-xs uppercase tracking-wide mb-2">Shipping Address</div>
+                  <div className="text-white/40 text-xs uppercase tracking-wide mb-2">
+                    Shipping Address
+                  </div>
                   <div className="text-white/80 text-sm">
-                    {order.shipping_address.address_1 && <div>{order.shipping_address.address_1}</div>}
-                    {order.shipping_address.address_2 && <div>{order.shipping_address.address_2}</div>}
-                    {order.shipping_address.city && order.shipping_address.state && (
-                      <div>{order.shipping_address.city}, {order.shipping_address.state} {order.shipping_address.postcode}</div>
+                    {order.shipping_address.address_1 && (
+                      <div>{order.shipping_address.address_1}</div>
                     )}
+                    {order.shipping_address.address_2 && (
+                      <div>{order.shipping_address.address_2}</div>
+                    )}
+                    {order.shipping_address.city &&
+                      order.shipping_address.state && (
+                        <div>
+                          {order.shipping_address.city},{" "}
+                          {order.shipping_address.state}{" "}
+                          {order.shipping_address.postcode}
+                        </div>
+                      )}
                   </div>
                   {order.shipping_method_title && (
                     <div className="text-white/60 text-xs mt-2">
@@ -572,9 +663,13 @@ export function POSPickupQueue({
                   )}
                   {order.tracking_number && (
                     <div className="mt-3 pt-3 border-t border-white/10">
-                      <div className="text-white/40 text-xs uppercase tracking-wide mb-1">Tracking</div>
+                      <div className="text-white/40 text-xs uppercase tracking-wide mb-1">
+                        Tracking
+                      </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-white text-sm font-mono">{order.tracking_number}</span>
+                        <span className="text-white text-sm font-mono">
+                          {order.tracking_number}
+                        </span>
                         {order.tracking_url && (
                           <a
                             href={order.tracking_url}
@@ -593,7 +688,7 @@ export function POSPickupQueue({
 
               {/* Actions */}
               <div className="flex gap-2">
-                {activeTab !== 'instore' && (
+                {activeTab !== "instore" && (
                   <button
                     onClick={() => fulfillOrder(order.id, order.order_number)}
                     disabled={fulfilling === order.id}
@@ -601,19 +696,27 @@ export function POSPickupQueue({
                     style={{ fontWeight: 900 }}
                   >
                     {fulfilling === order.id
-                      ? (activeTab === 'pickup' ? 'Fulfilling...' : 'Shipping...')
-                      : (activeTab === 'pickup' ? 'Fulfill Order' : 'Mark as Shipped')
-                    }
+                      ? activeTab === "pickup"
+                        ? "Fulfilling..."
+                        : "Shipping..."
+                      : activeTab === "pickup"
+                        ? "Fulfill Order"
+                        : "Mark as Shipped"}
                   </button>
                 )}
                 <button
-                  onClick={() => setModal({
-                    isOpen: true,
-                    title: 'Customer Contact',
-                    message: order.customers?.phone || order.customers?.email || 'No contact information available',
-                    type: 'info',
-                  })}
-                  className={`${activeTab === 'instore' ? 'flex-1' : 'px-6'} border border-white/20 text-white rounded-2xl hover:bg-white/5 font-bold uppercase text-sm`}
+                  onClick={() =>
+                    setModal({
+                      isOpen: true,
+                      title: "Customer Contact",
+                      message:
+                        order.customers?.phone ||
+                        order.customers?.email ||
+                        "No contact information available",
+                      type: "info",
+                    })
+                  }
+                  className={`${activeTab === "instore" ? "flex-1" : "px-6"} border border-white/20 text-white rounded-2xl hover:bg-white/5 font-bold uppercase text-sm`}
                 >
                   Contact
                 </button>
@@ -625,4 +728,3 @@ export function POSPickupQueue({
     </div>
   );
 }
-

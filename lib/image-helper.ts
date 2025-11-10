@@ -4,18 +4,20 @@
 
 export function getProductImage(product: any): string | null {
   // Supabase Storage
-  return product.featured_image_storage || 
-         (product.image_gallery_storage && product.image_gallery_storage[0]) ||
-         null;
+  return (
+    product.featured_image_storage ||
+    (product.image_gallery_storage && product.image_gallery_storage[0]) ||
+    null
+  );
 }
 
 export function getProductGallery(product: any): string[] {
   const images: string[] = [];
-  
+
   // Add featured image first
   const featured = getProductImage(product);
   if (featured) images.push(featured);
-  
+
   // Add gallery images (prefer Supabase Storage)
   const gallery = product.image_gallery_storage || product.image_gallery || [];
   gallery.forEach((img: string) => {
@@ -23,13 +25,13 @@ export function getProductGallery(product: any): string[] {
       images.push(img);
     }
   });
-  
+
   return images;
 }
 
 export function getVendorLogo(vendor: any): string | null {
   // Supabase Storage → Default
-  return vendor.logo_url || '/yacht-club-logo.png';
+  return vendor.logo_url || "/yacht-club-logo.png";
 }
 
 export function getVendorBanner(vendor: any): string | null {
@@ -39,4 +41,3 @@ export function getVendorBanner(vendor: any): string | null {
 export function getCategoryImage(category: any): string | null {
   return category.image_url || null;
 }
-

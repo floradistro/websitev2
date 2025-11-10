@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * GET /api/display-groups/membership?device_id=xxx
@@ -8,12 +8,12 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const deviceId = searchParams.get('device_id');
+    const deviceId = searchParams.get("device_id");
 
     if (!deviceId) {
       return NextResponse.json(
-        { success: false, error: 'Device ID required' },
-        { status: 400 }
+        { success: false, error: "Device ID required" },
+        { status: 400 },
       );
     }
 
@@ -21,18 +21,22 @@ export async function GET(request: NextRequest) {
 
     // Check if this device is part of a display group
     const { data: membershipData, error: memberError } = await supabase
-      .from('tv_display_group_members')
-      .select(`
+      .from("tv_display_group_members")
+      .select(
+        `
         *,
         group:tv_display_groups(*)
-      `)
-      .eq('device_id', deviceId);
+      `,
+      )
+      .eq("device_id", deviceId);
 
     if (memberError) {
-      console.error('Error checking group membership:', memberError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error checking group membership:", memberError);
+      }
       return NextResponse.json(
         { success: false, error: memberError.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -56,10 +60,12 @@ export async function GET(request: NextRequest) {
       member: membership,
     });
   } catch (error: any) {
-    console.error('Group membership GET error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Group membership GET error:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

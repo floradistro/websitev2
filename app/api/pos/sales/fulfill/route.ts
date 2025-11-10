@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,15 +11,16 @@ export async function POST(request: NextRequest) {
 
     if (!orderId || !locationId) {
       return NextResponse.json(
-        { error: 'Missing orderId or locationId' },
-        { status: 400 }
+        { error: "Missing orderId or locationId" },
+        { status: 400 },
       );
     }
 
     // Get the order details
     const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .select(`
+      .from("orders")
+      .select(
+        `
         id,
         order_number,
         vendor_id,
@@ -27,23 +28,21 @@ export async function POST(request: NextRequest) {
         payment_method,
         customer_id,
         delivery_type
-      `)
-      .eq('id', orderId)
+      `,
+      )
+      .eq("id", orderId)
       .single();
 
     if (orderError || !order) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
     // Determine if this is a shipping order
-    const isShippingOrder = order.delivery_type === 'delivery';
+    const isShippingOrder = order.delivery_type === "delivery";
 
     // FIRST: Update order status to fulfilled
     const updateData: any = {
-      fulfillment_status: 'fulfilled',
+      fulfillment_status: "fulfilled",
       completed_date: new Date().toISOString(),
     };
 
@@ -53,25 +52,30 @@ export async function POST(request: NextRequest) {
     }
 
     const { error: updateError } = await supabase
-      .from('orders')
+      .from("orders")
       .update(updateData)
-      .eq('id', orderId);
+      .eq("id", orderId);
 
     if (updateError) {
-      console.error('Error updating order status:', updateError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error updating order status:", updateError);
+      }
       return NextResponse.json(
-        { error: 'Failed to update order status', details: updateError.message },
-        { status: 500 }
+        {
+          error: "Failed to update order status",
+          details: updateError.message,
+        },
+        { status: 500 },
       );
     }
 
     // Get active session for this location (if exists)
     const { data: activeSession } = await supabase
-      .from('pos_sessions')
-      .select('id')
-      .eq('location_id', locationId)
-      .eq('status', 'open')
-      .order('opened_at', { ascending: false })
+      .from("pos_sessions")
+      .select("id")
+      .eq("location_id", locationId)
+      .eq("status", "open")
+      .order("opened_at", { ascending: false })
       .limit(1)
       .single();
 
@@ -79,10 +83,10 @@ export async function POST(request: NextRequest) {
     const transactionNumber = `TXN-${order.order_number}-${Date.now()}`;
     // NOTE: Using 'pickup_fulfillment' for all orders until database constraint is updated
     // Shipping orders are tracked via metadata.is_shipping_order
-    const transactionType = 'pickup_fulfillment';
+    const transactionType = "pickup_fulfillment";
 
     const { data: transaction, error: transactionError } = await supabase
-      .from('pos_transactions')
+      .from("pos_transactions")
       .insert({
         transaction_number: transactionNumber,
         location_id: locationId,
@@ -90,8 +94,8 @@ export async function POST(request: NextRequest) {
         order_id: order.id,
         session_id: activeSession?.id || null,
         transaction_type: transactionType,
-        payment_method: 'prepaid_online',
-        payment_status: 'completed',
+        payment_method: "prepaid_online",
+        payment_status: "completed",
         subtotal: order.total_amount,
         tax_amount: 0,
         discount_amount: 0,
@@ -110,10 +114,15 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (transactionError) {
-      console.error('Error creating POS transaction:', transactionError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error creating POS transaction:", transactionError);
+      }
       return NextResponse.json(
-        { error: 'Failed to create POS transaction', details: transactionError.message },
-        { status: 500 }
+        {
+          error: "Failed to create POS transaction",
+          details: transactionError.message,
+        },
+        { status: 500 },
       );
     }
 
@@ -123,11 +132,12 @@ export async function POST(request: NextRequest) {
       message: `Order ${order.order_number} fulfilled successfully`,
     });
   } catch (error: any) {
-    console.error('Error in POS fulfill endpoint:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in POS fulfill endpoint:", error);
+    }
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
+      { error: "Internal server error", details: error.message },
+      { status: 500 },
     );
   }
 }
-

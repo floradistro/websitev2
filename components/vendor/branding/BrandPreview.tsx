@@ -1,8 +1,8 @@
 "use client";
 
-import { ExternalLink } from 'lucide-react';
-import { ds, cn } from '@/lib/design-system';
-import type { BrandingFormState } from '@/types/branding';
+import { ExternalLink } from "lucide-react";
+import { ds, cn } from "@/lib/design-system";
+import type { BrandingFormState } from "@/types/branding";
 
 interface BrandPreviewProps {
   branding: Partial<BrandingFormState>;
@@ -18,44 +18,50 @@ interface BrandPreviewProps {
 export function BrandPreview({
   branding,
   vendorName,
-  vendorSlug
+  vendorSlug,
 }: BrandPreviewProps) {
   const {
     logoPreview,
-    primaryColor = '#000000',
-    secondaryColor = '#FFFFFF',
-    accentColor = '#666666',
-    textColor = '#1A1A1A',
-    customFont = 'Inter',
+    primaryColor = "#000000",
+    secondaryColor = "#FFFFFF",
+    accentColor = "#666666",
+    textColor = "#1A1A1A",
+    customFont = "Inter",
     tagline,
     about,
     website,
     instagram,
-    facebook
+    facebook,
   } = branding;
 
   return (
-    <div className={cn(
-      'sticky top-8',
-      ds.colors.bg.elevated,
-      'border',
-      ds.colors.border.default,
-      'overflow-hidden'
-    )}>
-      {/* Header */}
-      <div className={cn(
-        'border-b',
+    <div
+      className={cn(
+        "sticky top-8",
+        ds.colors.bg.elevated,
+        "border",
         ds.colors.border.default,
-        'px-4 py-3',
-        'flex items-center justify-between'
-      )}>
-        <h3 className={cn(
-          ds.typography.size.xs,
-          ds.typography.weight.medium,
-          ds.typography.transform.uppercase,
-          ds.typography.tracking.wide,
-          ds.colors.text.tertiary
-        )}>
+        "overflow-hidden",
+      )}
+    >
+      {/* Header */}
+      <div
+        className={cn(
+          "border-b",
+          ds.colors.border.default,
+          "px-4 py-3",
+          "flex items-center justify-between",
+        )}
+      >
+        <h3
+          className={cn(
+            ds.typography.size.xs,
+            ds.typography.weight.medium,
+            ds.typography.transform.uppercase,
+            ds.typography.tracking.wide,
+            ds.colors.text.tertiary,
+          )}
+        >
           Storefront Preview
         </h3>
 
@@ -65,11 +71,11 @@ export function BrandPreview({
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
-              'flex items-center gap-1.5',
+              "flex items-center gap-1.5",
               ds.typography.size.micro,
               ds.colors.text.quaternary,
-              'hover:text-white/60',
-              ds.effects.transition.fast
+              "hover:text-white/60",
+              ds.effects.transition.fast,
             )}
           >
             <span>View Live</span>
@@ -85,10 +91,10 @@ export function BrandPreview({
           {/* Logo */}
           <div
             className={cn(
-              'w-20 h-20',
-              'flex items-center justify-center',
-              'border-2 overflow-hidden',
-              ds.effects.radius.lg
+              "w-20 h-20",
+              "flex items-center justify-center",
+              "border-2 overflow-hidden",
+              ds.effects.radius.lg,
             )}
             style={{ borderColor: primaryColor }}
           >
@@ -99,10 +105,12 @@ export function BrandPreview({
                 className="w-full h-full object-contain p-2"
               />
             ) : (
-              <div className={cn(
-                ds.typography.size.micro,
-                ds.colors.text.quaternary
-              )}>
+              <div
+                className={cn(
+                  ds.typography.size.micro,
+                  ds.colors.text.quaternary,
+                )}
+              >
                 Logo
               </div>
             )}
@@ -114,21 +122,23 @@ export function BrandPreview({
               className={cn(
                 ds.typography.size.lg,
                 ds.typography.weight.semibold,
-                'mb-1 truncate'
+                "mb-1 truncate",
               )}
               style={{
                 color: primaryColor,
-                fontFamily: customFont || 'inherit'
+                fontFamily: customFont || "inherit",
               }}
             >
               {vendorName}
             </h2>
-            <p className={cn(
-              ds.typography.size.sm,
-              ds.colors.text.tertiary,
-              'truncate'
-            )}>
-              {tagline || 'Your tagline here'}
+            <p
+              className={cn(
+                ds.typography.size.sm,
+                ds.colors.text.tertiary,
+                "truncate",
+              )}
+            >
+              {tagline || "Your tagline here"}
             </p>
           </div>
         </div>
@@ -136,21 +146,25 @@ export function BrandPreview({
         {/* About Section */}
         {about && (
           <div>
-            <h3 className={cn(
-              ds.typography.size.xs,
-              ds.typography.weight.medium,
-              ds.typography.transform.uppercase,
-              ds.typography.tracking.wide,
-              ds.colors.text.tertiary,
-              'mb-2'
-            )}>
+            <h3
+              className={cn(
+                ds.typography.size.xs,
+                ds.typography.weight.medium,
+                ds.typography.transform.uppercase,
+                ds.typography.tracking.wide,
+                ds.colors.text.tertiary,
+                "mb-2",
+              )}
+            >
               About
             </h3>
-            <p className={cn(
-              ds.typography.size.sm,
-              ds.colors.text.quaternary,
-              ds.typography.leading.relaxed
-            )}>
+            <p
+              className={cn(
+                ds.typography.size.sm,
+                ds.colors.text.quaternary,
+                ds.typography.leading.relaxed,
+              )}
+            >
               {about}
             </p>
           </div>
@@ -165,18 +179,18 @@ export function BrandPreview({
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  'px-3 py-1.5',
+                  "px-3 py-1.5",
                   ds.typography.size.xs,
                   ds.typography.transform.uppercase,
                   ds.typography.tracking.wide,
-                  'border',
+                  "border",
                   ds.effects.radius.md,
                   ds.effects.transition.normal,
-                  'hover:bg-white/5'
+                  "hover:bg-white/5",
                 )}
                 style={{
                   borderColor: primaryColor,
-                  color: primaryColor
+                  color: primaryColor,
                 }}
               >
                 Website
@@ -184,22 +198,22 @@ export function BrandPreview({
             )}
             {instagram && (
               <a
-                href={`https://instagram.com/${instagram.replace('@', '')}`}
+                href={`https://instagram.com/${instagram.replace("@", "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  'px-3 py-1.5',
+                  "px-3 py-1.5",
                   ds.typography.size.xs,
                   ds.typography.transform.uppercase,
                   ds.typography.tracking.wide,
-                  'border',
+                  "border",
                   ds.effects.radius.md,
                   ds.effects.transition.normal,
-                  'hover:bg-white/5'
+                  "hover:bg-white/5",
                 )}
                 style={{
                   borderColor: accentColor,
-                  color: accentColor
+                  color: accentColor,
                 }}
               >
                 Instagram
@@ -211,18 +225,18 @@ export function BrandPreview({
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  'px-3 py-1.5',
+                  "px-3 py-1.5",
                   ds.typography.size.xs,
                   ds.typography.transform.uppercase,
                   ds.typography.tracking.wide,
-                  'border',
+                  "border",
                   ds.effects.radius.md,
                   ds.effects.transition.normal,
-                  'hover:bg-white/5'
+                  "hover:bg-white/5",
                 )}
                 style={{
                   borderColor: accentColor,
-                  color: accentColor
+                  color: accentColor,
                 }}
               >
                 Facebook
@@ -233,60 +247,72 @@ export function BrandPreview({
 
         {/* Sample Product Card */}
         <div>
-          <div className={cn(
-            ds.typography.size.micro,
-            ds.colors.text.quaternary,
-            ds.typography.transform.uppercase,
-            ds.typography.tracking.wide,
-            'mb-3'
-          )}>
+          <div
+            className={cn(
+              ds.typography.size.micro,
+              ds.colors.text.quaternary,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+              "mb-3",
+            )}
+          >
             Sample Product Card
           </div>
 
-          <div className={cn(
-            'border',
-            ds.colors.border.default,
-            ds.effects.radius.lg,
-            'p-4',
-            'space-y-3'
-          )}>
+          <div
+            className={cn(
+              "border",
+              ds.colors.border.default,
+              ds.effects.radius.lg,
+              "p-4",
+              "space-y-3",
+            )}
+          >
             {/* Product Image */}
-            <div className={cn(
-              'aspect-square',
-              ds.colors.bg.elevated,
-              ds.effects.radius.md,
-              'flex items-center justify-center'
-            )}>
-              <div className={cn(
-                ds.typography.size.micro,
-                ds.colors.text.quaternary
-              )}>
+            <div
+              className={cn(
+                "aspect-square",
+                ds.colors.bg.elevated,
+                ds.effects.radius.md,
+                "flex items-center justify-center",
+              )}
+            >
+              <div
+                className={cn(
+                  ds.typography.size.micro,
+                  ds.colors.text.quaternary,
+                )}
+              >
                 Product Image
               </div>
             </div>
 
             {/* Product Info */}
             <div>
-              <h4 className={cn(
-                ds.typography.size.sm,
-                ds.typography.weight.medium,
-                ds.colors.text.secondary,
-                'mb-1'
-              )}>
+              <h4
+                className={cn(
+                  ds.typography.size.sm,
+                  ds.typography.weight.medium,
+                  ds.colors.text.secondary,
+                  "mb-1",
+                )}
+              >
                 Sample Product
               </h4>
 
               <div className="flex items-center justify-between">
-                <span className={cn(
-                  ds.typography.size.xs,
-                  ds.colors.text.quaternary
-                )}>
+                <span
+                  className={cn(
+                    ds.typography.size.xs,
+                    ds.colors.text.quaternary,
+                  )}
+                >
                   By {vendorName}
                 </span>
                 <span
                   className={cn(
                     ds.typography.size.sm,
-                    ds.typography.weight.semibold
+                    ds.typography.weight.semibold,
                   )}
                   style={{ color: primaryColor }}
                 >
@@ -299,26 +325,26 @@ export function BrandPreview({
       </div>
 
       {/* Tips */}
-      <div className={cn(
-        'border-t',
-        ds.colors.border.default,
-        'p-4'
-      )}>
-        <h4 className={cn(
-          ds.typography.size.micro,
-          ds.typography.weight.medium,
-          ds.typography.transform.uppercase,
-          ds.typography.tracking.wide,
-          ds.colors.text.tertiary,
-          'mb-3'
-        )}>
+      <div className={cn("border-t", ds.colors.border.default, "p-4")}>
+        <h4
+          className={cn(
+            ds.typography.size.micro,
+            ds.typography.weight.medium,
+            ds.typography.transform.uppercase,
+            ds.typography.tracking.wide,
+            ds.colors.text.tertiary,
+            "mb-3",
+          )}
+        >
           Branding Tips
         </h4>
-        <ul className={cn(
-          ds.typography.size.micro,
-          ds.colors.text.quaternary,
-          'space-y-1.5'
-        )}>
+        <ul
+          className={cn(
+            ds.typography.size.micro,
+            ds.colors.text.quaternary,
+            "space-y-1.5",
+          )}
+        >
           <li>• Use square logo (300x300px minimum)</li>
           <li>• Transparent PNG works best</li>
           <li>• Choose colors with good contrast</li>

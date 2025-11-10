@@ -1,10 +1,14 @@
-'use client';
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { AnimatedSection, AnimatedGrid, AnimatedGridItem } from "@/components/HomePage/AnimatedSection";
+import {
+  AnimatedSection,
+  AnimatedGrid,
+  AnimatedGridItem,
+} from "@/components/HomePage/AnimatedSection";
 
 export default function AboutPage() {
   return (
@@ -21,9 +25,18 @@ export default function AboutPage() {
                 height={32}
                 className="object-contain sm:w-10 sm:h-10"
               />
-              <span className="text-base sm:text-xl font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>WhaleTools</span>
+              <span
+                className="text-base sm:text-xl font-black uppercase tracking-[0.08em]"
+                style={{ fontWeight: 900 }}
+              >
+                WhaleTools
+              </span>
             </Link>
-            <Link href="/" className="flex items-center gap-2 text-xs uppercase tracking-[0.12em] font-black text-white/60 hover:text-white transition-colors" style={{ fontWeight: 900 }}>
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-xs uppercase tracking-[0.12em] font-black text-white/60 hover:text-white transition-colors"
+              style={{ fontWeight: 900 }}
+            >
               <ArrowLeft size={14} />
               <span className="hidden sm:inline">Back</span>
             </Link>
@@ -57,16 +70,26 @@ export default function AboutPage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: [0.21, 0.45, 0.27, 0.9] }}
+            transition={{
+              duration: 0.8,
+              delay: 0.2,
+              ease: [0.21, 0.45, 0.27, 0.9],
+            }}
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-4 sm:mb-6 tracking-tight uppercase leading-[0.9] relative z-10"
             style={{ fontWeight: 900 }}
           >
-            <span className="bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">Cannabis</span>
+            <span className="bg-gradient-to-b from-white to-white/90 bg-clip-text text-transparent">
+              Cannabis
+            </span>
             <br />
             <motion.span
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4, ease: [0.21, 0.45, 0.27, 0.9] }}
+              transition={{
+                duration: 0.8,
+                delay: 0.4,
+                ease: [0.21, 0.45, 0.27, 0.9],
+              }}
               className="inline-block"
             >
               Operations
@@ -75,7 +98,11 @@ export default function AboutPage() {
             <motion.span
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6, ease: [0.21, 0.45, 0.27, 0.9] }}
+              transition={{
+                duration: 0.8,
+                delay: 0.6,
+                ease: [0.21, 0.45, 0.27, 0.9],
+              }}
               className="inline-block text-white/60"
             >
               Simplified
@@ -84,16 +111,26 @@ export default function AboutPage() {
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: 128 }}
-            transition={{ duration: 0.8, delay: 0.8, ease: [0.21, 0.45, 0.27, 0.9] }}
+            transition={{
+              duration: 0.8,
+              delay: 0.8,
+              ease: [0.21, 0.45, 0.27, 0.9],
+            }}
             className="h-[1px] w-32 bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto mb-8 sm:mb-12"
           />
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1, ease: [0.21, 0.45, 0.27, 0.9] }}
+            transition={{
+              duration: 0.8,
+              delay: 1,
+              ease: [0.21, 0.45, 0.27, 0.9],
+            }}
             className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed max-w-2xl mx-auto px-4 relative z-10"
           >
-            The first complete operations platform built specifically for cannabis retailers, distributors, and brands. From storefront to back office, we handle it all.
+            The first complete operations platform built specifically for
+            cannabis retailers, distributors, and brands. From storefront to
+            back office, we handle it all.
           </motion.p>
         </div>
       </section>
@@ -103,23 +140,36 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 sm:p-10 md:p-12 lg:p-16 hover:border-white/10 transition-colors duration-500 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
-            <h2 className="text-2xl sm:text-3xl font-black mb-8 sm:mb-12 tracking-tight uppercase text-center relative z-10" style={{ fontWeight: 900 }}>
+            <h2
+              className="text-2xl sm:text-3xl font-black mb-8 sm:mb-12 tracking-tight uppercase text-center relative z-10"
+              style={{ fontWeight: 900 }}
+            >
               Built for Cannabis
             </h2>
             <div className="space-y-8 relative z-10">
               {[
-                { title: "Dispensary Operations", desc: "Compliant POS systems, online menus, inventory management, TV displays, age verification, compliance tracking" },
-                { title: "Wholesale & Distribution", desc: "B2B portals for brands and distributors, bulk ordering, multi-vendor catalogs, commission tracking, purchase orders" },
-                { title: "Complete Platform", desc: "Everything runs on one system. Retailers, distributors, and brands all connected. Real-time inventory, automated fulfillment, seamless data flow" }
+                {
+                  title: "Dispensary Operations",
+                  desc: "Compliant POS systems, online menus, inventory management, TV displays, age verification, compliance tracking",
+                },
+                {
+                  title: "Wholesale & Distribution",
+                  desc: "B2B portals for brands and distributors, bulk ordering, multi-vendor catalogs, commission tracking, purchase orders",
+                },
+                {
+                  title: "Complete Platform",
+                  desc: "Everything runs on one system. Retailers, distributors, and brands all connected. Real-time inventory, automated fulfillment, seamless data flow",
+                },
               ].map((item, i) => (
                 <div key={i}>
                   {i > 0 && <div className="h-[1px] bg-white/5 mb-8"></div>}
-                  <div className="text-sm font-black uppercase tracking-[0.08em] text-white mb-2" style={{ fontWeight: 900 }}>
+                  <div
+                    className="text-sm font-black uppercase tracking-[0.08em] text-white mb-2"
+                    style={{ fontWeight: 900 }}
+                  >
                     {item.title}
                   </div>
-                  <div className="text-sm text-white/60">
-                    {item.desc}
-                  </div>
+                  <div className="text-sm text-white/60">{item.desc}</div>
                 </div>
               ))}
             </div>
@@ -144,13 +194,19 @@ export default function AboutPage() {
                 <div className="absolute inset-0 bg-white/5 rounded-full blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
             </div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black mb-4 sm:mb-6 tracking-tight uppercase relative z-10" style={{ fontWeight: 900 }}>
+            <h2
+              className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black mb-4 sm:mb-6 tracking-tight uppercase relative z-10"
+              style={{ fontWeight: 900 }}
+            >
               Why Cannabis Businesses
               <br />
               <span className="text-white/60">Choose WhaleTools</span>
             </h2>
             <p className="text-sm sm:text-base text-white/60 px-4 relative z-10">
-              Purpose-built for cannabis compliance, strain data, lab results (COAs), age verification, and the unique needs of dispensaries and distributors. Not adapted from retail software—designed from the ground up for cannabis.
+              Purpose-built for cannabis compliance, strain data, lab results
+              (COAs), age verification, and the unique needs of dispensaries and
+              distributors. Not adapted from retail software—designed from the
+              ground up for cannabis.
             </p>
           </div>
         </div>
@@ -164,13 +220,16 @@ export default function AboutPage() {
               "Launch your online menu & POS",
               "Connect inventory across locations",
               "Enable wholesale ordering for brands",
-              "Track compliance & lab results"
+              "Track compliance & lab results",
             ].map((text, i) => (
               <AnimatedGridItem
                 key={i}
                 className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 sm:p-6 text-center hover:border-white/10 hover:bg-white/[0.02] transition-all duration-300 group"
               >
-                <div className="text-xs sm:text-sm font-black uppercase tracking-[0.08em] group-hover:text-white/90 transition-colors" style={{ fontWeight: 900 }}>
+                <div
+                  className="text-xs sm:text-sm font-black uppercase tracking-[0.08em] group-hover:text-white/90 transition-colors"
+                  style={{ fontWeight: 900 }}
+                >
                   {text}
                 </div>
               </AnimatedGridItem>
@@ -194,7 +253,10 @@ export default function AboutPage() {
               />
               <div className="absolute inset-0 bg-white/10 rounded-full blur-2xl animate-pulse" />
             </div>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black mb-8 sm:mb-12 uppercase tracking-tight relative z-10" style={{ fontWeight: 900 }}>
+            <h2
+              className="text-2xl sm:text-3xl md:text-4xl font-black mb-8 sm:mb-12 uppercase tracking-tight relative z-10"
+              style={{ fontWeight: 900 }}
+            >
               Request Access
             </h2>
             <Link
@@ -214,22 +276,25 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 mb-8 sm:mb-12">
             <div className="flex items-center gap-3 sm:gap-4">
-              <Image 
-                src="/yacht-club-logo.png" 
-                alt="Yacht Club" 
-                width={28} 
+              <Image
+                src="/yacht-club-logo.png"
+                alt="Yacht Club"
+                width={28}
                 height={28}
                 className="object-contain opacity-60 sm:w-8 sm:h-8"
               />
-              <span className="text-xs uppercase tracking-[0.12em] text-white/40 font-black" style={{ fontWeight: 900 }}>
+              <span
+                className="text-xs uppercase tracking-[0.12em] text-white/40 font-black"
+                style={{ fontWeight: 900 }}
+              >
                 © 2025 WhaleTools
               </span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8">
-              {['About', 'Partners', 'API', 'Privacy', 'Terms'].map(link => (
-                <Link 
-                  key={link} 
-                  href={`/${link.toLowerCase()}`} 
+              {["About", "Partners", "API", "Privacy", "Terms"].map((link) => (
+                <Link
+                  key={link}
+                  href={`/${link.toLowerCase()}`}
                   className="text-xs uppercase tracking-[0.12em] text-white/40 hover:text-white transition-colors font-black"
                   style={{ fontWeight: 900 }}
                 >
@@ -239,10 +304,10 @@ export default function AboutPage() {
             </div>
           </div>
           <div className="text-center">
-            <Image 
-              src="/yacht-club-logo.png" 
-              alt="Yacht Club" 
-              width={48} 
+            <Image
+              src="/yacht-club-logo.png"
+              alt="Yacht Club"
+              width={48}
               height={48}
               className="object-contain mx-auto opacity-20 sm:w-[60px] sm:h-[60px]"
             />

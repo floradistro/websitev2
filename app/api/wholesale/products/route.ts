@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * Get wholesale products
@@ -9,20 +9,21 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
-    
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const category = searchParams.get('category');
-    const vendorId = searchParams.get('vendorId');
-    const search = searchParams.get('search');
-    const wholesaleOnly = searchParams.get('wholesaleOnly') === 'true';
-    
+
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
+    const category = searchParams.get("category");
+    const vendorId = searchParams.get("vendorId");
+    const search = searchParams.get("search");
+    const wholesaleOnly = searchParams.get("wholesaleOnly") === "true";
+
     const offset = (page - 1) * limit;
-    
+
     // Build query
     let query = supabase
-      .from('products')
-      .select(`
+      .from("products")
+      .select(
+        `
         *,
         vendor:vendors(
           id,
@@ -42,59 +43,65 @@ export async function GET(request: NextRequest) {
           unit_price,
           discount_percentage
         )
-      `, { count: 'exact' })
-      .eq('status', 'published')
-      .eq('is_wholesale', true);
-    
+      `,
+        { count: "exact" },
+      )
+      .eq("status", "published")
+      .eq("is_wholesale", true);
+
     // Filter wholesale-only products
     if (wholesaleOnly) {
-      query = query.eq('wholesale_only', true);
+      query = query.eq("wholesale_only", true);
     }
-    
+
     // Filter by category
     if (category) {
-      query = query.eq('primary_category_id', category);
+      query = query.eq("primary_category_id", category);
     }
-    
+
     // Filter by vendor
     if (vendorId) {
-      query = query.eq('vendor_id', vendorId);
+      query = query.eq("vendor_id", vendorId);
     }
-    
+
     // Search
     if (search) {
-      query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%,sku.ilike.%${search}%`);
+      query = query.or(
+        `name.ilike.%${search}%,description.ilike.%${search}%,sku.ilike.%${search}%`,
+      );
     }
-    
+
     // Pagination
     query = query
       .range(offset, offset + limit - 1)
-      .order('created_at', { ascending: false });
-    
+      .order("created_at", { ascending: false });
+
     const { data: products, error, count } = await query;
-    
+
     if (error) {
-      console.error('Get wholesale products error:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Get wholesale products error:", error);
+      }
       return NextResponse.json(
-        { error: 'Failed to get products', details: error.message },
-        { status: 500 }
+        { error: "Failed to get products", details: error.message },
+        { status: 500 },
       );
     }
-    
+
     return NextResponse.json({
       products: products || [],
       total: count || 0,
       page,
       limit,
-      totalPages: Math.ceil((count || 0) / limit)
+      totalPages: Math.ceil((count || 0) / limit),
     });
-    
   } catch (error: any) {
-    console.error('Get wholesale products error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Get wholesale products error:", error);
+    }
     return NextResponse.json(
-      { error: 'Failed to get products', details: error.message },
-      { status: 500 }
+      { error: "Failed to get products", details: error.message },
+      { status: 500 },
     );
   }
 }
-

@@ -4,24 +4,26 @@
  * TODO: Integrate with Sentry or similar monitoring service
  */
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+type LogLevel = "error" | "warn" | "info" | "debug";
 
 interface LogContext {
   [key: string]: any;
 }
 
 class Logger {
-  private isDevelopment = process.env.NODE_ENV === 'development';
-  
+  private isDevelopment = process.env.NODE_ENV === "development";
+
   /**
    * Log error messages
    * In production, this should send to monitoring service (Sentry)
    */
   error(message: string, error?: Error | unknown, context?: LogContext) {
     if (this.isDevelopment) {
-      console.error(`[ERROR] ${message}`, error, context);
+      if (process.env.NODE_ENV === "development") {
+        console.error(`[ERROR] ${message}`, error, context);
+      }
     }
-    
+
     // TODO: Send to Sentry in production
     // if (!this.isDevelopment && typeof window !== 'undefined') {
     //   Sentry.captureException(error, { extra: { message, ...context } });
@@ -33,7 +35,9 @@ class Logger {
    */
   warn(message: string, context?: LogContext) {
     if (this.isDevelopment) {
-      console.warn(`[WARN] ${message}`, context);
+      if (process.env.NODE_ENV === "development") {
+        console.warn(`[WARN] ${message}`, context);
+      }
     }
   }
 
@@ -42,7 +46,6 @@ class Logger {
    */
   info(message: string, context?: LogContext) {
     if (this.isDevelopment) {
-      console.log(`[INFO] ${message}`, context);
     }
   }
 
@@ -51,7 +54,6 @@ class Logger {
    */
   debug(message: string, context?: LogContext) {
     if (this.isDevelopment) {
-      console.log(`[DEBUG] ${message}`, context);
     }
   }
 
@@ -63,9 +65,9 @@ class Logger {
     const context = {
       endpoint,
       statusCode,
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorMessage: error instanceof Error ? error.message : "Unknown error",
     };
-    
+
     this.error(message, error, context);
   }
 
@@ -77,9 +79,9 @@ class Logger {
     const context = {
       operation,
       table,
-      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      errorMessage: error instanceof Error ? error.message : "Unknown error",
     };
-    
+
     this.error(message, error, context);
   }
 
@@ -89,7 +91,6 @@ class Logger {
   measure(label: string, startTime: number) {
     if (this.isDevelopment) {
       const duration = Date.now() - startTime;
-      console.log(`[PERF] ${label}: ${duration}ms`);
     }
   }
 }

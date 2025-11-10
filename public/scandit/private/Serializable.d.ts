@@ -1,9 +1,9 @@
 /// <reference types="emscripten" />
 interface Serializable<T = Record<string, any>> {
-    toJSONObject: () => T;
+  toJSONObject: () => T;
 }
 interface StringSerializable {
-    toJSON: () => string;
+  toJSON: () => string;
 }
 
 export type { Serializable, StringSerializable };

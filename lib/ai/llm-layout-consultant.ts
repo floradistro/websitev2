@@ -3,12 +3,12 @@
  * This provides more nuanced, context-aware suggestions than rule-based systems
  */
 
-import Anthropic from '@anthropic-ai/sdk';
+import Anthropic from "@anthropic-ai/sdk";
 
 export interface StoreContext {
   storeName: string;
-  storeType: 'dispensary' | 'retail' | 'restaurant';
-  brandVibe: 'premium' | 'casual' | 'medical' | 'recreational';
+  storeType: "dispensary" | "retail" | "restaurant";
+  brandVibe: "premium" | "casual" | "medical" | "recreational";
   targetAudience: string;
 }
 
@@ -54,21 +54,24 @@ export class LLMLayoutConsultant {
     store: StoreContext,
     display: DisplayContext,
     products: ProductContext,
-    ruleBased: any // OptimalLayout from rule-based system
+    ruleBased: any, // OptimalLayout from rule-based system
   ): Promise<LLMRecommendation> {
     const prompt = this.buildPrompt(store, display, products, ruleBased);
 
     const message = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 2000,
-      messages: [{
-        role: 'user',
-        content: prompt
-      }]
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
     });
 
     // Parse Claude's response
-    const response = message.content[0].type === 'text' ? message.content[0].text : '';
+    const response =
+      message.content[0].type === "text" ? message.content[0].text : "";
     return this.parseResponse(response, ruleBased);
   }
 
@@ -79,7 +82,7 @@ export class LLMLayoutConsultant {
     store: StoreContext,
     display: DisplayContext,
     products: ProductContext,
-    ruleBased: any
+    ruleBased: any,
   ): string {
     return `You are a world-class digital signage designer specializing in retail displays. You're helping optimize a menu display for a ${store.storeType}.
 
@@ -94,20 +97,24 @@ DISPLAY SPECIFICATIONS:
 - Viewing Distance: ${display.profile.viewingDistanceFeet} feet
 - Customer Behavior: ${display.customerBehavior}
 - Lighting: ${display.profile.ambientLighting}
-${display.adjacentTo ? `- Adjacent to: ${display.adjacentTo}` : ''}
+${display.adjacentTo ? `- Adjacent to: ${display.adjacentTo}` : ""}
 
 PRODUCT DATA:
 - Total Products: ${products.data.totalProducts}
-- Categories: ${products.data.categories.join(', ')}
-- Has Images: ${products.data.hasImages ? 'Yes' : 'No'}
-- Tiered Pricing: ${products.data.hasTieredPricing ? 'Yes' : 'No'}
+- Categories: ${products.data.categories.join(", ")}
+- Has Images: ${products.data.hasImages ? "Yes" : "No"}
+- Tiered Pricing: ${products.data.hasTieredPricing ? "Yes" : "No"}
 - Active Promotions: ${products.data.activePromotions}
-${products.currentPerformance ? `
-- Top Sellers: ${products.currentPerformance.topSellers.join(', ')}
-- Slow Movers: ${products.currentPerformance.slowMovers.join(', ')}` : ''}
+${
+  products.currentPerformance
+    ? `
+- Top Sellers: ${products.currentPerformance.topSellers.join(", ")}
+- Slow Movers: ${products.currentPerformance.slowMovers.join(", ")}`
+    : ""
+}
 
 BUSINESS GOALS:
-${products.businessGoals.map(goal => `- ${goal}`).join('\n')}
+${products.businessGoals.map((goal) => `- ${goal}`).join("\n")}
 
 RULE-BASED AI SUGGESTION:
 The rule-based system suggests:
@@ -118,7 +125,7 @@ The rule-based system suggests:
 - Price Font: ${ruleBased.typography.priceSize}px
 - Confidence: ${ruleBased.confidenceScore}%
 
-Reasoning: ${ruleBased.reasoning.join(' ')}
+Reasoning: ${ruleBased.reasoning.join(" ")}
 
 YOUR TASK:
 Analyze this context and provide:
@@ -175,7 +182,7 @@ Respond in JSON format:
     try {
       // Extract JSON from response (Claude sometimes wraps it in markdown)
       const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) throw new Error('No JSON found in response');
+      if (!jsonMatch) throw new Error("No JSON found in response");
 
       const parsed = JSON.parse(jsonMatch[0]);
 
@@ -187,11 +194,13 @@ Respond in JSON format:
         confidence: parsed.confidence || 75,
       };
     } catch (error) {
-      console.error('Failed to parse LLM response:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to parse LLM response:", error);
+      }
       // Fallback to rule-based
       return {
         layout: fallback,
-        reasoning: 'Using rule-based recommendation due to parsing error',
+        reasoning: "Using rule-based recommendation due to parsing error",
         alternatives: [],
         customizationTips: [],
         confidence: fallback.confidenceScore,
@@ -208,35 +217,40 @@ Respond in JSON format:
       avgViewTime: number;
       interactionRate: number;
       conversionRate: number;
-    }
+    },
   ): Promise<string[]> {
     const prompt = `You're a digital signage consultant. Analyze this current layout and provide 3-5 quick improvement tips.
 
 Current Layout:
 ${JSON.stringify(currentLayout, null, 2)}
 
-${performanceData ? `
+${
+  performanceData
+    ? `
 Performance Data:
 - Avg View Time: ${performanceData.avgViewTime}s
 - Interaction Rate: ${performanceData.interactionRate}%
 - Conversion Rate: ${performanceData.conversionRate}%
-` : ''}
+`
+    : ""
+}
 
 Provide actionable, specific tips as a JSON array of strings.`;
 
     const message = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 500,
-      messages: [{ role: 'user', content: prompt }]
+      messages: [{ role: "user", content: prompt }],
     });
 
-    const response = message.content[0].type === 'text' ? message.content[0].text : '';
+    const response =
+      message.content[0].type === "text" ? message.content[0].text : "";
 
     try {
       const jsonMatch = response.match(/\[[\s\S]*\]/);
       return jsonMatch ? JSON.parse(jsonMatch[0]) : [];
     } catch {
-      return ['Unable to generate tips at this time'];
+      return ["Unable to generate tips at this time"];
     }
   }
 }

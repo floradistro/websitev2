@@ -1,1 +1,1 @@
-export{a as folderImage}from'../chunks/chunk-BDLLVGRH.js';
+export { a as folderImage } from "../chunks/chunk-BDLLVGRH.js";

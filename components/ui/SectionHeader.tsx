@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 interface SectionHeaderProps {
   /**
@@ -12,7 +12,7 @@ interface SectionHeaderProps {
    * HTML tag to render (h1, h2, h3, h4)
    * @default "h2"
    */
-  as?: 'h1' | 'h2' | 'h3' | 'h4';
+  as?: "h1" | "h2" | "h3" | "h4";
 
   /**
    * Whether to include bottom margin (mb-4)
@@ -58,24 +58,22 @@ interface SectionHeaderProps {
  */
 export default function SectionHeader({
   children,
-  as = 'h2',
+  as = "h2",
   withMargin = true,
   rightContent,
-  className = ''
+  className = "",
 }: SectionHeaderProps) {
   const Tag = as;
 
-  const baseClasses = "text-[10px] uppercase tracking-[0.15em] text-white/40 font-black";
+  const baseClasses =
+    "text-[10px] uppercase tracking-[0.15em] text-white/40 font-black";
   const marginClass = withMargin ? "mb-4" : "";
   const finalClasses = `${baseClasses} ${marginClass} ${className}`.trim();
 
   if (rightContent) {
     return (
       <div className={`flex items-center justify-between ${marginClass}`}>
-        <Tag
-          className={baseClasses}
-          style={{ fontWeight: 900 }}
-        >
+        <Tag className={baseClasses} style={{ fontWeight: 900 }}>
           {children}
         </Tag>
         {rightContent}
@@ -84,10 +82,7 @@ export default function SectionHeader({
   }
 
   return (
-    <Tag
-      className={finalClasses}
-      style={{ fontWeight: 900 }}
-    >
+    <Tag className={finalClasses} style={{ fontWeight: 900 }}>
       {children}
     </Tag>
   );

@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { LayoutOptimizer } from '@/lib/ai/layout-optimizer';
-import { LLMLayoutConsultant } from '@/lib/ai/llm-layout-consultant';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { LayoutOptimizer } from "@/lib/ai/layout-optimizer";
+import { LLMLayoutConsultant } from "@/lib/ai/llm-layout-consultant";
 
 /**
  * AI Layout Optimization API
@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
 
     if (!deviceId || !vendorId) {
       return NextResponse.json(
-        { success: false, error: 'Device ID and Vendor ID required' },
-        { status: 400 }
+        { success: false, error: "Device ID and Vendor ID required" },
+        { status: 400 },
       );
     }
 
@@ -28,33 +28,36 @@ export async function POST(request: NextRequest) {
 
     // 1. Load display profile
     const { data: profile, error: profileError } = await supabase
-      .from('tv_display_profiles')
-      .select('*')
-      .eq('device_id', deviceId)
+      .from("tv_display_profiles")
+      .select("*")
+      .eq("device_id", deviceId)
       .single();
 
     if (profileError || !profile) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Display profile not found. Please configure display settings first.',
-          needsProfile: true
+          error:
+            "Display profile not found. Please configure display settings first.",
+          needsProfile: true,
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // 2. Load product data
     const { data: products } = await supabase
-      .from('products')
-      .select(`
+      .from("products")
+      .select(
+        `
         *,
         product_categories(
           category:categories(name)
         )
-      `)
-      .eq('vendor_id', vendorId)
-      .eq('status', 'published');
+      `,
+      )
+      .eq("vendor_id", vendorId)
+      .eq("status", "published");
 
     // Extract categories
     const categorySet = new Set<string>();
@@ -73,12 +76,12 @@ export async function POST(request: NextRequest) {
 
     // Check for active promotions
     const { data: promotions } = await supabase
-      .from('promotions')
-      .select('id')
-      .eq('vendor_id', vendorId)
-      .eq('is_active', true)
-      .lte('start_date', new Date().toISOString())
-      .gte('end_date', new Date().toISOString());
+      .from("promotions")
+      .select("id")
+      .eq("vendor_id", vendorId)
+      .eq("is_active", true)
+      .lte("start_date", new Date().toISOString())
+      .gte("end_date", new Date().toISOString());
 
     const productContext = {
       totalProducts: products?.length || 0,
@@ -101,7 +104,7 @@ export async function POST(request: NextRequest) {
         ambientLighting: profile.ambient_lighting,
         dwellTimeSeconds: profile.avg_dwell_time_seconds,
       },
-      productContext
+      productContext,
     );
 
     let finalRecommendation: {
@@ -112,7 +115,7 @@ export async function POST(request: NextRequest) {
       customizationTips: any[];
       confidence: number;
     } = {
-      aiType: 'rule_based',
+      aiType: "rule_based",
       layout: ruleBasedLayout,
       reasoning: ruleBasedLayout.reasoning,
       alternatives: [],
@@ -123,37 +126,39 @@ export async function POST(request: NextRequest) {
     // 4. Optionally enhance with LLM
     if (useLLM && process.env.ANTHROPIC_API_KEY) {
       try {
-        const llmConsultant = new LLMLayoutConsultant(process.env.ANTHROPIC_API_KEY);
+        const llmConsultant = new LLMLayoutConsultant(
+          process.env.ANTHROPIC_API_KEY,
+        );
 
         // Load vendor for store context
         const { data: vendor } = await supabase
-          .from('vendors')
-          .select('store_name')
-          .eq('id', vendorId)
+          .from("vendors")
+          .select("store_name")
+          .eq("id", vendorId)
           .single();
 
         const llmRecommendation = await llmConsultant.getRecommendation(
           {
-            storeName: vendor?.store_name || 'Store',
+            storeName: vendor?.store_name || "Store",
             storeType: profile.store_type,
             brandVibe: profile.brand_vibe,
-            targetAudience: profile.target_audience || 'general customers',
+            targetAudience: profile.target_audience || "general customers",
           },
           {
             profile,
             location: profile.location_type,
             adjacentTo: profile.adjacent_to,
-            customerBehavior: profile.customer_behavior || 'browsing products',
+            customerBehavior: profile.customer_behavior || "browsing products",
           },
           {
             data: productContext,
-            businessGoals: profile.business_goals || ['maximize sales'],
+            businessGoals: profile.business_goals || ["maximize sales"],
           },
-          ruleBasedLayout
+          ruleBasedLayout,
         );
 
         finalRecommendation = {
-          aiType: 'hybrid',
+          aiType: "hybrid",
           layout: llmRecommendation.layout,
           reasoning: [llmRecommendation.reasoning],
           alternatives: llmRecommendation.alternatives,
@@ -161,13 +166,15 @@ export async function POST(request: NextRequest) {
           confidence: llmRecommendation.confidence,
         };
       } catch (llmError) {
-        console.error('LLM enhancement failed, using rule-based:', llmError);
+        if (process.env.NODE_ENV === "development") {
+          console.error("LLM enhancement failed, using rule-based:", llmError);
+        }
       }
     }
 
     // 5. Save recommendation to database
     const { data: savedRecommendation, error: saveError } = await supabase
-      .from('ai_layout_recommendations')
+      .from("ai_layout_recommendations")
       .insert({
         device_id: deviceId,
         vendor_id: vendorId,
@@ -185,7 +192,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (saveError) {
-      console.error('Failed to save recommendation:', saveError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to save recommendation:", saveError);
+      }
     }
 
     return NextResponse.json({
@@ -193,7 +202,7 @@ export async function POST(request: NextRequest) {
       recommendation: finalRecommendation,
       recommendationId: savedRecommendation?.id,
       applySuggestion: {
-        endpoint: '/api/ai/apply-layout',
+        endpoint: "/api/ai/apply-layout",
         payload: {
           recommendationId: savedRecommendation?.id,
           menuId: menuId,
@@ -201,10 +210,12 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    console.error('AI layout optimization error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("AI layout optimization error:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -217,22 +228,22 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const deviceId = searchParams.get('deviceId');
+    const deviceId = searchParams.get("deviceId");
 
     if (!deviceId) {
       return NextResponse.json(
-        { success: false, error: 'Device ID required' },
-        { status: 400 }
+        { success: false, error: "Device ID required" },
+        { status: 400 },
       );
     }
 
     const supabase = getServiceSupabase();
 
     const { data: recommendation } = await supabase
-      .from('ai_layout_recommendations')
-      .select('*')
-      .eq('device_id', deviceId)
-      .order('created_at', { ascending: false })
+      .from("ai_layout_recommendations")
+      .select("*")
+      .eq("device_id", deviceId)
+      .order("created_at", { ascending: false })
       .limit(1)
       .single();
 
@@ -241,10 +252,12 @@ export async function GET(request: NextRequest) {
       recommendation,
     });
   } catch (error: any) {
-    console.error('Error fetching recommendation:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error fetching recommendation:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

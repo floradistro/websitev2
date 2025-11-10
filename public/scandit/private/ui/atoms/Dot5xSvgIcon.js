@@ -1,10 +1,21 @@
-import {a}from'../../../chunks/chunk-S24T6WS2.js';import {a as a$1}from'../../../chunks/chunk-3A4KLILV.js';import {a as a$2}from'../../../chunks/chunk-MU6SADSF.js';var t=class t extends a{static create(){return document.createElement(t.tag)}static register(){a$1({[t.tag]:t});}render(){return a$2`
+import { a } from "../../../chunks/chunk-S24T6WS2.js";
+import { a as a$1 } from "../../../chunks/chunk-3A4KLILV.js";
+import { a as a$2 } from "../../../chunks/chunk-MU6SADSF.js";
+var t = class t extends a {
+  static create() {
+    return document.createElement(t.tag);
+  }
+  static register() {
+    a$1({ [t.tag]: t });
+  }
+  render() {
+    return a$2`
       <style>
         ${t.tag} {
           display: flex;
         }
       </style>
-      <svg width="${this.size}" height="${this.heightForViewbox(32,32)}" viewBox="0 0 32 32" fill="none">
+      <svg width="${this.size}" height="${this.heightForViewbox(32, 32)}" viewBox="0 0 32 32" fill="none">
         <path
           d="M7.98828 21.082C8.59668 21.082 9.08887 20.5898 9.08887 19.9814C9.08887 19.3662 8.59668 18.8809 7.98828 18.8809C7.37305 18.8809 6.8877 19.3662 6.8877 19.9814C6.8877 20.5898 7.37305 21.082 7.98828 21.082Z"
           fill="${this.fill}"
@@ -18,4 +29,9 @@ import {a}from'../../../chunks/chunk-S24T6WS2.js';import {a as a$1}from'../../..
           fill="${this.fill}"
         />
       </svg>
-    `}};t.tag="scandit-dot5x-icon";var l=t;export{l as Dot5xSvgIcon};
+    `;
+  }
+};
+t.tag = "scandit-dot5x-icon";
+var l = t;
+export { l as Dot5xSvgIcon };

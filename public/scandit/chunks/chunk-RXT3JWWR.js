@@ -1,1 +1,8 @@
-var s=(r=>(r.Info="info",r.Error="error",r.Warning="warning",r.Success="success",r))(s||{});export{s as a};
+var s = ((r) => (
+  (r.Info = "info"),
+  (r.Error = "error"),
+  (r.Warning = "warning"),
+  (r.Success = "success"),
+  r
+))(s || {});
+export { s as a };

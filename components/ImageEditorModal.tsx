@@ -1,9 +1,18 @@
 "use client";
 
-import { useState } from 'react';
-import { X, Scissors, Palette, Crop, Sparkles, FileImage, Maximize2, Download } from 'lucide-react';
-import axios from 'axios';
-import { showNotification } from './NotificationToast';
+import { useState } from "react";
+import {
+  X,
+  Scissors,
+  Palette,
+  Crop,
+  Sparkles,
+  FileImage,
+  Maximize2,
+  Download,
+} from "lucide-react";
+import axios from "axios";
+import { showNotification } from "./NotificationToast";
 
 interface ImageEditorModalProps {
   isOpen: boolean;
@@ -13,24 +22,34 @@ interface ImageEditorModalProps {
   onSuccess: () => void;
 }
 
-export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSuccess }: ImageEditorModalProps) {
-  const [activeTab, setActiveTab] = useState<'background' | 'crop' | 'enhance' | 'format'>('background');
+export default function ImageEditorModal({
+  isOpen,
+  onClose,
+  file,
+  vendorId,
+  onSuccess,
+}: ImageEditorModalProps) {
+  const [activeTab, setActiveTab] = useState<
+    "background" | "crop" | "enhance" | "format"
+  >("background");
   const [processing, setProcessing] = useState(false);
-  
+
   // Background options
-  const [bgColor, setBgColor] = useState('#ffffff');
+  const [bgColor, setBgColor] = useState("#ffffff");
   const [removeBg, setRemoveBg] = useState(true);
   const [addShadow, setAddShadow] = useState(false);
-  
+
   // Crop options
   const [enableCrop, setEnableCrop] = useState(false);
-  const [cropMargin, setCropMargin] = useState('10');
-  
+  const [cropMargin, setCropMargin] = useState("10");
+
   // Format options
-  const [outputFormat, setOutputFormat] = useState<'png' | 'jpg' | 'webp'>('png');
-  
+  const [outputFormat, setOutputFormat] = useState<"png" | "jpg" | "webp">(
+    "png",
+  );
+
   // Subject type
-  const [subjectType, setSubjectType] = useState('auto');
+  const [subjectType, setSubjectType] = useState("auto");
 
   if (!isOpen) return null;
 
@@ -44,7 +63,7 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
       };
 
       // Background options
-      if (!removeBg && bgColor !== 'transparent') {
+      if (!removeBg && bgColor !== "transparent") {
         options.backgroundColor = bgColor;
       }
       if (addShadow) {
@@ -60,31 +79,32 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
       // Subject type
       options.type = subjectType;
 
-      const response = await axios.post('/api/vendor/media/enhance',
+      const response = await axios.post(
+        "/api/vendor/media/enhance",
         {
           imageUrl: file.url,
           fileName: file.name,
-          options
+          options,
         },
         {
-          headers: { 'x-vendor-id': vendorId }
-        }
+          headers: { "x-vendor-id": vendorId },
+        },
       );
 
       if (response.data.success) {
         showNotification({
-          type: 'success',
-          title: 'Image Processed',
-          message: `Created ${response.data.file.name}`
+          type: "success",
+          title: "Image Processed",
+          message: `Created ${response.data.file.name}`,
         });
         onSuccess();
         onClose();
       }
     } catch (error: any) {
       showNotification({
-        type: 'error',
-        title: 'Processing Failed',
-        message: error.response?.data?.error || 'Failed to process image'
+        type: "error",
+        title: "Processing Failed",
+        message: error.response?.data?.error || "Failed to process image",
       });
     } finally {
       setProcessing(false);
@@ -92,14 +112,14 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
   };
 
   const presetColors = [
-    { name: 'White', value: '#ffffff' },
-    { name: 'Black', value: '#000000' },
-    { name: 'Gray', value: '#9ca3af' },
-    { name: 'Light', value: '#f3f4f6' },
-    { name: 'Red', value: '#ef4444' },
-    { name: 'Blue', value: '#3b82f6' },
-    { name: 'Green', value: '#22c55e' },
-    { name: 'Orange', value: '#f59e0b' },
+    { name: "White", value: "#ffffff" },
+    { name: "Black", value: "#000000" },
+    { name: "Gray", value: "#9ca3af" },
+    { name: "Light", value: "#f3f4f6" },
+    { name: "Red", value: "#ef4444" },
+    { name: "Blue", value: "#3b82f6" },
+    { name: "Green", value: "#22c55e" },
+    { name: "Orange", value: "#f59e0b" },
   ];
 
   return (
@@ -136,18 +156,18 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
               {/* Tabs */}
               <div className="flex gap-2 border-b border-white/10 pb-2">
                 {[
-                  { id: 'background', icon: Palette, label: 'Background' },
-                  { id: 'crop', icon: Crop, label: 'Crop' },
-                  { id: 'enhance', icon: Sparkles, label: 'Enhance' },
-                  { id: 'format', icon: FileImage, label: 'Format' },
-                ].map(tab => (
+                  { id: "background", icon: Palette, label: "Background" },
+                  { id: "crop", icon: Crop, label: "Crop" },
+                  { id: "enhance", icon: Sparkles, label: "Enhance" },
+                  { id: "format", icon: FileImage, label: "Format" },
+                ].map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`flex items-center gap-2 px-4 py-2 text-sm transition-all ${
                       activeTab === tab.id
-                        ? 'bg-white/10 text-white border border-white/20'
-                        : 'text-white/60 hover:text-white border border-transparent'
+                        ? "bg-white/10 text-white border border-white/20"
+                        : "text-white/60 hover:text-white border border-transparent"
                     }`}
                   >
                     <tab.icon size={16} />
@@ -157,7 +177,7 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
               </div>
 
               {/* Background Tab */}
-              {activeTab === 'background' && (
+              {activeTab === "background" && (
                 <div className="space-y-4">
                   <div>
                     <label className="flex items-center gap-2 mb-2">
@@ -167,20 +187,26 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
                         onChange={(e) => setRemoveBg(e.target.checked)}
                         className="w-4 h-4"
                       />
-                      <span className="text-white text-sm">Remove Background</span>
+                      <span className="text-white text-sm">
+                        Remove Background
+                      </span>
                     </label>
                   </div>
 
                   {!removeBg && (
                     <div>
-                      <div className="text-white text-sm mb-2">Background Color</div>
+                      <div className="text-white text-sm mb-2">
+                        Background Color
+                      </div>
                       <div className="grid grid-cols-4 gap-2 mb-3">
-                        {presetColors.map(color => (
+                        {presetColors.map((color) => (
                           <button
                             key={color.value}
                             onClick={() => setBgColor(color.value)}
                             className={`h-12 border-2 transition-all ${
-                              bgColor === color.value ? 'border-white scale-105' : 'border-white/20'
+                              bgColor === color.value
+                                ? "border-white scale-105"
+                                : "border-white/20"
                             }`}
                             style={{ backgroundColor: color.value }}
                             title={color.name}
@@ -211,7 +237,7 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
               )}
 
               {/* Crop Tab */}
-              {activeTab === 'crop' && (
+              {activeTab === "crop" && (
                 <div className="space-y-4">
                   <div>
                     <label className="flex items-center gap-2 mb-2">
@@ -221,7 +247,9 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
                         onChange={(e) => setEnableCrop(e.target.checked)}
                         className="w-4 h-4"
                       />
-                      <span className="text-white text-sm">Smart Crop to Subject</span>
+                      <span className="text-white text-sm">
+                        Smart Crop to Subject
+                      </span>
                     </label>
                   </div>
 
@@ -248,10 +276,12 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
               )}
 
               {/* Enhance Tab */}
-              {activeTab === 'enhance' && (
+              {activeTab === "enhance" && (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-white text-sm mb-2 block">Subject Type</label>
+                    <label className="text-white text-sm mb-2 block">
+                      Subject Type
+                    </label>
                     <select
                       value={subjectType}
                       onChange={(e) => setSubjectType(e.target.value)}
@@ -267,19 +297,21 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
               )}
 
               {/* Format Tab */}
-              {activeTab === 'format' && (
+              {activeTab === "format" && (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-white text-sm mb-2 block">Output Format</label>
+                    <label className="text-white text-sm mb-2 block">
+                      Output Format
+                    </label>
                     <div className="grid grid-cols-3 gap-2">
-                      {(['png', 'jpg', 'webp'] as const).map(format => (
+                      {(["png", "jpg", "webp"] as const).map((format) => (
                         <button
                           key={format}
                           onClick={() => setOutputFormat(format)}
                           className={`py-3 text-sm uppercase tracking-wider transition-all ${
                             outputFormat === format
-                              ? 'bg-white text-black'
-                              : 'bg-white/5 text-white/60 hover:text-white border border-white/10'
+                              ? "bg-white text-black"
+                              : "bg-white/5 text-white/60 hover:text-white border border-white/10"
                           }`}
                         >
                           {format}
@@ -287,9 +319,12 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
                       ))}
                     </div>
                     <div className="text-white/40 text-xs mt-2">
-                      {outputFormat === 'png' && '• Best quality • Transparency support'}
-                      {outputFormat === 'jpg' && '• Smaller file size • No transparency'}
-                      {outputFormat === 'webp' && '• Modern format • Best compression'}
+                      {outputFormat === "png" &&
+                        "• Best quality • Transparency support"}
+                      {outputFormat === "jpg" &&
+                        "• Smaller file size • No transparency"}
+                      {outputFormat === "webp" &&
+                        "• Modern format • Best compression"}
                     </div>
                   </div>
                 </div>
@@ -328,4 +363,3 @@ export default function ImageEditorModal({ isOpen, onClose, file, vendorId, onSu
     </div>
   );
 }
-

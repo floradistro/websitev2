@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 /**
  * POST /api/admin/fix-session-function
@@ -11,8 +11,6 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
-
-    console.log('🔧 Fixing get_or_create_session function...');
 
     // The SQL to fix the function
     const sql = `
@@ -119,35 +117,40 @@ $function$;
     `;
 
     // Execute the SQL using rpc
-    const { data, error } = await supabase.rpc('exec_sql', { sql });
+    const { data, error } = await supabase.rpc("exec_sql", { sql });
 
     if (error) {
       // If exec_sql doesn't exist, log the SQL for manual execution
-      console.error('❌ Could not execute via RPC:', error);
-
-      return NextResponse.json({
-        success: false,
-        error: 'Could not execute SQL via RPC',
-        message: 'Please execute the SQL manually in Supabase Dashboard',
-        sql: sql
-      }, { status: 500 });
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Could not execute via RPC:", error);
+      }
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Could not execute SQL via RPC",
+          message: "Please execute the SQL manually in Supabase Dashboard",
+          sql: sql,
+        },
+        { status: 500 },
+      );
     }
-
-    console.log('✅ Function fixed successfully!');
 
     return NextResponse.json({
       success: true,
-      message: 'get_or_create_session function fixed successfully',
-      details: 'walk_in_sales type changed from numeric to integer'
+      message: "get_or_create_session function fixed successfully",
+      details: "walk_in_sales type changed from numeric to integer",
     });
-
   } catch (error: any) {
-    console.error('❌ Error fixing function:', error);
-
-    return NextResponse.json({
-      success: false,
-      error: error.message,
-      details: error.toString()
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Error fixing function:", error);
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message,
+        details: error.toString(),
+      },
+      { status: 500 },
+    );
   }
 }

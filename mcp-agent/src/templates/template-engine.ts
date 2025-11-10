@@ -3,7 +3,7 @@
  * Reads templates from Supabase instead of hardcoded files
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export interface VendorData {
   id: string;
@@ -36,24 +36,31 @@ export interface AppliedTemplate {
  * Get Supabase client
  */
 function getSupabaseClient() {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://uaednwpxursknmwdeejn.supabase.co';
-  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || 
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI';
-  
+  const supabaseUrl =
+    process.env.SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    "https://uaednwpxursknmwdeejn.supabase.co";
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI";
+
   return createClient(supabaseUrl, supabaseKey);
 }
 
 /**
  * Fetch template from database
  */
-async function fetchTemplate(templateId: string = 'b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0') {
+async function fetchTemplate(
+  templateId: string = "b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0",
+) {
   const supabase = getSupabaseClient();
-  
+
   const { data, error } = await supabase
-    .from('section_template_components')
-    .select('*')
-    .eq('template_id', templateId)
-    .order('position_order');
+    .from("section_template_components")
+    .select("*")
+    .eq("template_id", templateId)
+    .order("position_order");
 
   if (error || !data) {
     throw new Error(`Failed to fetch template: ${error?.message}`);
@@ -65,13 +72,17 @@ async function fetchTemplate(templateId: string = 'b17045df-9bf8-4abe-8d5b-bfd09
 /**
  * Apply template to vendor data (now reads from database)
  */
-export async function applyTemplate(vendorData: VendorData): Promise<AppliedTemplate> {
-  console.log('📖 Fetching Wilson\'s Template from Supabase...');
-  
+export async function applyTemplate(
+  vendorData: VendorData,
+): Promise<AppliedTemplate> {
+  console.log("📖 Fetching Wilson's Template from Supabase...");
+
   const templateComponents = await fetchTemplate();
-  
-  console.log(`✅ Loaded ${templateComponents.length} components from database`);
-  
+
+  console.log(
+    `✅ Loaded ${templateComponents.length} components from database`,
+  );
+
   const sections: any[] = [];
   const components: any[] = [];
   const seenSections = new Set();
@@ -80,44 +91,47 @@ export async function applyTemplate(vendorData: VendorData): Promise<AppliedTemp
   templateComponents.forEach((comp: any) => {
     const config = comp.container_config || {};
     const sectionKey = config.section_key;
-    const pageType = config.page_type || 'home';
-    
+    const pageType = config.page_type || "home";
+
     // Add section if not already added (use composite key)
     const sectionCompositeKey = `${pageType}:${sectionKey}`;
     if (sectionKey && !seenSections.has(sectionCompositeKey)) {
       sections.push({
         section_key: sectionKey,
         section_order: config.section_order || 0,
-        page_type: pageType
+        page_type: pageType,
       });
       seenSections.add(sectionCompositeKey);
     }
 
     // Process component props (replace {{placeholders}})
     const processedProps = processProps(comp.props || {}, vendorData);
-    
+
     components.push({
       section_key: sectionKey,
       component_key: comp.component_key,
       props: processedProps,
-      position_order: comp.position_order
+      position_order: comp.position_order,
     });
   });
 
   return {
     sections,
-    components
+    components,
   };
 }
 
 /**
  * Process props - replace {{placeholders}} with real data
  */
-function processProps(props: Record<string, any>, vendorData: VendorData): Record<string, any> {
+function processProps(
+  props: Record<string, any>,
+  vendorData: VendorData,
+): Record<string, any> {
   const processed: Record<string, any> = {};
-  
+
   for (const [key, value] of Object.entries(props)) {
-    if (typeof value === 'string' && value.includes('{{')) {
+    if (typeof value === "string" && value.includes("{{")) {
       processed[key] = replacePlaceholders(value, vendorData);
     } else {
       processed[key] = value;
@@ -134,42 +148,51 @@ function replacePlaceholders(text: string, vendorData: VendorData): string {
   return text
     .replace(/\{\{vendor\.store_name\}\}/g, vendorData.store_name)
     .replace(/\{\{vendor\.slug\}\}/g, vendorData.slug)
-    .replace(/\{\{vendor\.store_tagline\}\}/g, vendorData.store_tagline || 'Premium cannabis delivered with care')
-    .replace(/\{\{vendor\.logo_url\}\}/g, vendorData.logo_url || '/default-logo.png');
+    .replace(
+      /\{\{vendor\.store_tagline\}\}/g,
+      vendorData.store_tagline || "Premium cannabis delivered with care",
+    )
+    .replace(
+      /\{\{vendor\.logo_url\}\}/g,
+      vendorData.logo_url || "/default-logo.png",
+    );
 }
 
 /**
  * Fetch compliance content from database
  */
 export async function fetchComplianceContent(
-  templateId: string = 'b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0',
-  contentType?: string
+  templateId: string = "b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0",
+  contentType?: string,
 ) {
   const supabase = getSupabaseClient();
-  
+
   let query = supabase
-    .from('template_compliance_content')
-    .select('*')
-    .eq('template_id', templateId);
-  
+    .from("template_compliance_content")
+    .select("*")
+    .eq("template_id", templateId);
+
   if (contentType) {
-    query = query.eq('content_type', contentType);
+    query = query.eq("content_type", contentType);
   }
-  
-  const { data, error } = await query.order('display_order');
-  
+
+  const { data, error } = await query.order("display_order");
+
   if (error) {
-    console.error('Error fetching compliance content:', error);
+    console.error("Error fetching compliance content:", error);
     return [];
   }
-  
+
   return data || [];
 }
 
 /**
  * Add compliance sections (reads from database)
  */
-export function addComplianceSections(design: AppliedTemplate, vendorData: VendorData): AppliedTemplate {
+export function addComplianceSections(
+  design: AppliedTemplate,
+  vendorData: VendorData,
+): AppliedTemplate {
   // Already included in template from database
   return design;
 }

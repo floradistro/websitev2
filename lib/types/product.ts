@@ -3,10 +3,10 @@
  * Comprehensive type safety for product-related data structures
  */
 
-export type ProductStatus = 'published' | 'pending' | 'rejected' | 'draft';
-export type ProductType = 'simple' | 'variable';
-export type ProductVisibility = 'internal' | 'public';
-export type PricingMode = 'single' | 'tiered';
+export type ProductStatus = "published" | "pending" | "rejected" | "draft";
+export type ProductType = "simple" | "variable";
+export type ProductVisibility = "internal" | "public";
+export type PricingMode = "single" | "tiered";
 
 export interface PricingTier {
   weight: string;
@@ -101,7 +101,15 @@ export interface DynamicField {
   id: string;
   fieldId: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'select' | 'checkbox' | 'date' | 'url' | 'email';
+  type:
+    | "text"
+    | "textarea"
+    | "number"
+    | "select"
+    | "checkbox"
+    | "date"
+    | "url"
+    | "email";
   required?: boolean;
   placeholder?: string;
   description?: string;
@@ -109,7 +117,7 @@ export interface DynamicField {
   categoryId?: string;
   sortOrder?: number;
   inherited?: boolean;
-  source?: 'category' | 'parent' | 'global';
+  source?: "category" | "parent" | "global";
 }
 
 export interface BulkProduct {
@@ -141,8 +149,8 @@ export interface ProductsListResponse {
 
 export interface ProductFilters {
   search: string;
-  status: 'all' | ProductStatus;
-  category: 'all' | string;
+  status: "all" | ProductStatus;
+  category: "all" | string;
   page: number;
   itemsPerPage: number;
 }
@@ -160,8 +168,8 @@ export interface PricingTemplate {
   name: string;
   slug: string;
   description?: string;
-  tier_type: 'weight' | 'quantity' | 'percentage' | 'flat' | 'custom';
-  quality_tier?: 'exotic' | 'top-shelf' | 'mid-shelf' | 'value';
+  tier_type: "weight" | "quantity" | "percentage" | "flat" | "custom";
+  quality_tier?: "exotic" | "top-shelf" | "mid-shelf" | "value";
   price_breaks: Array<{
     break_id: string;
     label: string;
@@ -171,7 +179,7 @@ export interface PricingTemplate {
     sort_order: number;
   }>;
   applicable_to_categories?: string[];
-  context?: 'retail' | 'wholesale' | 'distributor' | 'delivery';
+  context?: "retail" | "wholesale" | "distributor" | "delivery";
   is_active?: boolean;
   is_default?: boolean;
   created_at?: string;

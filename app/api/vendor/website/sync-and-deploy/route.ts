@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { requireVendor } from "@/lib/auth/middleware";
 
 /**
  * POST /api/vendor/website/sync-and-deploy
@@ -31,15 +31,17 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(
     {
-      error: 'This endpoint is deprecated',
-      message: 'The monorepo sync architecture has been replaced with separate Vercel projects',
+      error: "This endpoint is deprecated",
+      message:
+        "The monorepo sync architecture has been replaced with separate Vercel projects",
       migration: {
-        oldFlow: 'Sync vendor code → Commit to main → Deploy entire platform',
-        newFlow: 'Push to your repo → Deploy only your project',
-        action: 'Use POST /api/vendor/website/create-vercel-project to create your isolated project',
+        oldFlow: "Sync vendor code → Commit to main → Deploy entire platform",
+        newFlow: "Push to your repo → Deploy only your project",
+        action:
+          "Use POST /api/vendor/website/create-vercel-project to create your isolated project",
       },
-      documentation: 'See docs for the new separate projects architecture'
+      documentation: "See docs for the new separate projects architecture",
     },
-    { status: 410 } // 410 Gone - resource permanently removed
+    { status: 410 }, // 410 Gone - resource permanently removed
   );
 }

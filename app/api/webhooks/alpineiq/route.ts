@@ -9,13 +9,13 @@
  * 4. Save webhook secret in environment variables: ALPINEIQ_WEBHOOK_SECRET
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import crypto from 'crypto';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 /**
@@ -23,29 +23,33 @@ const supabase = createClient(
  */
 function verifySignature(signature: string | null, body: any): boolean {
   if (!signature || !process.env.ALPINEIQ_WEBHOOK_SECRET) {
-    console.warn('Missing signature or webhook secret');
+    if (process.env.NODE_ENV === "development") {
+      console.warn("Missing signature or webhook secret");
+    }
     return false; // TODO: Enable this check once AlpineIQ provides signature method
   }
 
   const expectedSignature = crypto
-    .createHmac('sha256', process.env.ALPINEIQ_WEBHOOK_SECRET)
+    .createHmac("sha256", process.env.ALPINEIQ_WEBHOOK_SECRET)
     .update(JSON.stringify(body))
-    .digest('hex');
+    .digest("hex");
 
   return crypto.timingSafeEqual(
     Buffer.from(signature),
-    Buffer.from(expectedSignature)
+    Buffer.from(expectedSignature),
   );
 }
 
 /**
  * Get our customer ID from AlpineIQ contact ID
  */
-async function getCustomerIdFromAlpineIQ(alpineiqContactId: string): Promise<string | null> {
+async function getCustomerIdFromAlpineIQ(
+  alpineiqContactId: string,
+): Promise<string | null> {
   const { data } = await supabase
-    .from('alpineiq_customer_mapping')
-    .select('customer_id')
-    .eq('alpineiq_customer_id', alpineiqContactId)
+    .from("alpineiq_customer_mapping")
+    .select("customer_id")
+    .eq("alpineiq_customer_id", alpineiqContactId)
     .single();
 
   return data?.customer_id || null;
@@ -55,38 +59,40 @@ async function getCustomerIdFromAlpineIQ(alpineiqContactId: string): Promise<str
  * Handle campaign.sent event
  */
 async function handleCampaignSent(data: any): Promise<void> {
-  const customerId = await getCustomerIdFromAlpineIQ(data.customer_id || data.contactID);
+  const customerId = await getCustomerIdFromAlpineIQ(
+    data.customer_id || data.contactID,
+  );
 
-  await supabase.from('marketing_campaign_events').insert({
+  await supabase.from("marketing_campaign_events").insert({
     vendor_id: data.vendor_id, // Need to add vendor_id to webhook payload
     campaign_id: data.campaign_id,
-    campaign_type: 'alpineiq',
+    campaign_type: "alpineiq",
     customer_id: customerId,
-    event_type: 'sent',
-    channel: data.channel || 'email',
+    event_type: "sent",
+    channel: data.channel || "email",
     metadata: {
       alpineiq_contact_id: data.customer_id || data.contactID,
       sent_at: data.sent_at || new Date().toISOString(),
     },
     created_at: data.sent_at || new Date().toISOString(),
   });
-
-  console.log(`✅ Campaign sent event recorded: ${data.campaign_id}`);
 }
 
 /**
  * Handle email.opened event
  */
 async function handleEmailOpened(data: any): Promise<void> {
-  const customerId = await getCustomerIdFromAlpineIQ(data.customer_id || data.contactID);
+  const customerId = await getCustomerIdFromAlpineIQ(
+    data.customer_id || data.contactID,
+  );
 
-  await supabase.from('marketing_campaign_events').insert({
+  await supabase.from("marketing_campaign_events").insert({
     vendor_id: data.vendor_id,
     campaign_id: data.campaign_id,
-    campaign_type: 'alpineiq',
+    campaign_type: "alpineiq",
     customer_id: customerId,
-    event_type: 'opened',
-    channel: 'email',
+    event_type: "opened",
+    channel: "email",
     metadata: {
       alpineiq_contact_id: data.customer_id || data.contactID,
       opened_at: data.opened_at || new Date().toISOString(),
@@ -95,64 +101,64 @@ async function handleEmailOpened(data: any): Promise<void> {
     },
     created_at: data.opened_at || new Date().toISOString(),
   });
-
-  console.log(`✅ Email opened event recorded: ${data.campaign_id}`);
 }
 
 /**
  * Handle email.clicked event
  */
 async function handleEmailClicked(data: any): Promise<void> {
-  const customerId = await getCustomerIdFromAlpineIQ(data.customer_id || data.contactID);
+  const customerId = await getCustomerIdFromAlpineIQ(
+    data.customer_id || data.contactID,
+  );
 
   // Record click event
-  await supabase.from('marketing_campaign_events').insert({
+  await supabase.from("marketing_campaign_events").insert({
     vendor_id: data.vendor_id,
     campaign_id: data.campaign_id,
-    campaign_type: 'alpineiq',
+    campaign_type: "alpineiq",
     customer_id: customerId,
-    event_type: 'clicked',
-    channel: 'email',
+    event_type: "clicked",
+    channel: "email",
     metadata: {
       alpineiq_contact_id: data.customer_id || data.contactID,
       link_url: data.link_url,
       clicked_at: data.clicked_at || new Date().toISOString(),
       utm_campaign: data.utm_campaign,
-      utm_source: data.utm_source || 'alpineiq',
-      utm_medium: data.utm_medium || 'email',
+      utm_source: data.utm_source || "alpineiq",
+      utm_medium: data.utm_medium || "email",
     },
     created_at: data.clicked_at || new Date().toISOString(),
   });
 
   // Create customer session for attribution tracking
   if (customerId) {
-    await supabase.from('customer_sessions').insert({
+    await supabase.from("customer_sessions").insert({
       vendor_id: data.vendor_id,
       customer_id: customerId,
-      utm_source: data.utm_source || 'alpineiq',
-      utm_medium: data.utm_medium || 'email',
+      utm_source: data.utm_source || "alpineiq",
+      utm_medium: data.utm_medium || "email",
       utm_campaign: data.utm_campaign || data.campaign_id,
       session_start: new Date().toISOString(),
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
     });
   }
-
-  console.log(`✅ Email clicked event recorded: ${data.campaign_id}`);
 }
 
 /**
  * Handle sms.delivered event
  */
 async function handleSMSDelivered(data: any): Promise<void> {
-  const customerId = await getCustomerIdFromAlpineIQ(data.customer_id || data.contactID);
+  const customerId = await getCustomerIdFromAlpineIQ(
+    data.customer_id || data.contactID,
+  );
 
-  await supabase.from('marketing_campaign_events').insert({
+  await supabase.from("marketing_campaign_events").insert({
     vendor_id: data.vendor_id,
     campaign_id: data.campaign_id,
-    campaign_type: 'alpineiq',
+    campaign_type: "alpineiq",
     customer_id: customerId,
-    event_type: 'delivered',
-    channel: 'sms',
+    event_type: "delivered",
+    channel: "sms",
     metadata: {
       alpineiq_contact_id: data.customer_id || data.contactID,
       delivered_at: data.delivered_at || new Date().toISOString(),
@@ -160,23 +166,23 @@ async function handleSMSDelivered(data: any): Promise<void> {
     },
     created_at: data.delivered_at || new Date().toISOString(),
   });
-
-  console.log(`✅ SMS delivered event recorded: ${data.campaign_id}`);
 }
 
 /**
  * Handle email.bounced event
  */
 async function handleEmailBounced(data: any): Promise<void> {
-  const customerId = await getCustomerIdFromAlpineIQ(data.customer_id || data.contactID);
+  const customerId = await getCustomerIdFromAlpineIQ(
+    data.customer_id || data.contactID,
+  );
 
-  await supabase.from('marketing_campaign_events').insert({
+  await supabase.from("marketing_campaign_events").insert({
     vendor_id: data.vendor_id,
     campaign_id: data.campaign_id,
-    campaign_type: 'alpineiq',
+    campaign_type: "alpineiq",
     customer_id: customerId,
-    event_type: 'bounced',
-    channel: 'email',
+    event_type: "bounced",
+    channel: "email",
     metadata: {
       alpineiq_contact_id: data.customer_id || data.contactID,
       bounce_type: data.bounce_type, // hard, soft, etc.
@@ -185,47 +191,47 @@ async function handleEmailBounced(data: any): Promise<void> {
     },
     created_at: data.bounced_at || new Date().toISOString(),
   });
-
-  console.log(`✅ Email bounced event recorded: ${data.campaign_id}`);
 }
 
 /**
  * Handle email.unsubscribed event
  */
 async function handleEmailUnsubscribed(data: any): Promise<void> {
-  const customerId = await getCustomerIdFromAlpineIQ(data.customer_id || data.contactID);
+  const customerId = await getCustomerIdFromAlpineIQ(
+    data.customer_id || data.contactID,
+  );
 
-  await supabase.from('marketing_campaign_events').insert({
+  await supabase.from("marketing_campaign_events").insert({
     vendor_id: data.vendor_id,
     campaign_id: data.campaign_id,
-    campaign_type: 'alpineiq',
+    campaign_type: "alpineiq",
     customer_id: customerId,
-    event_type: 'unsubscribed',
-    channel: 'email',
+    event_type: "unsubscribed",
+    channel: "email",
     metadata: {
       alpineiq_contact_id: data.customer_id || data.contactID,
       unsubscribed_at: data.unsubscribed_at || new Date().toISOString(),
     },
     created_at: data.unsubscribed_at || new Date().toISOString(),
   });
-
-  console.log(`✅ Email unsubscribed event recorded: ${data.campaign_id}`);
 }
 
 /**
  * Handle loyalty.points_redeemed event
  */
 async function handlePointsRedeemed(data: any): Promise<void> {
-  const customerId = await getCustomerIdFromAlpineIQ(data.customer_id || data.contactID);
+  const customerId = await getCustomerIdFromAlpineIQ(
+    data.customer_id || data.contactID,
+  );
 
   // Log the redemption in our system
   if (customerId) {
-    await supabase.from('loyalty_transactions').insert({
+    await supabase.from("loyalty_transactions").insert({
       vendor_id: data.vendor_id,
       customer_id: customerId,
-      type: 'redeemed',
+      type: "redeemed",
       points: -Math.abs(data.points), // Negative for redemption
-      description: `AlpineIQ loyalty redemption: ${data.reward_name || 'Unknown'}`,
+      description: `AlpineIQ loyalty redemption: ${data.reward_name || "Unknown"}`,
       metadata: {
         alpineiq_contact_id: data.customer_id || data.contactID,
         reward_name: data.reward_name,
@@ -233,8 +239,6 @@ async function handlePointsRedeemed(data: any): Promise<void> {
       },
     });
   }
-
-  console.log(`✅ Points redeemed event recorded: ${data.points} points`);
 }
 
 /**
@@ -245,14 +249,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Log raw webhook for debugging
-    console.log('AlpineIQ webhook received:', {
-      event_type: body.event_type,
-      campaign_id: body.data?.campaign_id,
-      timestamp: new Date().toISOString(),
-    });
 
     // Verify webhook signature (if AlpineIQ provides it)
-    const signature = request.headers.get('x-alpineiq-signature');
+    const signature = request.headers.get("x-alpineiq-signature");
     // if (!verifySignature(signature, body)) {
     //   console.error('Invalid webhook signature');
     //   return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
@@ -260,43 +259,43 @@ export async function POST(request: NextRequest) {
 
     // Handle different event types
     switch (body.event_type) {
-      case 'campaign.sent':
+      case "campaign.sent":
         await handleCampaignSent(body.data);
         break;
 
-      case 'email.opened':
-      case 'email.open':
+      case "email.opened":
+      case "email.open":
         await handleEmailOpened(body.data);
         break;
 
-      case 'email.clicked':
-      case 'email.click':
+      case "email.clicked":
+      case "email.click":
         await handleEmailClicked(body.data);
         break;
 
-      case 'email.bounced':
-      case 'email.bounce':
+      case "email.bounced":
+      case "email.bounce":
         await handleEmailBounced(body.data);
         break;
 
-      case 'email.unsubscribed':
-      case 'email.unsubscribe':
+      case "email.unsubscribed":
+      case "email.unsubscribe":
         await handleEmailUnsubscribed(body.data);
         break;
 
-      case 'sms.delivered':
-      case 'text.delivered':
+      case "sms.delivered":
+      case "text.delivered":
         await handleSMSDelivered(body.data);
         break;
 
-      case 'loyalty.points_redeemed':
-      case 'loyalty.redeemed':
+      case "loyalty.points_redeemed":
+      case "loyalty.redeemed":
         await handlePointsRedeemed(body.data);
         break;
 
       default:
-        console.log(`Unknown event type: ${body.event_type}`);
-        // Still return 200 to acknowledge receipt
+
+      // Still return 200 to acknowledge receipt
     }
 
     return NextResponse.json({
@@ -305,13 +304,15 @@ export async function POST(request: NextRequest) {
       processed_at: new Date().toISOString(),
     });
   } catch (error: any) {
-    console.error('Webhook error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Webhook error:", error);
+    }
     return NextResponse.json(
       {
-        error: 'Webhook processing failed',
+        error: "Webhook processing failed",
         message: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -321,7 +322,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const challenge = searchParams.get('challenge');
+  const challenge = searchParams.get("challenge");
 
   if (challenge) {
     // Respond to webhook verification challenge
@@ -329,7 +330,7 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json({
-    message: 'AlpineIQ webhook endpoint',
-    status: 'active',
+    message: "AlpineIQ webhook endpoint",
+    status: "active",
   });
 }

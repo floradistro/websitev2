@@ -1,8 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { AlertTriangle, Package, TrendingDown, DollarSign, RefreshCw, Settings } from 'lucide-react';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import {
+  AlertTriangle,
+  Package,
+  TrendingDown,
+  DollarSign,
+  RefreshCw,
+  Settings,
+} from "lucide-react";
+import Link from "next/link";
 
 interface LowStockItem {
   inventory_id: string;
@@ -29,7 +36,7 @@ interface LowStockItem {
   reserved_quantity: number;
   stock_status: string;
   reorder_point: number;
-  urgency: 'critical' | 'high' | 'medium';
+  urgency: "critical" | "high" | "medium";
 }
 
 interface LowStockStats {
@@ -51,7 +58,7 @@ export function VendorLowStockWidget({
   vendorId,
   locationId,
   threshold = 10,
-  maxItems = 5
+  maxItems = 5,
 }: VendorLowStockWidgetProps) {
   const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
   const [stats, setStats] = useState<LowStockStats | null>(null);
@@ -64,18 +71,18 @@ export function VendorLowStockWidget({
       setRefreshing(true);
       const params = new URLSearchParams({
         vendor_id: vendorId,
-        threshold: threshold.toString()
+        threshold: threshold.toString(),
       });
 
       if (locationId) {
-        params.append('location_id', locationId);
+        params.append("location_id", locationId);
       }
 
       const response = await fetch(`/api/vendor/inventory/low-stock?${params}`);
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch low stock items');
+        throw new Error(data.error || "Failed to fetch low stock items");
       }
 
       setLowStockItems(data.low_stock_items || []);
@@ -98,22 +105,22 @@ export function VendorLowStockWidget({
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'critical':
-        return 'text-red-400 bg-red-500/20 border-red-500/30';
-      case 'high':
-        return 'text-orange-400 bg-orange-500/20 border-orange-500/30';
-      case 'medium':
-        return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30';
+      case "critical":
+        return "text-red-400 bg-red-500/20 border-red-500/30";
+      case "high":
+        return "text-orange-400 bg-orange-500/20 border-orange-500/30";
+      case "medium":
+        return "text-yellow-400 bg-yellow-500/20 border-yellow-500/30";
       default:
-        return 'text-white/60 bg-white/10 border-white/20';
+        return "text-white/60 bg-white/10 border-white/20";
     }
   };
 
   const getUrgencyIcon = (urgency: string) => {
     switch (urgency) {
-      case 'critical':
+      case "critical":
         return <AlertTriangle size={16} className="text-red-400" />;
-      case 'high':
+      case "high":
         return <TrendingDown size={16} className="text-orange-400" />;
       default:
         return <Package size={16} className="text-yellow-400" />;
@@ -178,19 +185,27 @@ export function VendorLowStockWidget({
         <div className="grid grid-cols-4 gap-3 mb-6">
           <div className="bg-white/5 border border-white/10 rounded-lg p-3">
             <div className="text-xs text-white/60 mb-1">Total</div>
-            <div className="text-xl font-semibold text-white">{stats.total_low_stock}</div>
+            <div className="text-xl font-semibold text-white">
+              {stats.total_low_stock}
+            </div>
           </div>
           <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
             <div className="text-xs text-red-400 mb-1">Critical</div>
-            <div className="text-xl font-semibold text-red-400">{stats.critical}</div>
+            <div className="text-xl font-semibold text-red-400">
+              {stats.critical}
+            </div>
           </div>
           <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3">
             <div className="text-xs text-orange-400 mb-1">High</div>
-            <div className="text-xl font-semibold text-orange-400">{stats.high}</div>
+            <div className="text-xl font-semibold text-orange-400">
+              {stats.high}
+            </div>
           </div>
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
             <div className="text-xs text-yellow-400 mb-1">Medium</div>
-            <div className="text-xl font-semibold text-yellow-400">{stats.medium}</div>
+            <div className="text-xl font-semibold text-yellow-400">
+              {stats.medium}
+            </div>
           </div>
         </div>
       )}
@@ -213,7 +228,9 @@ export function VendorLowStockWidget({
         <div className="text-center py-8">
           <Package size={48} className="mx-auto mb-3 text-green-400/50" />
           <p className="text-white/60">All inventory levels are healthy!</p>
-          <p className="text-xs text-white/40 mt-1">No items below reorder point</p>
+          <p className="text-xs text-white/40 mt-1">
+            No items below reorder point
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -230,12 +247,12 @@ export function VendorLowStockWidget({
                       {item.product.name}
                     </div>
                     <div className="text-xs text-white/60 space-y-1">
-                      {item.product.sku && (
-                        <div>SKU: {item.product.sku}</div>
-                      )}
+                      {item.product.sku && <div>SKU: {item.product.sku}</div>}
                       <div>{item.location?.name}</div>
                       {item.product.categories && (
-                        <div className="text-white/40">{item.product.categories.name}</div>
+                        <div className="text-white/40">
+                          {item.product.categories.name}
+                        </div>
                       )}
                     </div>
                   </div>

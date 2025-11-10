@@ -4,7 +4,7 @@
  * Fixes memory leak from event listener accumulation
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export function useAutoHideHeader() {
   const [isVisible, setIsVisible] = useState(true);
@@ -41,10 +41,10 @@ export function useAutoHideHeader() {
       }
     };
 
-    window.addEventListener('scroll', onScroll, { passive: true });
-    
+    window.addEventListener("scroll", onScroll, { passive: true });
+
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener("scroll", onScroll);
       if (rafId !== null) {
         window.cancelAnimationFrame(rafId);
       }
@@ -53,4 +53,3 @@ export function useAutoHideHeader() {
 
   return isVisible;
 }
-

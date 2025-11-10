@@ -5,11 +5,13 @@ This directory contains automated workflows for WhaleTools.
 ## Workflows
 
 ### 1. `nightly-cleanup.yml`
+
 **Schedule:** Every night at 3 AM PST (11 AM UTC)
 
 **Purpose:** Automated code cleanup, formatting, and optimization
 
 **Actions:**
+
 - ESLint auto-fix
 - Prettier formatting
 - TypeScript compilation check
@@ -21,11 +23,13 @@ This directory contains automated workflows for WhaleTools.
 **Manual trigger:** Yes (workflow_dispatch)
 
 ### 2. `code-quality.yml`
+
 **Triggers:** Pull requests and pushes to main/develop
 
 **Purpose:** Continuous integration and code quality checks
 
 **Actions:**
+
 - ESLint validation
 - TypeScript type checking
 - Prettier format validation
@@ -37,12 +41,14 @@ This directory contains automated workflows for WhaleTools.
 ## How to Run Manually
 
 ### GitHub UI
+
 1. Go to: Actions tab in your repository
 2. Select the workflow
 3. Click "Run workflow"
 4. Select branch and click "Run workflow"
 
 ### GitHub CLI
+
 ```bash
 # Trigger nightly cleanup
 gh workflow run nightly-cleanup.yml
@@ -61,15 +67,18 @@ gh workflow run code-quality.yml
 ## Troubleshooting
 
 **Workflow not appearing?**
+
 - Ensure files are committed to main branch
 - Check: Settings → Actions → Allow all actions
 
 **Workflow failing?**
+
 - Check logs in Actions tab
 - Verify secrets are set (if needed)
 - Ensure scripts have execute permissions
 
 **No auto-commits?**
+
 - Verify GitHub token has write permissions
 - Check branch protection rules
 - Review workflow logs for git errors
@@ -77,18 +86,23 @@ gh workflow run code-quality.yml
 ## Configuration
 
 ### Change Schedule
+
 Edit the `cron` expression in `nightly-cleanup.yml`:
+
 ```yaml
-- cron: '0 11 * * *'  # Minute Hour Day Month Weekday (UTC)
+- cron: "0 11 * * *" # Minute Hour Day Month Weekday (UTC)
 ```
 
 **Examples:**
+
 - `0 11 * * *` - 3 AM PST daily
 - `0 11 * * 1` - 3 AM PST every Monday
 - `0 11 1 * *` - 3 AM PST first day of month
 
 ### Disable Workflow
+
 Add to top of workflow file:
+
 ```yaml
 on:
   workflow_dispatch: # Manual only
@@ -104,4 +118,3 @@ Add to: Repository Settings → Secrets and variables → Actions
 ---
 
 For more information, see: `AUTOMATION_SETUP.md`
-

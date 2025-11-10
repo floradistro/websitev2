@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * Save or update display profile
@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
 
     if (!deviceId || !vendorId) {
       return NextResponse.json(
-        { success: false, error: 'Device ID and Vendor ID required' },
-        { status: 400 }
+        { success: false, error: "Device ID and Vendor ID required" },
+        { status: 400 },
       );
     }
 
@@ -38,9 +38,9 @@ export async function POST(request: NextRequest) {
 
     // Check if profile exists
     const { data: existing } = await supabase
-      .from('tv_display_profiles')
-      .select('id')
-      .eq('device_id', deviceId)
+      .from("tv_display_profiles")
+      .select("id")
+      .eq("device_id", deviceId)
       .single();
 
     let result;
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     if (existing) {
       // Update existing profile
       result = await supabase
-        .from('tv_display_profiles')
+        .from("tv_display_profiles")
         .update({
           screen_width_inches: screenWidthInches,
           screen_height_inches: screenHeightInches,
@@ -65,13 +65,13 @@ export async function POST(request: NextRequest) {
           target_audience: targetAudience || null,
           business_goals: businessGoals || [],
         })
-        .eq('id', existing.id)
+        .eq("id", existing.id)
         .select()
         .single();
     } else {
       // Create new profile
       result = await supabase
-        .from('tv_display_profiles')
+        .from("tv_display_profiles")
         .insert({
           device_id: deviceId,
           vendor_id: vendorId,
@@ -95,10 +95,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (result.error) {
-      console.error('Error saving profile:', result.error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error saving profile:", result.error);
+      }
       return NextResponse.json(
         { success: false, error: result.error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -108,10 +110,12 @@ export async function POST(request: NextRequest) {
       profile: result.data,
     });
   } catch (error: any) {
-    console.error('Save profile error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Save profile error:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -123,27 +127,27 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const deviceId = searchParams.get('deviceId');
+    const deviceId = searchParams.get("deviceId");
 
     if (!deviceId) {
       return NextResponse.json(
-        { success: false, error: 'Device ID required' },
-        { status: 400 }
+        { success: false, error: "Device ID required" },
+        { status: 400 },
       );
     }
 
     const supabase = getServiceSupabase();
 
     const { data: profile, error } = await supabase
-      .from('tv_display_profiles')
-      .select('*')
-      .eq('device_id', deviceId)
+      .from("tv_display_profiles")
+      .select("*")
+      .eq("device_id", deviceId)
       .single();
 
     if (error) {
       return NextResponse.json(
-        { success: false, error: 'Profile not found', hasProfile: false },
-        { status: 404 }
+        { success: false, error: "Profile not found", hasProfile: false },
+        { status: 404 },
       );
     }
 
@@ -153,10 +157,12 @@ export async function GET(request: NextRequest) {
       hasProfile: true,
     });
   } catch (error: any) {
-    console.error('Get profile error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Get profile error:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

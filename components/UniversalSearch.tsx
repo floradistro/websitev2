@@ -1,13 +1,22 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, X, Package, ShoppingCart, Users, Tag, BarChart3, TrendingUp } from 'lucide-react';
-import { useAppAuth } from '@/context/AppAuthContext';
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Search,
+  X,
+  Package,
+  ShoppingCart,
+  Users,
+  Tag,
+  BarChart3,
+  TrendingUp,
+} from "lucide-react";
+import { useAppAuth } from "@/context/AppAuthContext";
 
 interface SearchResult {
   id: string;
-  type: 'product' | 'order' | 'customer' | 'app';
+  type: "product" | "order" | "customer" | "app";
   title: string;
   subtitle?: string;
   route: string;
@@ -16,7 +25,7 @@ interface SearchResult {
 
 export function UniversalSearch() {
   const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -27,18 +36,18 @@ export function UniversalSearch() {
   // Keyboard shortcut: Cmd+K or Ctrl+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         setIsOpen(true);
       }
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setIsOpen(false);
-        setQuery('');
+        setQuery("");
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   // Focus input when opened
@@ -58,14 +67,18 @@ export function UniversalSearch() {
 
       setLoading(true);
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&vendorId=${vendor?.id}`);
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(query)}&vendorId=${vendor?.id}`,
+        );
         const data = await response.json();
         if (data.success) {
           setResults(data.results);
           setSelectedIndex(0);
         }
       } catch (error) {
-        console.error('Search error:', error);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Search error:", error);
+        }
       } finally {
         setLoading(false);
       }
@@ -76,13 +89,13 @@ export function UniversalSearch() {
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex(prev => (prev + 1) % results.length);
-    } else if (e.key === 'ArrowUp') {
+      setSelectedIndex((prev) => (prev + 1) % results.length);
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex(prev => (prev - 1 + results.length) % results.length);
-    } else if (e.key === 'Enter' && results[selectedIndex]) {
+      setSelectedIndex((prev) => (prev - 1 + results.length) % results.length);
+    } else if (e.key === "Enter" && results[selectedIndex]) {
       e.preventDefault();
       handleResultClick(results[selectedIndex]);
     }
@@ -91,16 +104,31 @@ export function UniversalSearch() {
   const handleResultClick = (result: SearchResult) => {
     router.push(result.route);
     setIsOpen(false);
-    setQuery('');
+    setQuery("");
   };
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'product': return <Package size={16} className="text-cyan-400/70" strokeWidth={1.5} />;
-      case 'order': return <ShoppingCart size={16} className="text-purple-400/70" strokeWidth={1.5} />;
-      case 'customer': return <Users size={16} className="text-teal-400/70" strokeWidth={1.5} />;
-      case 'app': return <Tag size={16} className="text-blue-400/70" strokeWidth={1.5} />;
-      default: return <Search size={16} className="text-white/40" strokeWidth={1.5} />;
+      case "product":
+        return (
+          <Package size={16} className="text-cyan-400/70" strokeWidth={1.5} />
+        );
+      case "order":
+        return (
+          <ShoppingCart
+            size={16}
+            className="text-purple-400/70"
+            strokeWidth={1.5}
+          />
+        );
+      case "customer":
+        return (
+          <Users size={16} className="text-teal-400/70" strokeWidth={1.5} />
+        );
+      case "app":
+        return <Tag size={16} className="text-blue-400/70" strokeWidth={1.5} />;
+      default:
+        return <Search size={16} className="text-white/40" strokeWidth={1.5} />;
     }
   };
 
@@ -112,8 +140,12 @@ export function UniversalSearch() {
         className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-lg transition-all duration-200"
       >
         <Search size={14} className="text-white/40" strokeWidth={2} />
-        <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Search</span>
-        <span className="hidden md:inline text-white/20 text-[9px] ml-1">⌘K</span>
+        <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+          Search
+        </span>
+        <span className="hidden md:inline text-white/20 text-[9px] ml-1">
+          ⌘K
+        </span>
       </button>
 
       {/* Search Modal */}
@@ -140,7 +172,7 @@ export function UniversalSearch() {
               />
               {query && (
                 <button
-                  onClick={() => setQuery('')}
+                  onClick={() => setQuery("")}
                   className="p-1 hover:bg-white/[0.06] rounded-md transition-colors"
                 >
                   <X size={16} className="text-white/40" strokeWidth={2} />
@@ -170,8 +202,8 @@ export function UniversalSearch() {
                       onClick={() => handleResultClick(result)}
                       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                         index === selectedIndex
-                          ? 'bg-white/[0.08]'
-                          : 'hover:bg-white/[0.04]'
+                          ? "bg-white/[0.08]"
+                          : "hover:bg-white/[0.04]"
                       }`}
                     >
                       <div className="flex-shrink-0">

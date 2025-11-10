@@ -1,4 +1,4 @@
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon } from "lucide-react";
 
 interface InputProps {
   type?: string;
@@ -13,14 +13,14 @@ interface InputProps {
 }
 
 export function Input({
-  type = 'text',
+  type = "text",
   value,
   onChange,
   placeholder,
   icon: Icon,
   label,
   disabled,
-  className = '',
+  className = "",
   error,
 }: InputProps) {
   return (
@@ -47,17 +47,14 @@ export function Input({
             w-full bg-black/20 border text-white px-4 py-3 
             focus:outline-none transition-all rounded-[14px] text-sm 
             placeholder-white/30
-            ${error ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-white/30'}
-            ${Icon ? 'pl-10' : ''}
-            ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+            ${error ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-white/30"}
+            ${Icon ? "pl-10" : ""}
+            ${disabled ? "opacity-50 cursor-not-allowed" : ""}
             ${className}
           `}
         />
       </div>
-      {error && (
-        <p className="text-red-500 text-xs">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-xs">{error}</p>}
     </div>
   );
 }
-

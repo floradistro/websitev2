@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { Component, ReactNode, ErrorInfo } from 'react';
+import React, { Component, ReactNode, ErrorInfo } from "react";
 
 interface Props {
   children: ReactNode;
@@ -26,8 +26,9 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
-
+    if (process.env.NODE_ENV === "development") {
+      console.error("ErrorBoundary caught an error:", error, errorInfo);
+    }
     this.setState({
       error,
       errorInfo,
@@ -39,18 +40,19 @@ class ErrorBoundary extends Component<Props, State> {
     }
 
     // In production, send to error tracking service
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       // Example: sendToErrorTracking(error, errorInfo);
     }
   }
 
   componentDidUpdate(prevProps: Props) {
     // Reset error boundary when resetKeys change
-    if (
-      this.state.hasError &&
-      prevProps.resetKeys !== this.props.resetKeys
-    ) {
-      this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+    if (this.state.hasError && prevProps.resetKeys !== this.props.resetKeys) {
+      this.setState({
+        hasError: false,
+        error: undefined,
+        errorInfo: undefined,
+      });
     }
   }
 
@@ -88,14 +90,18 @@ class ErrorBoundary extends Component<Props, State> {
             <p className="mt-2 text-sm text-center text-gray-600">
               We're sorry for the inconvenience. The page encountered an error.
             </p>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {process.env.NODE_ENV === "development" && this.state.error && (
               <div className="mt-4 p-3 bg-gray-50 rounded text-xs text-gray-700 font-mono overflow-auto max-h-32">
                 <p className="font-semibold mb-1">Error:</p>
                 <p>{this.state.error.message}</p>
                 {this.state.errorInfo && (
                   <details className="mt-2">
-                    <summary className="cursor-pointer text-gray-600">Stack Trace</summary>
-                    <pre className="mt-1 text-xs whitespace-pre-wrap">{this.state.errorInfo.componentStack}</pre>
+                    <summary className="cursor-pointer text-gray-600">
+                      Stack Trace
+                    </summary>
+                    <pre className="mt-1 text-xs whitespace-pre-wrap">
+                      {this.state.errorInfo.componentStack}
+                    </pre>
                   </details>
                 )}
               </div>
@@ -132,7 +138,9 @@ export function ProductErrorBoundary({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary
       onError={(error, errorInfo) => {
-        console.error('Product component error:', error);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Product component error:", error);
+        }
         // Could send to analytics or error tracking
       }}
       fallback={
@@ -156,7 +164,8 @@ export function ProductErrorBoundary({ children }: { children: ReactNode }) {
                 Error Loading Products
               </h3>
               <p className="text-red-700 text-sm mb-4">
-                We encountered an error while loading your products. Please try refreshing the page.
+                We encountered an error while loading your products. Please try
+                refreshing the page.
               </p>
               <button
                 onClick={() => window.location.reload()}
@@ -210,4 +219,3 @@ export function FormErrorBoundary({ children }: { children: ReactNode }) {
     </ErrorBoundary>
   );
 }
-

@@ -1,4 +1,5 @@
-var e={CUSTOM_VIEW_CONTAINER:"scandit-custom-views"},t=`
+var e = { CUSTOM_VIEW_CONTAINER: "scandit-custom-views" },
+  t = `
   .${e.CUSTOM_VIEW_CONTAINER} {
     position: absolute;
     width: 100%;
@@ -14,4 +15,6 @@ var e={CUSTOM_VIEW_CONTAINER:"scandit-custom-views"},t=`
     -ms-user-select: none;
     user-select: none;
   }
-`,s=t;export{e as a,s as b};
+`,
+  s = t;
+export { e as a, s as b };

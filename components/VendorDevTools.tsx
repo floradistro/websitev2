@@ -1,7 +1,16 @@
 "use client";
 
-import { useState } from 'react';
-import { Settings, CheckCircle, XCircle, RefreshCw, Database, ChevronDown, Zap, Trash2 } from 'lucide-react';
+import { useState } from "react";
+import {
+  Settings,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Database,
+  ChevronDown,
+  Zap,
+  Trash2,
+} from "lucide-react";
 
 interface DevToolsProps {
   onRefresh?: () => void;
@@ -10,49 +19,51 @@ interface DevToolsProps {
 export default function VendorDevTools({ onRefresh }: DevToolsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
   // Only show in development
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     return null;
   }
 
   async function approveAllPendingProducts() {
-    if (!confirm('Approve ALL pending products? This is a dev tool only.')) {
+    if (!confirm("Approve ALL pending products? This is a dev tool only.")) {
       return;
     }
 
     try {
       setLoading(true);
-      setMessage('');
+      setMessage("");
 
       // Use internal API instead
-      const response = await fetch('/api/admin/pending-products');
+      const response = await fetch("/api/admin/pending-products");
       const data = await response.json();
 
       if (data.success && data.products && data.products.length > 0) {
         // Approve each product via internal API
         for (const product of data.products) {
-          await fetch('/api/admin/approve-product', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productId: product.id })
+          await fetch("/api/admin/approve-product", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: product.id }),
           });
         }
 
         setMessage(`✅ Approved ${data.products.length} products`);
         setTimeout(() => {
           if (onRefresh) onRefresh();
-          setMessage('');
+          setMessage("");
         }, 2000);
       } else {
-        setMessage('ℹ️ No pending products found');
-        setTimeout(() => setMessage(''), 2000);
+        setMessage("ℹ️ No pending products found");
+        setTimeout(() => setMessage(""), 2000);
       }
     } catch (error: any) {
-      console.error('Error approving products:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error approving products:", error);
+      }
       setMessage(`❌ Error: ${error.message}`);
-      setTimeout(() => setMessage(''), 3000);
+      setTimeout(() => setMessage(""), 3000);
     } finally {
       setLoading(false);
     }
@@ -60,12 +71,12 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
 
   async function clearCache() {
     setLoading(true);
-    setMessage('Clearing cache...');
-    
+    setMessage("Clearing cache...");
+
     // Clear all browser cache
     localStorage.clear();
     sessionStorage.clear();
-    
+
     // Reload page
     setTimeout(() => {
       window.location.reload();
@@ -74,17 +85,17 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
 
   async function syncVendorData() {
     setLoading(true);
-    setMessage('Syncing vendor data...');
-    
+    setMessage("Syncing vendor data...");
+
     try {
       if (onRefresh) {
         await onRefresh();
       }
-      setMessage('✅ Data refreshed');
-      setTimeout(() => setMessage(''), 2000);
+      setMessage("✅ Data refreshed");
+      setTimeout(() => setMessage(""), 2000);
     } catch (error) {
-      setMessage('❌ Sync failed');
-      setTimeout(() => setMessage(''), 2000);
+      setMessage("❌ Sync failed");
+      setTimeout(() => setMessage(""), 2000);
     } finally {
       setLoading(false);
     }
@@ -106,14 +117,14 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
           className="bg-black border border-white/20 hover:border-white/40 text-white p-3 transition-all duration-300 flex items-center gap-2 group"
           title="Dev Tools"
         >
-          <Settings 
-            size={18} 
-            className={`transition-transform duration-500 ${isOpen ? 'rotate-180' : 'group-hover:rotate-90'}`} 
+          <Settings
+            size={18}
+            className={`transition-transform duration-500 ${isOpen ? "rotate-180" : "group-hover:rotate-90"}`}
           />
           <span className="text-xs uppercase tracking-wider">Dev Tools</span>
-          <ChevronDown 
-            size={14} 
-            className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+          <ChevronDown
+            size={14}
+            className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
 
@@ -125,7 +136,9 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
                 <Zap size={14} className="text-yellow-500" />
                 Development Tools
               </h3>
-              <p className="text-white/40 text-[10px] mt-1">Quick actions for testing workflows</p>
+              <p className="text-white/40 text-[10px] mt-1">
+                Quick actions for testing workflows
+              </p>
             </div>
 
             <div className="py-2">
@@ -135,10 +148,17 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
                 disabled={loading}
                 className="w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 transition-all group disabled:opacity-50 disabled:cursor-not-allowed border-b border-white/5"
               >
-                <CheckCircle size={16} className="text-green-500 group-hover:scale-110 transition-transform" />
+                <CheckCircle
+                  size={16}
+                  className="text-green-500 group-hover:scale-110 transition-transform"
+                />
                 <div className="text-left flex-1">
-                  <div className="text-xs font-medium">Approve All Products</div>
-                  <div className="text-[10px] text-white/40">Approve pending submissions</div>
+                  <div className="text-xs font-medium">
+                    Approve All Products
+                  </div>
+                  <div className="text-[10px] text-white/40">
+                    Approve pending submissions
+                  </div>
                 </div>
               </button>
 
@@ -148,10 +168,15 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
                 disabled={loading}
                 className="w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 transition-all group disabled:opacity-50 disabled:cursor-not-allowed border-b border-white/5"
               >
-                <RefreshCw size={16} className="text-blue-500 group-hover:rotate-180 transition-transform duration-500" />
+                <RefreshCw
+                  size={16}
+                  className="text-blue-500 group-hover:rotate-180 transition-transform duration-500"
+                />
                 <div className="text-left flex-1">
                   <div className="text-xs font-medium">Refresh Data</div>
-                  <div className="text-[10px] text-white/40">Reload from API</div>
+                  <div className="text-[10px] text-white/40">
+                    Reload from API
+                  </div>
                 </div>
               </button>
 
@@ -161,24 +186,34 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
                 disabled={loading}
                 className="w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 transition-all group disabled:opacity-50 disabled:cursor-not-allowed border-b border-white/5"
               >
-                <Trash2 size={16} className="text-orange-500 group-hover:scale-110 transition-transform" />
+                <Trash2
+                  size={16}
+                  className="text-orange-500 group-hover:scale-110 transition-transform"
+                />
                 <div className="text-left flex-1">
                   <div className="text-xs font-medium">Clear Cache</div>
-                  <div className="text-[10px] text-white/40">Reset browser storage</div>
+                  <div className="text-[10px] text-white/40">
+                    Reset browser storage
+                  </div>
                 </div>
               </button>
 
               {/* View Database */}
               <button
                 onClick={() => {
-                  window.open('/admin', '_blank');
+                  window.open("/admin", "_blank");
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-white/80 hover:text-white hover:bg-white/5 transition-all group"
               >
-                <Database size={16} className="text-purple-500 group-hover:scale-110 transition-transform" />
+                <Database
+                  size={16}
+                  className="text-purple-500 group-hover:scale-110 transition-transform"
+                />
                 <div className="text-left flex-1">
                   <div className="text-xs font-medium">Admin Dashboard</div>
-                  <div className="text-[10px] text-white/40">Open admin panel</div>
+                  <div className="text-[10px] text-white/40">
+                    Open admin panel
+                  </div>
                 </div>
               </button>
             </div>

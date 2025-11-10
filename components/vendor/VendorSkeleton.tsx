@@ -40,11 +40,21 @@ export function TableRowSkeleton() {
           </div>
         </div>
       </td>
-      <td className="p-4"><div className="h-4 w-24 bg-white/5 rounded"></div></td>
-      <td className="p-4"><div className="h-4 w-16 bg-white/5 rounded"></div></td>
-      <td className="p-4"><div className="h-4 w-16 bg-white/5 rounded"></div></td>
-      <td className="p-4"><div className="h-6 w-20 bg-white/5 rounded"></div></td>
-      <td className="p-4"><div className="h-6 w-16 bg-white/5 rounded"></div></td>
+      <td className="p-4">
+        <div className="h-4 w-24 bg-white/5 rounded"></div>
+      </td>
+      <td className="p-4">
+        <div className="h-4 w-16 bg-white/5 rounded"></div>
+      </td>
+      <td className="p-4">
+        <div className="h-4 w-16 bg-white/5 rounded"></div>
+      </td>
+      <td className="p-4">
+        <div className="h-6 w-20 bg-white/5 rounded"></div>
+      </td>
+      <td className="p-4">
+        <div className="h-6 w-16 bg-white/5 rounded"></div>
+      </td>
     </tr>
   );
 }
@@ -61,7 +71,11 @@ export function ChartSkeleton() {
       </div>
       <div className="h-64 flex items-end justify-between gap-2">
         {barHeights.map((height, i) => (
-          <div key={i} className="flex-1 bg-white/5 rounded" style={{ height: `${height}%` }}></div>
+          <div
+            key={i}
+            className="flex-1 bg-white/5 rounded"
+            style={{ height: `${height}%` }}
+          ></div>
         ))}
       </div>
     </div>
@@ -157,4 +171,3 @@ export function ProductsSkeleton() {
     </div>
   );
 }
-

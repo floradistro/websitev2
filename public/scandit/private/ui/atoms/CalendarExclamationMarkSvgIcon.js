@@ -1,10 +1,21 @@
-import {a}from'../../../chunks/chunk-S24T6WS2.js';import {a as a$1}from'../../../chunks/chunk-3A4KLILV.js';import {a as a$2}from'../../../chunks/chunk-MU6SADSF.js';var e=class e extends a{static create(){return document.createElement(e.tag)}static register(){a$1({[e.tag]:e});}render(){return a$2`
+import { a } from "../../../chunks/chunk-S24T6WS2.js";
+import { a as a$1 } from "../../../chunks/chunk-3A4KLILV.js";
+import { a as a$2 } from "../../../chunks/chunk-MU6SADSF.js";
+var e = class e extends a {
+  static create() {
+    return document.createElement(e.tag);
+  }
+  static register() {
+    a$1({ [e.tag]: e });
+  }
+  render() {
+    return a$2`
       <style>
         ${e.tag} {
           display: flex;
         }
       </style>
-      <svg width="${this.size}" height="${this.heightForViewbox(24,24)}" viewBox="0 0 24 24" fill="none">
+      <svg width="${this.size}" height="${this.heightForViewbox(24, 24)}" viewBox="0 0 24 24" fill="none">
         <g clip-path="url(#clip0_3612_27767)">
           <path d="M13 17C13 17.5523 12.5523 18 12 18C11.4477 18 11 17.5523 11 17C11 16.4477 11.4477 16 12 16C12.5523 16 13 16.4477 13 17Z" fill="${this.fill}"/>
           <path d="M11.0001 11C11.0001 10.4477 11.4478 10 12.0001 10C12.5524 10 13.0001 10.4477 13.0001 11L13 14C13 14.5523 12.5523 15 12 15C11.4478 15 11.0001 14.5523 11.0001 14L11.0001 11Z" fill="${this.fill}"/>
@@ -16,4 +27,10 @@ import {a}from'../../../chunks/chunk-S24T6WS2.js';import {a as a$1}from'../../..
           </clipPath>
         </defs>
       </svg>
-    `}};e.tag="scandit-calendar-exclamation-icon";var t=e;t.register();export{t as CalendarExclamationMarkSvgIcon};
+    `;
+  }
+};
+e.tag = "scandit-calendar-exclamation-icon";
+var t = e;
+t.register();
+export { t as CalendarExclamationMarkSvgIcon };

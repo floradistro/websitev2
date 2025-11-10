@@ -3,10 +3,10 @@
  * Wraps analytics pages with error boundary and common layout
  */
 
-'use client';
+"use client";
 
-import { ReactNode } from 'react';
-import { AnalyticsErrorBoundary } from './ErrorBoundary';
+import { ReactNode } from "react";
+import { AnalyticsErrorBoundary } from "./ErrorBoundary";
 
 interface AnalyticsPageWrapperProps {
   children: ReactNode;
@@ -17,9 +17,9 @@ export function AnalyticsPageWrapper({ children }: AnalyticsPageWrapperProps) {
     <AnalyticsErrorBoundary
       onError={(error, errorInfo) => {
         // Log to error tracking service
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env.NODE_ENV === "production") {
           // TODO: Send to Sentry or other error tracking
-          console.error('[Analytics Error]', {
+          console.error("[Analytics Error]", {
             error: error.message,
             stack: error.stack,
             componentStack: errorInfo.componentStack,

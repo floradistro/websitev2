@@ -1,10 +1,21 @@
-import {a}from'./chunk-S24T6WS2.js';import {a as a$1}from'./chunk-3A4KLILV.js';import {a as a$2}from'./chunk-MU6SADSF.js';var e=class e extends a{static create(){return document.createElement(e.tag)}static register(){a$1({[e.tag]:e});}render(){return a$2`
+import { a } from "./chunk-S24T6WS2.js";
+import { a as a$1 } from "./chunk-3A4KLILV.js";
+import { a as a$2 } from "./chunk-MU6SADSF.js";
+var e = class e extends a {
+  static create() {
+    return document.createElement(e.tag);
+  }
+  static register() {
+    a$1({ [e.tag]: e });
+  }
+  render() {
+    return a$2`
       <style>
         ${e.tag} {
           display: flex;
         }
       </style>
-      <svg width="${this.size}" height="${this.heightForViewbox(24,24)}" viewBox="0 0 24 24" fill="none">
+      <svg width="${this.size}" height="${this.heightForViewbox(24, 24)}" viewBox="0 0 24 24" fill="none">
         <path
           fill-rule="evenodd"
           clip-rule="evenodd"
@@ -12,4 +23,10 @@ import {a}from'./chunk-S24T6WS2.js';import {a as a$1}from'./chunk-3A4KLILV.js';i
           fill="${this.fill}"
         />
       </svg>
-    `}};e.tag="scandit-rounded-exclamation-mark-icon";var t=e;t.register();export{t as a};
+    `;
+  }
+};
+e.tag = "scandit-rounded-exclamation-mark-icon";
+var t = e;
+t.register();
+export { t as a };

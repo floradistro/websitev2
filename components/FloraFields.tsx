@@ -19,11 +19,18 @@ export default function FloraFields({ fields, metaData }: FloraFieldsProps) {
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-white/80 uppercase tracking-wider">Product Details</h3>
+      <h3 className="text-sm font-medium text-white/80 uppercase tracking-wider">
+        Product Details
+      </h3>
       <div className="grid gap-2">
         {entries.map(([key, value]: [string, any]) => (
-          <div key={key} className="flex justify-between p-3 bg-white/5 border border-white/10 rounded-lg">
-            <span className="text-white/60 capitalize">{key.replace(/_/g, ' ')}</span>
+          <div
+            key={key}
+            className="flex justify-between p-3 bg-white/5 border border-white/10 rounded-lg"
+          >
+            <span className="text-white/60 capitalize">
+              {key.replace(/_/g, " ")}
+            </span>
             <span className="text-white font-medium">{String(value)}</span>
           </div>
         ))}
@@ -31,4 +38,3 @@ export default function FloraFields({ fields, metaData }: FloraFieldsProps) {
     </div>
   );
 }
-

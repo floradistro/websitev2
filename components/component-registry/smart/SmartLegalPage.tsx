@@ -5,16 +5,16 @@
  * Reusable legal page for Privacy, Terms, Cookies
  */
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { 
-  SmartComponentWrapper, 
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  SmartComponentWrapper,
   SmartComponentBaseProps,
   SmartTypography,
   SmartContainers,
-  useScrollAnimation
-} from '@/lib/smart-component-base';
-import Image from 'next/image';
+  useScrollAnimation,
+} from "@/lib/smart-component-base";
+import Image from "next/image";
 
 export interface LegalSection {
   title: string;
@@ -38,12 +38,12 @@ export function SmartLegalPage({
   lastUpdated = "January 2024",
   sections = [],
   animate = true,
-  className = ''
+  className = "",
 }: SmartLegalPageProps) {
   const { ref, inView } = useScrollAnimation();
 
   return (
-    <SmartComponentWrapper 
+    <SmartComponentWrapper
       animate={false}
       componentName="Legal Page"
       className={className}
@@ -62,21 +62,28 @@ export function SmartLegalPage({
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.2,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="mb-12 flex justify-center"
               >
                 <div className="relative w-20 h-20 md:w-24 md:h-24">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '3s' }} />
-                  <Image 
-                    src={vendorLogo} 
-                    alt={vendorName || 'Vendor'}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse"
+                    style={{ animationDuration: "3s" }}
+                  />
+                  <Image
+                    src={vendorLogo}
+                    alt={vendorName || "Vendor"}
                     fill
                     className="relative object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-500"
                   />
                 </div>
               </motion.div>
             )}
-            
+
             <SmartTypography.Headline className="mb-6">
               {headline}
             </SmartTypography.Headline>
@@ -101,13 +108,13 @@ export function SmartLegalPage({
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
                     animate={inView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ 
-                      duration: 0.6, 
-                      delay: index * 0.1, 
-                      ease: [0.22, 1, 0.36, 1] 
+                    transition={{
+                      duration: 0.6,
+                      delay: index * 0.1,
+                      ease: [0.22, 1, 0.36, 1],
                     }}
                   >
-                    <h3 
+                    <h3
                       className="text-lg sm:text-xl font-black uppercase tracking-tight text-white mb-6"
                       style={{ fontWeight: 900 }}
                     >
@@ -115,7 +122,7 @@ export function SmartLegalPage({
                     </h3>
                     <div className="space-y-4">
                       {section.content.map((paragraph, pIndex) => (
-                        <p 
+                        <p
                           key={pIndex}
                           className="text-sm sm:text-base text-white/60 leading-relaxed"
                         >
@@ -136,4 +143,3 @@ export function SmartLegalPage({
     </SmartComponentWrapper>
   );
 }
-

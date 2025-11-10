@@ -65,7 +65,7 @@ export interface InventoryItem {
   price: number;
   cost_price?: number;
   description: string | null;
-  stock_status: 'in_stock' | 'low_stock' | 'out_of_stock';
+  stock_status: "in_stock" | "low_stock" | "out_of_stock";
   stock_status_label: string;
   location_name: string;
   location_id: string | null;

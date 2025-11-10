@@ -3,9 +3,12 @@
  * Wraps API routes with consistent error handling
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
-export type ApiHandler = (request: NextRequest, context?: any) => Promise<NextResponse>;
+export type ApiHandler = (
+  request: NextRequest,
+  context?: any,
+) => Promise<NextResponse>;
 
 interface ErrorResponse {
   error: string;
@@ -22,19 +25,23 @@ export function withErrorHandler(handler: ApiHandler): ApiHandler {
       return await handler(request, context);
     } catch (error: any) {
       // Log error securely (no sensitive data)
-      const errorMessage = error?.message || 'Unknown error';
-      const errorCode = error?.code || 'INTERNAL_ERROR';
+      const errorMessage = error?.message || "Unknown error";
+      const errorCode = error?.code || "INTERNAL_ERROR";
 
       // Log to monitoring service (not console in production)
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env.NODE_ENV === "production") {
         // TODO: Send to error monitoring service (Sentry, etc.)
         // await logError({ message: errorMessage, code: errorCode, stack: error?.stack });
       } else {
-        console.error('[API Error]', {
-          message: errorMessage,
-          code: errorCode,
-          path: request.url,
-        });
+        if (process.env.NODE_ENV === "development") {
+          if (process.env.NODE_ENV === "development") {
+            console.error("[API Error]", {
+              message: errorMessage,
+              code: errorCode,
+              path: request.url,
+            });
+          }
+        }
       }
 
       // Return user-friendly error
@@ -43,7 +50,7 @@ export function withErrorHandler(handler: ApiHandler): ApiHandler {
         error: getUserMessage(error),
       };
 
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         response.message = errorMessage;
         response.details = error?.details;
       }
@@ -58,11 +65,11 @@ export function withErrorHandler(handler: ApiHandler): ApiHandler {
  */
 function getStatusCode(error: any): number {
   if (error?.status) return error.status;
-  if (error?.code === 'PGRST116') return 404; // Supabase not found
-  if (error?.code === '23505') return 409; // Unique constraint
-  if (error?.code === '42501') return 403; // Insufficient privilege
-  if (error?.name === 'ValidationError') return 400;
-  if (error?.name === 'UnauthorizedError') return 401;
+  if (error?.code === "PGRST116") return 404; // Supabase not found
+  if (error?.code === "23505") return 409; // Unique constraint
+  if (error?.code === "42501") return 403; // Insufficient privilege
+  if (error?.name === "ValidationError") return 400;
+  if (error?.name === "UnauthorizedError") return 401;
   return 500;
 }
 
@@ -73,27 +80,28 @@ function getUserMessage(error: any): string {
   const code = error?.code;
 
   // Database errors
-  if (code === 'PGRST116') return 'Resource not found';
-  if (code === '23505') return 'This record already exists';
-  if (code === '42501') return 'You do not have permission to perform this action';
-  if (code === '23503') return 'Cannot delete: related records exist';
+  if (code === "PGRST116") return "Resource not found";
+  if (code === "23505") return "This record already exists";
+  if (code === "42501")
+    return "You do not have permission to perform this action";
+  if (code === "23503") return "Cannot delete: related records exist";
 
   // Common errors
-  if (error?.name === 'ValidationError') return 'Invalid input data';
-  if (error?.name === 'UnauthorizedError') return 'Authentication required';
+  if (error?.name === "ValidationError") return "Invalid input data";
+  if (error?.name === "UnauthorizedError") return "Authentication required";
 
-  return 'An error occurred processing your request';
+  return "An error occurred processing your request";
 }
 
 /**
  * Validate required environment variables
  */
 export function validateEnv(requiredVars: string[]): void {
-  const missing = requiredVars.filter(varName => !process.env[varName]);
+  const missing = requiredVars.filter((varName) => !process.env[varName]);
 
   if (missing.length > 0) {
     throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}`
+      `Missing required environment variables: ${missing.join(", ")}`,
     );
   }
 }

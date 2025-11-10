@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { Camera, X, AlertCircle, CheckCircle2, Scan } from 'lucide-react';
+import { useState, useRef, useEffect } from "react";
+import { Camera, X, AlertCircle, CheckCircle2, Scan } from "lucide-react";
 
 interface ScannedIDData {
   firstName: string;
@@ -29,9 +29,17 @@ export function POSIDScanner({
   onNoMatchFoundWithData,
   onClose,
 }: POSIDScannerProps) {
-  const [status, setStatus] = useState<'idle' | 'initializing' | 'scanning' | 'processing' | 'success' | 'no-match' | 'error'>('idle');
-  const [message, setMessage] = useState('');
-  const [cameraError, setCameraError] = useState('');
+  const [status, setStatus] = useState<
+    | "idle"
+    | "initializing"
+    | "scanning"
+    | "processing"
+    | "success"
+    | "no-match"
+    | "error"
+  >("idle");
+  const [message, setMessage] = useState("");
+  const [cameraError, setCameraError] = useState("");
   const [isClient, setIsClient] = useState(false);
 
   const viewRef = useRef<HTMLDivElement>(null);
@@ -49,41 +57,37 @@ export function POSIDScanner({
     if (!isClient) return;
 
     try {
-      setStatus('initializing');
-      setMessage('Loading scanner...');
-      setCameraError('');
-      console.log('🔍 Starting Scandit initialization...');
+      setStatus("initializing");
+      setMessage("Loading scanner...");
+      setCameraError("");
 
       // Dynamic import of Scandit modules (client-side only)
-      console.log('📦 Loading Scandit modules...');
-      const [SDCCore, SDCId] = await Promise.all([
-        import('@scandit/web-datacapture-core'),
-        import('@scandit/web-datacapture-id')
-      ]);
-      console.log('✅ Scandit modules loaded successfully');
 
-      setMessage('Configuring scanner...');
-      console.log('⚙️ Configuring Scandit SDK...');
+      const [SDCCore, SDCId] = await Promise.all([
+        import("@scandit/web-datacapture-core"),
+        import("@scandit/web-datacapture-id"),
+      ]);
+
+      setMessage("Configuring scanner...");
 
       // Configure Scandit with license key and library location
       await SDCCore.configure({
-        licenseKey: 'AsvGeB0cOkafNr8Eev9LLk0BjSadOa3TlgqmfiM6AzKQTICt2n+6DlZnnoN6U5wqSG0MkR969h4+GCNxiyUjY796W70rWUyngnDaLPoZyFJFDOWOBiKWZz8nHopTb3G3rGSeh7R2GGzqUEPo21xMoZJIYpfncVKVcHu/ga1pX95odw6/vU57J7ZzPS3PQy+fn0rKYh5u5y6yd5i5p01+m+ZrB7hWEzXEaXpQZHx4PmYHTz1btla/nHZInE0IFGMmNk3k3mxAFNH6FsHJcGNXOdNC/K0HUX9+iX0D+8ZQqBB0Uiek4Empl6h+AytfEZAyAn9z2sZKgM0aaBoJzgk/aEROVOJDWKe+ZF+7/xthK27obRjmD2clUKF6Q1kCeyxKST0ybrJeVWJgVCD+8mQVgeJDDKhra72LsV9wR4QX5InDaokBxWsOgJxOcZSDG2xxSFBtSHdO9JbnRaiihB7WubsFMyFwXW/CoS+IgtFq5n83VPN5t25Ym50gJE2lb7j5hU8fX+NcOckWNbIhNSaYAecHNboW6me4E5Z2qSaRNC0sdwa7hqawntwqnG4N3bmyETauNmn48Ql32mjfGb5XkICaMe4A0ax6Og7IqydBZRFibKTB8eejeNOoevAaUu9EHJJkP03qkNCiSH/eE+s4uxgbV7iLiQW9VBWaSeMIify04jU1APzAhs/VsJVMzvdjf1j5l4VkvPD/SG1XWvmOrSp0bceK4tm7c4y5qFJJeOf+v8oquAFMrHbs8eDdGkgdHCTLDNGqy4A+fbmX3UwxBDEzMC82wegJYuW6wknrLb0m2TCt5BX18o5sJvSSgrBbPgrA44GKI6TEI0T/Pa8xSUcYFA81bPG2WWnDz0wldnqARIWq4lLA4oPXrq1ZH3baaUjjLlCncn+XdVyOiCmaGWc4K1crGsYnRq74wcQCle6RB8us3ymW/svabWtF/6svPK2hbD6iQc8mkCCN92VrW6Cn0V8p+lryDgCp8HxxHNS+NdkhMbZTtqjpHjCNWc8lOMaiaKPzH8t9FIYzheaKd37QUNk1srkeCefxdy4oGo0iedXkfu8NrT44lt0rYfQNX/l0Okdf0SZ7khgtHQOnZ1/pgdk4u1dArZHSMcfuCkzQ3z07DyxV1ctcSWH57gt8w3/LlgSSOTrXY1Mlc/PqPP1DogULa17sfVN94DDilCf2pIq69sLIQ3LCknkIBgB0x0M=',
-        libraryLocation: new URL('/scandit/', window.location.origin).href,
-        moduleLoaders: [SDCId.idCaptureLoader()]
+        licenseKey:
+          "AsvGeB0cOkafNr8Eev9LLk0BjSadOa3TlgqmfiM6AzKQTICt2n+6DlZnnoN6U5wqSG0MkR969h4+GCNxiyUjY796W70rWUyngnDaLPoZyFJFDOWOBiKWZz8nHopTb3G3rGSeh7R2GGzqUEPo21xMoZJIYpfncVKVcHu/ga1pX95odw6/vU57J7ZzPS3PQy+fn0rKYh5u5y6yd5i5p01+m+ZrB7hWEzXEaXpQZHx4PmYHTz1btla/nHZInE0IFGMmNk3k3mxAFNH6FsHJcGNXOdNC/K0HUX9+iX0D+8ZQqBB0Uiek4Empl6h+AytfEZAyAn9z2sZKgM0aaBoJzgk/aEROVOJDWKe+ZF+7/xthK27obRjmD2clUKF6Q1kCeyxKST0ybrJeVWJgVCD+8mQVgeJDDKhra72LsV9wR4QX5InDaokBxWsOgJxOcZSDG2xxSFBtSHdO9JbnRaiihB7WubsFMyFwXW/CoS+IgtFq5n83VPN5t25Ym50gJE2lb7j5hU8fX+NcOckWNbIhNSaYAecHNboW6me4E5Z2qSaRNC0sdwa7hqawntwqnG4N3bmyETauNmn48Ql32mjfGb5XkICaMe4A0ax6Og7IqydBZRFibKTB8eejeNOoevAaUu9EHJJkP03qkNCiSH/eE+s4uxgbV7iLiQW9VBWaSeMIify04jU1APzAhs/VsJVMzvdjf1j5l4VkvPD/SG1XWvmOrSp0bceK4tm7c4y5qFJJeOf+v8oquAFMrHbs8eDdGkgdHCTLDNGqy4A+fbmX3UwxBDEzMC82wegJYuW6wknrLb0m2TCt5BX18o5sJvSSgrBbPgrA44GKI6TEI0T/Pa8xSUcYFA81bPG2WWnDz0wldnqARIWq4lLA4oPXrq1ZH3baaUjjLlCncn+XdVyOiCmaGWc4K1crGsYnRq74wcQCle6RB8us3ymW/svabWtF/6svPK2hbD6iQc8mkCCN92VrW6Cn0V8p+lryDgCp8HxxHNS+NdkhMbZTtqjpHjCNWc8lOMaiaKPzH8t9FIYzheaKd37QUNk1srkeCefxdy4oGo0iedXkfu8NrT44lt0rYfQNX/l0Okdf0SZ7khgtHQOnZ1/pgdk4u1dArZHSMcfuCkzQ3z07DyxV1ctcSWH57gt8w3/LlgSSOTrXY1Mlc/PqPP1DogULa17sfVN94DDilCf2pIq69sLIQ3LCknkIBgB0x0M=",
+        libraryLocation: new URL("/scandit/", window.location.origin).href,
+        moduleLoaders: [SDCId.idCaptureLoader()],
       });
-      console.log('✅ Scandit SDK configured successfully');
 
       // Create data capture context
-      console.log('🏗️ Creating data capture context...');
+
       const context = await SDCCore.DataCaptureContext.create();
       contextRef.current = context;
-      console.log('✅ Data capture context created');
 
       // Create camera and use it on the context
-      console.log('📹 Setting up camera...');
+
       const camera = SDCCore.Camera.default;
       if (!camera) {
-        throw new Error('Default camera not available');
+        throw new Error("Default camera not available");
       }
 
       // Configure camera settings for better barcode scanning
@@ -91,14 +95,12 @@ export function POSIDScanner({
       // Set preferred resolution for better barcode detection
       cameraSettings.preferredResolution = SDCCore.VideoResolution.FullHD;
       await camera.applySettings(cameraSettings);
-      console.log('✅ Camera settings applied: FullHD resolution for better barcode detection');
 
       await context.setFrameSource(camera);
       cameraRef.current = camera;
-      console.log('✅ Camera set as frame source');
 
       // Create ID capture settings
-      console.log('⚙️ Creating ID capture settings...');
+
       const settings = new SDCId.IdCaptureSettings();
 
       // Set up accepted documents - US driver's licenses and ID cards
@@ -106,53 +108,46 @@ export function POSIDScanner({
         new SDCId.DriverLicense(SDCId.Region.Us),
         new SDCId.IdCard(SDCId.Region.Us),
         new SDCId.DriverLicense(SDCId.Region.Any),
-        new SDCId.IdCard(SDCId.Region.Any)
+        new SDCId.IdCard(SDCId.Region.Any),
       ];
 
       // Use SingleSideScanner with barcode prioritized for faster, more reliable scanning
       settings.scannerType = new SDCId.SingleSideScanner(
-        true,  // barcode (prioritize this for US IDs)
-        true,  // machineReadableZone
-        true   // visualInspectionZone
+        true, // barcode (prioritize this for US IDs)
+        true, // machineReadableZone
+        true, // visualInspectionZone
       );
 
-      console.log('✅ ID capture settings configured for barcode scanning');
-
       // Create ID capture mode
-      console.log('🔧 Creating ID capture mode...');
+
       const idCapture = await SDCId.IdCapture.forContext(context, settings);
       idCaptureRef.current = idCapture;
-      console.log('✅ ID capture mode created');
 
       // Add listener for ID capture results
-      console.log('📱 Adding ID capture listener...');
+
       const listener = {
         didCaptureId: async (capturedId: any) => {
-          console.log('🎉 didCaptureId callback triggered!');
           await handleIdCaptured(capturedId);
         },
         didFailWithError: (idCapture: any, error: any) => {
-          console.error('❌ didFailWithError callback triggered:', error);
+          if (process.env.NODE_ENV === "development") {
+            console.error("❌ didFailWithError callback triggered:", error);
+          }
           setCameraError(`ID capture failed: ${error.message}`);
-          setStatus('error');
+          setStatus("error");
         },
         didLocalizeId: (localization: any) => {
-          console.log('📍 ID detected, processing...');
-          setMessage('ID detected, processing...');
-        }
+          setMessage("ID detected, processing...");
+        },
       };
 
       idCapture.addListener(listener);
-      console.log('✅ ID capture listener added successfully');
 
       // Create the data capture view
       if (viewRef.current) {
-        console.log('📺 Creating data capture view...');
         const view = await SDCCore.DataCaptureView.forContext(context);
-        console.log('✅ Data capture view created');
 
         view.connectToElement(viewRef.current);
-        console.log('✅ View connected to DOM element');
 
         const overlay = await SDCId.IdCaptureOverlay.withIdCapture(idCapture);
 
@@ -160,47 +155,55 @@ export function POSIDScanner({
         overlay.idLayoutStyle = SDCId.IdLayoutStyle.Rounded;
 
         await view.addOverlay(overlay);
-        console.log('✅ ID capture overlay added to view');
       }
 
-      setStatus('scanning');
-      setMessage('Point camera at the barcode on the back of the ID (works in any orientation)');
+      setStatus("scanning");
+      setMessage(
+        "Point camera at the barcode on the back of the ID (works in any orientation)",
+      );
 
       // Enable ID capture mode and start scanning
       await idCapture.setEnabled(true);
       await camera.switchToDesiredState(SDCCore.FrameSourceState.On);
-      console.log('✅ Camera started');
-
     } catch (err) {
-      console.error('Scandit initialization error:', err);
-      setStatus('error');
-      setCameraError(`Failed to initialize scanner: ${err instanceof Error ? err.message : 'Unknown error'}`);
-      setMessage('Initialization failed');
+      if (process.env.NODE_ENV === "development") {
+        console.error("Scandit initialization error:", err);
+      }
+      setStatus("error");
+      setCameraError(
+        `Failed to initialize scanner: ${err instanceof Error ? err.message : "Unknown error"}`,
+      );
+      setMessage("Initialization failed");
     }
   };
 
   // Helper function to convert text to proper case
   const toProperCase = (text: string): string => {
-    if (!text) return '';
+    if (!text) return "";
 
     // Split on spaces and hyphens, convert each word to title case
     return text
       .toLowerCase()
       .split(/(\s+|-)/g) // Split on spaces and hyphens but keep them
       .map((word) => {
-        if (word.match(/^\s+$/) || word === '-') return word; // Keep whitespace and hyphens as-is
+        if (word.match(/^\s+$/) || word === "-") return word; // Keep whitespace and hyphens as-is
         return word.charAt(0).toUpperCase() + word.slice(1);
       })
-      .join('');
+      .join("");
   };
 
   // Helper function to parse full name into first, middle, last
-  const parseFullName = (fullName: string, existingFirst?: string, existingMiddle?: string, existingLast?: string) => {
+  const parseFullName = (
+    fullName: string,
+    existingFirst?: string,
+    existingMiddle?: string,
+    existingLast?: string,
+  ) => {
     if (!fullName) {
       return {
-        firstName: existingFirst || '',
-        middleName: existingMiddle || '',
-        lastName: existingLast || ''
+        firstName: existingFirst || "",
+        middleName: existingMiddle || "",
+        lastName: existingLast || "",
       };
     }
 
@@ -210,71 +213,71 @@ export function POSIDScanner({
       // Only one name part - treat as first name
       return {
         firstName: toProperCase(nameParts[0]),
-        middleName: existingMiddle || '',
-        lastName: existingLast || ''
+        middleName: existingMiddle || "",
+        lastName: existingLast || "",
       };
     } else if (nameParts.length === 2) {
       // Two parts - first and last
       return {
         firstName: toProperCase(nameParts[0]),
-        middleName: existingMiddle || '',
-        lastName: toProperCase(nameParts[1])
+        middleName: existingMiddle || "",
+        lastName: toProperCase(nameParts[1]),
       };
     } else {
       // Three or more parts - first, middle(s), last
       return {
         firstName: toProperCase(nameParts[0]),
-        middleName: toProperCase(nameParts.slice(1, -1).join(' ')),
-        lastName: toProperCase(nameParts[nameParts.length - 1])
+        middleName: toProperCase(nameParts.slice(1, -1).join(" ")),
+        lastName: toProperCase(nameParts[nameParts.length - 1]),
       };
     }
   };
 
   // Handle captured ID
   const handleIdCaptured = async (capturedId: any) => {
-    console.log('🎯 ID captured - raw data:', capturedId);
-
     try {
       // Stop scanning
       if (cameraRef.current) {
-        const SDCCore = await import('@scandit/web-datacapture-core');
-        await cameraRef.current.switchToDesiredState(SDCCore.FrameSourceState.Off);
+        const SDCCore = await import("@scandit/web-datacapture-core");
+        await cameraRef.current.switchToDesiredState(
+          SDCCore.FrameSourceState.Off,
+        );
       }
 
-      setStatus('processing');
-      setMessage('Processing ID data...');
+      setStatus("processing");
+      setMessage("Processing ID data...");
 
       // Extract data from captured ID
-      let rawFirstName = capturedId.firstName || '';
-      let rawLastName = capturedId.lastName || '';
-      let rawMiddleName = capturedId.middleName || '';
-      let documentNumber = capturedId.documentNumber || '';
+      let rawFirstName = capturedId.firstName || "";
+      let rawLastName = capturedId.lastName || "";
+      let rawMiddleName = capturedId.middleName || "";
+      let documentNumber = capturedId.documentNumber || "";
       let dateOfBirth = capturedId.dateOfBirth;
       let dateOfExpiry = capturedId.dateOfExpiry;
-      let rawAddress = capturedId.address || '';
-      let rawCity = capturedId.city || '';
-      let rawState = capturedId.state || '';
-      let zipCode = capturedId.zipCode || capturedId.postalCode || '';
+      let rawAddress = capturedId.address || "";
+      let rawCity = capturedId.city || "";
+      let rawState = capturedId.state || "";
+      let zipCode = capturedId.zipCode || capturedId.postalCode || "";
 
       // Try barcode result first (most reliable for US IDs)
       if (capturedId.barcode) {
         const barcode = capturedId.barcode;
-        rawFirstName = rawFirstName || barcode.firstName || '';
-        rawLastName = rawLastName || barcode.lastName || '';
-        rawMiddleName = rawMiddleName || barcode.middleName || '';
-        documentNumber = documentNumber || barcode.documentNumber || '';
+        rawFirstName = rawFirstName || barcode.firstName || "";
+        rawLastName = rawLastName || barcode.lastName || "";
+        rawMiddleName = rawMiddleName || barcode.middleName || "";
+        documentNumber = documentNumber || barcode.documentNumber || "";
         dateOfBirth = dateOfBirth || barcode.dateOfBirth;
         dateOfExpiry = dateOfExpiry || barcode.dateOfExpiry;
-        rawAddress = rawAddress || barcode.address || '';
-        rawCity = rawCity || barcode.city || '';
-        rawState = rawState || barcode.state || '';
-        zipCode = zipCode || barcode.postalCode || barcode.zipCode || '';
+        rawAddress = rawAddress || barcode.address || "";
+        rawCity = rawCity || barcode.city || "";
+        rawState = rawState || barcode.state || "";
+        zipCode = zipCode || barcode.postalCode || barcode.zipCode || "";
       }
 
       // Parse names - handle case where first and middle are combined
-      let firstName = '';
-      let middleName = '';
-      let lastName = '';
+      let firstName = "";
+      let middleName = "";
+      let lastName = "";
 
       // If we have separate first, middle, last already
       if (rawFirstName && rawLastName) {
@@ -283,7 +286,7 @@ export function POSIDScanner({
         if (firstNameParts.length > 1 && !rawMiddleName) {
           // First name has multiple parts and no separate middle name
           firstName = toProperCase(firstNameParts[0]);
-          middleName = toProperCase(firstNameParts.slice(1).join(' '));
+          middleName = toProperCase(firstNameParts.slice(1).join(" "));
           lastName = toProperCase(rawLastName);
         } else {
           // Use as-is with proper case
@@ -310,11 +313,11 @@ export function POSIDScanner({
       const state = rawState.toUpperCase(); // State codes should be uppercase
 
       // Handle DateResult objects or string dates
-      let dobString = '';
+      let dobString = "";
       if (dateOfBirth) {
-        if (typeof dateOfBirth === 'object' && dateOfBirth.year) {
-          dobString = `${dateOfBirth.year}-${String(dateOfBirth.month).padStart(2, '0')}-${String(dateOfBirth.day).padStart(2, '0')}`;
-        } else if (typeof dateOfBirth === 'string') {
+        if (typeof dateOfBirth === "object" && dateOfBirth.year) {
+          dobString = `${dateOfBirth.year}-${String(dateOfBirth.month).padStart(2, "0")}-${String(dateOfBirth.day).padStart(2, "0")}`;
+        } else if (typeof dateOfBirth === "string") {
           // Parse various date formats to YYYY-MM-DD
           if (/^\d{8}$/.test(dateOfBirth)) {
             // MMDDYYYY format
@@ -325,11 +328,11 @@ export function POSIDScanner({
         }
       }
 
-      let expString = '';
+      let expString = "";
       if (dateOfExpiry) {
-        if (typeof dateOfExpiry === 'object' && dateOfExpiry.year) {
-          expString = `${dateOfExpiry.year}-${String(dateOfExpiry.month).padStart(2, '0')}-${String(dateOfExpiry.day).padStart(2, '0')}`;
-        } else if (typeof dateOfExpiry === 'string') {
+        if (typeof dateOfExpiry === "object" && dateOfExpiry.year) {
+          expString = `${dateOfExpiry.year}-${String(dateOfExpiry.month).padStart(2, "0")}-${String(dateOfExpiry.day).padStart(2, "0")}`;
+        } else if (typeof dateOfExpiry === "string") {
           if (/^\d{8}$/.test(dateOfExpiry)) {
             expString = `${dateOfExpiry.substring(4, 8)}-${dateOfExpiry.substring(0, 2)}-${dateOfExpiry.substring(2, 4)}`;
           } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateOfExpiry)) {
@@ -351,18 +354,16 @@ export function POSIDScanner({
         expirationDate: expString,
       };
 
-      console.log('✅ Extracted result (with proper case):', idData);
-
       if (!idData.firstName && !idData.lastName) {
-        throw new Error('Unable to extract name from ID');
+        throw new Error("Unable to extract name from ID");
       }
 
-      setMessage('Searching for existing customer...');
+      setMessage("Searching for existing customer...");
 
       // Search for matching customer
-      const response = await fetch('/api/pos/customers/match-by-id', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/pos/customers/match-by-id", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           vendorId,
           firstName: idData.firstName,
@@ -376,30 +377,33 @@ export function POSIDScanner({
 
         if (data.customer) {
           // Customer found!
-          setStatus('success');
-          setMessage(`Found: ${data.customer.first_name} ${data.customer.last_name}`);
+          setStatus("success");
+          setMessage(
+            `Found: ${data.customer.first_name} ${data.customer.last_name}`,
+          );
 
           setTimeout(() => {
             onCustomerFound(data.customer);
           }, 1000);
         } else {
           // No match - show option to create new customer
-          setStatus('no-match');
-          setMessage('No existing customer found. Create new?');
+          setStatus("no-match");
+          setMessage("No existing customer found. Create new?");
 
           setTimeout(() => {
             onNoMatchFoundWithData(idData);
           }, 1500);
         }
       } else {
-        throw new Error('Failed to search for customer');
+        throw new Error("Failed to search for customer");
       }
-
     } catch (error: any) {
-      console.error('ID processing error:', error);
-      setStatus('error');
-      setMessage(error.message || 'Failed to process ID. Please try again.');
-      setCameraError(error.message || 'Failed to process ID');
+      if (process.env.NODE_ENV === "development") {
+        console.error("ID processing error:", error);
+      }
+      setStatus("error");
+      setMessage(error.message || "Failed to process ID. Please try again.");
+      setCameraError(error.message || "Failed to process ID");
     }
   };
 
@@ -419,17 +423,17 @@ export function POSIDScanner({
 
   const getStatusIcon = () => {
     switch (status) {
-      case 'initializing':
+      case "initializing":
         return <Camera size={24} className="text-white animate-pulse" />;
-      case 'scanning':
+      case "scanning":
         return <Scan size={24} className="text-white animate-pulse" />;
-      case 'processing':
+      case "processing":
         return <Scan size={24} className="text-white animate-pulse" />;
-      case 'success':
+      case "success":
         return <CheckCircle2 size={24} className="text-green-400" />;
-      case 'no-match':
+      case "no-match":
         return <AlertCircle size={24} className="text-yellow-400" />;
-      case 'error':
+      case "error":
         return <AlertCircle size={24} className="text-red-400" />;
       default:
         return <Camera size={24} className="text-white/60" />;
@@ -438,10 +442,14 @@ export function POSIDScanner({
 
   const getStatusColor = () => {
     switch (status) {
-      case 'success': return 'text-green-400';
-      case 'no-match': return 'text-yellow-400';
-      case 'error': return 'text-red-400';
-      default: return 'text-white/60';
+      case "success":
+        return "text-green-400";
+      case "no-match":
+        return "text-yellow-400";
+      case "error":
+        return "text-red-400";
+      default:
+        return "text-white/60";
     }
   };
 
@@ -465,7 +473,10 @@ export function POSIDScanner({
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div className="flex items-center gap-3">
             <Camera size={20} className="text-white/60" />
-            <h3 className="text-xs uppercase tracking-[0.15em] text-white font-black" style={{ fontWeight: 900 }}>
+            <h3
+              className="text-xs uppercase tracking-[0.15em] text-white font-black"
+              style={{ fontWeight: 900 }}
+            >
               Scan ID / License
             </h3>
           </div>
@@ -483,7 +494,9 @@ export function POSIDScanner({
             <div className="scanner-view flex items-center justify-center p-8">
               <div className="text-center">
                 <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
-                <div className="text-white/80 text-sm mb-2">Camera Access Required</div>
+                <div className="text-white/80 text-sm mb-2">
+                  Camera Access Required
+                </div>
                 <div className="text-white/40 text-xs max-w-md">
                   {cameraError}
                 </div>
@@ -493,14 +506,11 @@ export function POSIDScanner({
               </div>
             </div>
           ) : (
-            <div
-              ref={viewRef}
-              className="scanner-view"
-            />
+            <div ref={viewRef} className="scanner-view" />
           )}
 
           {/* Scanning Overlay */}
-          {status === 'scanning' && (
+          {status === "scanning" && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="border-4 border-blue-500/50 rounded-2xl w-3/4 h-2/3 animate-pulse">
                 <div className="absolute top-1/2 left-0 right-0 h-1 bg-blue-500/30 animate-scan" />
@@ -512,17 +522,15 @@ export function POSIDScanner({
         {/* Status Display */}
         <div className="p-6 border-t border-white/10">
           <div className="flex items-center gap-4">
-            <div className="flex-shrink-0">
-              {getStatusIcon()}
-            </div>
+            <div className="flex-shrink-0">{getStatusIcon()}</div>
             <div className="flex-1">
               <div className={`text-sm mb-1 ${getStatusColor()}`}>
-                {message || 'Initializing...'}
+                {message || "Initializing..."}
               </div>
               <div className="text-[10px] text-white/40 uppercase tracking-[0.15em]">
-                {status === 'scanning' && 'Scan the PDF417 barcode on the back'}
-                {status === 'processing' && 'Processing barcode data...'}
-                {status === 'initializing' && 'Setting up camera...'}
+                {status === "scanning" && "Scan the PDF417 barcode on the back"}
+                {status === "processing" && "Processing barcode data..."}
+                {status === "initializing" && "Setting up camera..."}
               </div>
             </div>
           </div>
@@ -536,8 +544,12 @@ export function POSIDScanner({
             </div>
             <div className="text-xs text-white/60 space-y-1">
               <div>• Hold the ID steady in front of the camera</div>
-              <div>• Scan the <strong>barcode on the back</strong> of the license</div>
-              <div>• Works in <strong>portrait or landscape</strong> orientation</div>
+              <div>
+                • Scan the <strong>barcode on the back</strong> of the license
+              </div>
+              <div>
+                • Works in <strong>portrait or landscape</strong> orientation
+              </div>
               <div>• Keep the barcode centered and in focus</div>
               <div>• Ensure good lighting for best results</div>
             </div>
@@ -547,8 +559,13 @@ export function POSIDScanner({
 
       <style jsx>{`
         @keyframes scan {
-          0%, 100% { transform: translateY(-100%); }
-          50% { transform: translateY(100%); }
+          0%,
+          100% {
+            transform: translateY(-100%);
+          }
+          50% {
+            transform: translateY(100%);
+          }
         }
         .animate-scan {
           animation: scan 2s ease-in-out infinite;
@@ -611,14 +628,26 @@ export function POSIDScanner({
         @media (orientation: portrait) and (max-width: 768px) {
           .scanner-modal {
             max-width: 95vw;
-            max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px);
+            max-height: calc(
+              100vh - env(safe-area-inset-top, 0px) - env(
+                  safe-area-inset-bottom,
+                  0px
+                ) -
+                20px
+            );
           }
         }
 
         /* PWA mode adjustments */
         @media (display-mode: standalone) {
           .scanner-modal {
-            max-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px);
+            max-height: calc(
+              100vh - env(safe-area-inset-top, 0px) - env(
+                  safe-area-inset-bottom,
+                  0px
+                ) -
+                20px
+            );
           }
         }
       `}</style>

@@ -1,1 +1,1 @@
-export{a as loadPolyfills}from'../../chunks/chunk-GC2ECHKL.js';
+export { a as loadPolyfills } from "../../chunks/chunk-GC2ECHKL.js";

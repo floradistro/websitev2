@@ -31,18 +31,18 @@
  * ```
  */
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import axios, { AxiosError } from 'axios';
-import { showNotification } from '@/components/NotificationToast';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import axios, { AxiosError } from "axios";
+import { showNotification } from "@/components/NotificationToast";
 import type {
   PricingMode,
   PricingTier,
   CustomFields,
   ProductSubmissionData,
   APIErrorResponse,
-  PricingTemplate
-} from '@/lib/types/product';
+  PricingTemplate,
+} from "@/lib/types/product";
 
 /**
  * Form data structure for single product creation
@@ -83,7 +83,9 @@ interface UseSingleProductFormReturn {
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   customFieldValues: Record<string, any>;
-  setCustomFieldValues: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  setCustomFieldValues: React.Dispatch<
+    React.SetStateAction<Record<string, any>>
+  >;
 
   // Pricing State
   pricingMode: PricingMode;
@@ -158,12 +160,12 @@ export function useSingleProductForm({
    * Manages basic product information fields
    */
   const [formData, setFormData] = useState<FormData>({
-    name: '',
-    description: '',
-    category_id: '',
-    price: '',
-    cost_price: '',
-    initial_quantity: '',
+    name: "",
+    description: "",
+    category_id: "",
+    price: "",
+    cost_price: "",
+    initial_quantity: "",
   });
 
   /**
@@ -171,13 +173,15 @@ export function useSingleProductForm({
    * Stores category-specific dynamic field values
    * Keys correspond to field slugs/names
    */
-  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
+  const [customFieldValues, setCustomFieldValues] = useState<
+    Record<string, any>
+  >({});
 
   /**
    * Pricing mode state
    * Controls whether product uses single pricing or tiered pricing structure
    */
-  const [pricingMode, setPricingMode] = useState<PricingMode>('single');
+  const [pricingMode, setPricingMode] = useState<PricingMode>("single");
 
   /**
    * Pricing tiers state
@@ -232,12 +236,14 @@ export function useSingleProductForm({
   /**
    * Available pricing templates for vendor
    */
-  const [availableTemplates, setAvailableTemplates] = useState<PricingTemplate[]>([]);
+  const [availableTemplates, setAvailableTemplates] = useState<
+    PricingTemplate[]
+  >([]);
 
   /**
    * Selected pricing template ID
    */
-  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
 
   // ===========================
   // NOTE: PRICING TEMPLATES
@@ -279,13 +285,13 @@ export function useSingleProductForm({
     if (!files || files.length === 0) return;
 
     const fileArray = Array.from(files);
-    setImageFiles(prev => [...prev, ...fileArray]);
+    setImageFiles((prev) => [...prev, ...fileArray]);
 
     // Generate previews for each file
-    fileArray.forEach(file => {
+    fileArray.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
+        setImagePreviews((prev) => [...prev, reader.result as string]);
       };
       reader.readAsDataURL(file);
     });
@@ -295,9 +301,9 @@ export function useSingleProductForm({
 
       if (!vendorId) {
         showNotification({
-          type: 'error',
-          title: 'Upload Failed',
-          message: 'Not authenticated'
+          type: "error",
+          title: "Upload Failed",
+          message: "Not authenticated",
         });
         return;
       }
@@ -305,34 +311,36 @@ export function useSingleProductForm({
       // Upload all files in parallel
       const uploadPromises = fileArray.map(async (file) => {
         const uploadFormData = new FormData();
-        uploadFormData.append('file', file);
-        uploadFormData.append('type', 'product');
+        uploadFormData.append("file", file);
+        uploadFormData.append("type", "product");
 
-        const response = await fetch('/api/supabase/vendor/upload', {
-          method: 'POST',
-          headers: { 'x-vendor-id': vendorId },
-          body: uploadFormData
+        const response = await fetch("/api/supabase/vendor/upload", {
+          method: "POST",
+          headers: { "x-vendor-id": vendorId },
+          body: uploadFormData,
         });
 
         const data = await response.json();
-        if (!data.success) throw new Error(data.error || 'Upload failed');
+        if (!data.success) throw new Error(data.error || "Upload failed");
         return data.file.url;
       });
 
       const urls = await Promise.all(uploadPromises);
-      setUploadedImageUrls(prev => [...prev, ...urls]);
+      setUploadedImageUrls((prev) => [...prev, ...urls]);
 
       showNotification({
-        type: 'success',
-        title: 'Images Uploaded',
+        type: "success",
+        title: "Images Uploaded",
         message: `${urls.length} image(s) uploaded`,
       });
     } catch (err) {
-      console.error('Failed to upload images:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to upload images:", err);
+      }
       showNotification({
-        type: 'error',
-        title: 'Upload Failed',
-        message: err instanceof Error ? err.message : 'Failed to upload images',
+        type: "error",
+        title: "Upload Failed",
+        message: err instanceof Error ? err.message : "Failed to upload images",
       });
     } finally {
       setUploadingImages(false);
@@ -354,9 +362,9 @@ export function useSingleProductForm({
    * Consider implementing cloud deletion if needed for data management.
    */
   const removeImage = (index: number) => {
-    setImageFiles(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
-    setUploadedImageUrls(prev => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setUploadedImageUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   // ===========================
@@ -375,7 +383,7 @@ export function useSingleProductForm({
    * Used when pricingMode is 'tiered'
    */
   const addPricingTier = () => {
-    setPricingTiers([...pricingTiers, { weight: '', qty: 1, price: '' }]);
+    setPricingTiers([...pricingTiers, { weight: "", qty: 1, price: "" }]);
   };
 
   /**
@@ -393,13 +401,15 @@ export function useSingleProductForm({
    * Maintains immutability by mapping over array and creating new objects
    */
   const updatePricingTier = (index: number, field: string, value: string) => {
-    setPricingTiers(pricingTiers.map((tier, i) => {
-      if (i === index) {
-        if (field === 'qty') return { ...tier, qty: parseInt(value) || 1 };
-        return { ...tier, [field]: value };
-      }
-      return tier;
-    }));
+    setPricingTiers(
+      pricingTiers.map((tier, i) => {
+        if (i === index) {
+          if (field === "qty") return { ...tier, qty: parseInt(value) || 1 };
+          return { ...tier, [field]: value };
+        }
+        return tier;
+      }),
+    );
   };
 
   /**
@@ -429,19 +439,21 @@ export function useSingleProductForm({
   const handleApplyTemplate = () => {
     if (!selectedTemplateId) {
       showNotification({
-        type: 'warning',
-        title: 'No Template Selected',
-        message: 'Please select a pricing template first'
+        type: "warning",
+        title: "No Template Selected",
+        message: "Please select a pricing template first",
       });
       return;
     }
 
-    const template = availableTemplates.find(t => t.id === selectedTemplateId);
+    const template = availableTemplates.find(
+      (t) => t.id === selectedTemplateId,
+    );
     if (!template) {
       showNotification({
-        type: 'error',
-        title: 'Template Not Found',
-        message: 'Selected template could not be found'
+        type: "error",
+        title: "Template Not Found",
+        message: "Selected template could not be found",
       });
       return;
     }
@@ -449,19 +461,19 @@ export function useSingleProductForm({
     // Convert price_breaks to pricing tiers
     const tiers: PricingTier[] = template.price_breaks
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map(priceBreak => ({
+      .map((priceBreak) => ({
         weight: priceBreak.label,
         qty: priceBreak.qty,
-        price: priceBreak.price?.toString() || ''
+        price: priceBreak.price?.toString() || "",
       }));
 
     setPricingTiers(tiers);
-    setPricingMode('tiered');
+    setPricingMode("tiered");
 
     showNotification({
-      type: 'success',
-      title: 'Template Applied',
-      message: `${template.name} pricing tiers loaded`
+      type: "success",
+      title: "Template Applied",
+      message: `${template.name} pricing tiers loaded`,
     });
   };
 
@@ -503,9 +515,9 @@ export function useSingleProductForm({
     // Validate product name
     if (!formData.name.trim()) {
       showNotification({
-        type: 'warning',
-        title: 'Product Name Required',
-        message: 'Enter a product name to autofill data',
+        type: "warning",
+        title: "Product Name Required",
+        message: "Enter a product name to autofill data",
       });
       return;
     }
@@ -513,9 +525,9 @@ export function useSingleProductForm({
     // Validate category selection
     if (!formData.category_id) {
       showNotification({
-        type: 'warning',
-        title: 'Category Required',
-        message: 'Select a category first',
+        type: "warning",
+        title: "Category Required",
+        message: "Select a category first",
       });
       return;
     }
@@ -524,12 +536,19 @@ export function useSingleProductForm({
       setLoadingAI(true);
 
       // Find category name for AI context
-      const category = categories.find(c => c.id === formData.category_id);
+      const category = categories.find((c) => c.id === formData.category_id);
 
-      const response = await axios.post('/api/ai/quick-autofill', {
+      const response = await axios.post("/api/ai/quick-autofill", {
         productName: formData.name,
         category: category?.name,
-        selectedFields: ['strain_type', 'lineage', 'nose', 'effects', 'terpene_profile', 'description']
+        selectedFields: [
+          "strain_type",
+          "lineage",
+          "nose",
+          "effects",
+          "terpene_profile",
+          "description",
+        ],
       });
 
       if (response.data.success && response.data.suggestions) {
@@ -537,40 +556,49 @@ export function useSingleProductForm({
         const updates: Record<string, any> = {};
 
         // Map AI suggestions to custom field values
-        if (suggestions.strain_type) updates.strain_type = suggestions.strain_type;
+        if (suggestions.strain_type)
+          updates.strain_type = suggestions.strain_type;
         if (suggestions.lineage) updates.lineage = suggestions.lineage;
 
         // Transform array fields
         if (suggestions.nose && Array.isArray(suggestions.nose)) {
-          updates.nose = suggestions.nose.join(', ');
+          updates.nose = suggestions.nose.join(", ");
         }
         if (suggestions.effects && Array.isArray(suggestions.effects)) {
           updates.effects = suggestions.effects;
         }
-        if (suggestions.terpene_profile && Array.isArray(suggestions.terpene_profile)) {
+        if (
+          suggestions.terpene_profile &&
+          Array.isArray(suggestions.terpene_profile)
+        ) {
           updates.terpene_profile = suggestions.terpene_profile;
         }
 
         // Update description separately in form data
         if (suggestions.description) {
-          setFormData(prev => ({ ...prev, description: suggestions.description }));
+          setFormData((prev) => ({
+            ...prev,
+            description: suggestions.description,
+          }));
         }
 
         // Update custom fields
-        setCustomFieldValues(prev => ({ ...prev, ...updates }));
+        setCustomFieldValues((prev) => ({ ...prev, ...updates }));
 
         showNotification({
-          type: 'success',
-          title: 'AI Data Applied',
+          type: "success",
+          title: "AI Data Applied",
           message: `${Object.keys(updates).length} fields populated`,
         });
       }
     } catch (error) {
-      console.error('AI autofill error:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("AI autofill error:", error);
+      }
       showNotification({
-        type: 'error',
-        title: 'Autofill Failed',
-        message: 'Could not fetch product data',
+        type: "error",
+        title: "Autofill Failed",
+        message: "Could not fetch product data",
       });
     } finally {
       setLoadingAI(false);
@@ -625,9 +653,9 @@ export function useSingleProductForm({
     // Validate product name
     if (!formData.name.trim()) {
       showNotification({
-        type: 'warning',
-        title: 'Name Required',
-        message: 'Enter a product name'
+        type: "warning",
+        title: "Name Required",
+        message: "Enter a product name",
       });
       return;
     }
@@ -635,28 +663,28 @@ export function useSingleProductForm({
     // Validate category
     if (!formData.category_id) {
       showNotification({
-        type: 'warning',
-        title: 'Category Required',
-        message: 'Select a category'
+        type: "warning",
+        title: "Category Required",
+        message: "Select a category",
       });
       return;
     }
 
     // Validate pricing based on mode
-    if (pricingMode === 'single' && !formData.price) {
+    if (pricingMode === "single" && !formData.price) {
       showNotification({
-        type: 'warning',
-        title: 'Price Required',
-        message: 'Enter a price'
+        type: "warning",
+        title: "Price Required",
+        message: "Enter a price",
       });
       return;
     }
 
-    if (pricingMode === 'tiered' && pricingTiers.length === 0) {
+    if (pricingMode === "tiered" && pricingTiers.length === 0) {
       showNotification({
-        type: 'warning',
-        title: 'Pricing Tiers Required',
-        message: 'Add at least one pricing tier'
+        type: "warning",
+        title: "Pricing Tiers Required",
+        message: "Add at least one pricing tier",
       });
       return;
     }
@@ -669,49 +697,55 @@ export function useSingleProductForm({
         name: formData.name,
         description: formData.description,
         category_id: formData.category_id,
-        product_type: 'simple',
-        product_visibility: 'internal',
+        product_type: "simple",
+        product_visibility: "internal",
         pricing_mode: pricingMode,
         image_urls: uploadedImageUrls,
         custom_fields: customFieldValues,
-        cost_price: formData.cost_price ? parseFloat(formData.cost_price) : undefined,
-        initial_quantity: formData.initial_quantity ? parseFloat(formData.initial_quantity) : undefined,
+        cost_price: formData.cost_price
+          ? parseFloat(formData.cost_price)
+          : undefined,
+        initial_quantity: formData.initial_quantity
+          ? parseFloat(formData.initial_quantity)
+          : undefined,
         pricing_template_id: selectedTemplateId || undefined,
       };
 
       // Add pricing data based on mode
-      if (pricingMode === 'single') {
+      if (pricingMode === "single") {
         productData.price = parseFloat(formData.price);
       } else {
         productData.pricing_tiers = pricingTiers;
       }
 
       // Submit to API
-      const response = await axios.post('/api/vendor/products', productData, {
+      const response = await axios.post("/api/vendor/products", productData, {
         headers: {
-          'x-vendor-id': vendorId || '',
-          'Content-Type': 'application/json'
+          "x-vendor-id": vendorId || "",
+          "Content-Type": "application/json",
         },
-        withCredentials: true // Send HTTP-only auth cookie
+        withCredentials: true, // Send HTTP-only auth cookie
       });
 
       if (response.data.success) {
         showNotification({
-          type: 'success',
-          title: 'Product Created',
-          message: 'Product created successfully',
+          type: "success",
+          title: "Product Created",
+          message: "Product created successfully",
         });
 
         // Redirect after short delay
-        setTimeout(() => router.push('/vendor/products'), 1500);
+        setTimeout(() => router.push("/vendor/products"), 1500);
       }
     } catch (err) {
-      console.error('Error submitting product:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error submitting product:", err);
+      }
       const axiosError = err as AxiosError<APIErrorResponse>;
       showNotification({
-        type: 'error',
-        title: 'Submission Error',
-        message: axiosError.response?.data?.error || 'Failed to create product',
+        type: "error",
+        title: "Submission Error",
+        message: axiosError.response?.data?.error || "Failed to create product",
       });
     } finally {
       setLoading(false);

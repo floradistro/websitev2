@@ -11,12 +11,12 @@
 
 /* Hide scrollbar while maintaining scroll functionality */
 .hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .hide-scrollbar::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+  display: none; /* Chrome, Safari and Opera */
 }
 
 @keyframes fadeInUp {
@@ -31,24 +31,30 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes breathe {
-  0%, 100% { 
-    opacity: 0.9; 
+  0%,
+  100% {
+    opacity: 0.9;
     transform: scale(1);
   }
-  50% { 
-    opacity: 1; 
+  50% {
+    opacity: 1;
     transform: scale(1.02);
   }
 }
 
 @keyframes pulse-water {
-  0%, 100% { 
-    opacity: 0.95; 
+  0%,
+  100% {
+    opacity: 0.95;
     transform: scale(1) translateZ(0);
     filter: brightness(1) blur(0px);
   }
@@ -57,8 +63,8 @@
     transform: scale(1.03) translateZ(0);
     filter: brightness(1.1) blur(0.5px);
   }
-  50% { 
-    opacity: 0.98; 
+  50% {
+    opacity: 0.98;
     transform: scale(1.05) translateZ(0);
     filter: brightness(1.15) blur(0.8px);
   }
@@ -84,15 +90,14 @@
 }
 
 @keyframes luxury-glow {
-  0%, 100% {
-    filter: 
-      drop-shadow(0 0 4px rgba(255, 255, 255, 0.08))
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.08))
       drop-shadow(0 0 8px rgba(147, 197, 253, 0.06))
       drop-shadow(0 0 12px rgba(59, 130, 246, 0.04));
   }
   50% {
-    filter: 
-      drop-shadow(0 0 6px rgba(255, 255, 255, 0.12))
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.12))
       drop-shadow(0 0 12px rgba(147, 197, 253, 0.08))
       drop-shadow(0 0 18px rgba(59, 130, 246, 0.06));
   }
@@ -113,7 +118,7 @@
 
 .water-background::before,
 .water-background::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -160,7 +165,8 @@ body {
   position: relative;
   background: #1a1a1a;
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   letter-spacing: -0.01em;
   /* Allow normal touch interactions */
   touch-action: manipulation;
@@ -226,11 +232,15 @@ body {
 
   /* Height adjustments for fullscreen layouts */
   .h-screen-safe {
-    height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    height: calc(
+      100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+    );
   }
 
   .min-h-screen-safe {
-    min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    min-height: calc(
+      100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+    );
   }
 
   /* Top positioning with safe area */
@@ -243,7 +253,12 @@ body {
   }
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 300;
   letter-spacing: 0.02em;
 }
@@ -283,33 +298,51 @@ html {
 }
 
 @keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-button, a, select, input, textarea {
+button,
+a,
+select,
+input,
+textarea {
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
   touch-action: manipulation;
 }
 
 /* Prevent zoom on input focus for iOS */
-input, textarea, select {
+input,
+textarea,
+select {
   font-size: 16px !important;
 }
 
 @media screen and (min-width: 768px) {
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     font-size: inherit !important;
   }
 }
 
 /* Make touch targets larger */
-button, a[role="button"], .touch-target {
+button,
+a[role="button"],
+.touch-target {
   min-height: 44px;
   min-width: 44px;
 }
@@ -317,7 +350,10 @@ button, a[role="button"], .touch-target {
 /* Active states for touch - Apple style instant feedback */
 @media (hover: none) and (pointer: coarse) {
   /* Mobile-only: instant active states with no transition delay */
-  button:active, a:active, select:active, .cursor-pointer:active {
+  button:active,
+  a:active,
+  select:active,
+  .cursor-pointer:active {
     opacity: 0.7;
     transition: none !important;
   }
@@ -325,7 +361,9 @@ button, a[role="button"], .touch-target {
 
 @media (hover: hover) and (pointer: fine) {
   /* Desktop: smooth active states */
-  button:active, a:active, select:active {
+  button:active,
+  a:active,
+  select:active {
     opacity: 0.85;
     transform: scale(0.97);
     transition: all 0.08s ease-out;
@@ -339,14 +377,28 @@ a {
 }
 
 .logo-font {
-  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family:
+    var(--font-geist-sans),
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Helvetica,
+    Arial,
+    sans-serif;
   font-weight: 300;
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
 
 .premium-text {
-  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 25%, #ffffff 50%, #f0f0f0 75%, #ffffff 100%);
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #f0f0f0 25%,
+    #ffffff 50%,
+    #f0f0f0 75%,
+    #ffffff 100%
+  );
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -357,7 +409,8 @@ a {
 }
 
 @keyframes shimmerGlow {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% center;
     filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.1));
   }
@@ -374,8 +427,8 @@ a {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 /* Smooth momentum scrolling */
@@ -396,7 +449,8 @@ a {
 }
 
 @keyframes subtleShift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -438,7 +492,8 @@ a {
 }
 
 @keyframes floatText {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -447,7 +502,8 @@ a {
 }
 
 @keyframes floatTitle {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -465,7 +521,8 @@ a {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -497,13 +554,16 @@ a {
 }
 
 @keyframes textGlow {
-  0%, 100% {
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.1),
-                 0 2px 4px rgba(0, 0, 0, 0.05);
+  0%,
+  100% {
+    text-shadow:
+      0 0 10px rgba(0, 0, 0, 0.1),
+      0 2px 4px rgba(0, 0, 0, 0.05);
   }
   50% {
-    text-shadow: 0 0 20px rgba(0, 0, 0, 0.15),
-                 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-shadow:
+      0 0 20px rgba(0, 0, 0, 0.15),
+      0 4px 8px rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -519,7 +579,8 @@ a {
 }
 
 @keyframes gradientShift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -539,7 +600,8 @@ a {
 }
 
 @keyframes floatSoft {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -548,8 +610,9 @@ a {
 }
 
 .product-name-animate {
-  animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards,
-             floatSoft 4s ease-in-out infinite;
+  animation:
+    slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+    floatSoft 4s ease-in-out infinite;
   animation-delay: 0s, 1s;
 }
 
@@ -633,32 +696,33 @@ a {
 
 /* Apple-style subtle shadows */
 .shadow-subtle {
-  box-shadow: 
+  box-shadow:
     0 1px 2px 0 rgba(0, 0, 0, 0.05),
     0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .shadow-elevated {
-  box-shadow: 
+  box-shadow:
     0 2px 4px -1px rgba(0, 0, 0, 0.06),
     0 4px 6px -1px rgba(0, 0, 0, 0.08);
 }
 
 .shadow-elevated-lg {
-  box-shadow: 
+  box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.08),
     0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .border-with-shadow {
-  box-shadow: 
+  box-shadow:
     inset 0 0 0 1px rgba(0, 0, 0, 0.05),
     0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 /* Luxury Hero Animations */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
   33% {
@@ -670,7 +734,8 @@ a {
 }
 
 @keyframes float-delayed {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
   33% {
@@ -682,7 +747,8 @@ a {
 }
 
 @keyframes float-slow {
-  0%, 100% {
+  0%,
+  100% {
     transform: translate(-50%, -50%) scale(1);
   }
   50% {
@@ -768,7 +834,8 @@ a {
 }
 
 @keyframes successPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -788,7 +855,8 @@ a {
 }
 
 @keyframes gentleBounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -806,29 +874,34 @@ a {
   .interactive-button {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   .interactive-button:hover {
     transform: translateY(-1px);
   }
-  
+
   .interactive-button:active {
     transform: scale(0.96);
     opacity: 0.9;
     transition: all 0.08s ease-out;
   }
-  
+
   .interactive-button::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.1),
+      transparent
+    );
     transition: left 0.5s ease;
     pointer-events: none;
   }
-  
+
   .interactive-button:hover::before {
     left: 100%;
   }
@@ -914,7 +987,8 @@ a {
 
 /* Badge pulse animation */
 @keyframes badgePulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -965,7 +1039,7 @@ a {
 }
 
 .nav-link::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -4px;
   left: 0;
@@ -1015,7 +1089,10 @@ a {
 }
 
 /* Better touch response - Apple-like */
-button, a, input[type="button"], input[type="submit"] {
+button,
+a,
+input[type="button"],
+input[type="submit"] {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -1050,7 +1127,7 @@ textarea {
     overscroll-behavior-y: none;
     -webkit-overflow-scrolling: touch;
   }
-  
+
   /* Ensure smooth drawer animations on mobile */
   .animate-slideInRight {
     animation: slideInRight 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1062,13 +1139,12 @@ textarea {
   body {
     min-height: -webkit-fill-available;
   }
-  
+
   /* Fix for iOS PWA viewport */
   html {
     height: -webkit-fill-available;
   }
 }
-
 
 /* Streaming chat animations */
 @keyframes fadeIn {
@@ -1088,7 +1164,9 @@ textarea {
 
 /* Syntax highlighting for code blocks - Cursor style */
 .prose code {
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-family:
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New",
+    monospace;
 }
 
 /* JSON syntax highlighting */
@@ -1099,7 +1177,7 @@ textarea {
 
 /* Property names */
 .prose pre code::before {
-  content: '';
+  content: "";
 }
 
 /* Subtle syntax colors */
@@ -1283,18 +1361,38 @@ iframe::-webkit-scrollbar-track {
 }
 
 /* Stagger animations */
-.fade-in:nth-child(1) { animation-delay: 0s; }
-.fade-in:nth-child(2) { animation-delay: 0.1s; }
-.fade-in:nth-child(3) { animation-delay: 0.2s; }
-.fade-in:nth-child(4) { animation-delay: 0.3s; }
-.fade-in:nth-child(5) { animation-delay: 0.4s; }
-.fade-in:nth-child(6) { animation-delay: 0.5s; }
+.fade-in:nth-child(1) {
+  animation-delay: 0s;
+}
+.fade-in:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.fade-in:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.fade-in:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.fade-in:nth-child(5) {
+  animation-delay: 0.4s;
+}
+.fade-in:nth-child(6) {
+  animation-delay: 0.5s;
+}
 
 /* Unified spacing system */
-.spacing-section { margin-bottom: 2rem; }
-.spacing-section-lg { margin-bottom: 3rem; }
-.spacing-grid { gap: 0.75rem; }
-.spacing-grid-lg { gap: 1rem; }
+.spacing-section {
+  margin-bottom: 2rem;
+}
+.spacing-section-lg {
+  margin-bottom: 3rem;
+}
+.spacing-grid {
+  gap: 0.75rem;
+}
+.spacing-grid-lg {
+  gap: 1rem;
+}
 
 /* Status badges */
 .badge-base {
@@ -1335,7 +1433,11 @@ iframe::-webkit-scrollbar-track {
 .icon-container {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   display: flex;

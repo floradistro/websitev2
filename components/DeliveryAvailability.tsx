@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { MapPin, Package, Store } from "lucide-react";
-import { getUserLocation, findNearestLocation, getDistanceToLocation, type UserLocation } from "@/lib/geolocation";
+import {
+  getUserLocation,
+  findNearestLocation,
+  getDistanceToLocation,
+  type UserLocation,
+} from "@/lib/geolocation";
 
 interface Location {
   id: string;
@@ -38,7 +43,9 @@ export default function DeliveryAvailability({
   initialOrderType,
   onDetailsChange,
 }: DeliveryAvailabilityProps) {
-  const [selectedTab, setSelectedTab] = useState<"delivery" | "pickup">(initialOrderType || "delivery");
+  const [selectedTab, setSelectedTab] = useState<"delivery" | "pickup">(
+    initialOrderType || "delivery",
+  );
   const [userZip, setUserZip] = useState<string | null>(null);
   const [selectedStore, setSelectedStore] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -52,7 +59,7 @@ export default function DeliveryAvailability({
     zip: "",
   });
 
-  const activeLocations = locations.filter(loc => loc.is_active === "1");
+  const activeLocations = locations.filter((loc) => loc.is_active === "1");
 
   // Highlight and scroll when arriving with pre-selected order type
   useEffect(() => {
@@ -64,20 +71,20 @@ export default function DeliveryAvailability({
           element.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       }, 100);
-      
+
       setTimeout(() => {
         setShowHighlight(false);
       }, 2000);
     }
   }, [initialOrderType]);
-  
+
   const getQuantity = (locationId: string): number => {
-    const inv = inventory.find(inv => inv.location_id === locationId);
+    const inv = inventory.find((inv) => inv.location_id === locationId);
     return inv ? parseFloat(inv.quantity) : 0;
   };
 
   const locationsWithStock = activeLocations.filter(
-    loc => getQuantity(loc.id) > 0
+    (loc) => getQuantity(loc.id) > 0,
   );
 
   const sortedLocations = [...activeLocations].sort((a, b) => {
@@ -88,7 +95,10 @@ export default function DeliveryAvailability({
     return a.name.localeCompare(b.name);
   });
 
-  const nearestStore = sortedLocations.find(loc => getQuantity(loc.id) > 0) || sortedLocations[0] || null;
+  const nearestStore =
+    sortedLocations.find((loc) => getQuantity(loc.id) > 0) ||
+    sortedLocations[0] ||
+    null;
 
   // Auto-select nearest location based on user's IP address
   useEffect(() => {
@@ -99,18 +109,15 @@ export default function DeliveryAvailability({
       }
 
       try {
-        console.log('🌍 Getting user location from IP...');
         const location = await getUserLocation();
-        
+
         if (location) {
           setUserLocation(location); // Save for distance calculations
-          console.log(`📍 User detected: ${location.city}, ${location.region_code} ${location.postal}`);
-          
+
           // Find nearest location with stock
           const nearest = findNearestLocation(location, locationsWithStock);
-          
+
           if (nearest) {
-            console.log(`✓ Auto-selected nearest warehouse: ${nearest.name}`);
             setSelectedStore(nearest.id);
           } else if (nearestStore) {
             setSelectedStore(nearestStore.id);
@@ -120,7 +127,9 @@ export default function DeliveryAvailability({
           setSelectedStore(nearestStore.id);
         }
       } catch (error) {
-        console.error('Error auto-selecting location:', error);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error auto-selecting location:", error);
+        }
         // Fallback to first location with stock
         if (nearestStore) {
           setSelectedStore(nearestStore.id);
@@ -130,7 +139,7 @@ export default function DeliveryAvailability({
 
     autoSelectNearestLocation();
   }, [locationsWithStock, nearestStore, selectedStore]);
-  
+
   // Calculate distance to selected store
   useEffect(() => {
     if (userLocation && selectedStore) {
@@ -175,24 +184,26 @@ export default function DeliveryAvailability({
   // Calculate delivery dates
   const getDeliveryDates = () => {
     const now = new Date();
-    
+
     // Get current hour in EST/EDT timezone
-    const currentHour = parseInt(now.toLocaleString("en-US", { 
-      timeZone: "America/New_York",
-      hour: "numeric",
-      hour12: false 
-    }));
-    
+    const currentHour = parseInt(
+      now.toLocaleString("en-US", {
+        timeZone: "America/New_York",
+        hour: "numeric",
+        hour12: false,
+      }),
+    );
+
     // Check if before 2pm EST cutoff
     const isSameDayShipping = currentHour < 14;
-    
+
     // Calculate future dates based on EST/EDT
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     const dayAfterTomorrow = new Date(now);
     dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-    
+
     const threeDays = new Date(now);
     threeDays.setDate(threeDays.getDate() + 3);
 
@@ -201,7 +212,7 @@ export default function DeliveryAvailability({
         weekday: "long",
         month: "short",
         day: "numeric",
-        timeZone: "America/New_York"
+        timeZone: "America/New_York",
       });
     };
 
@@ -223,7 +234,7 @@ export default function DeliveryAvailability({
   };
 
   const delivery = getDeliveryDates();
-  const currentStore = activeLocations.find(loc => loc.id === selectedStore);
+  const currentStore = activeLocations.find((loc) => loc.id === selectedStore);
   const currentStoreQuantity = currentStore ? getQuantity(currentStore.id) : 0;
 
   const isInStock = locationsWithStock.length > 0 || stockStatus === "in_stock";
@@ -256,7 +267,9 @@ export default function DeliveryAvailability({
 
       {/* Delivery Tab */}
       {selectedTab === "delivery" && (
-        <div className={`border border-white/20 rounded-[24px] p-6 animate-fadeIn space-y-3 relative ${isDropdownOpen ? 'min-h-[400px]' : ''}`}>
+        <div
+          className={`border border-white/20 rounded-[24px] p-6 animate-fadeIn space-y-3 relative ${isDropdownOpen ? "min-h-[400px]" : ""}`}
+        >
           {isInStock ? (
             <>
               {/* Selected Location with Distance and Change Button */}
@@ -267,7 +280,11 @@ export default function DeliveryAvailability({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-white/80">
-                          {activeLocations.find((loc) => loc.id === selectedStore)?.name}
+                          {
+                            activeLocations.find(
+                              (loc) => loc.id === selectedStore,
+                            )?.name
+                          }
                         </span>
                         {storeDistance && (
                           <span className="text-xs text-white/40">
@@ -289,16 +306,14 @@ export default function DeliveryAvailability({
                   </button>
                 </div>
               )}
-              
+
               {/* Delivery Date Info */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="text-xs text-white/80">
                     {delivery.express}
                   </div>
-                  <div className="text-xs font-medium text-white">
-                    FREE
-                  </div>
+                  <div className="text-xs font-medium text-white">FREE</div>
                 </div>
                 {delivery.cutoffMessage && (
                   <p className="text-xs text-white/60 uppercase tracking-wider">
@@ -312,7 +327,7 @@ export default function DeliveryAvailability({
               Unavailable
             </div>
           )}
-          
+
           {/* Location Dropdown for Delivery (when changing) */}
           {isDropdownOpen && selectedTab === "delivery" && (
             <div className="absolute inset-0 bg-[#1a1a1a] border border-white/10 z-30 flex flex-col min-h-[400px]">
@@ -329,55 +344,59 @@ export default function DeliveryAvailability({
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto min-h-[350px]">
-              {sortedLocations.map((location) => {
-                const qty = getQuantity(location.id);
-                const hasStock = qty > 0;
-                const distance = userLocation ? getDistanceToLocation(userLocation, location.id) : null;
+                {sortedLocations.map((location) => {
+                  const qty = getQuantity(location.id);
+                  const hasStock = qty > 0;
+                  const distance = userLocation
+                    ? getDistanceToLocation(userLocation, location.id)
+                    : null;
 
-                return (
-                  <button
-                    key={location.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedStore(location.id);
-                      setIsDropdownOpen(false);
-                    }}
-                    disabled={!hasStock}
-                    className={`w-full px-4 py-3 text-left border-b border-white/5 last:border-0 transition-all ${
-                      hasStock
-                        ? "hover:bg-white/10 cursor-pointer"
-                        : "opacity-40 cursor-not-allowed"
-                    } ${
-                      selectedStore === location.id
-                        ? "bg-white/10 border-l-2 border-l-white/40"
-                        : ""
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm text-white">
-                            {location.name}
-                          </span>
-                          {distance && (
-                            <span className="text-xs text-white/40">
-                              {`· ${Math.round(distance)} mi`}
+                  return (
+                    <button
+                      key={location.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedStore(location.id);
+                        setIsDropdownOpen(false);
+                      }}
+                      disabled={!hasStock}
+                      className={`w-full px-4 py-3 text-left border-b border-white/5 last:border-0 transition-all ${
+                        hasStock
+                          ? "hover:bg-white/10 cursor-pointer"
+                          : "opacity-40 cursor-not-allowed"
+                      } ${
+                        selectedStore === location.id
+                          ? "bg-white/10 border-l-2 border-l-white/40"
+                          : ""
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm text-white">
+                              {location.name}
                             </span>
-                          )}
+                            {distance && (
+                              <span className="text-xs text-white/40">
+                                {`· ${Math.round(distance)} mi`}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-white/40 uppercase tracking-wider">
+                            {location.city}, {location.state}
+                          </div>
                         </div>
-                        <div className="text-xs text-white/40 uppercase tracking-wider">
-                          {location.city}, {location.state}
+                        <div className="text-right">
+                          <div
+                            className={`text-xs ${hasStock ? "text-white/60" : "text-white/30"}`}
+                          >
+                            {hasStock ? `${qty} available` : "Out of stock"}
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className={`text-xs ${hasStock ? 'text-white/60' : 'text-white/30'}`}>
-                          {hasStock ? `${qty} available` : 'Out of stock'}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -386,7 +405,9 @@ export default function DeliveryAvailability({
 
       {/* Pickup Tab */}
       {selectedTab === "pickup" && (
-        <div className={`border border-white/20 rounded-[24px] p-6 animate-fadeIn space-y-3 relative ${isDropdownOpen ? 'min-h-[400px]' : ''}`}>
+        <div
+          className={`border border-white/20 rounded-[24px] p-6 animate-fadeIn space-y-3 relative ${isDropdownOpen ? "min-h-[400px]" : ""}`}
+        >
           {locationsWithStock.length > 0 ? (
             <>
               {/* Selected Store Display with Distance and Change Button */}
@@ -397,7 +418,11 @@ export default function DeliveryAvailability({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-white/80">
-                          {activeLocations.find((loc) => loc.id === selectedStore)?.name}
+                          {
+                            activeLocations.find(
+                              (loc) => loc.id === selectedStore,
+                            )?.name
+                          }
                         </span>
                         {storeDistance && (
                           <span className="text-xs text-white/40">
@@ -426,7 +451,7 @@ export default function DeliveryAvailability({
                   Ready for pickup today
                 </div>
               )}
-              
+
               {/* Location Dropdown for Pickup (when changing) */}
               {isDropdownOpen && selectedTab === "pickup" && (
                 <div className="absolute inset-0 bg-[#1a1a1a] border border-white/10 z-30 flex flex-col min-h-[400px]">
@@ -443,55 +468,59 @@ export default function DeliveryAvailability({
                     </button>
                   </div>
                   <div className="flex-1 overflow-y-auto min-h-[350px]">
-                  {sortedLocations.map((location) => {
-                    const qty = getQuantity(location.id);
-                    const hasStock = qty > 0;
-                    const distance = userLocation ? getDistanceToLocation(userLocation, location.id) : null;
+                    {sortedLocations.map((location) => {
+                      const qty = getQuantity(location.id);
+                      const hasStock = qty > 0;
+                      const distance = userLocation
+                        ? getDistanceToLocation(userLocation, location.id)
+                        : null;
 
-                    return (
-                      <button
-                        key={location.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedStore(location.id);
-                          setIsDropdownOpen(false);
-                        }}
-                        disabled={!hasStock}
-                        className={`w-full px-4 py-3 text-left border-b border-white/5 last:border-0 transition-all ${
-                          hasStock
-                            ? "hover:bg-white/10 cursor-pointer"
-                            : "opacity-40 cursor-not-allowed"
-                        } ${
-                          selectedStore === location.id
-                            ? "bg-white/10 border-l-2 border-l-white/40"
-                            : ""
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-sm text-white">
-                                {location.name}
-                              </span>
-                              {distance && (
-                                <span className="text-xs text-white/40">
-                                  {`· ${Math.round(distance)} mi`}
+                      return (
+                        <button
+                          key={location.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedStore(location.id);
+                            setIsDropdownOpen(false);
+                          }}
+                          disabled={!hasStock}
+                          className={`w-full px-4 py-3 text-left border-b border-white/5 last:border-0 transition-all ${
+                            hasStock
+                              ? "hover:bg-white/10 cursor-pointer"
+                              : "opacity-40 cursor-not-allowed"
+                          } ${
+                            selectedStore === location.id
+                              ? "bg-white/10 border-l-2 border-l-white/40"
+                              : ""
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm text-white">
+                                  {location.name}
                                 </span>
-                              )}
+                                {distance && (
+                                  <span className="text-xs text-white/40">
+                                    {`· ${Math.round(distance)} mi`}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs text-white/40 uppercase tracking-wider">
+                                {location.city}, {location.state}
+                              </div>
                             </div>
-                            <div className="text-xs text-white/40 uppercase tracking-wider">
-                              {location.city}, {location.state}
+                            <div className="text-right">
+                              <div
+                                className={`text-xs ${hasStock ? "text-white/60" : "text-white/30"}`}
+                              >
+                                {hasStock ? `${qty} available` : "Out of stock"}
+                              </div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className={`text-xs ${hasStock ? 'text-white/60' : 'text-white/30'}`}>
-                              {hasStock ? `${qty} available` : 'Out of stock'}
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -506,4 +535,3 @@ export default function DeliveryAvailability({
     </div>
   );
 }
-

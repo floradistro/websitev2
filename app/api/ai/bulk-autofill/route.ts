@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-import Exa from 'exa-js';
+import { NextRequest, NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+import Exa from "exa-js";
 
 // Increase timeout for bulk processing (can take 2-5 minutes for large batches)
 export const maxDuration = 300; // 5 minutes
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const SYSTEM_PROMPT = `Extract cannabis STRAIN DATA ONLY from web sources (strain databases, seed banks, cannabis info sites). Return ONLY a JSON array with REAL DATA.
 
@@ -50,33 +50,44 @@ export async function POST(request: NextRequest) {
   try {
     // Check for required API keys
     if (!process.env.ANTHROPIC_API_KEY) {
-      console.error('❌ Missing ANTHROPIC_API_KEY');
-      return NextResponse.json({
-        error: 'AI service not configured',
-        results: []
-      }, { status: 500 });
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Missing ANTHROPIC_API_KEY");
+      }
+      return NextResponse.json(
+        {
+          error: "AI service not configured",
+          results: [],
+        },
+        { status: 500 },
+      );
     }
 
     if (!process.env.EXASEARCH_API_KEY) {
-      console.error('❌ Missing EXASEARCH_API_KEY');
-      return NextResponse.json({
-        error: 'Search service not configured',
-        results: []
-      }, { status: 500 });
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Missing EXASEARCH_API_KEY");
+      }
+      return NextResponse.json(
+        {
+          error: "Search service not configured",
+          results: [],
+        },
+        { status: 500 },
+      );
     }
 
     const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY
+      apiKey: process.env.ANTHROPIC_API_KEY,
     });
     const exa = new Exa(process.env.EXASEARCH_API_KEY);
 
     const { products, category } = await request.json();
 
     if (!products || !Array.isArray(products) || products.length === 0) {
-      return NextResponse.json({ error: 'Products array required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Products array required" },
+        { status: 400 },
+      );
     }
-
-    console.log(`🔍 Bulk AI Autofill: ${products.length} products`);
 
     // Process in batches of 5 for optimal performance
     const BATCH_SIZE = 5;
@@ -87,28 +98,29 @@ export async function POST(request: NextRequest) {
       const batchNum = Math.floor(i / BATCH_SIZE) + 1;
       const totalBatches = Math.ceil(products.length / BATCH_SIZE);
 
-      console.log(`📦 Processing batch ${batchNum}/${totalBatches} (${batch.length} products)`);
-
       try {
         // Single web search for all products in batch - comprehensive query for all strain data
-        const searchQuery = batch.map((p: any) => p.name).join(', ') +
-          ` ${category || 'cannabis'} strain genetics lineage parent strains terpene profile nose aroma effects THCa percentage indica sativa hybrid`;
+        const searchQuery =
+          batch.map((p: any) => p.name).join(", ") +
+          ` ${category || "cannabis"} strain genetics lineage parent strains terpene profile nose aroma effects THCa percentage indica sativa hybrid`;
 
         const searchResults = await exa.searchAndContents(searchQuery, {
-          type: 'auto',
+          type: "auto",
           useAutoprompt: true,
           numResults: Math.min(15, batch.length * 3), // 3 results per product for better data coverage
-          text: true
+          text: true,
         });
 
         if (!searchResults.results || searchResults.results.length === 0) {
-          console.warn(`⚠️ No search results for batch ${batchNum}`);
+          if (process.env.NODE_ENV === "development") {
+            console.warn(`⚠️ No search results for batch ${batchNum}`);
+          }
           // Add null results for this batch
           batch.forEach((product: any) => {
             results.push({
               product_name: product.name,
               success: false,
-              error: 'No search results found'
+              error: "No search results found",
             });
           });
           continue;
@@ -117,36 +129,38 @@ export async function POST(request: NextRequest) {
         // Combine search results
         const context = searchResults.results
           .map((r) => `${r.title}\n${r.text}`)
-          .join('\n---\n');
+          .join("\n---\n");
 
         // Claude extraction for entire batch
         const response = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514',
+          model: "claude-sonnet-4-20250514",
           max_tokens: 4000,
           temperature: 0,
           system: SYSTEM_PROMPT,
           messages: [
             {
-              role: 'user',
-              content: `Extract STRAIN DATA for these ${batch.length} products:\n${batch.map((p: any, idx: number) => `${idx + 1}. ${p.name}`).join('\n')}\n\nFOCUS ON:\n- LINEAGE/GENETICS (Parent1 x Parent2) - MOST IMPORTANT\n- Terpene profile (Myrcene, Limonene, etc.)\n- Effects (Relaxing, Euphoric, etc.)\n- Nose/Aroma (Candy, Gas, Pine, etc.)\n- Strain type (Sativa/Indica/Hybrid)\n\nSearch THOROUGHLY in sources for lineage and genetics information.\n\nSOURCES:\n${context.substring(0, 15000)}\n\nReturn ONLY a JSON array with ${batch.length} objects, one per product in order.`
-            }
-          ]
+              role: "user",
+              content: `Extract STRAIN DATA for these ${batch.length} products:\n${batch.map((p: any, idx: number) => `${idx + 1}. ${p.name}`).join("\n")}\n\nFOCUS ON:\n- LINEAGE/GENETICS (Parent1 x Parent2) - MOST IMPORTANT\n- Terpene profile (Myrcene, Limonene, etc.)\n- Effects (Relaxing, Euphoric, etc.)\n- Nose/Aroma (Candy, Gas, Pine, etc.)\n- Strain type (Sativa/Indica/Hybrid)\n\nSearch THOROUGHLY in sources for lineage and genetics information.\n\nSOURCES:\n${context.substring(0, 15000)}\n\nReturn ONLY a JSON array with ${batch.length} objects, one per product in order.`,
+            },
+          ],
         });
 
         const claudeText = response.content[0];
-        if (claudeText.type !== 'text') {
-          throw new Error('Invalid response');
+        if (claudeText.type !== "text") {
+          throw new Error("Invalid response");
         }
 
         // Parse JSON array
         const jsonMatch = claudeText.text.match(/\[[\s\S]*\]/);
         if (!jsonMatch) {
-          console.error(`❌ No JSON found in batch ${batchNum}`);
+          if (process.env.NODE_ENV === "development") {
+            console.error(`❌ No JSON found in batch ${batchNum}`);
+          }
           batch.forEach((product: any) => {
             results.push({
               product_name: product.name,
               success: false,
-              error: 'Failed to extract data'
+              error: "Failed to extract data",
             });
           });
           continue;
@@ -156,63 +170,73 @@ export async function POST(request: NextRequest) {
 
         // Match results to products
         batch.forEach((product: any, idx: number) => {
-          const data = batchData[idx] || batchData.find((d: any) =>
-            d.product_name?.toLowerCase().includes(product.name.toLowerCase()) ||
-            product.name.toLowerCase().includes(d.product_name?.toLowerCase())
-          );
+          const data =
+            batchData[idx] ||
+            batchData.find(
+              (d: any) =>
+                d.product_name
+                  ?.toLowerCase()
+                  .includes(product.name.toLowerCase()) ||
+                product.name
+                  .toLowerCase()
+                  .includes(d.product_name?.toLowerCase()),
+            );
 
           if (data) {
             results.push({
               product_name: product.name,
               success: true,
-              suggestions: data
+              suggestions: data,
             });
           } else {
             results.push({
               product_name: product.name,
               success: false,
-              error: 'No data matched'
+              error: "No data matched",
             });
           }
         });
-
-        console.log(`✅ Batch ${batchNum} complete: ${batch.length} products processed`);
-
       } catch (error: any) {
-        console.error(`❌ Error in batch ${batchNum}:`, error.message);
+        if (process.env.NODE_ENV === "development") {
+          console.error(`❌ Error in batch ${batchNum}:`, error.message);
+        }
         // Add error results for this batch
         batch.forEach((product: any) => {
           results.push({
             product_name: product.name,
             success: false,
-            error: error.message || 'Processing failed'
+            error: error.message || "Processing failed",
           });
         });
       }
 
       // Small delay between batches to avoid rate limits
       if (i + BATCH_SIZE < products.length) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
     }
 
-    const successCount = results.filter(r => r.success).length;
-    console.log(`✅ Bulk autofill complete: ${successCount}/${products.length} successful`);
+    const successCount = results.filter((r) => r.success).length;
 
     return NextResponse.json({
       success: true,
       total: products.length,
       successful: successCount,
       failed: products.length - successCount,
-      results
+      results,
     });
-
   } catch (error: any) {
-    console.error('❌ Bulk autofill error:', error);
-    return NextResponse.json({
-      error: error.message || 'Bulk autofill failed',
-      results: [],
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Bulk autofill error:", error);
+    }
+    return NextResponse.json(
+      {
+        error: error.message || "Bulk autofill failed",
+        results: [],
+        details:
+          process.env.NODE_ENV === "development" ? error.stack : undefined,
+      },
+      { status: 500 },
+    );
   }
 }

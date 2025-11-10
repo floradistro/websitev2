@@ -1,19 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Calendar, Save, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Eye, EyeOff, Calendar, Save, AlertCircle } from "lucide-react";
 
 interface ComingSoonManagerProps {
   vendorId: string;
   vendorName: string;
 }
 
-export function ComingSoonManager({ vendorId, vendorName }: ComingSoonManagerProps) {
+export function ComingSoonManager({
+  vendorId,
+  vendorName,
+}: ComingSoonManagerProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [comingSoon, setComingSoon] = useState(false);
-  const [message, setMessage] = useState("We're launching soon! Stay tuned for something amazing.");
-  const [launchDate, setLaunchDate] = useState('');
+  const [message, setMessage] = useState(
+    "We're launching soon! Stay tuned for something amazing.",
+  );
+  const [launchDate, setLaunchDate] = useState("");
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
@@ -24,14 +29,23 @@ export function ComingSoonManager({ vendorId, vendorName }: ComingSoonManagerPro
     try {
       const res = await fetch(`/api/admin/vendor/${vendorId}/coming-soon`);
       const data = await res.json();
-      
+
       if (data.success) {
         setComingSoon(data.data.coming_soon || false);
-        setMessage(data.data.coming_soon_message || "We're launching soon! Stay tuned for something amazing.");
-        setLaunchDate(data.data.launch_date ? new Date(data.data.launch_date).toISOString().slice(0, 16) : '');
+        setMessage(
+          data.data.coming_soon_message ||
+            "We're launching soon! Stay tuned for something amazing.",
+        );
+        setLaunchDate(
+          data.data.launch_date
+            ? new Date(data.data.launch_date).toISOString().slice(0, 16)
+            : "",
+        );
       }
     } catch (error) {
-      console.error('Failed to fetch coming soon status:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to fetch coming soon status:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -43,8 +57,8 @@ export function ComingSoonManager({ vendorId, vendorName }: ComingSoonManagerPro
 
     try {
       const res = await fetch(`/api/admin/vendor/${vendorId}/coming-soon`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           coming_soon: comingSoon,
           coming_soon_message: message,
@@ -53,13 +67,15 @@ export function ComingSoonManager({ vendorId, vendorName }: ComingSoonManagerPro
       });
 
       const data = await res.json();
-      
+
       if (data.success) {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
       }
     } catch (error) {
-      console.error('Failed to save coming soon settings:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to save coming soon settings:", error);
+      }
     } finally {
       setSaving(false);
     }
@@ -81,27 +97,34 @@ export function ComingSoonManager({ vendorId, vendorName }: ComingSoonManagerPro
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-2xl font-black uppercase tracking-tight text-white mb-2" style={{ fontWeight: 900 }}>
+          <h3
+            className="text-2xl font-black uppercase tracking-tight text-white mb-2"
+            style={{ fontWeight: 900 }}
+          >
             Coming Soon Mode
           </h3>
           <p className="text-white/60 leading-relaxed">
             Show a coming soon page instead of the storefront
           </p>
         </div>
-        
+
         {/* Toggle Switch */}
         <button
           onClick={() => setComingSoon(!comingSoon)}
           className={`relative inline-flex h-14 w-28 items-center rounded-2xl transition-all duration-300 ${
-            comingSoon ? 'bg-white' : 'bg-white/5 border border-white/10'
+            comingSoon ? "bg-white" : "bg-white/5 border border-white/10"
           }`}
         >
           <span
             className={`inline-block h-12 w-12 transform rounded-2xl transition-all duration-300 flex items-center justify-center ${
-              comingSoon ? 'translate-x-14 bg-black' : 'translate-x-1 bg-white'
+              comingSoon ? "translate-x-14 bg-black" : "translate-x-1 bg-white"
             }`}
           >
-            {comingSoon ? <Eye size={20} className="text-white" /> : <EyeOff size={20} className="text-black" />}
+            {comingSoon ? (
+              <Eye size={20} className="text-white" />
+            ) : (
+              <EyeOff size={20} className="text-black" />
+            )}
           </span>
         </button>
       </div>
@@ -114,11 +137,15 @@ export function ComingSoonManager({ vendorId, vendorName }: ComingSoonManagerPro
               <AlertCircle size={24} className="text-black" />
             </div>
             <div className="flex-1">
-              <p className="text-white font-black uppercase tracking-tight mb-2" style={{ fontWeight: 900 }}>
+              <p
+                className="text-white font-black uppercase tracking-tight mb-2"
+                style={{ fontWeight: 900 }}
+              >
                 Coming Soon Mode Active
               </p>
               <p className="text-white/60 leading-relaxed">
-                Customers will see a coming soon page instead of your storefront. Preview mode still works for you.
+                Customers will see a coming soon page instead of your
+                storefront. Preview mode still works for you.
               </p>
             </div>
           </div>
@@ -167,12 +194,12 @@ export function ComingSoonManager({ vendorId, vendorName }: ComingSoonManagerPro
             style={{ fontWeight: 900 }}
           >
             <Save size={18} />
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? "Saving..." : "Save Changes"}
           </button>
 
           {comingSoon && (
             <a
-              href={`/storefront?vendor=${vendorName.toLowerCase().replace(/\s+/g, '-')}`}
+              href={`/storefront?vendor=${vendorName.toLowerCase().replace(/\s+/g, "-")}`}
               target="_blank"
               rel="noopener noreferrer"
               className="bg-[#0a0a0a] border border-white/10 hover:border-white/20 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-tight transition-all duration-300 hover:scale-[1.02] flex items-center gap-3"
@@ -186,7 +213,10 @@ export function ComingSoonManager({ vendorId, vendorName }: ComingSoonManagerPro
 
         {/* Success Message */}
         {success && (
-          <div className="bg-white text-black rounded-2xl p-4 text-center font-black uppercase tracking-tight" style={{ fontWeight: 900 }}>
+          <div
+            className="bg-white text-black rounded-2xl p-4 text-center font-black uppercase tracking-tight"
+            style={{ fontWeight: 900 }}
+          >
             ✓ Settings Saved Successfully
           </div>
         )}
@@ -194,4 +224,3 @@ export function ComingSoonManager({ vendorId, vendorName }: ComingSoonManagerPro
     </div>
   );
 }
-

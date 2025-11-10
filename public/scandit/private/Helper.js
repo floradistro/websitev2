@@ -1,1 +1,6 @@
-export{c as extractPackageNameFromURL,d as getLibraryLocationURIs,b as isCDNLocation,a as normalizeLibraryLocation}from'../chunks/chunk-AIC4H5KG.js';
+export {
+  c as extractPackageNameFromURL,
+  d as getLibraryLocationURIs,
+  b as isCDNLocation,
+  a as normalizeLibraryLocation,
+} from "../chunks/chunk-AIC4H5KG.js";

@@ -1,12 +1,23 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { useAppAuth } from '@/context/AppAuthContext';
-import Image from 'next/image';
-import { DollarSign, ChevronDown, MapPin, User, CreditCard, ShoppingBag, Clock, LogOut, Package, PackageCheck } from 'lucide-react';
-import Link from 'next/link';
-import { POSModal } from './POSModal';
-import { POSCashDrawer } from './POSCashDrawer';
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useAppAuth } from "@/context/AppAuthContext";
+import Image from "next/image";
+import {
+  DollarSign,
+  ChevronDown,
+  MapPin,
+  User,
+  CreditCard,
+  ShoppingBag,
+  Clock,
+  LogOut,
+  Package,
+  PackageCheck,
+} from "lucide-react";
+import Link from "next/link";
+import { POSModal } from "./POSModal";
+import { POSCashDrawer } from "./POSCashDrawer";
 
 interface POSSession {
   id: string;
@@ -45,8 +56,8 @@ export function POSVendorDropdown({
   locationId,
   locationName,
   userId,
-  userName = 'Staff',
-  vendorId = 'cd2e1122-d511-4edb-be5d-98ef274b4baf',
+  userName = "Staff",
+  vendorId = "cd2e1122-d511-4edb-be5d-98ef274b4baf",
   registerId,
   onSessionClosed,
 }: POSVendorDropdownProps) {
@@ -54,9 +65,22 @@ export function POSVendorDropdown({
   const [session, setSession] = useState<POSSession | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [showCashDrawer, setShowCashDrawer] = useState(false);
-  const [cashSummary, setCashSummary] = useState<CashMovementSummary | null>(null);
-  const [modal, setModal] = useState<{isOpen: boolean; title: string; message: string; type: 'success'|'error'|'info'; onConfirm?: () => void; confirmText?: string; cancelText?: string}>({
-    isOpen: false, title: '', message: '', type: 'info'
+  const [cashSummary, setCashSummary] = useState<CashMovementSummary | null>(
+    null,
+  );
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error" | "info";
+    onConfirm?: () => void;
+    confirmText?: string;
+    cancelText?: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
   });
   const [pendingPOCount, setPendingPOCount] = useState<number>(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -64,14 +88,18 @@ export function POSVendorDropdown({
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isOpen]);
 
@@ -84,53 +112,62 @@ export function POSVendorDropdown({
 
   const loadActiveSession = useCallback(async () => {
     if (!registerId) {
-      console.log('⚠️ POSVendorDropdown: No registerId - cannot load session');
       return;
     }
 
     try {
-      console.log('📡 Loading active session:', { locationId, registerId });
-      const response = await fetch(`/api/pos/sessions/active?locationId=${locationId}&registerId=${registerId}`);
+      const response = await fetch(
+        `/api/pos/sessions/active?locationId=${locationId}&registerId=${registerId}`,
+      );
 
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Session loaded:', data.session);
+
         setSession(data.session);
 
         if (data.session) {
           loadCashMovements(data.session.id);
         }
       } else {
-        console.log('❌ No active session found');
         setSession(null);
       }
     } catch (error) {
-      console.error('❌ Error loading session:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Error loading session:", error);
+      }
       setSession(null);
     }
   }, [locationId, registerId]);
 
   const loadCashMovements = async (sessionId: string) => {
     try {
-      const response = await fetch(`/api/pos/cash-movements?sessionId=${sessionId}`);
+      const response = await fetch(
+        `/api/pos/cash-movements?sessionId=${sessionId}`,
+      );
       if (response.ok) {
         const data = await response.json();
         setCashSummary(data.summary);
       }
     } catch (error) {
-      console.error('Error loading cash movements:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading cash movements:", error);
+      }
     }
   };
 
   const loadPendingPOs = useCallback(async () => {
     try {
-      const response = await fetch(`/api/pos/receiving?location_id=${locationId}`);
+      const response = await fetch(
+        `/api/pos/receiving?location_id=${locationId}`,
+      );
       if (response.ok) {
         const data = await response.json();
         setPendingPOCount(data.count || 0);
       }
     } catch (error) {
-      console.error('Error loading pending POs:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading pending POs:", error);
+      }
     }
   }, [locationId]);
 
@@ -156,7 +193,7 @@ export function POSVendorDropdown({
   }, [loadPendingPOs]);
 
   const getSessionDuration = () => {
-    if (!session) return '--';
+    if (!session) return "--";
     const start = new Date(session.opened_at);
     const now = new Date();
     const diff = now.getTime() - start.getTime();
@@ -168,24 +205,30 @@ export function POSVendorDropdown({
   const closeSession = async () => {
     setModal({
       isOpen: true,
-      title: 'End Session?',
+      title: "End Session?",
       message: `Are you sure you want to end session ${session?.session_number}?\n\nTotal Sales: $${session?.total_sales.toFixed(2)}\nTransactions: ${session?.total_transactions}`,
-      type: 'info',
-      confirmText: 'End Session',
-      cancelText: 'Cancel',
+      type: "info",
+      confirmText: "End Session",
+      cancelText: "Cancel",
       onConfirm: async () => {
         try {
-          const response = await fetch('/api/pos/sessions/close', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          const response = await fetch("/api/pos/sessions/close", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               sessionId: session?.id,
-              closingCash: cashSummary?.current_balance || session?.opening_cash || 0
+              closingCash:
+                cashSummary?.current_balance || session?.opening_cash || 0,
             }),
           });
 
           if (response.ok) {
-            setModal({ isOpen: false, title: '', message: '', type: 'success' });
+            setModal({
+              isOpen: false,
+              title: "",
+              message: "",
+              type: "success",
+            });
             loadActiveSession();
             setIsOpen(false);
             // Notify parent that session was closed
@@ -196,34 +239,34 @@ export function POSVendorDropdown({
             const error = await response.json();
             setModal({
               isOpen: true,
-              title: 'Error',
-              message: error.error || 'Failed to close session',
-              type: 'error'
+              title: "Error",
+              message: error.error || "Failed to close session",
+              type: "error",
             });
           }
         } catch (error: any) {
           setModal({
             isOpen: true,
-            title: 'Error',
-            message: error.message || 'Network error',
-            type: 'error'
+            title: "Error",
+            message: error.message || "Network error",
+            type: "error",
           });
         }
-      }
+      },
     });
   };
 
   const openSession = async () => {
     try {
-      const response = await fetch('/api/pos/sessions/open', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/pos/sessions/open", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           locationId,
           vendorId,
           userId,
           registerId,
-          openingCash: 200.00,
+          openingCash: 200.0,
         }),
       });
 
@@ -232,7 +275,9 @@ export function POSVendorDropdown({
         setIsOpen(false);
       }
     } catch (error) {
-      console.error('Error opening session:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error opening session:", error);
+      }
     }
   };
 
@@ -279,7 +324,7 @@ export function POSVendorDropdown({
             <div className="relative w-8 h-8 flex-shrink-0 bg-white/10 rounded-lg overflow-hidden">
               <Image
                 src={vendor.logo_url}
-                alt={vendor.store_name || 'Vendor'}
+                alt={vendor.store_name || "Vendor"}
                 fill
                 className="object-contain p-0.5"
                 unoptimized
@@ -290,7 +335,10 @@ export function POSVendorDropdown({
               <Package size={16} className="text-white/60" />
             </div>
           )}
-          <ChevronDown size={14} className={`text-white/60 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown
+            size={14}
+            className={`text-white/60 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          />
 
           {/* Notification Badge */}
           {pendingPOCount > 0 && (
@@ -306,7 +354,10 @@ export function POSVendorDropdown({
             {/* Vendor Name */}
             {vendor && (
               <div className="px-4 py-3 border-b border-white/10">
-                <div className="text-white font-black text-sm" style={{ fontWeight: 900 }}>
+                <div
+                  className="text-white font-black text-sm"
+                  style={{ fontWeight: 900 }}
+                >
                   {vendor.store_name}
                 </div>
               </div>
@@ -317,14 +368,20 @@ export function POSVendorDropdown({
               <div className="flex items-center gap-2">
                 <MapPin size={14} className="text-white/40" />
                 <div className="flex-1">
-                  <div className="text-white/40 text-[9px] uppercase tracking-wider">Location</div>
-                  <div className="text-white text-xs font-bold">{locationName}</div>
+                  <div className="text-white/40 text-[9px] uppercase tracking-wider">
+                    Location
+                  </div>
+                  <div className="text-white text-xs font-bold">
+                    {locationName}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <User size={14} className="text-white/40" />
                 <div className="flex-1">
-                  <div className="text-white/40 text-[9px] uppercase tracking-wider">Staff</div>
+                  <div className="text-white/40 text-[9px] uppercase tracking-wider">
+                    Staff
+                  </div>
                   <div className="text-white text-xs font-bold">{userName}</div>
                 </div>
               </div>
@@ -338,9 +395,15 @@ export function POSVendorDropdown({
                   <div className="flex items-center gap-2">
                     <Clock size={14} className="text-white/40" />
                     <div className="flex-1">
-                      <div className="text-white/40 text-[9px] uppercase tracking-wider">Session</div>
-                      <div className="text-white font-bold text-xs">{session.session_number}</div>
-                      <div className="text-white/30 text-[9px] font-mono">{session.id.substring(0, 8)}...</div>
+                      <div className="text-white/40 text-[9px] uppercase tracking-wider">
+                        Session
+                      </div>
+                      <div className="text-white font-bold text-xs">
+                        {session.session_number}
+                      </div>
+                      <div className="text-white/30 text-[9px] font-mono">
+                        {session.id.substring(0, 8)}...
+                      </div>
                     </div>
                   </div>
 
@@ -354,9 +417,17 @@ export function POSVendorDropdown({
                   >
                     <DollarSign size={14} className="text-green-400" />
                     <div className="flex-1 text-left">
-                      <div className="text-white/40 text-[9px] uppercase tracking-wider">Cash Drawer</div>
-                      <div className="text-white font-black text-sm" style={{ fontWeight: 900 }}>
-                        ${(cashSummary?.current_balance || session.opening_cash).toFixed(2)}
+                      <div className="text-white/40 text-[9px] uppercase tracking-wider">
+                        Cash Drawer
+                      </div>
+                      <div
+                        className="text-white font-black text-sm"
+                        style={{ fontWeight: 900 }}
+                      >
+                        $
+                        {(
+                          cashSummary?.current_balance || session.opening_cash
+                        ).toFixed(2)}
                       </div>
                     </div>
                   </button>
@@ -365,8 +436,12 @@ export function POSVendorDropdown({
                   <div className="flex items-center gap-2">
                     <CreditCard size={14} className="text-white/40" />
                     <div className="flex-1">
-                      <div className="text-white/40 text-[9px] uppercase tracking-wider">Sales</div>
-                      <div className="text-white font-bold text-xs">${session.total_sales.toFixed(2)}</div>
+                      <div className="text-white/40 text-[9px] uppercase tracking-wider">
+                        Sales
+                      </div>
+                      <div className="text-white font-bold text-xs">
+                        ${session.total_sales.toFixed(2)}
+                      </div>
                     </div>
                   </div>
 
@@ -374,15 +449,20 @@ export function POSVendorDropdown({
                   <div className="flex items-center gap-2">
                     <ShoppingBag size={14} className="text-white/40" />
                     <div className="flex-1">
-                      <div className="text-white/40 text-[9px] uppercase tracking-wider">Transactions</div>
-                      <div className="text-white font-bold text-xs">{session.total_transactions}</div>
+                      <div className="text-white/40 text-[9px] uppercase tracking-wider">
+                        Transactions
+                      </div>
+                      <div className="text-white font-bold text-xs">
+                        {session.total_transactions}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Actions */}
                 <div className="px-4 py-3 space-y-2">
-                  {typeof window !== 'undefined' && window.location.pathname === '/pos/orders' ? (
+                  {typeof window !== "undefined" &&
+                  window.location.pathname === "/pos/orders" ? (
                     <a
                       href="/pos/register"
                       className="block w-full px-4 py-2.5 border border-white/10 text-white text-center rounded-xl hover:bg-white/5 hover:border-white/20 text-[10px] font-black uppercase tracking-[0.15em] transition-all"

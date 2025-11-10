@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Exa from 'exa-js';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import Exa from "exa-js";
+import { requireVendor } from "@/lib/auth/middleware";
 
-const exa = new Exa('c6064aa5-e664-4bb7-9de9-d09ff153aa53');
+const exa = new Exa("c6064aa5-e664-4bb7-9de9-d09ff153aa53");
 
 /**
  * POST /api/vendor/media/search-inspiration
@@ -19,14 +19,15 @@ export async function POST(request: NextRequest) {
     const { query, numResults = 5 } = body;
 
     if (!query) {
-      return NextResponse.json({ error: 'Search query required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Search query required" },
+        { status: 400 },
+      );
     }
-
-    console.log('🔍 Searching for inspiration with Exa:', query);
 
     // Search with Exa
     const searchResults = await exa.searchAndContents(query, {
-      type: 'neural',
+      type: "neural",
       useAutoprompt: true,
       numResults: numResults,
       text: true,
@@ -37,12 +38,10 @@ export async function POST(request: NextRequest) {
     const inspiration = searchResults.results.map((result: any) => ({
       title: result.title,
       url: result.url,
-      snippet: result.text?.substring(0, 200) || '',
+      snippet: result.text?.substring(0, 200) || "",
       highlights: result.highlights || [],
       score: result.score,
     }));
-
-    console.log(`✅ Found ${inspiration.length} inspiration sources`);
 
     return NextResponse.json({
       success: true,
@@ -51,10 +50,12 @@ export async function POST(request: NextRequest) {
       count: inspiration.length,
     });
   } catch (error: any) {
-    console.error('❌ Exa search error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Exa search error:", error);
+    }
     return NextResponse.json(
-      { error: error.message || 'Failed to search for inspiration' },
-      { status: 500 }
+      { error: error.message || "Failed to search for inspiration" },
+      { status: 500 },
     );
   }
 }

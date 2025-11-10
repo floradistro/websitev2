@@ -1,1 +1,1 @@
-export{a as scanningByScandit}from'../chunks/chunk-EQRBQJYM.js';
+export { a as scanningByScandit } from "../chunks/chunk-EQRBQJYM.js";

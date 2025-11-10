@@ -1,6 +1,6 @@
 /// <reference types="emscripten" />
-import { Quadrilateral } from '../../Common.js';
-import '../Serializable.js';
+import { Quadrilateral } from "../../Common.js";
+import "../Serializable.js";
 
 declare function calculateWidth(quadrilateral: Quadrilateral): number;
 declare function calculateHeight(quadrilateral: Quadrilateral): number;

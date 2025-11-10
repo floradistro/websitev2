@@ -1,1 +1,15 @@
-function t(n){if(!n)return  false;try{return n.cancel(),true}catch(e){return  false}}async function i(n){if(n)try{await n.finished;}catch(e){}}export{t as a,i as b};
+function t(n) {
+  if (!n) return false;
+  try {
+    return (n.cancel(), true);
+  } catch (e) {
+    return false;
+  }
+}
+async function i(n) {
+  if (n)
+    try {
+      await n.finished;
+    } catch (e) {}
+}
+export { t as a, i as b };

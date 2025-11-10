@@ -1,5 +1,5 @@
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { NextRequest, NextResponse } from 'next/server';
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { NextRequest, NextResponse } from "next/server";
 
 // GET /api/pos/products/lookup?sku=ABC-123&location_id=xxx
 export async function GET(request: NextRequest) {
@@ -7,27 +7,28 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
 
-    const sku = searchParams.get('sku');
-    const locationId = searchParams.get('location_id');
+    const sku = searchParams.get("sku");
+    const locationId = searchParams.get("location_id");
 
     if (!sku) {
       return NextResponse.json(
-        { success: false, error: 'SKU parameter is required' },
-        { status: 400 }
+        { success: false, error: "SKU parameter is required" },
+        { status: 400 },
       );
     }
 
     if (!locationId) {
       return NextResponse.json(
-        { success: false, error: 'location_id parameter is required' },
-        { status: 400 }
+        { success: false, error: "location_id parameter is required" },
+        { status: 400 },
       );
     }
 
     // Search for product by SKU (case-insensitive)
     const { data: product, error: productError } = await supabase
-      .from('products')
-      .select(`
+      .from("products")
+      .select(
+        `
         id,
         name,
         sku,
@@ -50,38 +51,47 @@ export async function GET(request: NextRequest) {
           name,
           slug
         )
-      `)
-      .ilike('sku', sku)
-      .eq('status', 'published')
+      `,
+      )
+      .ilike("sku", sku)
+      .eq("status", "published")
       .single();
 
     if (productError || !product) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Product not found',
-          message: `No product found with SKU: ${sku}`
+          error: "Product not found",
+          message: `No product found with SKU: ${sku}`,
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Get inventory for this location
     const { data: inventory, error: inventoryError } = await supabase
-      .from('inventory')
-      .select('quantity, available_quantity, reserved_quantity, stock_status')
-      .eq('product_id', product.id)
-      .eq('location_id', locationId)
+      .from("inventory")
+      .select("quantity, available_quantity, reserved_quantity, stock_status")
+      .eq("product_id", product.id)
+      .eq("location_id", locationId)
       .single();
 
     if (inventoryError) {
-      console.warn('Inventory not found for product:', product.id, 'at location:', locationId);
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          "Inventory not found for product:",
+          product.id,
+          "at location:",
+          locationId,
+        );
+      }
     }
 
     // Get product variants if they exist
     const { data: variants } = await supabase
-      .from('product_variations')
-      .select(`
+      .from("product_variations")
+      .select(
+        `
         id,
         sku,
         attributes,
@@ -90,8 +100,9 @@ export async function GET(request: NextRequest) {
         price,
         stock_status,
         cost_price
-      `)
-      .eq('product_id', product.id);
+      `,
+      )
+      .eq("product_id", product.id);
 
     // Extract pricing tiers from pricing_data
     const pricingData = product.pricing_data || {};
@@ -101,9 +112,9 @@ export async function GET(request: NextRequest) {
         break_id: tier.id,
         label: tier.label,
         qty: tier.quantity || 1,
-        unit: tier.unit || '',
+        unit: tier.unit || "",
         price: parseFloat(tier.price),
-        sort_order: tier.sort_order || 0
+        sort_order: tier.sort_order || 0,
       }))
       .sort((a: any, b: any) => a.sort_order - b.sort_order);
 
@@ -117,20 +128,21 @@ export async function GET(request: NextRequest) {
           quantity: 0,
           available_quantity: 0,
           reserved_quantity: 0,
-          stock_status: 'out_of_stock'
+          stock_status: "out_of_stock",
         },
         variants: variants || [],
-        has_variants: variants && variants.length > 0
-      }
+        has_variants: variants && variants.length > 0,
+      },
     };
 
     return NextResponse.json(response);
-
   } catch (error: any) {
-    console.error('Error looking up product by SKU:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error looking up product by SKU:", error);
+    }
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to lookup product' },
-      { status: 500 }
+      { success: false, error: error.message || "Failed to lookup product" },
+      { status: 500 },
     );
   }
 }
@@ -144,22 +156,23 @@ export async function POST(request: NextRequest) {
 
     if (!skus || !Array.isArray(skus) || skus.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'skus array is required' },
-        { status: 400 }
+        { success: false, error: "skus array is required" },
+        { status: 400 },
       );
     }
 
     if (!location_id) {
       return NextResponse.json(
-        { success: false, error: 'location_id is required' },
-        { status: 400 }
+        { success: false, error: "location_id is required" },
+        { status: 400 },
       );
     }
 
     // Search for products by SKUs
     const { data: products, error: productsError } = await supabase
-      .from('products')
-      .select(`
+      .from("products")
+      .select(
+        `
         id,
         name,
         sku,
@@ -173,30 +186,31 @@ export async function POST(request: NextRequest) {
         status,
         pricing_data,
         custom_fields
-      `)
-      .in('sku', skus)
-      .eq('status', 'published');
+      `,
+      )
+      .in("sku", skus)
+      .eq("status", "published");
 
     if (productsError) {
       throw new Error(productsError.message);
     }
 
     // Get inventory for all products at this location
-    const productIds = products?.map(p => p.id) || [];
+    const productIds = products?.map((p) => p.id) || [];
     const { data: inventories } = await supabase
-      .from('inventory')
-      .select('product_id, quantity, available_quantity, stock_status')
-      .in('product_id', productIds)
-      .eq('location_id', location_id);
+      .from("inventory")
+      .select("product_id, quantity, available_quantity, stock_status")
+      .in("product_id", productIds)
+      .eq("location_id", location_id);
 
     // Build inventory map
     const inventoryMap = new Map();
-    inventories?.forEach(inv => {
+    inventories?.forEach((inv) => {
       inventoryMap.set(inv.product_id, inv);
     });
 
     // Combine products with inventory and pricing tiers
-    const productsWithInventory = products?.map(product => {
+    const productsWithInventory = products?.map((product) => {
       // Extract pricing tiers from pricing_data
       const pricingData = product.pricing_data || {};
       const pricingTiers: any[] = (pricingData.tiers || [])
@@ -205,9 +219,9 @@ export async function POST(request: NextRequest) {
           break_id: tier.id,
           label: tier.label,
           qty: tier.quantity || 1,
-          unit: tier.unit || '',
+          unit: tier.unit || "",
           price: parseFloat(tier.price),
-          sort_order: tier.sort_order || 0
+          sort_order: tier.sort_order || 0,
         }))
         .sort((a: any, b: any) => a.sort_order - b.sort_order);
 
@@ -217,8 +231,8 @@ export async function POST(request: NextRequest) {
         inventory: inventoryMap.get(product.id) || {
           quantity: 0,
           available_quantity: 0,
-          stock_status: 'out_of_stock'
-        }
+          stock_status: "out_of_stock",
+        },
       };
     });
 
@@ -226,14 +240,15 @@ export async function POST(request: NextRequest) {
       success: true,
       products: productsWithInventory || [],
       found: productsWithInventory?.length || 0,
-      requested: skus.length
+      requested: skus.length,
     });
-
   } catch (error: any) {
-    console.error('Error batch looking up products:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error batch looking up products:", error);
+    }
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to lookup products' },
-      { status: 500 }
+      { success: false, error: error.message || "Failed to lookup products" },
+      { status: 500 },
     );
   }
 }

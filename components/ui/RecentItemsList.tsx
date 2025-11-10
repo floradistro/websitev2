@@ -3,9 +3,9 @@
  * Generic list for recent products, orders, activity, etc.
  */
 
-import Link from 'next/link';
-import { LucideIcon, Calendar } from 'lucide-react';
-import { ReactNode } from 'react';
+import Link from "next/link";
+import { LucideIcon, Calendar } from "lucide-react";
+import { ReactNode } from "react";
 
 interface RecentItem {
   id: string | number;
@@ -31,10 +31,10 @@ export function RecentItemsList({
   title,
   items,
   viewAllHref,
-  emptyMessage = 'No items yet',
+  emptyMessage = "No items yet",
   loading = false,
   renderItem,
-  className = '',
+  className = "",
 }: RecentItemsListProps) {
   return (
     <div className={`minimal-glass ${className}`}>
@@ -53,14 +53,19 @@ export function RecentItemsList({
       </div>
       <div className="divide-y divide-white/10">
         {loading ? (
-          <div className="p-12 text-center text-white/40 text-xs">Loading...</div>
+          <div className="p-12 text-center text-white/40 text-xs">
+            Loading...
+          </div>
         ) : items.length === 0 ? (
           <div className="p-12 text-center text-white/40 text-xs">
             {emptyMessage}
           </div>
         ) : (
           items.map((item) => (
-            <div key={item.id} className="p-6 hover:bg-white/[0.02] transition-all">
+            <div
+              key={item.id}
+              className="p-6 hover:bg-white/[0.02] transition-all"
+            >
               {renderItem ? (
                 renderItem(item)
               ) : (
@@ -76,19 +81,23 @@ export function RecentItemsList({
 
 function DefaultItemRenderer({ item }: { item: RecentItem }) {
   const ItemIcon = item.icon;
-  
+
   return (
     <div className="flex items-center gap-4">
       {item.image ? (
         <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden rounded-[8px]">
-          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+          <img
+            src={item.image}
+            alt={item.title}
+            className="w-full h-full object-cover"
+          />
         </div>
       ) : ItemIcon ? (
         <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 rounded-[8px]">
           <ItemIcon size={20} className="text-white/30" />
         </div>
       ) : null}
-      
+
       <div className="flex-1 min-w-0">
         <div className="text-white font-medium mb-1 text-sm">{item.title}</div>
         {item.subtitle && (
@@ -101,13 +110,10 @@ function DefaultItemRenderer({ item }: { item: RecentItem }) {
           </div>
         )}
       </div>
-      
+
       {item.status && (
-        <div className="flex items-center gap-3">
-          {item.status}
-        </div>
+        <div className="flex items-center gap-3">{item.status}</div>
       )}
     </div>
   );
 }
-

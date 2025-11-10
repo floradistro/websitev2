@@ -19,8 +19,8 @@ export type Promotion = {
   id: string;
   name: string;
   description?: string;
-  promotion_type: 'product' | 'category' | 'tier' | 'global';
-  discount_type: 'percentage' | 'fixed_amount';
+  promotion_type: "product" | "category" | "tier" | "global";
+  discount_type: "percentage" | "fixed_amount";
   discount_value: number;
   target_product_ids?: string[];
   target_categories?: string[];
@@ -56,7 +56,10 @@ export type PriceCalculation = {
 /**
  * Check if a promotion is currently active based on schedule
  */
-export function isPromotionActive(promo: Promotion, checkTime: Date = new Date()): boolean {
+export function isPromotionActive(
+  promo: Promotion,
+  checkTime: Date = new Date(),
+): boolean {
   if (!promo.is_active) return false;
 
   // Check date range
@@ -79,7 +82,10 @@ export function isPromotionActive(promo: Promotion, checkTime: Date = new Date()
   // Check time of day
   if (promo.time_of_day_start && promo.time_of_day_end) {
     const checkTimeOnly = checkTime.toTimeString().slice(0, 8); // HH:MM:SS
-    if (checkTimeOnly < promo.time_of_day_start || checkTimeOnly > promo.time_of_day_end) {
+    if (
+      checkTimeOnly < promo.time_of_day_start ||
+      checkTimeOnly > promo.time_of_day_end
+    ) {
       return false;
     }
   }
@@ -94,21 +100,21 @@ export function doesPromotionApply(
   promo: Promotion,
   product: Product,
   quantity: number = 1,
-  tierId?: string
+  tierId?: string,
 ): boolean {
   if (!isPromotionActive(promo)) return false;
 
   switch (promo.promotion_type) {
-    case 'product':
+    case "product":
       // Check if product is in target list
       return promo.target_product_ids?.includes(product.id) || false;
 
-    case 'category':
+    case "category":
       // Check if product category is in target list
       if (!product.category) return false;
       return promo.target_categories?.includes(product.category) || false;
 
-    case 'tier':
+    case "tier":
       // Check if tier meets minimum requirements
       if (!promo.target_tier_rules) return false;
 
@@ -122,7 +128,7 @@ export function doesPromotionApply(
       const maxGrams = promo.target_tier_rules.max_grams || Infinity;
       return quantity >= minGrams && quantity <= maxGrams;
 
-    case 'global':
+    case "global":
       // Applies to everything
       return true;
 
@@ -136,9 +142,9 @@ export function doesPromotionApply(
  */
 export function calculateDiscount(
   promo: Promotion,
-  originalPrice: number
+  originalPrice: number,
 ): number {
-  if (promo.discount_type === 'percentage') {
+  if (promo.discount_type === "percentage") {
     return originalPrice * (promo.discount_value / 100);
   } else {
     // fixed_amount
@@ -154,16 +160,18 @@ export function findBestPromotion(
   product: Product,
   activePromotions: Promotion[],
   quantity: number = 1,
-  tierId?: string
+  tierId?: string,
 ): Promotion | null {
   const applicablePromos = activePromotions.filter((promo) =>
-    doesPromotionApply(promo, product, quantity, tierId)
+    doesPromotionApply(promo, product, quantity, tierId),
   );
 
   if (applicablePromos.length === 0) return null;
 
   // Get base price
-  const basePrice = parseFloat(String(product.regular_price || product.price || 0));
+  const basePrice = parseFloat(
+    String(product.regular_price || product.price || 0),
+  );
 
   // Find promotion with highest savings
   let bestPromo: Promotion | null = null;
@@ -173,7 +181,11 @@ export function findBestPromotion(
     const savings = calculateDiscount(promo, basePrice);
 
     // If savings are equal, use priority
-    if (savings > maxSavings || (savings === maxSavings && (promo.priority || 0) > (bestPromo?.priority || 0))) {
+    if (
+      savings > maxSavings ||
+      (savings === maxSavings &&
+        (promo.priority || 0) > (bestPromo?.priority || 0))
+    ) {
       maxSavings = savings;
       bestPromo = promo;
     }
@@ -197,7 +209,7 @@ export function calculatePrice(
   activePromotions: Promotion[],
   quantity: number = 1,
   tierId?: string,
-  tierPrice?: number
+  tierPrice?: number,
 ): PriceCalculation {
   // Determine base price
   let originalPrice: number;
@@ -210,11 +222,18 @@ export function calculatePrice(
     originalPrice = parseFloat(String(product.pricing_tiers[tierId].price));
   } else {
     // Use regular price
-    originalPrice = parseFloat(String(product.regular_price || product.price || 0));
+    originalPrice = parseFloat(
+      String(product.regular_price || product.price || 0),
+    );
   }
 
   // Find best applicable promotion
-  const bestPromo = findBestPromotion(product, activePromotions, quantity, tierId);
+  const bestPromo = findBestPromotion(
+    product,
+    activePromotions,
+    quantity,
+    tierId,
+  );
 
   if (!bestPromo) {
     // No promotion applies
@@ -229,7 +248,8 @@ export function calculatePrice(
   // Calculate discount
   const savings = calculateDiscount(bestPromo, originalPrice);
   const finalPrice = Math.max(0, originalPrice - savings); // Don't go below $0
-  const discountPercentage = originalPrice > 0 ? (savings / originalPrice) * 100 : 0;
+  const discountPercentage =
+    originalPrice > 0 ? (savings / originalPrice) * 100 : 0;
 
   return {
     originalPrice,
@@ -240,7 +260,7 @@ export function calculatePrice(
     badge: bestPromo.badge_text
       ? {
           text: bestPromo.badge_text,
-          color: bestPromo.badge_color || 'red',
+          color: bestPromo.badge_color || "red",
         }
       : undefined,
   };
@@ -252,7 +272,7 @@ export function calculatePrice(
  */
 export function calculateTierPrices(
   product: Product,
-  activePromotions: Promotion[]
+  activePromotions: Promotion[],
 ): Record<string, PriceCalculation> {
   const result: Record<string, PriceCalculation> = {};
 
@@ -276,7 +296,7 @@ export function calculateTierPrices(
       activePromotions,
       quantity,
       tierId,
-      tierPrice
+      tierPrice,
     );
   }
 
@@ -294,12 +314,12 @@ export function formatPrice(price: number): string {
  * Format savings for display
  */
 export function formatSavings(savings: number): string {
-  return savings > 0 ? `-${formatPrice(savings)}` : '';
+  return savings > 0 ? `-${formatPrice(savings)}` : "";
 }
 
 /**
  * Format discount percentage for display
  */
 export function formatDiscountPercentage(percentage: number): string {
-  return percentage > 0 ? `${Math.round(percentage)}% OFF` : '';
+  return percentage > 0 ? `${Math.round(percentage)}% OFF` : "";
 }

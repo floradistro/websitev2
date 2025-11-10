@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { withErrorHandler } from '@/lib/api-handler';
-import { requireVendor } from '@/lib/auth/middleware';
-import OpenAI from 'openai';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { withErrorHandler } from "@/lib/api-handler";
+import { requireVendor } from "@/lib/auth/middleware";
+import OpenAI from "openai";
 
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {
   if (!openai) {
     openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || '',
+      apiKey: process.env.OPENAI_API_KEY || "",
     });
   }
   return openai;
@@ -19,13 +19,13 @@ function getOpenAI() {
 async function analyzeImageWithAI(imageUrl: string) {
   try {
     const response = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o',
+      model: "gpt-4o",
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: [
             {
-              type: 'text',
+              type: "text",
               text: `Analyze this image and return ONLY a JSON object with this exact structure:
 {
   "category": "product_photos" | "social_media" | "print_marketing" | "promotional" | "brand_assets" | "menus",
@@ -50,20 +50,20 @@ Categories:
 - "brand_assets": Logos, brand elements, templates, style guides
 - "menus": Menu boards, price lists, category headers, digital menus
 
-Respond with ONLY the JSON, no other text.`
+Respond with ONLY the JSON, no other text.`,
             },
             {
-              type: 'image_url',
+              type: "image_url",
               image_url: {
                 url: imageUrl,
-                detail: 'high'
-              }
-            }
-          ]
-        }
+                detail: "high",
+              },
+            },
+          ],
+        },
       ],
       max_tokens: 500,
-      temperature: 0.3
+      temperature: 0.3,
     });
 
     const content = response.choices[0]?.message?.content?.trim();
@@ -77,7 +77,9 @@ Respond with ONLY the JSON, no other text.`
 
     return analysis;
   } catch (error: any) {
-    console.error('❌ AI analysis error:', error.message);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ AI analysis error:", error.message);
+    }
     return null;
   }
 }
@@ -91,60 +93,65 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
-    const tag = searchParams.get('tag');
-    const search = searchParams.get('search');
-    const productId = searchParams.get('productId');
+    const category = searchParams.get("category");
+    const tag = searchParams.get("tag");
+    const search = searchParams.get("search");
+    const productId = searchParams.get("productId");
 
     const supabase = getServiceSupabase();
 
     // Build query
     let query = supabase
-      .from('vendor_media')
-      .select('*')
-      .eq('vendor_id', vendorId)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false });
+      .from("vendor_media")
+      .select("*")
+      .eq("vendor_id", vendorId)
+      .eq("status", "active")
+      .order("created_at", { ascending: false });
 
     // Apply filters
     if (category) {
-      query = query.eq('category', category);
+      query = query.eq("category", category);
     }
 
     if (tag) {
-      query = query.contains('ai_tags', [tag]);
+      query = query.contains("ai_tags", [tag]);
     }
 
     if (search) {
-      query = query.or(`file_name.ilike.%${search}%,ai_description.ilike.%${search}%,title.ilike.%${search}%`);
+      query = query.or(
+        `file_name.ilike.%${search}%,ai_description.ilike.%${search}%,title.ilike.%${search}%`,
+      );
     }
 
     if (productId) {
-      query = query.contains('linked_product_ids', [productId]);
+      query = query.contains("linked_product_ids", [productId]);
     }
 
     const { data: files, error } = await query;
 
     if (error) {
-      console.error('❌ Error listing files:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Error listing files:", error);
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Get smart collections stats
     const { data: stats } = await supabase
-      .from('vendor_media_smart_collections')
-      .select('*')
-      .eq('vendor_id', vendorId);
+      .from("vendor_media_smart_collections")
+      .select("*")
+      .eq("vendor_id", vendorId);
 
     return NextResponse.json({
       success: true,
       files: files || [],
       count: files?.length || 0,
-      smart_collections: stats?.[0] || null
+      smart_collections: stats?.[0] || null,
     });
-
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 });
@@ -158,41 +165,47 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     const { vendorId } = authResult;
 
     const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const category = formData.get('category') as string || 'product_photos';
-    const skipAI = formData.get('skipAI') === 'true';
+    const file = formData.get("file") as File;
+    const category = (formData.get("category") as string) || "product_photos";
+    const skipAI = formData.get("skipAI") === "true";
 
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({
-        error: 'Invalid file type. Only JPEG, PNG, and WebP are allowed.'
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Invalid file type. Only JPEG, PNG, and WebP are allowed.",
+        },
+        { status: 400 },
+      );
     }
 
     // Validate file size (10MB max)
     if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({
-        error: 'File too large. Maximum size is 10MB.'
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "File too large. Maximum size is 10MB.",
+        },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();
 
     // Sanitize filename
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const filePath = `${vendorId}/${sanitizedName}`;
 
     // Check if file already exists in database
     const { data: existingMedia } = await supabase
-      .from('vendor_media')
-      .select('file_name')
-      .eq('vendor_id', vendorId)
-      .eq('file_name', sanitizedName)
+      .from("vendor_media")
+      .select("file_name")
+      .eq("vendor_id", vendorId)
+      .eq("file_name", sanitizedName)
       .single();
 
     // Generate unique filename if exists
@@ -200,8 +213,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     let finalFilePath = filePath;
 
     if (existingMedia) {
-      const fileNameWithoutExt = sanitizedName.replace(/\.[^/.]+$/, '');
-      const fileExt = sanitizedName.split('.').pop();
+      const fileNameWithoutExt = sanitizedName.replace(/\.[^/.]+$/, "");
+      const fileExt = sanitizedName.split(".").pop();
       const timestamp = Date.now();
       finalFileName = `${fileNameWithoutExt}-${timestamp}.${fileExt}`;
       finalFilePath = `${vendorId}/${finalFileName}`;
@@ -211,21 +224,25 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     // Upload to Supabase Storage
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('vendor-product-images')
+      .from("vendor-product-images")
       .upload(finalFilePath, fileBuffer, {
         contentType: file.type,
-        cacheControl: '3600',
-        upsert: false
+        cacheControl: "3600",
+        upsert: false,
       });
 
     if (uploadError) {
-      console.error('❌ Upload error:', uploadError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Upload error:", uploadError);
+      }
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('vendor-product-images')
+    const {
+      data: { publicUrl },
+    } = supabase.storage
+      .from("vendor-product-images")
       .getPublicUrl(finalFilePath);
 
     // AI Analysis (optional, can be skipped for speed)
@@ -236,7 +253,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     // Save to database with metadata
     const { data: mediaRecord, error: dbError } = await supabase
-      .from('vendor_media')
+      .from("vendor_media")
       .insert({
         vendor_id: vendorId,
         file_name: finalFileName,
@@ -250,41 +267,44 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         dominant_colors: aiAnalysis?.colors || [],
         detected_content: aiAnalysis?.detected_content || {},
         quality_score: aiAnalysis?.quality_score,
-        status: 'active'
+        status: "active",
       })
       .select()
       .single();
 
     if (dbError) {
-      console.error('❌ Database error:', dbError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Database error:", dbError);
+      }
       // Still return success since file was uploaded
       return NextResponse.json({
         success: true,
-        warning: 'File uploaded but metadata save failed',
+        warning: "File uploaded but metadata save failed",
         file: {
           name: finalFileName,
           url: publicUrl,
           size: file.size,
           type: file.type,
-          category: category
-        }
+          category: category,
+        },
       });
     }
-
-    console.log('✅ Media uploaded and tagged:', finalFileName);
 
     return NextResponse.json({
       success: true,
       file: mediaRecord,
-      ai_analysis: aiAnalysis ? {
-        category_detected: aiAnalysis.category,
-        tags: aiAnalysis.tags,
-        quality: aiAnalysis.quality_score
-      } : null
+      ai_analysis: aiAnalysis
+        ? {
+            category_detected: aiAnalysis.category,
+            tags: aiAnalysis.tags,
+            quality: aiAnalysis.quality_score,
+          }
+        : null,
     });
-
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 });
@@ -298,10 +318,18 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const { id, category, custom_tags, title, alt_text, notes, linked_product_ids } = body;
+    const {
+      id,
+      category,
+      custom_tags,
+      title,
+      alt_text,
+      notes,
+      linked_product_ids,
+    } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'Media ID required' }, { status: 400 });
+      return NextResponse.json({ error: "Media ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -315,25 +343,28 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
     if (linked_product_ids) updateData.linked_product_ids = linked_product_ids;
 
     const { data, error } = await supabase
-      .from('vendor_media')
+      .from("vendor_media")
       .update(updateData)
-      .eq('id', id)
-      .eq('vendor_id', vendorId)
+      .eq("id", id)
+      .eq("vendor_id", vendorId)
       .select()
       .single();
 
     if (error) {
-      console.error('❌ Update error:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Update error:", error);
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
-      file: data
+      file: data,
     });
-
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 });
@@ -347,60 +378,68 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
     const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    const fileName = searchParams.get('file');
+    const id = searchParams.get("id");
+    const fileName = searchParams.get("file");
 
     if (!id && !fileName) {
-      return NextResponse.json({ error: 'Media ID or file name required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Media ID or file name required" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();
 
     // Get file info from database
     let query = supabase
-      .from('vendor_media')
-      .select('*')
-      .eq('vendor_id', vendorId);
+      .from("vendor_media")
+      .select("*")
+      .eq("vendor_id", vendorId);
 
     if (id) {
-      query = query.eq('id', id);
+      query = query.eq("id", id);
     } else {
-      query = query.eq('file_name', fileName);
+      query = query.eq("file_name", fileName);
     }
 
     const { data: mediaFile, error: fetchError } = await query.single();
 
     if (fetchError || !mediaFile) {
-      return NextResponse.json({ error: 'File not found' }, { status: 404 });
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
     // Delete from storage
     const { error: storageError } = await supabase.storage
-      .from('vendor-product-images')
+      .from("vendor-product-images")
       .remove([mediaFile.file_path]);
 
     if (storageError) {
-      console.error('❌ Storage delete error:', storageError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Storage delete error:", storageError);
+      }
     }
 
     // Delete from database
     const { error: dbError } = await supabase
-      .from('vendor_media')
+      .from("vendor_media")
       .delete()
-      .eq('id', mediaFile.id);
+      .eq("id", mediaFile.id);
 
     if (dbError) {
-      console.error('❌ Database delete error:', dbError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Database delete error:", dbError);
+      }
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
-      message: 'File deleted successfully'
+      message: "File deleted successfully",
     });
-
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 });

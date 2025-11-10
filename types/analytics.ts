@@ -7,9 +7,9 @@
 // Common Types
 // ============================================================================
 
-export type TimeRange = '7d' | '30d' | '90d' | '1y' | 'all';
-export type ChannelType = 'email' | 'sms' | 'all';
-export type PeriodType = 'daily' | 'weekly' | 'monthly';
+export type TimeRange = "7d" | "30d" | "90d" | "1y" | "all";
+export type ChannelType = "email" | "sms" | "all";
+export type PeriodType = "daily" | "weekly" | "monthly";
 
 export interface DateRange {
   start: Date;
@@ -20,7 +20,7 @@ export interface TrendData {
   value: number;
   change: number;
   changePercent: number;
-  direction: 'up' | 'down' | 'neutral';
+  direction: "up" | "down" | "neutral";
 }
 
 // ============================================================================
@@ -122,7 +122,7 @@ export interface ChannelPerformance {
 export interface Campaign {
   id: string;
   name: string;
-  type: 'email' | 'sms';
+  type: "email" | "sms";
   sentAt: string;
   sent: number;
   opened: number;
@@ -179,7 +179,7 @@ export interface StatCardProps {
   sublabel?: string;
   trend?: {
     value: string;
-    direction: 'up' | 'down' | 'neutral';
+    direction: "up" | "down" | "neutral";
   };
   icon?: React.ComponentType<any>;
   loading?: boolean;
@@ -206,7 +206,7 @@ export interface PaginationParams {
 
 export interface SortParams {
   field: string;
-  order: 'asc' | 'desc';
+  order: "asc" | "desc";
 }
 
 export interface FilterParams {

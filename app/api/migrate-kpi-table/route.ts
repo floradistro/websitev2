@@ -1,15 +1,15 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 export async function POST() {
   try {
     // Create the table
-    const { error: tableError } = await supabase.rpc('exec_sql', {
+    const { error: tableError } = await supabase.rpc("exec_sql", {
       query: `
         -- Create custom_kpi_widgets table
         CREATE TABLE IF NOT EXISTS custom_kpi_widgets (
@@ -112,27 +112,30 @@ export async function POST() {
 
         -- Grant permissions
         GRANT SELECT, INSERT, UPDATE, DELETE ON custom_kpi_widgets TO authenticated;
-      `
+      `,
     });
 
     if (tableError) {
-      console.error('Migration error:', tableError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Migration error:", tableError);
+      }
       return NextResponse.json(
         { success: false, error: tableError.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Migration completed successfully',
+      message: "Migration completed successfully",
     });
-
   } catch (error) {
-    console.error('Migration error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Migration error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

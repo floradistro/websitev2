@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,38 +11,38 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    console.log('📂 Fetching categories for vendor:', vendorId);
-
     // PERFORMANCE FIX: Fetch ONLY vendor categories (active ones) in a single query
     // No need to scan all products - categories table is the source of truth
     const { data: allCategories, error: categoriesError } = await supabase
-      .from('categories')
-      .select('name')
-      .eq('vendor_id', vendorId)
-      .eq('is_active', true)
-      .order('name');
+      .from("categories")
+      .select("name")
+      .eq("vendor_id", vendorId)
+      .eq("is_active", true)
+      .order("name");
 
     if (categoriesError) {
-      console.error('❌ Error fetching vendor categories:', categoriesError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Error fetching vendor categories:", categoriesError);
+      }
       return NextResponse.json(
         { success: false, error: categoriesError.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    const categories = (allCategories || []).map(c => c.name).filter(Boolean);
-
-    console.log('✅ Returning categories:', categories);
+    const categories = (allCategories || []).map((c) => c.name).filter(Boolean);
 
     return NextResponse.json({
       success: true,
-      categories
+      categories,
     });
   } catch (error: any) {
-    console.error('❌ Error in categories API:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Error in categories API:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,13 +1,26 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useVendorAuth } from '@/context/AppAuthContext';
-import { Plus, Users, Mail, Phone, MapPin, Search, Edit2, Trash2, Check, X, DollarSign, CreditCard } from 'lucide-react';
-import axios from 'axios';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { StatCard } from '@/components/ui/StatCard';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { useState, useEffect } from "react";
+import { useVendorAuth } from "@/context/AppAuthContext";
+import {
+  Plus,
+  Users,
+  Mail,
+  Phone,
+  MapPin,
+  Search,
+  Edit2,
+  Trash2,
+  Check,
+  X,
+  DollarSign,
+  CreditCard,
+} from "lucide-react";
+import axios from "axios";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 interface WholesaleCustomer {
   id: string;
@@ -35,33 +48,34 @@ export default function WholesaleCustomersPage() {
   const { vendor, isAuthenticated, isLoading: authLoading } = useVendorAuth();
   const [customers, setCustomers] = useState<WholesaleCustomer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [tierFilter, setTierFilter] = useState<string>('all');
+  const [search, setSearch] = useState("");
+  const [tierFilter, setTierFilter] = useState<string>("all");
   const [showModal, setShowModal] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<WholesaleCustomer | null>(null);
+  const [editingCustomer, setEditingCustomer] =
+    useState<WholesaleCustomer | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
-    external_company_name: '',
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-    billing_address_line1: '',
-    billing_city: '',
-    billing_state: '',
-    billing_postal_code: '',
-    billing_country: 'US',
-    shipping_address_line1: '',
-    shipping_city: '',
-    shipping_state: '',
-    shipping_postal_code: '',
-    shipping_country: 'US',
-    pricing_tier: 'wholesale',
+    external_company_name: "",
+    contact_name: "",
+    contact_email: "",
+    contact_phone: "",
+    billing_address_line1: "",
+    billing_city: "",
+    billing_state: "",
+    billing_postal_code: "",
+    billing_country: "US",
+    shipping_address_line1: "",
+    shipping_city: "",
+    shipping_state: "",
+    shipping_postal_code: "",
+    shipping_country: "US",
+    pricing_tier: "wholesale",
     discount_percent: 0,
-    payment_terms: 'Net 30',
+    payment_terms: "Net 30",
     credit_limit: 0,
-    tax_id: '',
-    notes: ''
+    tax_id: "",
+    notes: "",
   });
 
   useEffect(() => {
@@ -73,10 +87,14 @@ export default function WholesaleCustomersPage() {
   const loadCustomers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/vendor/wholesale-customers?vendor_id=${vendor!.id}`);
+      const response = await axios.get(
+        `/api/vendor/wholesale-customers?vendor_id=${vendor!.id}`,
+      );
       setCustomers(response.data.data || []);
     } catch (error) {
-      console.error('Error loading customers:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading customers:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -85,26 +103,26 @@ export default function WholesaleCustomersPage() {
   const openCreateModal = () => {
     setEditingCustomer(null);
     setFormData({
-      external_company_name: '',
-      contact_name: '',
-      contact_email: '',
-      contact_phone: '',
-      billing_address_line1: '',
-      billing_city: '',
-      billing_state: '',
-      billing_postal_code: '',
-      billing_country: 'US',
-      shipping_address_line1: '',
-      shipping_city: '',
-      shipping_state: '',
-      shipping_postal_code: '',
-      shipping_country: 'US',
-      pricing_tier: 'wholesale',
+      external_company_name: "",
+      contact_name: "",
+      contact_email: "",
+      contact_phone: "",
+      billing_address_line1: "",
+      billing_city: "",
+      billing_state: "",
+      billing_postal_code: "",
+      billing_country: "US",
+      shipping_address_line1: "",
+      shipping_city: "",
+      shipping_state: "",
+      shipping_postal_code: "",
+      shipping_country: "US",
+      pricing_tier: "wholesale",
       discount_percent: 0,
-      payment_terms: 'Net 30',
+      payment_terms: "Net 30",
       credit_limit: 0,
-      tax_id: '',
-      notes: ''
+      tax_id: "",
+      notes: "",
     });
     setShowModal(true);
   };
@@ -112,78 +130,92 @@ export default function WholesaleCustomersPage() {
   const openEditModal = (customer: WholesaleCustomer) => {
     setEditingCustomer(customer);
     setFormData({
-      external_company_name: customer.external_company_name || '',
-      contact_name: customer.contact_name || '',
-      contact_email: customer.contact_email || '',
-      contact_phone: customer.contact_phone || '',
-      billing_address_line1: '',
-      billing_city: customer.billing_city || '',
-      billing_state: customer.billing_state || '',
-      billing_postal_code: customer.billing_zip || '',
-      billing_country: 'US',
-      shipping_address_line1: '',
-      shipping_city: '',
-      shipping_state: '',
-      shipping_postal_code: '',
-      shipping_country: 'US',
-      pricing_tier: customer.pricing_tier || 'wholesale',
+      external_company_name: customer.external_company_name || "",
+      contact_name: customer.contact_name || "",
+      contact_email: customer.contact_email || "",
+      contact_phone: customer.contact_phone || "",
+      billing_address_line1: "",
+      billing_city: customer.billing_city || "",
+      billing_state: customer.billing_state || "",
+      billing_postal_code: customer.billing_zip || "",
+      billing_country: "US",
+      shipping_address_line1: "",
+      shipping_city: "",
+      shipping_state: "",
+      shipping_postal_code: "",
+      shipping_country: "US",
+      pricing_tier: customer.pricing_tier || "wholesale",
       discount_percent: customer.discount_percent || 0,
-      payment_terms: customer.payment_terms || 'Net 30',
+      payment_terms: customer.payment_terms || "Net 30",
       credit_limit: customer.credit_limit || 0,
-      tax_id: '',
-      notes: ''
+      tax_id: "",
+      notes: "",
     });
     setShowModal(true);
   };
 
   const handleSubmit = async () => {
     try {
-      const action = editingCustomer ? 'update' : 'create';
+      const action = editingCustomer ? "update" : "create";
       const payload = {
         action,
         vendor_id: vendor!.id,
         ...formData,
-        ...(editingCustomer && { id: editingCustomer.id })
+        ...(editingCustomer && { id: editingCustomer.id }),
       };
 
-      await axios.post('/api/vendor/wholesale-customers', payload);
+      await axios.post("/api/vendor/wholesale-customers", payload);
       setShowModal(false);
       loadCustomers();
     } catch (error) {
-      console.error('Error saving customer:', error);
-      alert('Failed to save customer');
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error saving customer:", error);
+      }
+      alert("Failed to save customer");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to deactivate this customer?')) return;
+    if (!confirm("Are you sure you want to deactivate this customer?")) return;
 
     try {
-      await axios.post('/api/vendor/wholesale-customers', {
-        action: 'delete',
+      await axios.post("/api/vendor/wholesale-customers", {
+        action: "delete",
         vendor_id: vendor!.id,
-        id
+        id,
       });
       loadCustomers();
     } catch (error) {
-      console.error('Error deleting customer:', error);
-      alert('Failed to delete customer');
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error deleting customer:", error);
+      }
+      alert("Failed to delete customer");
     }
   };
 
-  const getTierVariant = (tier: string): 'success' | 'warning' | 'error' | 'neutral' => {
+  const getTierVariant = (
+    tier: string,
+  ): "success" | "warning" | "error" | "neutral" => {
     switch (tier) {
-      case 'wholesale': return 'neutral';
-      case 'distributor': return 'warning';
-      case 'vip': return 'success';
-      default: return 'neutral';
+      case "wholesale":
+        return "neutral";
+      case "distributor":
+        return "warning";
+      case "vip":
+        return "success";
+      default:
+        return "neutral";
     }
   };
 
-  const filteredCustomers = customers.filter(c => {
-    if (tierFilter !== 'all' && c.pricing_tier !== tierFilter) return false;
+  const filteredCustomers = customers.filter((c) => {
+    if (tierFilter !== "all" && c.pricing_tier !== tierFilter) return false;
     const searchLower = search.toLowerCase();
-    const name = (c.external_company_name || c.customer_vendor?.business_name || '').toLowerCase();
+    const name = (
+      c.external_company_name ||
+      c.customer_vendor?.business_name ||
+      ""
+    ).toLowerCase();
     return name.includes(searchLower);
   });
 
@@ -224,7 +256,7 @@ export default function WholesaleCustomersPage() {
         />
         <StatCard
           label="Active"
-          value={customers.filter(c => c.is_active).length}
+          value={customers.filter((c) => c.is_active).length}
           sublabel="Currently Active"
           icon={Check}
           loading={loading}
@@ -232,7 +264,7 @@ export default function WholesaleCustomersPage() {
         />
         <StatCard
           label="Wholesale"
-          value={customers.filter(c => c.pricing_tier === 'wholesale').length}
+          value={customers.filter((c) => c.pricing_tier === "wholesale").length}
           sublabel="Standard Tier"
           icon={DollarSign}
           loading={loading}
@@ -240,7 +272,9 @@ export default function WholesaleCustomersPage() {
         />
         <StatCard
           label="Distributor"
-          value={customers.filter(c => c.pricing_tier === 'distributor').length}
+          value={
+            customers.filter((c) => c.pricing_tier === "distributor").length
+          }
           sublabel="Mid Tier"
           icon={DollarSign}
           loading={loading}
@@ -248,7 +282,7 @@ export default function WholesaleCustomersPage() {
         />
         <StatCard
           label="VIP"
-          value={customers.filter(c => c.pricing_tier === 'vip').length}
+          value={customers.filter((c) => c.pricing_tier === "vip").length}
           sublabel="Premium Tier"
           icon={DollarSign}
           loading={loading}
@@ -260,7 +294,10 @@ export default function WholesaleCustomersPage() {
       <Card className="mb-6" padding="sm">
         <div className="flex flex-col lg:flex-row gap-3">
           <div className="relative flex-1">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            <Search
+              size={18}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+            />
             <input
               type="text"
               placeholder="Search customers..."
@@ -288,7 +325,9 @@ export default function WholesaleCustomersPage() {
         <Card className="text-center" padding="lg">
           <Users size={48} className="text-white/20 mx-auto mb-4" />
           <div className="text-white/60 mb-2">No wholesale customers found</div>
-          <div className="text-white/40 text-sm mb-4">Add your first wholesale customer</div>
+          <div className="text-white/40 text-sm mb-4">
+            Add your first wholesale customer
+          </div>
           <button
             onClick={openCreateModal}
             className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-lg text-xs uppercase tracking-wider hover:bg-white/90 transition-all"
@@ -300,15 +339,13 @@ export default function WholesaleCustomersPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 spacing-grid">
           {filteredCustomers.map((customer) => (
-            <Card
-              key={customer.id}
-              hover={true}
-              className="group"
-            >
+            <Card key={customer.id} hover={true} className="group">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="text-white font-medium text-lg mb-1">
-                    {customer.external_company_name || customer.customer_vendor?.business_name || 'Unnamed'}
+                    {customer.external_company_name ||
+                      customer.customer_vendor?.business_name ||
+                      "Unnamed"}
                   </h3>
                   <div className="flex items-center gap-2 mb-2">
                     {customer.is_active ? (
@@ -328,7 +365,9 @@ export default function WholesaleCustomersPage() {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <DollarSign size={14} className="text-green-500" />
-                    <span className="text-green-500 font-medium">{customer.discount_percent}% Discount</span>
+                    <span className="text-green-500 font-medium">
+                      {customer.discount_percent}% Discount
+                    </span>
                   </div>
                 </div>
 
@@ -343,7 +382,10 @@ export default function WholesaleCustomersPage() {
                     onClick={() => handleDelete(customer.id)}
                     className="p-2 hover:bg-red-500/10 border border-white/10 hover:border-red-500 rounded-md transition-all"
                   >
-                    <Trash2 size={14} className="text-red-500/60 hover:text-red-500" />
+                    <Trash2
+                      size={14}
+                      className="text-red-500/60 hover:text-red-500"
+                    />
                   </button>
                 </div>
               </div>
@@ -367,7 +409,7 @@ export default function WholesaleCustomersPage() {
                     {customer.contact_phone}
                   </div>
                 )}
-                {(customer.billing_city && customer.billing_state) && (
+                {customer.billing_city && customer.billing_state && (
                   <div className="flex items-center gap-2 text-white/60">
                     <MapPin size={14} className="text-white/40" />
                     {customer.billing_city}, {customer.billing_state}
@@ -375,7 +417,8 @@ export default function WholesaleCustomersPage() {
                 )}
                 {customer.payment_terms && (
                   <div className="text-white/60">
-                    <span className="text-white/40">Terms:</span> {customer.payment_terms}
+                    <span className="text-white/40">Terms:</span>{" "}
+                    {customer.payment_terms}
                   </div>
                 )}
                 {customer.credit_limit && (
@@ -396,7 +439,7 @@ export default function WholesaleCustomersPage() {
           <div className="minimal-glass subtle-glow border border-white/20 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-white/10">
               <h2 className="text-xl text-white/90 font-light tracking-tight">
-                {editingCustomer ? 'Edit Customer' : 'Add Wholesale Customer'}
+                {editingCustomer ? "Edit Customer" : "Add Wholesale Customer"}
               </h2>
             </div>
 
@@ -410,20 +453,25 @@ export default function WholesaleCustomersPage() {
                   <input
                     type="text"
                     value={formData.external_company_name}
-                    onChange={(e) => setFormData({...formData, external_company_name: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        external_company_name: e.target.value,
+                      })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-label mb-2">
-                    Contact Name
-                  </label>
+                  <label className="block text-label mb-2">Contact Name</label>
                   <input
                     type="text"
                     value={formData.contact_name}
-                    onChange={(e) => setFormData({...formData, contact_name: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contact_name: e.target.value })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
@@ -431,25 +479,31 @@ export default function WholesaleCustomersPage() {
 
               <div className="grid grid-cols-2 spacing-grid">
                 <div>
-                  <label className="block text-label mb-2">
-                    Email
-                  </label>
+                  <label className="block text-label mb-2">Email</label>
                   <input
                     type="email"
                     value={formData.contact_email}
-                    onChange={(e) => setFormData({...formData, contact_email: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        contact_email: e.target.value,
+                      })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-label mb-2">
-                    Phone
-                  </label>
+                  <label className="block text-label mb-2">Phone</label>
                   <input
                     type="tel"
                     value={formData.contact_phone}
-                    onChange={(e) => setFormData({...formData, contact_phone: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        contact_phone: e.target.value,
+                      })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
@@ -460,12 +514,15 @@ export default function WholesaleCustomersPage() {
                 <h4 className="text-label mb-3">Pricing & Terms</h4>
                 <div className="grid grid-cols-4 spacing-grid">
                   <div>
-                    <label className="block text-label mb-2">
-                      Tier
-                    </label>
+                    <label className="block text-label mb-2">Tier</label>
                     <select
                       value={formData.pricing_tier}
-                      onChange={(e) => setFormData({...formData, pricing_tier: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          pricing_tier: e.target.value,
+                        })
+                      }
                       className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                     >
                       <option value="wholesale">Wholesale</option>
@@ -475,15 +532,18 @@ export default function WholesaleCustomersPage() {
                   </div>
 
                   <div>
-                    <label className="block text-label mb-2">
-                      Discount %
-                    </label>
+                    <label className="block text-label mb-2">Discount %</label>
                     <input
                       type="number"
                       min="0"
                       max="100"
                       value={formData.discount_percent}
-                      onChange={(e) => setFormData({...formData, discount_percent: parseFloat(e.target.value) || 0})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          discount_percent: parseFloat(e.target.value) || 0,
+                        })
+                      }
                       className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                     />
                   </div>
@@ -495,7 +555,12 @@ export default function WholesaleCustomersPage() {
                     <input
                       type="text"
                       value={formData.payment_terms}
-                      onChange={(e) => setFormData({...formData, payment_terms: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          payment_terms: e.target.value,
+                        })
+                      }
                       placeholder="Net 30"
                       className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                     />
@@ -509,7 +574,12 @@ export default function WholesaleCustomersPage() {
                       type="number"
                       min="0"
                       value={formData.credit_limit}
-                      onChange={(e) => setFormData({...formData, credit_limit: parseFloat(e.target.value) || 0})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          credit_limit: parseFloat(e.target.value) || 0,
+                        })
+                      }
                       className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                     />
                   </div>
@@ -524,7 +594,12 @@ export default function WholesaleCustomersPage() {
                     type="text"
                     placeholder="Street address"
                     value={formData.billing_address_line1}
-                    onChange={(e) => setFormData({...formData, billing_address_line1: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        billing_address_line1: e.target.value,
+                      })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
 
@@ -533,21 +608,36 @@ export default function WholesaleCustomersPage() {
                       type="text"
                       placeholder="City"
                       value={formData.billing_city}
-                      onChange={(e) => setFormData({...formData, billing_city: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          billing_city: e.target.value,
+                        })
+                      }
                       className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                     />
                     <input
                       type="text"
                       placeholder="State"
                       value={formData.billing_state}
-                      onChange={(e) => setFormData({...formData, billing_state: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          billing_state: e.target.value,
+                        })
+                      }
                       className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                     />
                     <input
                       type="text"
                       placeholder="ZIP"
                       value={formData.billing_postal_code}
-                      onChange={(e) => setFormData({...formData, billing_postal_code: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          billing_postal_code: e.target.value,
+                        })
+                      }
                       className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                     />
                   </div>
@@ -566,7 +656,7 @@ export default function WholesaleCustomersPage() {
                 onClick={handleSubmit}
                 className="px-6 py-3 rounded-lg text-xs uppercase tracking-wider bg-white text-black hover:bg-white/90 transition-all"
               >
-                {editingCustomer ? 'Update' : 'Create'} Customer
+                {editingCustomer ? "Update" : "Create"} Customer
               </button>
             </div>
           </div>

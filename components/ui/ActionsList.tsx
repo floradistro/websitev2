@@ -3,8 +3,8 @@
  * List of clickable action items with icons
  */
 
-import Link from 'next/link';
-import { LucideIcon, ArrowUpRight } from 'lucide-react';
+import Link from "next/link";
+import { LucideIcon, ArrowUpRight } from "lucide-react";
 
 interface Action {
   id: string | number;
@@ -21,7 +21,11 @@ interface ActionsListProps {
   className?: string;
 }
 
-export function ActionsList({ title, actions, className = '' }: ActionsListProps) {
+export function ActionsList({
+  title,
+  actions,
+  className = "",
+}: ActionsListProps) {
   return (
     <div className={`minimal-glass ${className}`}>
       <div className="mb-6 p-6 border-b border-white/5">
@@ -38,15 +42,20 @@ export function ActionsList({ title, actions, className = '' }: ActionsListProps
                 <Icon size={16} className="text-white/60" strokeWidth={1.5} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-light mb-0.5">{action.title}</p>
+                <p className="text-white text-sm font-light mb-0.5">
+                  {action.title}
+                </p>
                 {action.description && (
                   <p className="text-white/40 text-xs">{action.description}</p>
                 )}
               </div>
-              <ArrowUpRight size={14} className="text-white/40 group-hover:text-white/60 transition-colors" />
+              <ArrowUpRight
+                size={14}
+                className="text-white/40 group-hover:text-white/60 transition-colors"
+              />
             </div>
           );
-          
+
           if (action.onClick) {
             return (
               <button
@@ -58,7 +67,7 @@ export function ActionsList({ title, actions, className = '' }: ActionsListProps
               </button>
             );
           }
-          
+
           return (
             <Link key={action.id} href={action.href}>
               {content}
@@ -69,4 +78,3 @@ export function ActionsList({ title, actions, className = '' }: ActionsListProps
     </div>
   );
 }
-

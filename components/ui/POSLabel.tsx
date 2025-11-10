@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface POSLabelProps {
   children: React.ReactNode;
@@ -14,7 +14,7 @@ export interface POSLabelProps {
 export function POSLabel({
   children,
   required,
-  className = '',
+  className = "",
   htmlFor,
 }: POSLabelProps) {
   return (

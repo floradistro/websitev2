@@ -1,1 +1,17 @@
-var r=class{constructor(){this.subscribers=new Set;}subscribe(s){this.subscribers.add(s);}unsubscribe(s){this.subscribers.has(s)&&this.subscribers.delete(s);}notify(s){for(let e of this.subscribers)e(s);}},i=new r,b=i;export{r as a,b};
+var r = class {
+    constructor() {
+      this.subscribers = new Set();
+    }
+    subscribe(s) {
+      this.subscribers.add(s);
+    }
+    unsubscribe(s) {
+      this.subscribers.has(s) && this.subscribers.delete(s);
+    }
+    notify(s) {
+      for (let e of this.subscribers) e(s);
+    }
+  },
+  i = new r(),
+  b = i;
+export { r as a, b };

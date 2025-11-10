@@ -1,23 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   const params = await context.params;
   const startTime = Date.now();
-  
+
   try {
     const { id } = params;
     const supabase = getServiceSupabase();
-    
+
     // Try to find by UUID first, then by slug
-    let productQuery = supabase
-      .from('products')
-      .select(`
+    let productQuery = supabase.from("products").select(`
         *,
         vendor:vendors(
           id,
@@ -37,31 +35,32 @@ export async function GET(
           location:locations(id, name, city, state)
         )
       `);
-    
+
     // Check if id looks like UUID or is a slug
-    if (id.includes('-') && id.length === 36) {
-      productQuery = productQuery.eq('id', id);
+    if (id.includes("-") && id.length === 36) {
+      productQuery = productQuery.eq("id", id);
     } else {
-      productQuery = productQuery.eq('slug', id);
+      productQuery = productQuery.eq("slug", id);
     }
-    
+
     // Get product first
     const productResult = await productQuery.single();
-    
+
     if (productResult.error) throw productResult.error;
     if (!productResult.data) {
       return NextResponse.json(
-        { success: false, error: 'Product not found' },
-        { status: 404 }
+        { success: false, error: "Product not found" },
+        { status: 404 },
       );
     }
-    
+
     const p = productResult.data;
-    
+
     // Now get pricing tiers using the actual product UUID
     const pricingResult = await supabase
-      .from('product_pricing_assignments')
-      .select(`
+      .from("product_pricing_assignments")
+      .select(
+        `
         product_id,
         price_overrides,
         blueprint:pricing_tier_blueprints(
@@ -69,68 +68,76 @@ export async function GET(
           name,
           price_breaks
         )
-      `)
-      .eq('product_id', p.id)
-      .eq('is_active', true)
+      `,
+      )
+      .eq("product_id", p.id)
+      .eq("is_active", true)
       .single();
-    
+
     // Get related products from same vendor with inventory
     const relatedResult = await supabase
-      .from('products')
-      .select(`
+      .from("products")
+      .select(
+        `
         id, 
         name, 
         slug, 
         price, 
         featured_image_storage,
         inventory(quantity)
-      `)
-      .eq('vendor_id', p.vendor_id)
-      .eq('status', 'published')
-      .neq('id', id)
+      `,
+      )
+      .eq("vendor_id", p.vendor_id)
+      .eq("status", "published")
+      .neq("id", id)
       .limit(4);
-    
+
     // Extract blueprint fields (handle both array and object)
     const fields: { [key: string]: any } = {};
     const blueprintFields = p.custom_fields || {};
-    
+
     // Label to field_id mapping
     const labelToFieldId: { [key: string]: string } = {
-      'Strain Type': 'strain_type',
-      'Genetics': 'genetics',
-      'THC Content': 'thc_content',
-      'CBD Content': 'cbd_content',
-      'Dominant Terpenes': 'terpenes',
-      'Effects': 'effects',
-      'Flavors': 'flavors',
-      'Lineage': 'lineage',
-      'Nose': 'nose',
+      "Strain Type": "strain_type",
+      Genetics: "genetics",
+      "THC Content": "thc_content",
+      "CBD Content": "cbd_content",
+      "Dominant Terpenes": "terpenes",
+      Effects: "effects",
+      Flavors: "flavors",
+      Lineage: "lineage",
+      Nose: "nose",
     };
-    
+
     if (Array.isArray(blueprintFields)) {
       // Handle all array formats
       blueprintFields.forEach((field: any) => {
         if (field) {
           // New format with label/value from our strain update
           if (field.label && field.value !== undefined) {
-            const fieldId = labelToFieldId[field.label] || field.label.toLowerCase().replace(/\s+/g, '_');
+            const fieldId =
+              labelToFieldId[field.label] ||
+              field.label.toLowerCase().replace(/\s+/g, "_");
             fields[fieldId] = field.value;
           }
           // Old format: {field_name, field_value}
           else if (field.field_name && field.field_value !== undefined) {
             fields[field.field_name] = field.field_value;
-          } 
+          }
           // Another format: {field_id, value}
           else if (field.field_id && field.value !== undefined) {
             fields[field.field_id] = field.value;
           }
         }
       });
-    } else if (typeof blueprintFields === 'object' && blueprintFields !== null) {
+    } else if (
+      typeof blueprintFields === "object" &&
+      blueprintFields !== null
+    ) {
       // New format: direct object
       Object.assign(fields, blueprintFields);
     }
-    
+
     // Format images array for frontend
     const images: any[] = [];
     if (p.featured_image_storage) {
@@ -143,29 +150,36 @@ export async function GET(
         }
       });
     }
-    
+
     // Build pricing tiers from assignment
     let pricingTiers: any[] = [];
-    const blueprint = Array.isArray(pricingResult.data?.blueprint) ? pricingResult.data.blueprint[0] : pricingResult.data?.blueprint;
+    const blueprint = Array.isArray(pricingResult.data?.blueprint)
+      ? pricingResult.data.blueprint[0]
+      : pricingResult.data?.blueprint;
     if (blueprint?.price_breaks && pricingResult.data) {
       const basePrice = p.price ? parseFloat(p.price) : 0;
       pricingTiers = blueprint.price_breaks.map((priceBreak: any) => {
-        const overridePrice = pricingResult.data?.price_overrides?.[priceBreak.break_id];
-        
+        const overridePrice =
+          pricingResult.data?.price_overrides?.[priceBreak.break_id];
+
         return {
           qty: priceBreak.qty,
           weight: `${priceBreak.qty}${priceBreak.unit}`,
-          price: overridePrice || (basePrice * priceBreak.qty),
+          price: overridePrice || basePrice * priceBreak.qty,
           label: priceBreak.label,
           min_quantity: priceBreak.qty,
         };
       });
     }
-    
+
     // Calculate actual stock from inventory
-    const totalStock = p.inventory?.reduce((sum: number, inv: any) => sum + (inv.quantity || 0), 0) || 0;
-    const actualStockStatus = totalStock > 0 ? 'instock' : 'outofstock';
-    
+    const totalStock =
+      p.inventory?.reduce(
+        (sum: number, inv: any) => sum + (inv.quantity || 0),
+        0,
+      ) || 0;
+    const actualStockStatus = totalStock > 0 ? "instock" : "outofstock";
+
     // Build response
     const product = {
       id: p.id,
@@ -191,52 +205,61 @@ export async function GET(
       created_at: p.created_at,
       updated_at: p.updated_at,
     };
-    
+
     const relatedProducts = (relatedResult.data || []).map((rp: any) => {
       // Calculate actual stock from inventory
-      const rpTotalStock = rp.inventory?.reduce((sum: number, inv: any) => sum + (inv.quantity || 0), 0) || 0;
-      const rpStockStatus = rpTotalStock > 0 ? 'instock' : 'outofstock';
-      
+      const rpTotalStock =
+        rp.inventory?.reduce(
+          (sum: number, inv: any) => sum + (inv.quantity || 0),
+          0,
+        ) || 0;
+      const rpStockStatus = rpTotalStock > 0 ? "instock" : "outofstock";
+
       return {
         id: rp.id,
         name: rp.name,
         slug: rp.slug,
         price: rp.price,
-        images: rp.featured_image_storage ? [{ src: rp.featured_image_storage, id: 0, name: rp.name }] : [],
+        images: rp.featured_image_storage
+          ? [{ src: rp.featured_image_storage, id: 0, name: rp.name }]
+          : [],
         stock_quantity: rpTotalStock,
         stock_status: rpStockStatus,
       };
     });
-    
+
     const responseTime = Date.now() - startTime;
-    
-    return NextResponse.json({
-      success: true,
-      data: {
-        product: product,
-        relatedProducts: relatedProducts,
-      },
-      meta: {
-        responseTime: `${responseTime}ms`,
-        hasInventory: product.inventory.length > 0,
-        totalStock: product.total_stock,
-      }
-    }, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=30',
-        'X-Response-Time': `${responseTime}ms`,
-      }
-    });
-    
-  } catch (error: any) {
-    console.error(`❌ Error in /api/page-data/product/${params.id}:`, error);
+
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error.message || 'Failed to fetch product data'
+      {
+        success: true,
+        data: {
+          product: product,
+          relatedProducts: relatedProducts,
+        },
+        meta: {
+          responseTime: `${responseTime}ms`,
+          hasInventory: product.inventory.length > 0,
+          totalStock: product.total_stock,
+        },
       },
-      { status: 500 }
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=30",
+          "X-Response-Time": `${responseTime}ms`,
+        },
+      },
+    );
+  } catch (error: any) {
+    if (process.env.NODE_ENV === "development") {
+      console.error(`❌ Error in /api/page-data/product/${params.id}:`, error);
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || "Failed to fetch product data",
+      },
+      { status: 500 },
     );
   }
 }
-

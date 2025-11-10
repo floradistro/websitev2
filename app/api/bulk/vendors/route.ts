@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * Bulk Vendors API - Fast vendor fetching
@@ -9,12 +9,12 @@ import { getServiceSupabase } from '@/lib/supabase/client';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = Math.min(parseInt(searchParams.get('limit') || '100'), 500);
-    const status = searchParams.get('status') || 'active';
-    const includeLocations = searchParams.get('include_locations') === 'true';
+    const limit = Math.min(parseInt(searchParams.get("limit") || "100"), 500);
+    const status = searchParams.get("status") || "active";
+    const includeLocations = searchParams.get("include_locations") === "true";
 
     const supabase = getServiceSupabase();
-    
+
     let selectQuery = `
       id,
       email,
@@ -48,12 +48,12 @@ export async function GET(request: NextRequest) {
     }
 
     let query = supabase
-      .from('vendors')
+      .from("vendors")
       .select(selectQuery)
-      .order('store_name', { ascending: true });
+      .order("store_name", { ascending: true });
 
     if (status) {
-      query = query.eq('status', status);
+      query = query.eq("status", status);
     }
 
     query = query.limit(limit);
@@ -61,26 +61,33 @@ export async function GET(request: NextRequest) {
     const { data: vendors, error } = await query;
 
     if (error) {
-      console.error('Bulk vendors error:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Bulk vendors error:", error);
+      }
       return NextResponse.json(
-        { error: 'Failed to fetch vendors' },
-        { status: 500 }
+        { error: "Failed to fetch vendors" },
+        { status: 500 },
       );
     }
 
-    return NextResponse.json({
-      vendors: vendors || [],
-      count: vendors?.length || 0
-    }, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
-      }
-    });
-  } catch (error) {
-    console.error('Bulk vendors error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        vendors: vendors || [],
+        count: vendors?.length || 0,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
+        },
+      },
+    );
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Bulk vendors error:", error);
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -94,43 +101,51 @@ export async function POST(request: NextRequest) {
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
       return NextResponse.json(
-        { error: 'Invalid request: ids array required' },
-        { status: 400 }
+        { error: "Invalid request: ids array required" },
+        { status: 400 },
       );
     }
 
     const supabase = getServiceSupabase();
-    
+
     const { data: vendors, error } = await supabase
-      .from('vendors')
-      .select(`
+      .from("vendors")
+      .select(
+        `
         *,
         locations(*)
-      `)
-      .in('id', ids);
+      `,
+      )
+      .in("id", ids);
 
     if (error) {
-      console.error('Bulk vendors fetch error:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Bulk vendors fetch error:", error);
+      }
       return NextResponse.json(
-        { error: 'Failed to fetch vendors' },
-        { status: 500 }
+        { error: "Failed to fetch vendors" },
+        { status: 500 },
       );
     }
 
-    return NextResponse.json({
-      vendors: vendors || [],
-      count: vendors?.length || 0
-    }, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
-      }
-    });
-  } catch (error) {
-    console.error('Bulk vendors error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      {
+        vendors: vendors || [],
+        count: vendors?.length || 0,
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
+        },
+      },
+    );
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("Bulk vendors error:", error);
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
-

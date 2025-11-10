@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * GET - Get single TV menu by ID
  */
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   const supabase = getServiceSupabase();
 
@@ -14,27 +14,33 @@ export async function GET(
     const { id } = await context.params;
 
     const { data: menu, error } = await supabase
-      .from('tv_menus')
-      .select('*')
-      .eq('id', id)
+      .from("tv_menus")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) {
-      console.error('Error fetching TV menu:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching TV menu:", error);
+      }
       throw error;
     }
 
     return NextResponse.json({
       success: true,
-      menu
+      menu,
     });
-
   } catch (error: any) {
-    console.error('TV menu fetch error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to fetch TV menu'
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("TV menu fetch error:", error);
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || "Failed to fetch TV menu",
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -43,7 +49,7 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   const supabase = getServiceSupabase();
 
@@ -58,11 +64,11 @@ export async function PUT(
       menu_type,
       is_active,
       is_template,
-      display_order
+      display_order,
     } = body;
 
     const updates: any = {
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
 
     if (name !== undefined) updates.name = name;
@@ -74,14 +80,16 @@ export async function PUT(
     if (display_order !== undefined) updates.display_order = display_order;
 
     const { data: menu, error } = await supabase
-      .from('tv_menus')
+      .from("tv_menus")
       .update(updates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
     if (error) {
-      console.error('Error updating TV menu:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error updating TV menu:", error);
+      }
       throw error;
     }
 
@@ -92,15 +100,19 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      menu
+      menu,
     });
-
   } catch (error: any) {
-    console.error('TV menu update error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to update TV menu'
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("TV menu update error:", error);
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || "Failed to update TV menu",
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -109,33 +121,36 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   const supabase = getServiceSupabase();
 
   try {
     const { id } = await context.params;
 
-    const { error } = await supabase
-      .from('tv_menus')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("tv_menus").delete().eq("id", id);
 
     if (error) {
-      console.error('Error deleting TV menu:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error deleting TV menu:", error);
+      }
       throw error;
     }
 
     return NextResponse.json({
-      success: true
+      success: true,
     });
-
   } catch (error: any) {
-    console.error('TV menu deletion error:', error);
-    return NextResponse.json({
-      success: false,
-      error: error.message || 'Failed to delete TV menu'
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("TV menu deletion error:", error);
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message || "Failed to delete TV menu",
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -148,23 +163,23 @@ async function sendMenuUpdateCommand(menuId: string) {
   try {
     // Get all devices using this menu
     const { data: devices } = await supabase
-      .from('tv_devices')
-      .select('id')
-      .eq('active_menu_id', menuId);
+      .from("tv_devices")
+      .select("id")
+      .eq("active_menu_id", menuId);
 
     if (!devices || devices.length === 0) return;
 
     // Send reload command to each device
-    const commands = devices.map(device => ({
+    const commands = devices.map((device) => ({
       tv_device_id: device.id,
-      command_type: 'reload',
-      payload: { menu_id: menuId }
+      command_type: "reload",
+      payload: { menu_id: menuId },
     }));
 
-    await supabase.from('tv_commands').insert(commands);
-
-    console.log(`✅ Sent reload commands to ${devices.length} devices`);
+    await supabase.from("tv_commands").insert(commands);
   } catch (error) {
-    console.error('Error sending menu update commands:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error sending menu update commands:", error);
+    }
   }
 }

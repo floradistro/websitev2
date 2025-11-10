@@ -1,19 +1,40 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 export async function POST(request: NextRequest) {
   try {
     const {
-      menuId, name, description, theme, display_mode, gridColumns, gridRows, categories, customFields, customFieldsConfig,
-      visible_price_breaks, categoryPricingConfig, hideAllFieldLabels, displayMode, layoutStyle, splitLeftCategory, splitLeftTitle,
-      splitLeftCustomFields, splitLeftPriceBreaks, splitRightCategory, splitRightTitle,
-      splitRightCustomFields, splitRightPriceBreaks, enableCarousel, carouselInterval
+      menuId,
+      name,
+      description,
+      theme,
+      display_mode,
+      gridColumns,
+      gridRows,
+      categories,
+      customFields,
+      customFieldsConfig,
+      visible_price_breaks,
+      categoryPricingConfig,
+      hideAllFieldLabels,
+      displayMode,
+      layoutStyle,
+      splitLeftCategory,
+      splitLeftTitle,
+      splitLeftCustomFields,
+      splitLeftPriceBreaks,
+      splitRightCategory,
+      splitRightTitle,
+      splitRightCustomFields,
+      splitRightPriceBreaks,
+      enableCarousel,
+      carouselInterval,
     } = await request.json();
 
     if (!menuId) {
       return NextResponse.json(
-        { success: false, error: 'Menu ID required' },
-        { status: 400 }
+        { success: false, error: "Menu ID required" },
+        { status: 400 },
       );
     }
 
@@ -83,31 +104,35 @@ export async function POST(request: NextRequest) {
     }
 
     const { data, error } = await supabase
-      .from('tv_menus')
+      .from("tv_menus")
       .update({
         name,
         description: description || null,
         theme,
-        display_mode: display_mode || 'dense',
-        config_data
+        display_mode: display_mode || "dense",
+        config_data,
       })
-      .eq('id', menuId)
+      .eq("id", menuId)
       .select();
 
     if (error) {
-      console.error('Error updating menu:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error updating menu:", error);
+      }
       return NextResponse.json(
         { success: false, error: error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({ success: true, menu: data[0] });
   } catch (error: any) {
-    console.error('Error in update menu API:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in update menu API:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

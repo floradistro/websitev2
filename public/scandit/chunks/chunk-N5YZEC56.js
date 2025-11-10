@@ -1,1 +1,3 @@
-var e=new Set,t=e;export{t as a};
+var e = new Set(),
+  t = e;
+export { t as a };

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from "react";
 
 /**
  * Hook that pauses operations when page is hidden
@@ -20,7 +20,7 @@ export function useVisibilityPause() {
         // Page hidden - pause after 5 seconds
         timeoutRef.current = setTimeout(() => {
           setIsPaused(true);
-          console.log('🔵 Page hidden - pausing operations');
+          console.log("🔵 Page hidden - pausing operations");
         }, 5000);
       } else {
         // Page visible - resume immediately
@@ -28,17 +28,17 @@ export function useVisibilityPause() {
           clearTimeout(timeoutRef.current);
         }
         setIsPaused(false);
-        console.log('✅ Page visible - resuming operations');
+        console.log("✅ Page visible - resuming operations");
       }
     };
 
     // Set initial state
     handleVisibilityChange();
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -73,7 +73,7 @@ export function useFetchWithCleanup() {
 
   const fetchWithCleanup = async <T = any>(
     url: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> => {
     // Cancel previous fetch
     if (abortControllerRef.current) {
@@ -97,4 +97,3 @@ export function useFetchWithCleanup() {
 
   return { fetchWithCleanup, isPaused };
 }
-

@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Star, Gift, Heart, Check, AlertCircle, Info, CheckCircle, AlertTriangle } from "lucide-react";
+import {
+  X,
+  Star,
+  Gift,
+  Heart,
+  Check,
+  AlertCircle,
+  Info,
+  CheckCircle,
+  AlertTriangle,
+} from "lucide-react";
 import Image from "next/image";
 
 interface Notification {
@@ -33,7 +43,7 @@ export function showNotification(notification: Omit<Notification, "id">) {
     id: Date.now().toString() + Math.random(),
     duration: notification.duration || 5000,
   };
-  
+
   notificationCallbacks.forEach((callback) => callback(fullNotification));
 }
 
@@ -70,7 +80,9 @@ export function showWarning(message: string, title: string = "Warning") {
   });
 }
 
-export function showConfirm(options: Omit<ConfirmDialog, "id">): Promise<boolean> {
+export function showConfirm(
+  options: Omit<ConfirmDialog, "id">,
+): Promise<boolean> {
   return new Promise((resolve) => {
     const dialog: ConfirmDialog = {
       ...options,
@@ -86,7 +98,7 @@ export function showConfirm(options: Omit<ConfirmDialog, "id">): Promise<boolean
         resolve(false);
       },
     };
-    
+
     confirmCallbacks.forEach((callback) => callback(dialog));
   });
 }
@@ -98,9 +110,11 @@ export default function NotificationToast() {
   useEffect(() => {
     const notifCallback = (notification: Notification) => {
       setNotifications((prev) => [...prev, notification]);
-      
+
       setTimeout(() => {
-        setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
+        setNotifications((prev) =>
+          prev.filter((n) => n.id !== notification.id),
+        );
       }, notification.duration || 5000);
     };
 
@@ -112,8 +126,12 @@ export default function NotificationToast() {
     confirmCallbacks.push(confirmCallback);
 
     return () => {
-      notificationCallbacks = notificationCallbacks.filter((cb) => cb !== notifCallback);
-      confirmCallbacks = confirmCallbacks.filter((cb) => cb !== confirmCallback);
+      notificationCallbacks = notificationCallbacks.filter(
+        (cb) => cb !== notifCallback,
+      );
+      confirmCallbacks = confirmCallbacks.filter(
+        (cb) => cb !== confirmCallback,
+      );
     };
   }, []);
 
@@ -137,10 +155,12 @@ export default function NotificationToast() {
 
   const getIcon = (notification: Notification) => {
     if (notification.icon) return notification.icon;
-    
+
     switch (notification.type) {
       case "points":
-        return <Star size={18} className="text-amber-400" fill="currentColor" />;
+        return (
+          <Star size={18} className="text-amber-400" fill="currentColor" />
+        );
       case "tier":
         return <Gift size={18} className="text-purple-400" />;
       case "success":
@@ -194,30 +214,35 @@ export default function NotificationToast() {
           <div
             key={notification.id}
             className={`bg-gradient-to-br ${getBgColor(notification.type)} border backdrop-blur-xl shadow-2xl animate-slideIn pointer-events-auto`}
-            style={{ 
+            style={{
               boxShadow: `0 20px 60px -15px rgba(0,0,0,0.8), 0 0 40px -10px currentColor`,
             }}
           >
             <div className="flex items-start gap-3 p-4">
               {/* Yacht Club Watermark */}
               <div className="absolute top-2 right-2 opacity-5 pointer-events-none">
-                <Image 
-                  src="/yacht-club-logo.png" 
-                  alt="" 
-                  width={32} 
+                <Image
+                  src="/yacht-club-logo.png"
+                  alt=""
+                  width={32}
                   height={32}
                   className="object-contain"
                 />
               </div>
-              
+
               <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center flex-shrink-0 mt-0.5 border border-white/10">
                 {getIcon(notification)}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-medium text-white mb-1 tracking-tight uppercase" style={{ letterSpacing: '0.1em' }}>
+                <h4
+                  className="text-sm font-medium text-white mb-1 tracking-tight uppercase"
+                  style={{ letterSpacing: "0.1em" }}
+                >
                   {notification.title}
                 </h4>
-                <p className="text-xs text-white/70 leading-relaxed font-light">{notification.message}</p>
+                <p className="text-xs text-white/70 leading-relaxed font-light">
+                  {notification.message}
+                </p>
               </div>
               <button
                 onClick={() => removeNotification(notification.id)}
@@ -234,24 +259,24 @@ export default function NotificationToast() {
       {confirmDialogs.length > 0 && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center px-4">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/80 backdrop-blur-md animate-fadeIn"
             onClick={() => handleCancel(confirmDialogs[0])}
           />
-          
+
           {/* Dialog */}
-          <div 
+          <div
             className={`relative bg-[#1a1a1a] border ${getDialogColor(confirmDialogs[0].type)} max-w-md w-full animate-scaleIn shadow-2xl`}
             style={{
-              boxShadow: '0 25px 100px -20px rgba(0,0,0,0.9)',
+              boxShadow: "0 25px 100px -20px rgba(0,0,0,0.9)",
             }}
           >
             {/* Yacht Club Branding */}
             <div className="absolute top-4 right-4 opacity-5">
-              <Image 
-                src="/yacht-club-logo.png" 
-                alt="" 
-                width={48} 
+              <Image
+                src="/yacht-club-logo.png"
+                alt=""
+                width={48}
                 height={48}
                 className="object-contain"
               />
@@ -265,7 +290,7 @@ export default function NotificationToast() {
               <p className="text-sm text-white/70 leading-relaxed mb-8 font-light">
                 {confirmDialogs[0].message}
               </p>
-              
+
               <div className="flex gap-3">
                 <button
                   onClick={() => handleCancel(confirmDialogs[0])}
@@ -276,11 +301,11 @@ export default function NotificationToast() {
                 <button
                   onClick={() => handleConfirm(confirmDialogs[0])}
                   className={`flex-1 px-6 py-3 transition-all duration-300 text-xs uppercase tracking-wider font-medium ${
-                    confirmDialogs[0].type === 'danger'
-                      ? 'bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 hover:border-red-500/50'
-                      : confirmDialogs[0].type === 'warning'
-                      ? 'bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/30 hover:border-yellow-500/50'
-                      : 'bg-white hover:bg-white/90 text-black border border-white hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]'
+                    confirmDialogs[0].type === "danger"
+                      ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 hover:border-red-500/50"
+                      : confirmDialogs[0].type === "warning"
+                        ? "bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/30 hover:border-yellow-500/50"
+                        : "bg-white hover:bg-white/90 text-black border border-white hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
                   }`}
                 >
                   {confirmDialogs[0].confirmText}

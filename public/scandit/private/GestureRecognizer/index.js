@@ -1,1 +1,1 @@
-export{a as GestureRecognizer}from'../../chunks/chunk-2HL2IEE2.js';
+export { a as GestureRecognizer } from "../../chunks/chunk-2HL2IEE2.js";

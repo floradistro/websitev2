@@ -1,6 +1,15 @@
 "use client";
 
-import { CheckCircle, Clock, Package, Truck, Store, XCircle, AlertCircle, MapPin } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  Package,
+  Truck,
+  Store,
+  XCircle,
+  AlertCircle,
+  MapPin,
+} from "lucide-react";
 
 interface OrderStatus {
   status: string;
@@ -24,9 +33,8 @@ export default function OrderTracking({
   dateCreated,
   dateCompleted,
   dateShipped,
-  pickupLocation
+  pickupLocation,
 }: OrderTrackingProps) {
-  
   // Map order statuses to tracking stages
   const getTrackingStages = (): OrderStatus[] => {
     const baseStages: OrderStatus[] = [
@@ -39,8 +47,14 @@ export default function OrderTracking({
       {
         status: "processing",
         label: "Confirmed",
-        timestamp: orderStatus === "processing" || orderStatus === "completed" ? dateCreated : undefined,
-        completed: orderStatus === "processing" || orderStatus === "completed" || orderStatus === "on-hold",
+        timestamp:
+          orderStatus === "processing" || orderStatus === "completed"
+            ? dateCreated
+            : undefined,
+        completed:
+          orderStatus === "processing" ||
+          orderStatus === "completed" ||
+          orderStatus === "on-hold",
       },
     ];
 
@@ -50,21 +64,25 @@ export default function OrderTracking({
           status: "shipped",
           label: "Shipped",
           timestamp: dateShipped,
-          completed: orderStatus === "completed" || (dateShipped ? true : false),
+          completed:
+            orderStatus === "completed" || (dateShipped ? true : false),
         },
         {
           status: "completed",
           label: "Delivered",
           timestamp: dateCompleted,
           completed: orderStatus === "completed",
-        }
+        },
       );
     } else {
       baseStages.push(
         {
           status: "ready",
           label: "Ready for Pickup",
-          timestamp: orderStatus === "completed" || orderStatus === "on-hold" ? dateCreated : undefined,
+          timestamp:
+            orderStatus === "completed" || orderStatus === "on-hold"
+              ? dateCreated
+              : undefined,
           completed: orderStatus === "completed" || orderStatus === "on-hold",
         },
         {
@@ -72,7 +90,7 @@ export default function OrderTracking({
           label: "Picked Up",
           timestamp: dateCompleted,
           completed: orderStatus === "completed",
-        }
+        },
       );
     }
 
@@ -83,7 +101,7 @@ export default function OrderTracking({
     if (orderStatus === "cancelled" || orderStatus === "failed") {
       return <XCircle size={20} className="text-red-400" />;
     }
-    
+
     if (orderStatus === "refunded") {
       return <AlertCircle size={20} className="text-yellow-400" />;
     }
@@ -136,7 +154,7 @@ export default function OrderTracking({
       case "pending":
         return "Your order has been received and is awaiting confirmation.";
       case "processing":
-        return orderType === "delivery" 
+        return orderType === "delivery"
           ? "Your order is being prepared for shipment."
           : "Your order is being prepared for pickup.";
       case "on-hold":
@@ -157,15 +175,21 @@ export default function OrderTracking({
   };
 
   // Handle cancelled, failed, or refunded orders
-  if (orderStatus === "cancelled" || orderStatus === "failed" || orderStatus === "refunded") {
+  if (
+    orderStatus === "cancelled" ||
+    orderStatus === "failed" ||
+    orderStatus === "refunded"
+  ) {
     return (
       <div className="bg-[#2a2a2a] border border-white/10 p-8">
         <div className="flex items-center gap-3 mb-6">
-          <div className={`w-12 h-12 rounded-full ${
-            orderStatus === "cancelled" || orderStatus === "failed" 
-              ? "bg-red-500/10 border border-red-500/30" 
-              : "bg-orange-500/10 border border-orange-500/30"
-          } flex items-center justify-center`}>
+          <div
+            className={`w-12 h-12 rounded-full ${
+              orderStatus === "cancelled" || orderStatus === "failed"
+                ? "bg-red-500/10 border border-red-500/30"
+                : "bg-orange-500/10 border border-orange-500/30"
+            } flex items-center justify-center`}
+          >
             {orderStatus === "refunded" ? (
               <AlertCircle size={24} className="text-orange-400" />
             ) : (
@@ -174,7 +198,12 @@ export default function OrderTracking({
           </div>
           <div>
             <h3 className="text-sm uppercase tracking-[0.2em] text-white font-medium mb-1">
-              Order {orderStatus === "refunded" ? "Refunded" : orderStatus === "cancelled" ? "Cancelled" : "Failed"}
+              Order{" "}
+              {orderStatus === "refunded"
+                ? "Refunded"
+                : orderStatus === "cancelled"
+                  ? "Cancelled"
+                  : "Failed"}
             </h3>
             <p className="text-xs text-white/60">{getStatusMessage()}</p>
           </div>
@@ -184,8 +213,9 @@ export default function OrderTracking({
   }
 
   const stages = getTrackingStages();
-  const currentStageIndex = stages.findIndex(s => !s.completed);
-  const activeIndex = currentStageIndex === -1 ? stages.length - 1 : currentStageIndex;
+  const currentStageIndex = stages.findIndex((s) => !s.completed);
+  const activeIndex =
+    currentStageIndex === -1 ? stages.length - 1 : currentStageIndex;
 
   return (
     <div className="bg-[#2a2a2a] border border-white/10 p-8">
@@ -202,7 +232,9 @@ export default function OrderTracking({
             </div>
           )}
         </div>
-        <span className={`text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 border ${getStatusColor(orderStatus)}`}>
+        <span
+          className={`text-[9px] uppercase tracking-[0.2em] px-3 py-1.5 border ${getStatusColor(orderStatus)}`}
+        >
           {orderStatus.replace("-", " ")}
         </span>
       </div>
@@ -212,7 +244,7 @@ export default function OrderTracking({
         {stages.map((stage, index) => {
           const isActive = index === activeIndex;
           const isCompleted = stage.completed;
-          
+
           return (
             <div key={stage.status} className="relative flex items-start gap-4">
               {/* Connector Line */}
@@ -223,15 +255,15 @@ export default function OrderTracking({
                   }`}
                 />
               )}
-              
+
               {/* Status Icon */}
               <div
                 className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
                   isCompleted
                     ? "bg-green-500/10 border-2 border-green-500/50"
                     : isActive
-                    ? "bg-blue-500/10 border-2 border-blue-500/50 animate-pulse"
-                    : "bg-white/5 border-2 border-white/10"
+                      ? "bg-blue-500/10 border-2 border-blue-500/50 animate-pulse"
+                      : "bg-white/5 border-2 border-white/10"
                 }`}
               >
                 {getStatusIcon(stage.status, isCompleted)}
@@ -241,9 +273,15 @@ export default function OrderTracking({
               <div className="flex-1 pt-1.5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className={`text-sm mb-1 ${
-                      isCompleted ? "text-white font-medium" : isActive ? "text-white" : "text-white/40"
-                    }`}>
+                    <p
+                      className={`text-sm mb-1 ${
+                        isCompleted
+                          ? "text-white font-medium"
+                          : isActive
+                            ? "text-white"
+                            : "text-white/40"
+                      }`}
+                    >
                       {stage.label}
                     </p>
                     {stage.timestamp && (
@@ -258,7 +296,9 @@ export default function OrderTracking({
                       </p>
                     )}
                     {isActive && !isCompleted && (
-                      <p className="text-[10px] text-blue-400 mt-1 uppercase tracking-wider">In Progress</p>
+                      <p className="text-[10px] text-blue-400 mt-1 uppercase tracking-wider">
+                        In Progress
+                      </p>
                     )}
                   </div>
                 </div>
@@ -276,11 +316,13 @@ export default function OrderTracking({
               <Clock size={16} className="text-blue-400 mt-0.5" />
               <div>
                 <p className="text-xs text-white/80 mb-1 font-medium">
-                  {orderType === "delivery" ? "Estimated Delivery" : "Estimated Ready Time"}
+                  {orderType === "delivery"
+                    ? "Estimated Delivery"
+                    : "Estimated Ready Time"}
                 </p>
                 <p className="text-[10px] text-white/60">
-                  {orderType === "delivery" 
-                    ? "2-3 business days" 
+                  {orderType === "delivery"
+                    ? "2-3 business days"
                     : "1-2 hours from order confirmation"}
                 </p>
               </div>
@@ -291,4 +333,3 @@ export default function OrderTracking({
     </div>
   );
 }
-

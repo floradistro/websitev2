@@ -3,14 +3,14 @@
  * Manages component templates, variants, and field bindings
  */
 
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 export interface ComponentTemplate {
   id: string;
   component_key: string;
   name: string;
   description: string | null;
-  category: 'atomic' | 'composite' | 'smart' | 'layout';
+  category: "atomic" | "composite" | "smart" | "layout";
   sub_category: string | null;
   required_fields: string[];
   optional_fields: string[];
@@ -75,123 +75,156 @@ export interface VendorComponentInstance {
  */
 export async function getAllComponentTemplates(): Promise<ComponentTemplate[]> {
   const supabase = getServiceSupabase();
-  
+
   const { data, error } = await supabase
-    .from('component_templates')
-    .select('*')
-    .eq('is_public', true)
-    .eq('is_deprecated', false)
-    .order('name');
-  
+    .from("component_templates")
+    .select("*")
+    .eq("is_public", true)
+    .eq("is_deprecated", false)
+    .order("name");
+
   if (error) {
-    console.error('Failed to fetch component templates:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to fetch component templates:", error);
+    }
     return [];
   }
-  
+
   return data || [];
 }
 
 /**
  * Get component template by key
  */
-export async function getComponentTemplate(componentKey: string): Promise<ComponentTemplate | null> {
+export async function getComponentTemplate(
+  componentKey: string,
+): Promise<ComponentTemplate | null> {
   const supabase = getServiceSupabase();
-  
+
   const { data, error } = await supabase
-    .from('component_templates')
-    .select('*')
-    .eq('component_key', componentKey)
+    .from("component_templates")
+    .select("*")
+    .eq("component_key", componentKey)
     .single();
-  
+
   if (error) {
-    console.error(`Failed to fetch component template ${componentKey}:`, error);
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        `Failed to fetch component template ${componentKey}:`,
+        error,
+      );
+    }
     return null;
   }
-  
+
   return data;
 }
 
 /**
  * Get variants for a component
  */
-export async function getComponentVariants(componentKey: string): Promise<ComponentVariant[]> {
+export async function getComponentVariants(
+  componentKey: string,
+): Promise<ComponentVariant[]> {
   const supabase = getServiceSupabase();
-  
+
   const { data, error } = await supabase
-    .from('component_variant_configs')
-    .select('*')
-    .eq('component_key', componentKey)
-    .order('is_default', { ascending: false });
-  
+    .from("component_variant_configs")
+    .select("*")
+    .eq("component_key", componentKey)
+    .order("is_default", { ascending: false });
+
   if (error) {
-    console.error(`Failed to fetch variants for ${componentKey}:`, error);
+    if (process.env.NODE_ENV === "development") {
+      console.error(`Failed to fetch variants for ${componentKey}:`, error);
+    }
     return [];
   }
-  
+
   return data || [];
 }
 
 /**
  * Get recommended components for field types
  */
-export async function getRecommendedComponents(fieldTypes: string[]): Promise<{
-  component_key: string;
-  component_name: string;
-  compatibility_score: number;
-  matching_fields: string[];
-}[]> {
+export async function getRecommendedComponents(fieldTypes: string[]): Promise<
+  {
+    component_key: string;
+    component_name: string;
+    compatibility_score: number;
+    matching_fields: string[];
+  }[]
+> {
   const supabase = getServiceSupabase();
-  
-  const { data, error } = await supabase
-    .rpc('get_recommended_components_for_fields', {
+
+  const { data, error } = await supabase.rpc(
+    "get_recommended_components_for_fields",
+    {
       p_field_types: fieldTypes,
-    });
-  
+    },
+  );
+
   if (error) {
-    console.error('Failed to get recommended components:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to get recommended components:", error);
+    }
     return [];
   }
-  
+
   return data || [];
 }
 
 /**
  * Get field bindings for a component
  */
-export async function getFieldBindingsForComponent(componentKey: string): Promise<FieldComponentBinding[]> {
+export async function getFieldBindingsForComponent(
+  componentKey: string,
+): Promise<FieldComponentBinding[]> {
   const supabase = getServiceSupabase();
-  
+
   const { data, error } = await supabase
-    .from('field_component_bindings')
-    .select('*')
-    .eq('component_key', componentKey)
-    .order('compatibility_score', { ascending: false });
-  
+    .from("field_component_bindings")
+    .select("*")
+    .eq("component_key", componentKey)
+    .order("compatibility_score", { ascending: false });
+
   if (error) {
-    console.error(`Failed to fetch field bindings for ${componentKey}:`, error);
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        `Failed to fetch field bindings for ${componentKey}:`,
+        error,
+      );
+    }
     return [];
   }
-  
+
   return data || [];
 }
 
 /**
  * Get compatible components for a field type
  */
-export async function getCompatibleComponents(fieldType: string): Promise<FieldComponentBinding[]> {
+export async function getCompatibleComponents(
+  fieldType: string,
+): Promise<FieldComponentBinding[]> {
   const supabase = getServiceSupabase();
-  
+
   const { data, error } = await supabase
-    .from('field_component_bindings')
-    .select('*, component_templates(*)')
-    .eq('field_type', fieldType)
-    .order('compatibility_score', { ascending: false });
-  
+    .from("field_component_bindings")
+    .select("*, component_templates(*)")
+    .eq("field_type", fieldType)
+    .order("compatibility_score", { ascending: false });
+
   if (error) {
-    console.error(`Failed to fetch compatible components for ${fieldType}:`, error);
+    if (process.env.NODE_ENV === "development") {
+      console.error(
+        `Failed to fetch compatible components for ${fieldType}:`,
+        error,
+      );
+    }
     return [];
   }
-  
+
   return data || [];
 }
 
@@ -203,12 +236,12 @@ export async function createVendorComponentInstance(
   sectionId: string | null,
   componentKey: string,
   props: Record<string, any> = {},
-  fieldBindings: Record<string, any> = {}
+  fieldBindings: Record<string, any> = {},
 ): Promise<string | null> {
   const supabase = getServiceSupabase();
-  
+
   const { data, error } = await supabase
-    .from('vendor_component_instances')
+    .from("vendor_component_instances")
     .insert({
       vendor_id: vendorId,
       section_id: sectionId,
@@ -216,14 +249,16 @@ export async function createVendorComponentInstance(
       props,
       field_bindings: fieldBindings,
     })
-    .select('id')
+    .select("id")
     .single();
-  
+
   if (error) {
-    console.error('Failed to create component instance:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to create component instance:", error);
+    }
     return null;
   }
-  
+
   return data?.id || null;
 }
 
@@ -232,27 +267,29 @@ export async function createVendorComponentInstance(
  */
 export async function getVendorComponentInstances(
   vendorId: string,
-  sectionId?: string
+  sectionId?: string,
 ): Promise<VendorComponentInstance[]> {
   const supabase = getServiceSupabase();
-  
+
   let query = supabase
-    .from('vendor_component_instances')
-    .select('*')
-    .eq('vendor_id', vendorId)
-    .order('position_order');
-  
+    .from("vendor_component_instances")
+    .select("*")
+    .eq("vendor_id", vendorId)
+    .order("position_order");
+
   if (sectionId) {
-    query = query.eq('section_id', sectionId);
+    query = query.eq("section_id", sectionId);
   }
-  
+
   const { data, error } = await query;
-  
+
   if (error) {
-    console.error('Failed to fetch vendor component instances:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to fetch vendor component instances:", error);
+    }
     return [];
   }
-  
+
   return data || [];
 }
 
@@ -261,39 +298,45 @@ export async function getVendorComponentInstances(
  */
 export async function updateComponentInstance(
   instanceId: string,
-  updates: Partial<VendorComponentInstance>
+  updates: Partial<VendorComponentInstance>,
 ): Promise<boolean> {
   const supabase = getServiceSupabase();
-  
+
   const { error } = await supabase
-    .from('vendor_component_instances')
+    .from("vendor_component_instances")
     .update(updates)
-    .eq('id', instanceId);
-  
+    .eq("id", instanceId);
+
   if (error) {
-    console.error('Failed to update component instance:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to update component instance:", error);
+    }
     return false;
   }
-  
+
   return true;
 }
 
 /**
  * Delete component instance
  */
-export async function deleteComponentInstance(instanceId: string): Promise<boolean> {
+export async function deleteComponentInstance(
+  instanceId: string,
+): Promise<boolean> {
   const supabase = getServiceSupabase();
-  
+
   const { error } = await supabase
-    .from('vendor_component_instances')
+    .from("vendor_component_instances")
     .delete()
-    .eq('id', instanceId);
-  
+    .eq("id", instanceId);
+
   if (error) {
-    console.error('Failed to delete component instance:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to delete component instance:", error);
+    }
     return false;
   }
-  
+
   return true;
 }
 
@@ -304,23 +347,26 @@ export async function autoConfigureComponent(
   vendorId: string,
   sectionId: string | null,
   componentKey: string,
-  fieldData: Record<string, any>
+  fieldData: Record<string, any>,
 ): Promise<string | null> {
   const supabase = getServiceSupabase();
-  
-  const { data, error } = await supabase
-    .rpc('auto_configure_component_instance', {
+
+  const { data, error } = await supabase.rpc(
+    "auto_configure_component_instance",
+    {
       p_vendor_id: vendorId,
       p_section_id: sectionId,
       p_component_key: componentKey,
       p_field_data: fieldData,
-    });
-  
+    },
+  );
+
   if (error) {
-    console.error('Failed to auto-configure component:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Failed to auto-configure component:", error);
+    }
     return null;
   }
-  
+
   return data;
 }
-

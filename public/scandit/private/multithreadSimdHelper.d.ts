@@ -28,4 +28,10 @@ declare function hasThreadsSupport(): Promise<boolean>;
  */
 declare function checkFullMultithreadingSupport(): Promise<boolean>;
 
-export { checkFullMultithreadingSupport, hasSIMDSupport, hasSharedArrayBufferSupport, hasThreadsSupport, isCrossOriginIsolated };
+export {
+  checkFullMultithreadingSupport,
+  hasSIMDSupport,
+  hasSharedArrayBufferSupport,
+  hasThreadsSupport,
+  isCrossOriginIsolated,
+};

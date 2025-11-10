@@ -5,11 +5,16 @@
  * to fetch their product data from the WhaleTools API.
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_WHALETOOLS_API_URL || 'https://whaletools.dev/api';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_WHALETOOLS_API_URL || "https://whaletools.dev/api";
 const VENDOR_ID = process.env.NEXT_PUBLIC_WHALETOOLS_VENDOR_ID;
 
-if (!VENDOR_ID && typeof window !== 'undefined') {
-  console.warn('⚠️  NEXT_PUBLIC_WHALETOOLS_VENDOR_ID is not set. API calls may fail.');
+if (!VENDOR_ID && typeof window !== "undefined") {
+  if (process.env.NODE_ENV === "development") {
+    console.warn(
+      "⚠️  NEXT_PUBLIC_WHALETOOLS_VENDOR_ID is not set. API calls may fail.",
+    );
+  }
 }
 
 /**
@@ -20,7 +25,7 @@ function buildUrl(endpoint: string, params?: Record<string, string>): string {
 
   // Always add vendor ID if available
   if (VENDOR_ID) {
-    url.searchParams.set('vendorId', VENDOR_ID);
+    url.searchParams.set("vendorId", VENDOR_ID);
   }
 
   // Add additional params
@@ -36,14 +41,17 @@ function buildUrl(endpoint: string, params?: Record<string, string>): string {
 /**
  * Fetch wrapper with error handling
  */
-async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
+async function fetchAPI<T>(
+  endpoint: string,
+  options?: RequestInit,
+): Promise<T> {
   const url = buildUrl(endpoint);
 
   try {
     const response = await fetch(url, {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options?.headers,
       },
     });
@@ -54,7 +62,9 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
     return await response.json();
   } catch (error) {
-    console.error(`Failed to fetch ${endpoint}:`, error);
+    if (process.env.NODE_ENV === "development") {
+      console.error(`Failed to fetch ${endpoint}:`, error);
+    }
     throw error;
   }
 }
@@ -67,7 +77,7 @@ export const whaletoolsAPI = {
    * Get all products for the vendor
    */
   async getProducts() {
-    return fetchAPI('/page-data/products');
+    return fetchAPI("/page-data/products");
   },
 
   /**
@@ -82,7 +92,7 @@ export const whaletoolsAPI = {
    */
   async getVendorInfo() {
     if (!VENDOR_ID) {
-      throw new Error('Vendor ID not configured');
+      throw new Error("Vendor ID not configured");
     }
     return fetchAPI(`/vendors/${VENDOR_ID}`);
   },
@@ -91,8 +101,8 @@ export const whaletoolsAPI = {
    * Search products
    */
   async searchProducts(query: string) {
-    return fetchAPI('/page-data/products', {
-      method: 'GET',
+    return fetchAPI("/page-data/products", {
+      method: "GET",
     });
   },
 };

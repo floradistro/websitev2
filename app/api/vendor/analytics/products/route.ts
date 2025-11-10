@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { requireVendor } from "@/lib/auth/middleware";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 /**
@@ -20,30 +20,32 @@ export async function GET(request: NextRequest) {
     const { vendorId } = authResult;
 
     const { searchParams } = new URL(request.url);
-    const days = parseInt(searchParams.get('days') || '30');
+    const days = parseInt(searchParams.get("days") || "30");
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
     // Get product sales data
     const { data: productSales, error: salesError } = await supabase
-      .from('order_items')
-      .select(`
+      .from("order_items")
+      .select(
+        `
         product_id,
         product_name,
         quantity,
         line_total,
         orders!inner(order_date, status)
-      `)
-      .eq('vendor_id', vendorId)
-      .eq('orders.status', 'completed')
-      .gte('orders.order_date', startDate.toISOString());
+      `,
+      )
+      .eq("vendor_id", vendorId)
+      .eq("orders.status", "completed")
+      .gte("orders.order_date", startDate.toISOString());
 
     if (salesError) throw salesError;
 
     // Aggregate by product
     const productMap = new Map();
-    
+
     (productSales || []).forEach((item: any) => {
       const productId = item.product_id;
       if (!productMap.has(productId)) {
@@ -52,21 +54,21 @@ export async function GET(request: NextRequest) {
           product_name: item.product_name,
           units_sold: 0,
           revenue: 0,
-          orders: 0
+          orders: 0,
         });
       }
-      
+
       const product = productMap.get(productId);
-      product.units_sold += parseFloat(item.quantity || '0');
-      product.revenue += parseFloat(item.line_total || '0');
+      product.units_sold += parseFloat(item.quantity || "0");
+      product.revenue += parseFloat(item.line_total || "0");
       product.orders += 1;
     });
 
     // Convert to array and sort
     const products = Array.from(productMap.values())
-      .map(p => ({
+      .map((p) => ({
         ...p,
-        avgOrderValue: p.orders > 0 ? p.revenue / p.orders : 0
+        avgOrderValue: p.orders > 0 ? p.revenue / p.orders : 0,
       }))
       .sort((a, b) => b.revenue - a.revenue);
 
@@ -75,46 +77,47 @@ export async function GET(request: NextRequest) {
 
     // Get underperformers (products with sales but low revenue)
     const underperformers = products
-      .filter(p => p.orders > 0)
+      .filter((p) => p.orders > 0)
       .sort((a, b) => a.revenue - b.revenue)
       .slice(0, 5);
 
     // Get inventory status for these products
     const productIds = [...topPerformers, ...underperformers]
-      .map(p => p.product_id)
-      .filter(id => id);
+      .map((p) => p.product_id)
+      .filter((id) => id);
 
     const { data: inventoryData } = await supabase
-      .from('inventory')
-      .select('product_id, quantity, low_stock_threshold')
-      .in('product_id', productIds)
-      .eq('vendor_id', vendorId);
+      .from("inventory")
+      .select("product_id, quantity, low_stock_threshold")
+      .in("product_id", productIds)
+      .eq("vendor_id", vendorId);
 
     // Map inventory to products
     const inventoryMap = new Map();
-    (inventoryData || []).forEach(inv => {
+    (inventoryData || []).forEach((inv) => {
       inventoryMap.set(inv.product_id, {
         stock: inv.quantity,
         lowStockThreshold: inv.low_stock_threshold,
-        isLowStock: inv.quantity <= (inv.low_stock_threshold || 0)
+        isLowStock: inv.quantity <= (inv.low_stock_threshold || 0),
       });
     });
 
     // Add inventory info to products
-    const enrichProducts = (prods: any[]) => prods.map(p => ({
-      ...p,
-      inventory: inventoryMap.get(p.product_id) || {
-        stock: null,
-        lowStockThreshold: null,
-        isLowStock: false
-      }
-    }));
+    const enrichProducts = (prods: any[]) =>
+      prods.map((p) => ({
+        ...p,
+        inventory: inventoryMap.get(p.product_id) || {
+          stock: null,
+          lowStockThreshold: null,
+          isLowStock: false,
+        },
+      }));
 
     // Calculate category breakdown (if we have category data)
     const categoryMap = new Map();
-    products.forEach(p => {
+    products.forEach((p) => {
       // Simplified - would need to join with products table for real categories
-      const category = 'General';
+      const category = "General";
       if (!categoryMap.has(category)) {
         categoryMap.set(category, { category, revenue: 0, units: 0 });
       }
@@ -123,8 +126,9 @@ export async function GET(request: NextRequest) {
       cat.units += p.units_sold;
     });
 
-    const categoryBreakdown = Array.from(categoryMap.values())
-      .sort((a, b) => b.revenue - a.revenue);
+    const categoryBreakdown = Array.from(categoryMap.values()).sort(
+      (a, b) => b.revenue - a.revenue,
+    );
 
     return NextResponse.json({
       success: true,
@@ -136,30 +140,21 @@ export async function GET(request: NextRequest) {
           totalProducts: products.length,
           totalRevenue: products.reduce((sum, p) => sum + p.revenue, 0),
           totalUnitsSold: products.reduce((sum, p) => sum + p.units_sold, 0),
-          avgRevenuePerProduct: products.length > 0 
-            ? products.reduce((sum, p) => sum + p.revenue, 0) / products.length 
-            : 0
-        }
-      }
+          avgRevenuePerProduct:
+            products.length > 0
+              ? products.reduce((sum, p) => sum + p.revenue, 0) /
+                products.length
+              : 0,
+        },
+      },
     });
-
   } catch (error: any) {
-    console.error('Vendor product analytics error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Vendor product analytics error:", error);
+    }
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch product analytics' },
-      { status: 500 }
+      { error: error.message || "Failed to fetch product analytics" },
+      { status: 500 },
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-

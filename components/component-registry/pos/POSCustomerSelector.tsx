@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { Search, X, User, Plus, Scan } from 'lucide-react';
-import { NewCustomerForm } from './POSNewCustomerForm';
-import { POSIDScanner } from './POSIDScanner';
+import { useState, useEffect, useRef } from "react";
+import { Search, X, User, Plus, Scan } from "lucide-react";
+import { NewCustomerForm } from "./POSNewCustomerForm";
+import { POSIDScanner } from "./POSIDScanner";
 
 interface Customer {
   id: string;
@@ -29,7 +29,7 @@ export function POSCustomerSelector({
   onCustomerSelect,
 }: POSCustomerSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(false);
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
@@ -65,30 +65,35 @@ export function POSCustomerSelector({
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const loadCustomers = async (search: string = '') => {
+  const loadCustomers = async (search: string = "") => {
     try {
       setLoading(true);
-      const url = `/api/pos/customers?vendorId=${vendorId}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
+      const url = `/api/pos/customers?vendorId=${vendorId}${search ? `&search=${encodeURIComponent(search)}` : ""}`;
       const response = await fetch(url);
 
       if (!response.ok) {
-        throw new Error('Failed to load customers');
+        throw new Error("Failed to load customers");
       }
 
       const data = await response.json();
-      console.log(`📊 Loaded ${data.customers?.length || 0} customers from API (total: ${data.total})`);
+
       setCustomers(data.customers || []);
     } catch (error) {
-      console.error('Error loading customers:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading customers:", error);
+      }
       setCustomers([]);
     } finally {
       setLoading(false);
@@ -101,7 +106,7 @@ export function POSCustomerSelector({
   const handleSelectCustomer = (customer: Customer) => {
     onCustomerSelect(customer);
     setIsOpen(false);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   const handleClearCustomer = () => {
@@ -110,10 +115,14 @@ export function POSCustomerSelector({
 
   const getTierColor = (tier: string) => {
     switch (tier) {
-      case 'platinum': return 'text-purple-400';
-      case 'gold': return 'text-yellow-400';
-      case 'silver': return 'text-gray-400';
-      default: return 'text-orange-400';
+      case "platinum":
+        return "text-purple-400";
+      case "gold":
+        return "text-yellow-400";
+      case "silver":
+        return "text-gray-400";
+      default:
+        return "text-orange-400";
     }
   };
 
@@ -127,11 +136,16 @@ export function POSCustomerSelector({
               <User size={18} className="text-white/60" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-white font-black text-xs uppercase tracking-tight truncate" style={{ fontWeight: 900 }}>
+              <div
+                className="text-white font-black text-xs uppercase tracking-tight truncate"
+                style={{ fontWeight: 900 }}
+              >
                 {selectedCustomer.first_name} {selectedCustomer.last_name}
               </div>
               <div className="flex items-center gap-2 mt-1">
-                <span className={`text-[10px] uppercase tracking-[0.15em] font-black ${getTierColor(selectedCustomer.loyalty_tier)}`}>
+                <span
+                  className={`text-[10px] uppercase tracking-[0.15em] font-black ${getTierColor(selectedCustomer.loyalty_tier)}`}
+                >
                   {selectedCustomer.loyalty_tier}
                 </span>
                 <span className="text-[10px] text-white/40">·</span>
@@ -154,7 +168,9 @@ export function POSCustomerSelector({
           className="w-full bg-white/5 border border-white/10 rounded-2xl px-3 py-3 flex items-center gap-2 hover:bg-white/10 hover:border-white/20 transition-all"
         >
           <User size={16} className="text-white/40" />
-          <span className="text-[10px] uppercase tracking-[0.15em] text-white/60">Select Customer</span>
+          <span className="text-[10px] uppercase tracking-[0.15em] text-white/60">
+            Select Customer
+          </span>
         </button>
       )}
 
@@ -164,7 +180,10 @@ export function POSCustomerSelector({
           {/* Search */}
           <div className="p-3 border-b border-white/5">
             <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+              <Search
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+              />
               <input
                 type="text"
                 placeholder="Search name, phone, email..."
@@ -204,14 +223,19 @@ export function POSCustomerSelector({
                   className="w-full bg-[#141414] hover:bg-[#1a1a1a] border border-white/5 hover:border-white/10 rounded-xl p-3 mb-2 text-left transition-all"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-white font-black text-xs uppercase tracking-tight" style={{ fontWeight: 900 }}>
+                    <div
+                      className="text-white font-black text-xs uppercase tracking-tight"
+                      style={{ fontWeight: 900 }}
+                    >
                       {customer.first_name} {customer.last_name}
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-green-400 font-black text-xs">
                         {customer.loyalty_points.toLocaleString()}
                       </span>
-                      <span className={`text-[9px] uppercase tracking-[0.15em] font-black ${getTierColor(customer.loyalty_tier)}`}>
+                      <span
+                        className={`text-[9px] uppercase tracking-[0.15em] font-black ${getTierColor(customer.loyalty_tier)}`}
+                      >
                         {customer.loyalty_tier}
                       </span>
                     </div>
@@ -285,4 +309,3 @@ export function POSCustomerSelector({
     </div>
   );
 }
-

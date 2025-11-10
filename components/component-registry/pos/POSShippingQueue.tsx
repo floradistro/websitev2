@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase/client';
-import { motion, AnimatePresence } from 'framer-motion';
-import { POSModal } from './POSModal';
-import { Package, MapPin, Truck } from 'lucide-react';
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
+import { POSModal } from "./POSModal";
+import { Package, MapPin, Truck } from "lucide-react";
 
 interface OrderItem {
   id: string;
@@ -66,7 +66,7 @@ interface POSShippingQueueProps {
 export function POSShippingQueue({
   locationId,
   vendorId,
-  locationName = 'All Locations',
+  locationName = "All Locations",
   autoRefresh = true,
   refreshInterval = 30,
   enableSound = true,
@@ -82,29 +82,41 @@ export function POSShippingQueue({
     trackingNumber: string;
     carrier: string;
   } | null>(null);
-  const [modal, setModal] = useState<{isOpen: boolean; title: string; message: string; type: 'success'|'error'|'info'}>({ 
-    isOpen: false, title: '', message: '', type: 'info' 
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error" | "info";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
   });
 
   // Load shipping orders via API
   const loadShippingOrders = useCallback(async () => {
     try {
       const params = new URLSearchParams();
-      if (locationId) params.append('locationId', locationId);
-      if (vendorId) params.append('vendorId', vendorId);
-      
-      const response = await fetch(`/api/pos/orders/shipping?${params.toString()}`);
-      
+      if (locationId) params.append("locationId", locationId);
+      if (vendorId) params.append("vendorId", vendorId);
+
+      const response = await fetch(
+        `/api/pos/orders/shipping?${params.toString()}`,
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to load orders');
+        throw new Error(errorData.error || "Failed to load orders");
       }
 
       const { orders } = await response.json();
-      setOrders(orders as ShippingOrder[] || []);
+      setOrders((orders as ShippingOrder[]) || []);
       setError(null);
     } catch (err: any) {
-      console.error('Error loading shipping orders:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading shipping orders:", err);
+      }
       setError(err.message);
     } finally {
       setLoading(false);
@@ -130,30 +142,28 @@ export function POSShippingQueue({
   // Real-time subscription
   useEffect(() => {
     const channel = supabase
-      .channel(`shipping-orders-${locationId || vendorId || 'all'}`)
+      .channel(`shipping-orders-${locationId || vendorId || "all"}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'orders',
+          event: "INSERT",
+          schema: "public",
+          table: "orders",
         },
         (payload) => {
-          console.log('🆕 New shipping order received!', payload);
           loadShippingOrders();
-        }
+        },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'orders',
+          event: "UPDATE",
+          schema: "public",
+          table: "orders",
         },
         (payload) => {
-          console.log('Order updated:', payload);
           loadShippingOrders();
-        }
+        },
       )
       .subscribe();
 
@@ -163,42 +173,49 @@ export function POSShippingQueue({
   }, [locationId, vendorId, loadShippingOrders]);
 
   // Mark as shipped
-  const markAsShipped = async (orderId: string, orderNumber: string, trackingNumber: string, carrier: string) => {
+  const markAsShipped = async (
+    orderId: string,
+    orderNumber: string,
+    trackingNumber: string,
+    carrier: string,
+  ) => {
     if (shipping) return;
 
     setShipping(orderId);
 
     try {
       const { error } = await supabase
-        .from('orders')
+        .from("orders")
         .update({
-          fulfillment_status: 'fulfilled',
+          fulfillment_status: "fulfilled",
           shipped_date: new Date().toISOString(),
           tracking_number: trackingNumber || null,
           shipping_carrier: carrier || null,
         })
-        .eq('id', orderId);
+        .eq("id", orderId);
 
       if (error) throw error;
 
       // Remove from queue
-      setOrders(prev => prev.filter(o => o.id !== orderId));
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
       setTrackingModal(null);
 
       // Show success message
       setModal({
         isOpen: true,
-        title: 'Order Shipped',
+        title: "Order Shipped",
         message: `Order ${orderNumber} has been marked as shipped!`,
-        type: 'success',
+        type: "success",
       });
     } catch (err: any) {
-      console.error('Error marking order as shipped:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error marking order as shipped:", err);
+      }
       setModal({
         isOpen: true,
-        title: 'Error',
-        message: err.message || 'Failed to update order',
-        type: 'error',
+        title: "Error",
+        message: err.message || "Failed to update order",
+        type: "error",
       });
     } finally {
       setShipping(null);
@@ -207,8 +224,8 @@ export function POSShippingQueue({
 
   // Format address
   const formatAddress = (address: ShippingAddress) => {
-    if (!address) return 'No address provided';
-    
+    if (!address) return "No address provided";
+
     const parts = [
       address.address_1,
       address.address_2,
@@ -217,7 +234,7 @@ export function POSShippingQueue({
       address.postcode,
     ].filter(Boolean);
 
-    return parts.join(', ');
+    return parts.join(", ");
   };
 
   // Format time ago
@@ -227,14 +244,16 @@ export function POSShippingQueue({
     const diffMs = now.getTime() - orderTime.getTime();
     const diffMins = Math.floor(diffMs / 60000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
-    
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60)
+      return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
+
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
 
     const diffDays = Math.floor(diffHours / 24);
-    return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
   };
 
   if (loading) {
@@ -278,13 +297,16 @@ export function POSShippingQueue({
             animate={{ opacity: 1, scale: 1 }}
             className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 max-w-md w-full"
           >
-            <h3 className="text-xl font-black text-white uppercase mb-4" style={{ fontWeight: 900 }}>
+            <h3
+              className="text-xl font-black text-white uppercase mb-4"
+              style={{ fontWeight: 900 }}
+            >
               Mark as Shipped
             </h3>
             <p className="text-white/60 text-sm mb-4">
               Order #{trackingModal.orderNumber}
             </p>
-            
+
             <div className="space-y-4 mb-6">
               <div>
                 <label className="text-white/40 text-xs uppercase tracking-wider block mb-2">
@@ -293,12 +315,17 @@ export function POSShippingQueue({
                 <input
                   type="text"
                   value={trackingModal.carrier}
-                  onChange={(e) => setTrackingModal({ ...trackingModal, carrier: e.target.value })}
+                  onChange={(e) =>
+                    setTrackingModal({
+                      ...trackingModal,
+                      carrier: e.target.value,
+                    })
+                  }
                   placeholder="USPS, UPS, FedEx..."
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-white/20"
                 />
               </div>
-              
+
               <div>
                 <label className="text-white/40 text-xs uppercase tracking-wider block mb-2">
                   Tracking Number (Optional)
@@ -306,7 +333,12 @@ export function POSShippingQueue({
                 <input
                   type="text"
                   value={trackingModal.trackingNumber}
-                  onChange={(e) => setTrackingModal({ ...trackingModal, trackingNumber: e.target.value })}
+                  onChange={(e) =>
+                    setTrackingModal({
+                      ...trackingModal,
+                      trackingNumber: e.target.value,
+                    })
+                  }
                   placeholder="Enter tracking number"
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/20 focus:outline-none focus:border-white/20"
                 />
@@ -315,17 +347,23 @@ export function POSShippingQueue({
 
             <div className="flex gap-2">
               <button
-                onClick={() => markAsShipped(
-                  trackingModal.orderId,
-                  trackingModal.orderNumber,
-                  trackingModal.trackingNumber,
-                  trackingModal.carrier
-                )}
-                disabled={shipping === trackingModal.orderId || !trackingModal.carrier}
+                onClick={() =>
+                  markAsShipped(
+                    trackingModal.orderId,
+                    trackingModal.orderNumber,
+                    trackingModal.trackingNumber,
+                    trackingModal.carrier,
+                  )
+                }
+                disabled={
+                  shipping === trackingModal.orderId || !trackingModal.carrier
+                }
                 className="flex-1 bg-white text-black font-black uppercase py-3 rounded-xl hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontWeight: 900 }}
               >
-                {shipping === trackingModal.orderId ? 'Updating...' : 'Confirm Shipment'}
+                {shipping === trackingModal.orderId
+                  ? "Updating..."
+                  : "Confirm Shipment"}
               </button>
               <button
                 onClick={() => setTrackingModal(null)}
@@ -341,15 +379,23 @@ export function POSShippingQueue({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-black text-white uppercase tracking-tight" style={{ fontWeight: 900 }}>
+          <h2
+            className="text-2xl font-black text-white uppercase tracking-tight"
+            style={{ fontWeight: 900 }}
+          >
             Shipping Orders
           </h2>
           <p className="text-white/40 text-sm mt-1">{locationName}</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3">
-            <div className="text-white/40 text-xs uppercase tracking-wide">Pending</div>
-            <div className="text-white font-black text-2xl mt-1" style={{ fontWeight: 900 }}>
+            <div className="text-white/40 text-xs uppercase tracking-wide">
+              Pending
+            </div>
+            <div
+              className="text-white font-black text-2xl mt-1"
+              style={{ fontWeight: 900 }}
+            >
               {orders.length}
             </div>
           </div>
@@ -385,7 +431,10 @@ export function POSShippingQueue({
               {/* Order Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <div className="text-white font-black text-xl" style={{ fontWeight: 900 }}>
+                  <div
+                    className="text-white font-black text-xl"
+                    style={{ fontWeight: 900 }}
+                  >
                     Order #{order.order_number}
                   </div>
                   <div className="text-white/80 text-lg mt-1">
@@ -401,13 +450,22 @@ export function POSShippingQueue({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-white font-black text-3xl" style={{ fontWeight: 900 }}>
+                  <div
+                    className="text-white font-black text-3xl"
+                    style={{ fontWeight: 900 }}
+                  >
                     ${order.total_amount.toFixed(2)}
                   </div>
-                  <div className={`text-sm font-bold mt-1 ${
-                    order.payment_status === 'paid' ? 'text-green-500' : 'text-yellow-500'
-                  }`}>
-                    {order.payment_status === 'paid' ? 'PAID ✓' : order.payment_status.toUpperCase()}
+                  <div
+                    className={`text-sm font-bold mt-1 ${
+                      order.payment_status === "paid"
+                        ? "text-green-500"
+                        : "text-yellow-500"
+                    }`}
+                  >
+                    {order.payment_status === "paid"
+                      ? "PAID ✓"
+                      : order.payment_status.toUpperCase()}
                   </div>
                 </div>
               </div>
@@ -415,9 +473,14 @@ export function POSShippingQueue({
               {/* Shipping Address */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4">
                 <div className="flex items-start gap-3">
-                  <MapPin size={16} className="text-white/40 mt-0.5 flex-shrink-0" />
+                  <MapPin
+                    size={16}
+                    className="text-white/40 mt-0.5 flex-shrink-0"
+                  />
                   <div>
-                    <div className="text-white/40 text-xs uppercase tracking-wider mb-1">Ship To</div>
+                    <div className="text-white/40 text-xs uppercase tracking-wider mb-1">
+                      Ship To
+                    </div>
                     <div className="text-white/80 text-sm leading-relaxed">
                       {formatAddress(order.shipping_address)}
                     </div>
@@ -433,11 +496,17 @@ export function POSShippingQueue({
               {/* Order Items */}
               <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
                 {order.order_items.map((item) => (
-                  <div key={item.id} className="flex justify-between text-white/60 text-sm">
+                  <div
+                    key={item.id}
+                    className="flex justify-between text-white/60 text-sm"
+                  >
                     <span>
-                      {item.product_name} <span className="text-white/40">({item.quantity}x)</span>
+                      {item.product_name}{" "}
+                      <span className="text-white/40">({item.quantity}x)</span>
                     </span>
-                    <span className="font-bold">${item.line_total.toFixed(2)}</span>
+                    <span className="font-bold">
+                      ${item.line_total.toFixed(2)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -465,13 +534,15 @@ export function POSShippingQueue({
               {/* Actions */}
               <div className="flex gap-2">
                 <button
-                  onClick={() => setTrackingModal({
-                    isOpen: true,
-                    orderId: order.id,
-                    orderNumber: order.order_number,
-                    trackingNumber: order.tracking_number || '',
-                    carrier: order.shipping_carrier || '',
-                  })}
+                  onClick={() =>
+                    setTrackingModal({
+                      isOpen: true,
+                      orderId: order.id,
+                      orderNumber: order.order_number,
+                      trackingNumber: order.tracking_number || "",
+                      carrier: order.shipping_carrier || "",
+                    })
+                  }
                   disabled={shipping === order.id}
                   className="flex-1 bg-white text-black font-black uppercase py-4 rounded-2xl hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                   style={{ fontWeight: 900 }}
@@ -480,12 +551,14 @@ export function POSShippingQueue({
                   Mark as Shipped
                 </button>
                 <button
-                  onClick={() => setModal({
-                    isOpen: true,
-                    title: 'Customer Contact',
-                    message: `${order.customers.email}\n${order.customers.phone || 'No phone'}`,
-                    type: 'info',
-                  })}
+                  onClick={() =>
+                    setModal({
+                      isOpen: true,
+                      title: "Customer Contact",
+                      message: `${order.customers.email}\n${order.customers.phone || "No phone"}`,
+                      type: "info",
+                    })
+                  }
                   className="px-6 border border-white/20 text-white rounded-2xl hover:bg-white/5 font-bold uppercase text-sm"
                 >
                   Contact
@@ -498,4 +571,3 @@ export function POSShippingQueue({
     </div>
   );
 }
-

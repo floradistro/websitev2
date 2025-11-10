@@ -1,14 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAppAuth } from '@/context/AppAuthContext';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAppAuth } from "@/context/AppAuthContext";
 
-function POSLayoutInner({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function POSLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isAuthenticated, isLoading, vendor } = useAppAuth();
   const [mounted, setMounted] = useState(false);
@@ -21,26 +17,21 @@ function POSLayoutInner({
   // POS works without vendor login (uses register assignment instead)
   // useEffect(() => {
   //   if (mounted && !isLoading && !isAuthenticated) {
-  //     console.log('⚠️ Not authenticated, redirecting to vendor login');
+  //
   //     router.push('/vendor/login?redirect=/pos');
   //   }
   // }, [mounted, isLoading, isAuthenticated, router]);
 
   // Debug logging
-  useEffect(() => {
-    console.log('🔍 POS Layout State:', {
-      mounted,
-      isLoading,
-      isAuthenticated,
-      vendor: vendor?.store_name
-    });
-  }, [mounted, isLoading, isAuthenticated, vendor]);
+  useEffect(() => {}, [mounted, isLoading, isAuthenticated, vendor]);
 
   // Show loading while checking auth
   if (!mounted) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-white/60 text-xs uppercase tracking-[0.15em]">Loading POS...</div>
+        <div className="text-white/60 text-xs uppercase tracking-[0.15em]">
+          Loading POS...
+        </div>
       </div>
     );
   }
@@ -51,7 +42,8 @@ function POSLayoutInner({
   return (
     <>
       <style jsx global>{`
-        html, body {
+        html,
+        body {
           overflow: hidden !important;
           height: 100% !important;
           position: fixed !important;
@@ -60,7 +52,8 @@ function POSLayoutInner({
         }
         /* iOS PWA - Full height viewport */
         @supports (-webkit-touch-callout: none) {
-          html, body {
+          html,
+          body {
             height: -webkit-fill-available !important;
           }
         }
@@ -73,7 +66,11 @@ function POSLayoutInner({
           overscroll-behavior: none;
         }
         /* Allow touches on buttons and interactive elements */
-        button, a, input, select, textarea {
+        button,
+        a,
+        input,
+        select,
+        textarea {
           touch-action: manipulation;
         }
       `}</style>
@@ -81,14 +78,14 @@ function POSLayoutInner({
       <div
         className="fixed top-0 left-0 right-0 z-50 pointer-events-none bg-black"
         style={{
-          height: 'env(safe-area-inset-top, 0px)'
+          height: "env(safe-area-inset-top, 0px)",
         }}
       />
       <div
         className="h-screen bg-black text-white antialiased overflow-hidden"
         style={{
-          paddingTop: 'env(safe-area-inset-top, 0px)',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
         {children}
@@ -97,15 +94,7 @@ function POSLayoutInner({
   );
 }
 
-export default function POSLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function POSLayout({ children }: { children: React.ReactNode }) {
   // AppAuthProvider moved to root Providers - no longer duplicated here
-  return (
-    <POSLayoutInner>
-      {children}
-    </POSLayoutInner>
-  );
+  return <POSLayoutInner>{children}</POSLayoutInner>;
 }

@@ -1,12 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 /**
  * Stable effect hook that prevents memory leaks
  * Automatically cleans up on unmount
  */
-export function useStableEffect(effect: () => void | (() => void), deps: any[]) {
+export function useStableEffect(
+  effect: () => void | (() => void),
+  deps: any[],
+) {
   const cleanupRef = useRef<(() => void) | void>(undefined);
   const isMountedRef = useRef<boolean>(true);
 
@@ -35,4 +38,3 @@ export function useStableEffect(effect: () => void | (() => void), deps: any[]) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }
-

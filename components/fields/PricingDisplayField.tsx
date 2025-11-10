@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { DollarSign } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { DollarSign } from "lucide-react";
 
 interface PricingTier {
   weight: string;
@@ -14,7 +14,7 @@ interface PricingDisplayFieldProps {
   value: {
     show_retail?: boolean;
     show_wholesale?: boolean;
-    format?: 'table' | 'dropdown' | 'badges';
+    format?: "table" | "dropdown" | "badges";
   };
   onChange: (value: any) => void;
   vendorId: string;
@@ -22,10 +22,10 @@ interface PricingDisplayFieldProps {
 }
 
 export function PricingDisplayField({
-  value = { show_retail: true, show_wholesale: false, format: 'table' },
+  value = { show_retail: true, show_wholesale: false, format: "table" },
   onChange,
   vendorId,
-  label = 'Pricing Display Options'
+  label = "Pricing Display Options",
 }: PricingDisplayFieldProps) {
   const [pricingData, setPricingData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -38,22 +38,26 @@ export function PricingDisplayField({
     try {
       setLoading(true);
       const response = await fetch(`/api/vendor/pricing?vendor_id=${vendorId}`);
-      
+
       if (!response.ok) {
-        console.error('Failed to fetch pricing:', response.status);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Failed to fetch pricing:", response.status);
+        }
         setLoading(false);
         return;
       }
-      
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
+
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
         const data = await response.json();
         if (data.success) {
           setPricingData(data);
         }
       }
     } catch (error) {
-      console.error('Error loading pricing:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading pricing:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -62,13 +66,15 @@ export function PricingDisplayField({
   return (
     <div className="mb-4">
       <label className="block text-white/80 text-sm mb-2">{label}</label>
-      
+
       <div className="bg-black/50 border border-white/20 rounded p-3 space-y-3">
         {/* Display Format */}
         <div>
-          <label className="block text-white/60 text-xs mb-1">Display Format</label>
+          <label className="block text-white/60 text-xs mb-1">
+            Display Format
+          </label>
           <select
-            value={value.format || 'table'}
+            value={value.format || "table"}
             onChange={(e) => onChange({ ...value, format: e.target.value })}
             className="w-full bg-black border border-white/10 rounded px-3 py-2 text-white text-sm"
           >
@@ -80,23 +86,29 @@ export function PricingDisplayField({
 
         {/* Show Options */}
         <div className="space-y-2">
-          <label className="block text-white/60 text-xs mb-1">Show Pricing For:</label>
-          
+          <label className="block text-white/60 text-xs mb-1">
+            Show Pricing For:
+          </label>
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
               checked={value.show_retail !== false}
-              onChange={(e) => onChange({ ...value, show_retail: e.target.checked })}
+              onChange={(e) =>
+                onChange({ ...value, show_retail: e.target.checked })
+              }
               className="w-4 h-4"
             />
             <span className="text-white text-xs">Retail Prices</span>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
               checked={value.show_wholesale || false}
-              onChange={(e) => onChange({ ...value, show_wholesale: e.target.checked })}
+              onChange={(e) =>
+                onChange({ ...value, show_wholesale: e.target.checked })
+              }
               className="w-4 h-4"
             />
             <span className="text-white text-xs">Wholesale Prices</span>
@@ -121,4 +133,3 @@ export function PricingDisplayField({
     </div>
   );
 }
-

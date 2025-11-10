@@ -3,12 +3,12 @@
  * PUT /api/categories/[id]/field-visibility - Update field visibility config for a category
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id: categoryId } = await params;
@@ -16,16 +16,19 @@ export async function PUT(
     const { fieldSlug, config } = body;
 
     if (!fieldSlug) {
-      return NextResponse.json({ error: 'Field slug is required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Field slug is required" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();
 
     // Get current category
     const { data: category, error: fetchError } = await supabase
-      .from('categories')
-      .select('field_visibility')
-      .eq('id', categoryId)
+      .from("categories")
+      .select("field_visibility")
+      .eq("id", categoryId)
       .single();
 
     if (fetchError) throw fetchError;
@@ -34,25 +37,27 @@ export async function PUT(
     const currentVisibility = category?.field_visibility || {};
     const updatedVisibility = {
       ...currentVisibility,
-      [fieldSlug]: config
+      [fieldSlug]: config,
     };
 
     const { error: updateError } = await supabase
-      .from('categories')
+      .from("categories")
       .update({ field_visibility: updatedVisibility })
-      .eq('id', categoryId);
+      .eq("id", categoryId);
 
     if (updateError) throw updateError;
 
     return NextResponse.json({
       success: true,
-      message: 'Field visibility updated'
+      message: "Field visibility updated",
     });
   } catch (error) {
-    console.error('Field visibility update error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Field visibility update error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: 'Failed to update field visibility' },
-      { status: 500 }
+      { success: false, error: "Failed to update field visibility" },
+      { status: 500 },
     );
   }
 }

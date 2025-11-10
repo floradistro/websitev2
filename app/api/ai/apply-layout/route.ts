@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * Apply AI Layout Recommendation to Menu
@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
 
     if (!recommendationId || !menuId) {
       return NextResponse.json(
-        { success: false, error: 'Recommendation ID and Menu ID required' },
-        { status: 400 }
+        { success: false, error: "Recommendation ID and Menu ID required" },
+        { status: 400 },
       );
     }
 
@@ -23,15 +23,15 @@ export async function POST(request: NextRequest) {
 
     // 1. Load the recommendation
     const { data: recommendation, error: recError } = await supabase
-      .from('ai_layout_recommendations')
-      .select('*')
-      .eq('id', recommendationId)
+      .from("ai_layout_recommendations")
+      .select("*")
+      .eq("id", recommendationId)
       .single();
 
     if (recError || !recommendation) {
       return NextResponse.json(
-        { success: false, error: 'Recommendation not found' },
-        { status: 404 }
+        { success: false, error: "Recommendation not found" },
+        { status: 404 },
       );
     }
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     // 3. Update menu with AI-optimized layout
     const { data: updatedMenu, error: menuError } = await supabase
-      .from('tv_menus')
+      .from("tv_menus")
       .update({
         display_mode: finalLayout.displayMode,
         config_data: {
@@ -61,39 +61,43 @@ export async function POST(request: NextRequest) {
           carousel_config: finalLayout.carouselConfig,
         },
       })
-      .eq('id', menuId)
+      .eq("id", menuId)
       .select()
       .single();
 
     if (menuError) {
-      console.error('Failed to update menu:', menuError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to update menu:", menuError);
+      }
       return NextResponse.json(
         { success: false, error: menuError.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // 4. Mark recommendation as applied
     await supabase
-      .from('ai_layout_recommendations')
+      .from("ai_layout_recommendations")
       .update({
         was_applied: true,
         applied_at: new Date().toISOString(),
-        user_feedback: modifications ? 'modified' : 'accepted',
+        user_feedback: modifications ? "modified" : "accepted",
         user_modifications: modifications,
       })
-      .eq('id', recommendationId);
+      .eq("id", recommendationId);
 
     return NextResponse.json({
       success: true,
       menu: updatedMenu,
-      message: 'AI layout applied successfully',
+      message: "AI layout applied successfully",
     });
   } catch (error: any) {
-    console.error('Apply layout error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Apply layout error:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

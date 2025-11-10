@@ -1,12 +1,12 @@
 "use client";
 
-import { ReactNode } from 'react';
-import { Grid3x3, List, Check } from 'lucide-react';
+import { ReactNode } from "react";
+import { Grid3x3, List, Check } from "lucide-react";
 
 interface GridLayoutProps {
   children: ReactNode;
-  viewMode?: 'grid' | 'list';
-  onViewModeChange?: (mode: 'grid' | 'list') => void;
+  viewMode?: "grid" | "list";
+  onViewModeChange?: (mode: "grid" | "list") => void;
   selectedCount?: number;
   onClearSelection?: () => void;
   bulkActions?: ReactNode;
@@ -22,14 +22,14 @@ interface GridLayoutProps {
 
 export function GridLayout({
   children,
-  viewMode = 'grid',
+  viewMode = "grid",
   onViewModeChange,
   selectedCount = 0,
   onClearSelection,
   bulkActions,
   emptyState,
   loading = false,
-  columns = { sm: 2, md: 3, lg: 4, xl: 5 }
+  columns = { sm: 2, md: 3, lg: 4, xl: 5 },
 }: GridLayoutProps) {
   const gridClasses = `grid gap-4 grid-cols-${columns.sm} md:grid-cols-${columns.md} lg:grid-cols-${columns.lg} xl:grid-cols-${columns.xl}`;
 
@@ -55,7 +55,10 @@ export function GridLayout({
               <div className="w-8 h-8 bg-white/10 border border-white/20 rounded-lg flex items-center justify-center">
                 <Check size={16} className="text-white" />
               </div>
-              <span className="text-white text-xs uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>
+              <span
+                className="text-white text-xs uppercase tracking-[0.15em] font-black"
+                style={{ fontWeight: 900 }}
+              >
                 {selectedCount} Selected
               </span>
             </div>
@@ -70,9 +73,7 @@ export function GridLayout({
             )}
           </div>
           {bulkActions && (
-            <div className="flex items-center gap-2">
-              {bulkActions}
-            </div>
+            <div className="flex items-center gap-2">{bulkActions}</div>
           )}
         </div>
       )}
@@ -81,22 +82,22 @@ export function GridLayout({
       {onViewModeChange && (
         <div className="flex items-center gap-2 justify-end">
           <button
-            onClick={() => onViewModeChange('grid')}
+            onClick={() => onViewModeChange("grid")}
             className={`p-2 rounded-lg transition-all ${
-              viewMode === 'grid'
-                ? 'bg-white/10 text-white border border-white/20'
-                : 'bg-transparent text-white/40 hover:text-white/60'
+              viewMode === "grid"
+                ? "bg-white/10 text-white border border-white/20"
+                : "bg-transparent text-white/40 hover:text-white/60"
             }`}
             aria-label="Grid view"
           >
             <Grid3x3 size={16} />
           </button>
           <button
-            onClick={() => onViewModeChange('list')}
+            onClick={() => onViewModeChange("list")}
             className={`p-2 rounded-lg transition-all ${
-              viewMode === 'list'
-                ? 'bg-white/10 text-white border border-white/20'
-                : 'bg-transparent text-white/40 hover:text-white/60'
+              viewMode === "list"
+                ? "bg-white/10 text-white border border-white/20"
+                : "bg-transparent text-white/40 hover:text-white/60"
             }`}
             aria-label="List view"
           >
@@ -106,7 +107,7 @@ export function GridLayout({
       )}
 
       {/* Grid Content */}
-      <div className={viewMode === 'grid' ? gridClasses : 'space-y-2'}>
+      <div className={viewMode === "grid" ? gridClasses : "space-y-2"}>
         {children}
       </div>
     </div>
@@ -128,12 +129,12 @@ export function GridItem({
   selected = false,
   onSelect,
   onClick,
-  className = '',
-  selectable = false
+  className = "",
+  selectable = false,
 }: GridItemProps) {
   return (
     <div
-      className={`bg-[#0a0a0a] border ${selected ? 'border-white/30' : 'border-white/5'} hover:border-white/10 rounded-2xl transition-all overflow-hidden group relative ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      className={`bg-[#0a0a0a] border ${selected ? "border-white/30" : "border-white/5"} hover:border-white/10 rounded-2xl transition-all overflow-hidden group relative ${onClick ? "cursor-pointer" : ""} ${className}`}
       onClick={onClick}
     >
       {selectable && onSelect && (
@@ -162,15 +163,21 @@ interface EmptyStateProps {
   action?: ReactNode;
 }
 
-export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+}: EmptyStateProps) {
   return (
     <div className="text-center py-20 bg-[#0a0a0a] border border-white/5 rounded-2xl">
       {icon && (
-        <div className="flex justify-center mb-4 text-white/10">
-          {icon}
-        </div>
+        <div className="flex justify-center mb-4 text-white/10">{icon}</div>
       )}
-      <h3 className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black" style={{ fontWeight: 900 }}>
+      <h3
+        className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black"
+        style={{ fontWeight: 900 }}
+      >
         {title}
       </h3>
       {description && (

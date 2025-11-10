@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 /**
  * GET - Get all unique custom field names from vendor's products
@@ -18,13 +18,15 @@ export async function GET(request: NextRequest) {
 
     // Get all products with custom_fields
     const { data: products, error } = await supabase
-      .from('products')
-      .select('custom_fields')
-      .eq('vendor_id', vendorId)
-      .not('custom_fields', 'is', null);
+      .from("products")
+      .select("custom_fields")
+      .eq("vendor_id", vendorId)
+      .not("custom_fields", "is", null);
 
     if (error) {
-      console.error('Error fetching products for custom fields:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching products for custom fields:", error);
+      }
       throw error;
     }
 
@@ -32,8 +34,8 @@ export async function GET(request: NextRequest) {
     const fieldSet = new Set<string>();
 
     products?.forEach((product: any) => {
-      if (product.custom_fields && typeof product.custom_fields === 'object') {
-        Object.keys(product.custom_fields).forEach(key => {
+      if (product.custom_fields && typeof product.custom_fields === "object") {
+        Object.keys(product.custom_fields).forEach((key) => {
           fieldSet.add(key);
         });
       }
@@ -43,14 +45,18 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      customFields
+      customFields,
     });
-
   } catch (error: any) {
-    console.error('Custom fields API error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Custom fields API error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch custom fields' },
-      { status: 500 }
+      {
+        success: false,
+        error: error.message || "Failed to fetch custom fields",
+      },
+      { status: 500 },
     );
   }
 }

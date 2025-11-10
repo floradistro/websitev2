@@ -8,20 +8,23 @@ export function usePrefetch() {
   const router = useRouter();
   const prefetchedRoutes = useRef(new Set<string>());
 
-  const prefetchRoute = useCallback((href: string) => {
-    // Only prefetch once per route
-    if (prefetchedRoutes.current.has(href)) {
-      return;
-    }
+  const prefetchRoute = useCallback(
+    (href: string) => {
+      // Only prefetch once per route
+      if (prefetchedRoutes.current.has(href)) {
+        return;
+      }
 
-    prefetchedRoutes.current.add(href);
-    
-    // Prefetch the route
-    router.prefetch(href);
-    
-    // Optionally prefetch data via API
-    // You can add custom data prefetching here
-  }, [router]);
+      prefetchedRoutes.current.add(href);
+
+      // Prefetch the route
+      router.prefetch(href);
+
+      // Optionally prefetch data via API
+      // You can add custom data prefetching here
+    },
+    [router],
+  );
 
   return { prefetchRoute };
 }
@@ -49,4 +52,3 @@ export function useLinkPrefetch(href: string) {
     onMouseLeave: handleMouseLeave,
   };
 }
-

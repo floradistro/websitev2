@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 
 export function HomeNavigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -14,16 +14,21 @@ export function HomeNavigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16 sm:h-20">
           <div className="flex items-center gap-2 sm:gap-4">
-            <Image 
-              src="/yacht-club-logo.png" 
-              alt="Yacht Club" 
-              width={32} 
+            <Image
+              src="/yacht-club-logo.png"
+              alt="Yacht Club"
+              width={32}
               height={32}
               className="object-contain sm:w-10 sm:h-10"
             />
-            <span className="text-base sm:text-xl font-black uppercase tracking-[0.08em]" style={{ fontWeight: 900 }}>WhaleTools</span>
+            <span
+              className="text-base sm:text-xl font-black uppercase tracking-[0.08em]"
+              style={{ fontWeight: 900 }}
+            >
+              WhaleTools
+            </span>
           </div>
-          
+
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8">
             <Link
@@ -55,7 +60,7 @@ export function HomeNavigation() {
               Vendor Login
             </Link>
           </div>
-          
+
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -66,13 +71,13 @@ export function HomeNavigation() {
           </button>
         </div>
       </div>
-      
+
       {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-black border-t border-white/5"
           >
@@ -116,4 +121,3 @@ export function HomeNavigation() {
     </nav>
   );
 }
-

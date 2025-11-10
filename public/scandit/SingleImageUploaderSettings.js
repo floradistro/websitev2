@@ -1,1 +1,1 @@
-export{a as SingleImageUploaderSettings}from'./chunks/chunk-5S5BT5PK.js';
+export { a as SingleImageUploaderSettings } from "./chunks/chunk-5S5BT5PK.js";

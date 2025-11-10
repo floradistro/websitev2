@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * DELETE /api/display-groups/[id]
@@ -7,22 +7,24 @@ import { getServiceSupabase } from '@/lib/supabase/client';
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     const supabase = getServiceSupabase();
 
     const { error } = await supabase
-      .from('tv_display_groups')
+      .from("tv_display_groups")
       .delete()
-      .eq('id', id);
+      .eq("id", id);
 
     if (error) {
-      console.error('Error deleting display group:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error deleting display group:", error);
+      }
       return NextResponse.json(
         { success: false, error: error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -30,10 +32,12 @@ export async function DELETE(
       success: true,
     });
   } catch (error: any) {
-    console.error('Display group DELETE error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Display group DELETE error:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -45,7 +49,7 @@ export async function DELETE(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -67,17 +71,19 @@ export async function PUT(
     };
 
     const { data: group, error: groupError } = await supabase
-      .from('tv_display_groups')
+      .from("tv_display_groups")
       .update(updateData)
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
     if (groupError) {
-      console.error('Error updating display group:', groupError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error updating display group:", groupError);
+      }
       return NextResponse.json(
         { success: false, error: groupError.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -85,9 +91,9 @@ export async function PUT(
     if (devices && devices.length > 0) {
       // Delete existing members
       await supabase
-        .from('tv_display_group_members')
+        .from("tv_display_group_members")
         .delete()
-        .eq('group_id', id);
+        .eq("group_id", id);
 
       // Insert new members
       const memberInserts = devices.map((device: any) => ({
@@ -98,14 +104,16 @@ export async function PUT(
       }));
 
       const { error: membersError } = await supabase
-        .from('tv_display_group_members')
+        .from("tv_display_group_members")
         .insert(memberInserts);
 
       if (membersError) {
-        console.error('Error updating members:', membersError);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error updating members:", membersError);
+        }
         return NextResponse.json(
           { success: false, error: membersError.message },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -115,10 +123,12 @@ export async function PUT(
       group,
     });
   } catch (error: any) {
-    console.error('Display group PUT error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Display group PUT error:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

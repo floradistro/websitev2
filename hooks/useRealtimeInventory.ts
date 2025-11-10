@@ -3,8 +3,11 @@
  * Provides live stock updates without page refresh
  */
 
-import { useEffect, useState, useCallback } from 'react';
-import { RealtimeInventoryManager, InventoryChangeEvent } from '@/lib/realtime-inventory';
+import { useEffect, useState, useCallback } from "react";
+import {
+  RealtimeInventoryManager,
+  InventoryChangeEvent,
+} from "@/lib/realtime-inventory";
 
 interface InventoryData {
   id: string;
@@ -28,7 +31,9 @@ interface UseRealtimeInventoryReturn {
 /**
  * Hook to subscribe to real-time inventory updates for a product
  */
-export function useRealtimeInventory(productId: string | null): UseRealtimeInventoryReturn {
+export function useRealtimeInventory(
+  productId: string | null,
+): UseRealtimeInventoryReturn {
   const [inventory, setInventory] = useState<InventoryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,31 +48,33 @@ export function useRealtimeInventory(productId: string | null): UseRealtimeInven
 
     try {
       setLoading(true);
-      const response = await fetch(`/api/supabase/inventory?product_id=${productId}`);
-      
+      const response = await fetch(
+        `/api/supabase/inventory?product_id=${productId}`,
+      );
+
       if (!response.ok) {
-        throw new Error('Failed to fetch inventory');
+        throw new Error("Failed to fetch inventory");
       }
 
       const data = await response.json();
-      
+
       if (data.success && data.inventory && data.inventory.length > 0) {
         // Aggregate all inventory for this product
         const totalQuantity = data.inventory.reduce(
           (sum: number, inv: any) => sum + parseFloat(inv.quantity || 0),
-          0
+          0,
         );
-        
+
         // Use the first inventory record as base
         setInventory({
           ...data.inventory[0],
-          quantity: totalQuantity
+          quantity: totalQuantity,
         });
       }
-      
+
       setError(null);
     } catch (err: any) {
-      console.error('Error fetching inventory:', err);
+      console.error("Error fetching inventory:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -76,7 +83,7 @@ export function useRealtimeInventory(productId: string | null): UseRealtimeInven
 
   // Subscribe to real-time updates
   useEffect(() => {
-    if (!productId || typeof window === 'undefined') {
+    if (!productId || typeof window === "undefined") {
       setLoading(false);
       return;
     }
@@ -86,32 +93,35 @@ export function useRealtimeInventory(productId: string | null): UseRealtimeInven
 
     // Set up real-time subscription
     const manager = RealtimeInventoryManager.getInstance();
-    
+
     const handleInventoryChange = (event: InventoryChangeEvent) => {
-      console.log('📡 Real-time inventory update received:', event);
-      
-      if (event.eventType === 'UPDATE' && event.new) {
+      console.log("📡 Real-time inventory update received:", event);
+
+      if (event.eventType === "UPDATE" && event.new) {
         setInventory((prev) => {
           if (!prev) return event.new;
-          
+
           // Merge with existing data
           return {
             ...prev,
             ...event.new,
-            quantity: parseFloat(event.new.quantity || prev.quantity)
+            quantity: parseFloat(event.new.quantity || prev.quantity),
           };
         });
-      } else if (event.eventType === 'DELETE') {
+      } else if (event.eventType === "DELETE") {
         setInventory(null);
-      } else if (event.eventType === 'INSERT' && event.new) {
+      } else if (event.eventType === "INSERT" && event.new) {
         setInventory(event.new);
       }
-      
+
       setIsConnected(true);
     };
 
-    const channelName = manager.subscribeToProduct(productId, handleInventoryChange);
-    
+    const channelName = manager.subscribeToProduct(
+      productId,
+      handleInventoryChange,
+    );
+
     // Check connection status
     const checkConnection = setInterval(() => {
       setIsConnected(manager.getConnectionStatus());
@@ -127,10 +137,13 @@ export function useRealtimeInventory(productId: string | null): UseRealtimeInven
   }, [productId, fetchInitialInventory]);
 
   // Calculate derived values
-  const totalQuantity = inventory ? parseFloat(String(inventory.quantity || 0)) : 0;
-  const isLowStock = inventory && inventory.low_stock_threshold
-    ? totalQuantity <= inventory.low_stock_threshold
-    : false;
+  const totalQuantity = inventory
+    ? parseFloat(String(inventory.quantity || 0))
+    : 0;
+  const isLowStock =
+    inventory && inventory.low_stock_threshold
+      ? totalQuantity <= inventory.low_stock_threshold
+      : false;
 
   return {
     inventory,
@@ -138,7 +151,7 @@ export function useRealtimeInventory(productId: string | null): UseRealtimeInven
     error,
     isConnected,
     totalQuantity,
-    isLowStock
+    isLowStock,
   };
 }
 
@@ -146,30 +159,35 @@ export function useRealtimeInventory(productId: string | null): UseRealtimeInven
  * Hook to subscribe to real-time inventory updates for a vendor
  */
 export function useVendorRealtimeInventory(vendorId: string | null) {
-  const [inventoryUpdates, setInventoryUpdates] = useState<InventoryChangeEvent[]>([]);
+  const [inventoryUpdates, setInventoryUpdates] = useState<
+    InventoryChangeEvent[]
+  >([]);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    if (!vendorId || typeof window === 'undefined') {
+    if (!vendorId || typeof window === "undefined") {
       return;
     }
 
     const manager = RealtimeInventoryManager.getInstance();
-    
+
     const handleInventoryChange = (event: InventoryChangeEvent) => {
-      console.log('📡 Vendor inventory update:', event);
-      
+      console.log("📡 Vendor inventory update:", event);
+
       // Store last 50 updates for reference
       setInventoryUpdates((prev) => {
         const updates = [event, ...prev];
         return updates.slice(0, 50);
       });
-      
+
       setIsConnected(true);
     };
 
-    const channelName = manager.subscribeToVendor(vendorId, handleInventoryChange);
-    
+    const channelName = manager.subscribeToVendor(
+      vendorId,
+      handleInventoryChange,
+    );
+
     // Check connection status
     const checkConnection = setInterval(() => {
       setIsConnected(manager.getConnectionStatus());
@@ -187,7 +205,6 @@ export function useVendorRealtimeInventory(vendorId: string | null) {
   return {
     inventoryUpdates,
     isConnected,
-    updateCount: inventoryUpdates.length
+    updateCount: inventoryUpdates.length,
   };
 }
-

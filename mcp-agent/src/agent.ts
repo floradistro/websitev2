@@ -3,53 +3,63 @@
  * Autonomous storefront generation with terminal access
  */
 
-import Anthropic from '@anthropic-ai/sdk';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import Exa from 'exa-js';
-import { validateStorefront, autoFixDesign, type VendorData, type StorefrontDesign } from './validator';
-import { 
-  COMPONENT_REGISTRY, 
+import Anthropic from "@anthropic-ai/sdk";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import Exa from "exa-js";
+import {
+  validateStorefront,
+  autoFixDesign,
+  type VendorData,
+  type StorefrontDesign,
+} from "./validator";
+import {
+  COMPONENT_REGISTRY,
   COMPLETE_SMART_COMPONENT_REGISTRY,
   COMPLETE_PAGE_STRUCTURE,
   COMPLETE_AGENT_INSTRUCTIONS,
-  CANNABIS_VENDOR_SPECIFIC_CONTENT
-} from './component-registry';
-import { applyTemplate, addComplianceSections } from './templates/template-engine';
-import { generateStorefrontParallel } from './parallel-agent';
+  CANNABIS_VENDOR_SPECIFIC_CONTENT,
+} from "./component-registry";
+import {
+  applyTemplate,
+  addComplianceSections,
+} from "./templates/template-engine";
+import { generateStorefrontParallel } from "./parallel-agent";
 
 // Initialize clients lazily to avoid env var issues
 function getAnthropicClient() {
   return new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY!
+    apiKey: process.env.ANTHROPIC_API_KEY!,
   });
 }
 
 function getExaClient() {
   const exaApiKey = process.env.EXA_API_KEY;
   if (!exaApiKey) {
-    console.warn('⚠️ EXA_API_KEY not found, web search disabled');
+    console.warn("⚠️ EXA_API_KEY not found, web search disabled");
     return null;
   }
   return new Exa(exaApiKey);
 }
 
 function getSupabaseClient() {
-  const supabaseUrl = process.env.SUPABASE_URL || 'https://uaednwpxursknmwdeejn.supabase.co';
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || 
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI';
+  const supabaseUrl =
+    process.env.SUPABASE_URL || "https://uaednwpxursknmwdeejn.supabase.co";
+  const supabaseServiceKey =
+    process.env.SUPABASE_SERVICE_KEY ||
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI";
 
-  console.log('🔌 Connecting to Supabase:', supabaseUrl);
+  console.log("🔌 Connecting to Supabase:", supabaseUrl);
 
   return createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       persistSession: false,
-      autoRefreshToken: false
+      autoRefreshToken: false,
     },
     global: {
       headers: {
-        'apikey': supabaseServiceKey
-      }
-    }
+        apikey: supabaseServiceKey,
+      },
+    },
   });
 }
 
@@ -66,94 +76,109 @@ export interface GenerationResult {
 
 export async function generateStorefrontWithAgent(
   vendorId: string,
-  vendorData: VendorData
+  vendorData: VendorData,
 ): Promise<GenerationResult> {
   const logs: string[] = [];
   const errors: string[] = [];
-  
+
   // Initialize clients here (after dotenv loaded)
   const anthropic = getAnthropicClient();
   const supabase = getSupabaseClient();
-  
+
   try {
     logs.push(`🤖 Starting AI generation for ${vendorData.store_name}`);
-    
+
     // Get vendor's actual data from database
     const enrichedVendorData = await enrichVendorData(vendorId, vendorData);
-    logs.push(`📊 Vendor data enriched: ${enrichedVendorData.product_count} products, ${enrichedVendorData.location_count} locations`);
-    
+    logs.push(
+      `📊 Vendor data enriched: ${enrichedVendorData.product_count} products, ${enrichedVendorData.location_count} locations`,
+    );
+
     // Optionally search web for vendor inspiration
     const exa = getExaClient();
-    let webInsights = '';
+    let webInsights = "";
     if (exa && enrichedVendorData.store_name) {
       try {
-        logs.push(`🌐 Searching web for ${enrichedVendorData.store_name} inspiration...`);
+        logs.push(
+          `🌐 Searching web for ${enrichedVendorData.store_name} inspiration...`,
+        );
         const searchResults = await exa.searchAndContents(
           `${enrichedVendorData.store_name} ${enrichedVendorData.vendor_type} website design trends`,
-          { numResults: 3, text: true }
+          { numResults: 3, text: true },
         );
         webInsights = searchResults.results
-          .map(r => `${r.title}: ${r.text?.slice(0, 200)}...`)
-          .join('\n');
+          .map((r) => `${r.title}: ${r.text?.slice(0, 200)}...`)
+          .join("\n");
         logs.push(`✅ Found ${searchResults.results.length} web insights`);
       } catch (e) {
-        logs.push(`⚠️ Web search failed (non-critical): ${(e as Error).message}`);
+        logs.push(
+          `⚠️ Web search failed (non-critical): ${(e as Error).message}`,
+        );
       }
     }
-    
+
     // Check if we should use template system (for cannabis vendors)
-    const vendorType = (enrichedVendorData.vendor_type || '').toLowerCase();
-    const useTemplate = vendorType.includes('cannabis') || 
-                        vendorType.includes('thc') ||
-                        vendorType.includes('dispensary') ||
-                        vendorType.includes('cbd') ||
-                        vendorType === 'both'; // Flora Distro is 'both'
-    
-    const useParallel = process.env.PARALLEL_MODE === 'true';
-    
+    const vendorType = (enrichedVendorData.vendor_type || "").toLowerCase();
+    const useTemplate =
+      vendorType.includes("cannabis") ||
+      vendorType.includes("thc") ||
+      vendorType.includes("dispensary") ||
+      vendorType.includes("cbd") ||
+      vendorType === "both"; // Flora Distro is 'both'
+
+    const useParallel = process.env.PARALLEL_MODE === "true";
+
     let design: StorefrontDesign;
-    
+
     if (useTemplate) {
       logs.push(`🎨 Applying Wilson's Template from database...`);
       design = await applyTemplate(enrichedVendorData);
-      logs.push(`✅ Template applied: ${design.sections.length} sections, ${design.components.length} components`);
-      
+      logs.push(
+        `✅ Template applied: ${design.sections.length} sections, ${design.components.length} components`,
+      );
+
       // Add FAQ and compliance sections
       design = addComplianceSections(design, enrichedVendorData);
       logs.push(`✅ Added compliance sections (FAQ, disclaimers)`);
     } else if (useParallel) {
       // PARALLEL MODE: Generate 5 page groups simultaneously
       logs.push(`⚡ PARALLEL MODE: Generating 5 groups simultaneously`);
-      
-      const parallelResult = await generateStorefrontParallel(vendorId, enrichedVendorData);
+
+      const parallelResult = await generateStorefrontParallel(
+        vendorId,
+        enrichedVendorData,
+      );
       logs.push(...parallelResult.logs);
       errors.push(...parallelResult.errors);
-      
+
       if (!parallelResult.success) {
-        throw new Error('Parallel generation failed');
+        throw new Error("Parallel generation failed");
       }
-      
+
       design = {
         sections: parallelResult.sections,
-        components: parallelResult.components
+        components: parallelResult.components,
       };
-      
-      logs.push(`✅ Parallel generation complete: ${design.sections.length} sections, ${design.components.length} components`);
+
+      logs.push(
+        `✅ Parallel generation complete: ${design.sections.length} sections, ${design.components.length} components`,
+      );
     } else {
       // Phase 1: Design the storefront with Claude (for non-cannabis)
       logs.push(`🎨 Claude designing storefront...`);
-    
-    // Optimized for speed
-    logs.push(`⚡ Claude generating (optimized for speed)...`);
-    
-    const designResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 8192,
-      temperature: 0.5, // Optimized for speed and stability
-      system: COMPLETE_AGENT_INSTRUCTIONS,
-      messages: [{
-        role: 'user',
-        content: `Design a COMPLETE, PRODUCTION-READY storefront with ALL 12 PAGES for this vendor:
+
+      // Optimized for speed
+      logs.push(`⚡ Claude generating (optimized for speed)...`);
+
+      const designResponse = await anthropic.messages.create({
+        model: "claude-sonnet-4-5-20250929",
+        max_tokens: 8192,
+        temperature: 0.5, // Optimized for speed and stability
+        system: COMPLETE_AGENT_INSTRUCTIONS,
+        messages: [
+          {
+            role: "user",
+            content: `Design a COMPLETE, PRODUCTION-READY storefront with ALL 12 PAGES for this vendor:
 
 VENDOR INFORMATION:
 ${JSON.stringify(enrichedVendorData, null, 2)}
@@ -167,7 +192,7 @@ ${JSON.stringify(COMPLETE_PAGE_STRUCTURE, null, 2)}
 PRE-BUILT CANNABIS CONTENT (Use this for cannabis vendors):
 ${JSON.stringify(CANNABIS_VENDOR_SPECIFIC_CONTENT, null, 2)}
 
-${webInsights ? `\n🌐 WEB INSIGHTS FOR INSPIRATION:\n${webInsights}\n` : ''}
+${webInsights ? `\n🌐 WEB INSIGHTS FOR INSPIRATION:\n${webInsights}\n` : ""}
 
 CRITICAL REQUIREMENTS:
 1. Create sections for ALL 12 pages (home, shop, product, about, contact, faq, lab-results, privacy, terms, cookies, shipping, returns)
@@ -194,66 +219,71 @@ Return ONLY raw JSON. Start with { and end with }
   ]
 }
 
-NO markdown, NO explanations, ONLY JSON.`
-      }]
-    });
-    
-    // Extract JSON from response
-    const responseText = designResponse.content
-      .filter(c => c.type === 'text')
-      .map(c => c.text)
-      .join('');
-    
-    // Remove markdown code blocks if present
-    const cleanedJson = responseText
-      .replace(/```json\n?/g, '')
-      .replace(/```\n?/g, '')
-      .trim();
-    
+NO markdown, NO explanations, ONLY JSON.`,
+          },
+        ],
+      });
+
+      // Extract JSON from response
+      const responseText = designResponse.content
+        .filter((c) => c.type === "text")
+        .map((c) => c.text)
+        .join("");
+
+      // Remove markdown code blocks if present
+      const cleanedJson = responseText
+        .replace(/```json\n?/g, "")
+        .replace(/```\n?/g, "")
+        .trim();
+
       design = JSON.parse(cleanedJson);
-      logs.push(`✅ Claude generated ${design.sections.length} sections, ${design.components.length} components`);
+      logs.push(
+        `✅ Claude generated ${design.sections.length} sections, ${design.components.length} components`,
+      );
     }
-    
+
     // Phase 2: Validate the design (skip for templates - they're pre-validated)
     if (useTemplate) {
       logs.push(`✅ Using pre-validated template, skipping Claude validation`);
     } else {
       logs.push(`🔍 Validating design...`);
       const validation = validateStorefront(design, enrichedVendorData);
-      
-      if (!validation.valid) {
-        logs.push(`⚠️ Design has ${validation.errors.length} errors. Asking Claude to fix...`);
-      
-      // Ask Claude to fix issues
-      const fixResponse = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 8192,
-        messages: [
-          {
-            role: 'user',
-            content: `Your design has these errors:
 
-${validation.errors.join('\n')}
+      if (!validation.valid) {
+        logs.push(
+          `⚠️ Design has ${validation.errors.length} errors. Asking Claude to fix...`,
+        );
+
+        // Ask Claude to fix issues
+        const fixResponse = await anthropic.messages.create({
+          model: "claude-sonnet-4-5-20250929",
+          max_tokens: 8192,
+          messages: [
+            {
+              role: "user",
+              content: `Your design has these errors:
+
+${validation.errors.join("\n")}
 
 Original design:
 ${JSON.stringify(design, null, 2)}
 
-Fix these issues and return corrected JSON (same format).`
-          }
-        ]
-      });
-      
-      const fixedText = fixResponse.content
-        .filter(c => c.type === 'text')
-        .map(c => c.text)
-        .join('')
-        .replace(/```json\n?/g, '')
-        .replace(/```\n?/g, '')
-        .trim();
-      
+Fix these issues and return corrected JSON (same format).`,
+            },
+          ],
+        });
+
+        const fixedText = fixResponse.content
+          .filter((c) => c.type === "text")
+          .map((c) => c.text)
+          .join("")
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "")
+          .trim();
+
         design = JSON.parse(fixedText);
         logs.push(`✅ Claude fixed the design`);
-        
+
         // Re-validate
         const revalidation = validateStorefront(design, enrichedVendorData);
         if (!revalidation.valid) {
@@ -262,38 +292,48 @@ Fix these issues and return corrected JSON (same format).`
           logs.push(`🔧 Auto-fixed remaining issues`);
         }
       }
-      
+
       if (validation.warnings.length > 0) {
-        logs.push(`⚠️ Warnings: ${validation.warnings.join(', ')}`);
+        logs.push(`⚠️ Warnings: ${validation.warnings.join(", ")}`);
       }
     }
-    
+
     // Phase 3: Insert into database using direct SQL (more reliable)
     logs.push(`💾 Inserting sections into database...`);
-    
-    const insertedSections = await insertSectionsDirectSQL(vendorId, design.sections);
+
+    const insertedSections = await insertSectionsDirectSQL(
+      vendorId,
+      design.sections,
+    );
     logs.push(`✅ Created ${insertedSections.length} sections`);
-    
+
     // Map section_keys to actual database IDs (composite key: page_type:section_key)
     const sectionMap = new Map<string, string>();
     insertedSections.forEach((section: any) => {
       const compositeKey = `${section.page_type}:${section.section_key}`;
       sectionMap.set(compositeKey, section.id);
     });
-    
+
     // Phase 4: Insert components using direct SQL (one by one for reliability)
     logs.push(`💾 Inserting components into database...`);
-    
+
     // Filter components with composite key matching
     const componentsData = design.components.filter((c: any) => {
-      const pageType = design.sections.find((s: any) => s.section_key === c.section_key)?.page_type || 'home';
+      const pageType =
+        design.sections.find((s: any) => s.section_key === c.section_key)
+          ?.page_type || "home";
       const compositeKey = `${pageType}:${c.section_key}`;
       return sectionMap.has(compositeKey);
     });
-    
-    const insertedComponents = await insertComponentsDirectSQL(vendorId, sectionMap, componentsData, design.sections);
+
+    const insertedComponents = await insertComponentsDirectSQL(
+      vendorId,
+      sectionMap,
+      componentsData,
+      design.sections,
+    );
     logs.push(`✅ Created ${insertedComponents.length} components`);
-    
+
     // Phase 5: Update vendor status using direct SQL
     try {
       await updateVendorStatusDirectSQL(vendorId);
@@ -301,11 +341,11 @@ Fix these issues and return corrected JSON (same format).`
     } catch (e) {
       logs.push(`⚠️ Could not update vendor status (non-critical)`);
     }
-    
+
     // Phase 6: Verify storefront URL
     const storefrontUrl = `https://yachtclub.com/storefront?vendor=${vendorData.slug}`;
     logs.push(`🎉 Storefront live at: ${storefrontUrl}`);
-    
+
     return {
       success: true,
       vendorId,
@@ -313,21 +353,20 @@ Fix these issues and return corrected JSON (same format).`
       componentsCreated: insertedComponents.length,
       storefrontUrl,
       design,
-      logs
+      logs,
     };
-    
   } catch (error: any) {
-    console.error('❌ Generation failed:', error);
+    console.error("❌ Generation failed:", error);
     errors.push(error.message);
-    
+
     return {
       success: false,
       vendorId,
       sectionsCreated: 0,
       componentsCreated: 0,
-      storefrontUrl: '',
+      storefrontUrl: "",
       logs,
-      errors
+      errors,
     };
   }
 }
@@ -336,35 +375,38 @@ Fix these issues and return corrected JSON (same format).`
  * Enrich vendor data by querying actual database
  * Agent can make smarter decisions with real data
  */
-async function enrichVendorData(vendorId: string, vendorData: VendorData): Promise<VendorData> {
+async function enrichVendorData(
+  vendorId: string,
+  vendorData: VendorData,
+): Promise<VendorData> {
   try {
     const supabase = getSupabaseClient();
-    
+
     // Get product count and categories
     const { data: products } = await supabase
-      .from('products')
-      .select('id, category')
-      .eq('vendor_id', vendorId)
-      .eq('status', 'active');
-    
+      .from("products")
+      .select("id, category")
+      .eq("vendor_id", vendorId)
+      .eq("status", "active");
+
     const productCount = products?.length || 0;
-    const categories = [...new Set(products?.map(p => p.category) || [])];
-    
+    const categories = [...new Set(products?.map((p) => p.category) || [])];
+
     // Get location count
     const { data: locations } = await supabase
-      .from('vendor_locations')
-      .select('id')
-      .eq('vendor_id', vendorId);
-    
+      .from("vendor_locations")
+      .select("id")
+      .eq("vendor_id", vendorId);
+
     const locationCount = locations?.length || 0;
-    
+
     // Get vendor full details
     const { data: vendor } = await supabase
-      .from('vendors')
-      .select('*')
-      .eq('id', vendorId)
+      .from("vendors")
+      .select("*")
+      .eq("id", vendorId)
       .single();
-    
+
     return {
       ...vendorData,
       product_count: productCount,
@@ -374,16 +416,16 @@ async function enrichVendorData(vendorId: string, vendorData: VendorData): Promi
       logo_url: vendor?.logo_url,
       brand_colors: vendor?.brand_colors || {},
       wholesale_enabled: vendor?.wholesale_enabled || false,
-      vendor_type: vendor?.vendor_type || vendorData.vendor_type || 'retail'
+      vendor_type: vendor?.vendor_type || vendorData.vendor_type || "retail",
     };
   } catch (error) {
-    console.warn('Could not enrich vendor data, using basic info:', error);
+    console.warn("Could not enrich vendor data, using basic info:", error);
     // Fallback to basic data if database fails
     return {
       ...vendorData,
       product_count: 0,
       has_products: false,
-      location_count: 0
+      location_count: 0,
     };
   }
 }
@@ -391,48 +433,55 @@ async function enrichVendorData(vendorId: string, vendorData: VendorData): Promi
 // Database helpers using Supabase JS client (works from Docker)
 async function insertSectionsDirectSQL(vendorId: string, sections: any[]) {
   const supabase = getSupabaseClient();
-  
-  const sectionsToInsert = sections.map(s => ({
+
+  const sectionsToInsert = sections.map((s) => ({
     vendor_id: vendorId,
     section_key: s.section_key,
     section_order: s.section_order,
-    page_type: s.page_type || 'home',
+    page_type: s.page_type || "home",
     is_enabled: true,
-    content_data: {}
+    content_data: {},
   }));
-  
+
   // Use upsert to avoid duplicates
   const { data, error } = await supabase
-    .from('vendor_storefront_sections')
-    .upsert(sectionsToInsert, { 
-      onConflict: 'vendor_id,page_type,section_key',
-      ignoreDuplicates: false 
+    .from("vendor_storefront_sections")
+    .upsert(sectionsToInsert, {
+      onConflict: "vendor_id,page_type,section_key",
+      ignoreDuplicates: false,
     })
-    .select('id, section_key, page_type');
-  
+    .select("id, section_key, page_type");
+
   if (error) {
     throw new Error(`Failed to insert sections: ${error.message}`);
   }
-  
+
   return data || [];
 }
 
-async function insertComponentsDirectSQL(vendorId: string, sectionMap: Map<string, string>, components: any[], sections: any[]) {
+async function insertComponentsDirectSQL(
+  vendorId: string,
+  sectionMap: Map<string, string>,
+  components: any[],
+  sections: any[],
+) {
   const supabase = getSupabaseClient();
-  
+
   const componentsToInsert = components
-    .map(c => {
+    .map((c) => {
       // Find page_type for this section
-      const section = sections.find((s: any) => s.section_key === c.section_key);
-      const pageType = section?.page_type || 'home';
+      const section = sections.find(
+        (s: any) => s.section_key === c.section_key,
+      );
+      const pageType = section?.page_type || "home";
       const compositeKey = `${pageType}:${c.section_key}`;
       const sectionId = sectionMap.get(compositeKey);
-      
+
       if (!sectionId) {
         console.warn(`No section ID found for ${compositeKey}`);
         return null;
       }
-      
+
       return {
         vendor_id: vendorId,
         section_id: sectionId,
@@ -440,49 +489,51 @@ async function insertComponentsDirectSQL(vendorId: string, sectionMap: Map<strin
         props: c.props || {},
         position_order: c.position_order,
         is_enabled: true,
-        field_bindings: {}
+        field_bindings: {},
       };
     })
-    .filter(c => c !== null);
-  
+    .filter((c) => c !== null);
+
   // Insert in batches of 50 to avoid payload size limits
   const batchSize = 50;
   const insertedComponents = [];
-  
+
   for (let i = 0; i < componentsToInsert.length; i += batchSize) {
     const batch = componentsToInsert.slice(i, i + batchSize);
     const { data, error } = await supabase
-      .from('vendor_component_instances')
+      .from("vendor_component_instances")
       .insert(batch)
-      .select('id');
-    
+      .select("id");
+
     if (error) {
-      console.error(`Failed to insert component batch ${i / batchSize + 1}:`, error.message);
+      console.error(
+        `Failed to insert component batch ${i / batchSize + 1}:`,
+        error.message,
+      );
       continue;
     }
-    
+
     if (data) {
       insertedComponents.push(...data);
     }
   }
-  
+
   return insertedComponents;
 }
 
 async function updateVendorStatusDirectSQL(vendorId: string) {
   const supabase = getSupabaseClient();
-  
+
   const { error } = await supabase
-    .from('vendors')
+    .from("vendors")
     .update({
-      status: 'active',
+      status: "active",
       storefront_generated: true,
-      storefront_generated_at: new Date().toISOString()
+      storefront_generated_at: new Date().toISOString(),
     })
-    .eq('id', vendorId);
-  
+    .eq("id", vendorId);
+
   if (error) {
     throw new Error(`Failed to update vendor status: ${error.message}`);
   }
 }
-

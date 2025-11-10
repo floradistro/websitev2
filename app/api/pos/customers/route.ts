@@ -1,30 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
-    const vendorId = searchParams.get('vendorId');
-    const search = searchParams.get('search') || '';
+    const vendorId = searchParams.get("vendorId");
+    const search = searchParams.get("search") || "";
 
     if (!vendorId) {
       return NextResponse.json(
-        { error: 'Missing vendorId parameter' },
-        { status: 400 }
+        { error: "Missing vendorId parameter" },
+        { status: 400 },
       );
     }
 
     // Get total count
     const { count: totalCount } = await supabase
-      .from('vendor_customers')
-      .select('*', { count: 'exact', head: true })
-      .eq('vendor_id', vendorId);
-
-    console.log(`🔍 Fetching customers for vendor ${vendorId} (search: "${search}", total: ${totalCount})...`);
+      .from("vendor_customers")
+      .select("*", { count: "exact", head: true })
+      .eq("vendor_id", vendorId);
 
     let data: any[] = [];
 
@@ -38,8 +36,9 @@ export async function GET(request: NextRequest) {
 
       while (hasMore) {
         const { data: chunk, error: chunkError } = await supabase
-          .from('vendor_customers')
-          .select(`
+          .from("vendor_customers")
+          .select(
+            `
             id,
             vendor_customer_number,
             loyalty_points,
@@ -56,12 +55,15 @@ export async function GET(request: NextRequest) {
               phone,
               display_name
             )
-          `)
-          .eq('vendor_id', vendorId)
+          `,
+          )
+          .eq("vendor_id", vendorId)
           .range(offset, offset + CHUNK_SIZE - 1);
 
         if (chunkError) {
-          console.error('Error fetching chunk:', chunkError);
+          if (process.env.NODE_ENV === "development") {
+            console.error("Error fetching chunk:", chunkError);
+          }
           break;
         }
 
@@ -73,15 +75,14 @@ export async function GET(request: NextRequest) {
         offset += CHUNK_SIZE;
         hasMore = chunk.length === CHUNK_SIZE;
       }
-
-      console.log(`📦 Fetched ${data.length} customers in ${Math.ceil(data.length / CHUNK_SIZE)} chunks`);
     } else {
       // No search - get more than 1000 customers and sort alphabetically
       // This ensures customers with 0 points are visible in the dropdown
       const FETCH_SIZE = 2000;
       const { data: firstBatch, error: batchError } = await supabase
-        .from('vendor_customers')
-        .select(`
+        .from("vendor_customers")
+        .select(
+          `
           id,
           vendor_customer_number,
           loyalty_points,
@@ -98,24 +99,36 @@ export async function GET(request: NextRequest) {
             phone,
             display_name
           )
-        `)
-        .eq('vendor_id', vendorId)
+        `,
+        )
+        .eq("vendor_id", vendorId)
         .limit(FETCH_SIZE);
 
       if (batchError) {
-        console.error('Error fetching customers:', batchError);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error fetching customers:", batchError);
+        }
         return NextResponse.json(
           { error: batchError.message },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
       // Sort alphabetically in-memory, filtering out customers without names
       data = (firstBatch || [])
-        .filter((vc: any) => vc.customers && (vc.customers.first_name || vc.customers.last_name))
+        .filter(
+          (vc: any) =>
+            vc.customers && (vc.customers.first_name || vc.customers.last_name),
+        )
         .sort((a: any, b: any) => {
-          const nameA = `${a.customers?.first_name || ''} ${a.customers?.last_name || ''}`.trim().toLowerCase();
-          const nameB = `${b.customers?.first_name || ''} ${b.customers?.last_name || ''}`.trim().toLowerCase();
+          const nameA =
+            `${a.customers?.first_name || ""} ${a.customers?.last_name || ""}`
+              .trim()
+              .toLowerCase();
+          const nameB =
+            `${b.customers?.first_name || ""} ${b.customers?.last_name || ""}`
+              .trim()
+              .toLowerCase();
           return nameA.localeCompare(nameB);
         })
         .slice(0, 1000); // Take first 1000 after sorting
@@ -126,13 +139,13 @@ export async function GET(request: NextRequest) {
       .filter((vc: any) => vc.customers) // Filter out null customers
       .map((vc: any) => ({
         id: vc.customers.id,
-        first_name: vc.customers.first_name || '',
-        last_name: vc.customers.last_name || '',
+        first_name: vc.customers.first_name || "",
+        last_name: vc.customers.last_name || "",
         email: vc.customers.email,
         phone: vc.customers.phone,
         display_name: vc.customers.display_name,
         loyalty_points: vc.loyalty_points || 0,
-        loyalty_tier: vc.loyalty_tier || 'bronze',
+        loyalty_tier: vc.loyalty_tier || "bronze",
         vendor_customer_number: vc.vendor_customer_number,
         total_orders: vc.total_orders || 0,
         total_spent: vc.total_spent || 0,
@@ -143,23 +156,25 @@ export async function GET(request: NextRequest) {
       const searchLower = search.toLowerCase().trim();
 
       // Split search into words for smart matching
-      const searchWords = searchLower.split(/\s+/).filter(w => w.length > 0);
+      const searchWords = searchLower.split(/\s+/).filter((w) => w.length > 0);
 
       // Score and filter customers
       const scoredCustomers = customers.map((customer: any) => {
-        const firstName = (customer.first_name || '').toLowerCase();
-        const lastName = (customer.last_name || '').toLowerCase();
+        const firstName = (customer.first_name || "").toLowerCase();
+        const lastName = (customer.last_name || "").toLowerCase();
         const fullName = `${firstName} ${lastName}`.trim();
-        const displayName = (customer.display_name || '').toLowerCase();
-        const email = (customer.email || '').toLowerCase();
-        const phone = (customer.phone || '').replace(/\D/g, '');
-        const customerNumber = (customer.vendor_customer_number || '').toLowerCase();
+        const displayName = (customer.display_name || "").toLowerCase();
+        const email = (customer.email || "").toLowerCase();
+        const phone = (customer.phone || "").replace(/\D/g, "");
+        const customerNumber = (
+          customer.vendor_customer_number || ""
+        ).toLowerCase();
 
         let score = 0;
         let matchesAll = true;
 
         for (const word of searchWords) {
-          const searchPhone = word.replace(/\D/g, '');
+          const searchPhone = word.replace(/\D/g, "");
           let wordMatched = false;
           let wordScore = 0;
 
@@ -172,8 +187,7 @@ export async function GET(request: NextRequest) {
           else if (firstName.startsWith(word)) {
             wordScore = 100;
             wordMatched = true;
-          }
-          else if (lastName.startsWith(word)) {
+          } else if (lastName.startsWith(word)) {
             wordScore = 90;
             wordMatched = true;
           }
@@ -203,7 +217,13 @@ export async function GET(request: NextRequest) {
             wordMatched = true;
           }
           // Contains anywhere (lowest priority)
-          else if (firstName.includes(word) || lastName.includes(word) || displayName.includes(word) || email.includes(word) || customerNumber.includes(word)) {
+          else if (
+            firstName.includes(word) ||
+            lastName.includes(word) ||
+            displayName.includes(word) ||
+            email.includes(word) ||
+            customerNumber.includes(word)
+          ) {
             wordScore = 10;
             wordMatched = true;
           }
@@ -226,15 +246,14 @@ export async function GET(request: NextRequest) {
         .map(({ customer }) => customer);
     }
 
-    console.log(`📊 Returning ${customers.length} customers (total in DB: ${totalCount || 0})`);
-
     return NextResponse.json({ customers, total: totalCount || 0 });
   } catch (error: any) {
-    console.error('Error in customers endpoint:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in customers endpoint:", error);
+    }
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
+      { error: "Internal server error", details: error.message },
+      { status: 500 },
     );
   }
 }
-

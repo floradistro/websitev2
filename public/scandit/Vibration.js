@@ -1,1 +1,1 @@
-export{a as Vibration}from'./chunks/chunk-SJJGHQ52.js';
+export { a as Vibration } from "./chunks/chunk-SJJGHQ52.js";

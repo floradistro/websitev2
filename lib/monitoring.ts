@@ -34,16 +34,20 @@ class PerformanceMonitor {
   /**
    * Time an async operation
    */
-  async time<T>(name: string, fn: () => Promise<T>, tags?: Record<string, string>): Promise<T> {
+  async time<T>(
+    name: string,
+    fn: () => Promise<T>,
+    tags?: Record<string, string>,
+  ): Promise<T> {
     const start = performance.now();
     try {
       const result = await fn();
       const duration = performance.now() - start;
-      this.record(name, duration, { ...tags, status: 'success' });
+      this.record(name, duration, { ...tags, status: "success" });
       return result;
     } catch (error) {
       const duration = performance.now() - start;
-      this.record(name, duration, { ...tags, status: 'error' });
+      this.record(name, duration, { ...tags, status: "error" });
       throw error;
     }
   }
@@ -52,15 +56,15 @@ class PerformanceMonitor {
    * Get metrics summary
    */
   getSummary(name: string) {
-    const relevant = this.metrics.filter(m => m.name === name);
-    
+    const relevant = this.metrics.filter((m) => m.name === name);
+
     if (relevant.length === 0) {
       return null;
     }
 
-    const values = relevant.map(m => m.value);
+    const values = relevant.map((m) => m.value);
     const sorted = [...values].sort((a, b) => a - b);
-    
+
     return {
       count: relevant.length,
       avg: values.reduce((a, b) => a + b, 0) / values.length,
@@ -77,7 +81,7 @@ class PerformanceMonitor {
    */
   getMetrics(since?: number) {
     if (since) {
-      return this.metrics.filter(m => m.timestamp > since);
+      return this.metrics.filter((m) => m.timestamp > since);
     }
     return this.metrics;
   }
@@ -98,24 +102,24 @@ export const monitor = new PerformanceMonitor();
  */
 export const Metrics = {
   // API Performance
-  API_RESPONSE_TIME: 'api.response_time',
-  API_ERROR_RATE: 'api.error_rate',
-  
+  API_RESPONSE_TIME: "api.response_time",
+  API_ERROR_RATE: "api.error_rate",
+
   // Database
-  DB_QUERY_TIME: 'db.query_time',
-  DB_CONNECTION_TIME: 'db.connection_time',
-  
+  DB_QUERY_TIME: "db.query_time",
+  DB_CONNECTION_TIME: "db.connection_time",
+
   // Cache
-  CACHE_HIT_RATE: 'cache.hit_rate',
-  CACHE_MISS_RATE: 'cache.miss_rate',
-  
+  CACHE_HIT_RATE: "cache.hit_rate",
+  CACHE_MISS_RATE: "cache.miss_rate",
+
   // Tenant
-  TENANT_REQUEST_COUNT: 'tenant.request_count',
-  TENANT_RESPONSE_TIME: 'tenant.response_time',
-  
+  TENANT_REQUEST_COUNT: "tenant.request_count",
+  TENANT_RESPONSE_TIME: "tenant.response_time",
+
   // Component Rendering
-  COMPONENT_RENDER_TIME: 'component.render_time',
-  PAGE_LOAD_TIME: 'page.load_time',
+  COMPONENT_RENDER_TIME: "component.render_time",
+  PAGE_LOAD_TIME: "page.load_time",
 };
 
 /**
@@ -124,13 +128,12 @@ export const Metrics = {
 export async function trackAPICall<T>(
   endpoint: string,
   fn: () => Promise<T>,
-  vendorId?: string
+  vendorId?: string,
 ): Promise<T> {
-  return monitor.time(
-    Metrics.API_RESPONSE_TIME,
-    fn,
-    { endpoint, vendor_id: vendorId || 'unknown' }
-  );
+  return monitor.time(Metrics.API_RESPONSE_TIME, fn, {
+    endpoint,
+    vendor_id: vendorId || "unknown",
+  });
 }
 
 /**
@@ -139,13 +142,12 @@ export async function trackAPICall<T>(
 export async function trackQuery<T>(
   queryName: string,
   fn: () => Promise<T>,
-  vendorId?: string
+  vendorId?: string,
 ): Promise<T> {
-  return monitor.time(
-    Metrics.DB_QUERY_TIME,
-    fn,
-    { query: queryName, vendor_id: vendorId || 'unknown' }
-  );
+  return monitor.time(Metrics.DB_QUERY_TIME, fn, {
+    query: queryName,
+    vendor_id: vendorId || "unknown",
+  });
 }
 
 /**
@@ -153,12 +155,18 @@ export async function trackQuery<T>(
  */
 const SLOW_THRESHOLD = 1000; // 1 second
 
-export function logIfSlow(operation: string, duration: number, threshold = SLOW_THRESHOLD) {
+export function logIfSlow(
+  operation: string,
+  duration: number,
+  threshold = SLOW_THRESHOLD,
+) {
   if (duration > threshold) {
-    console.warn(`⚠️ Slow operation detected: ${operation} took ${duration.toFixed(0)}ms`);
-    
+    console.warn(
+      `⚠️ Slow operation detected: ${operation} took ${duration.toFixed(0)}ms`,
+    );
+
     // In production, send to error tracking service (Sentry, etc.)
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       // TODO: Integrate with Sentry or similar
     }
   }
@@ -169,22 +177,22 @@ export function logIfSlow(operation: string, duration: number, threshold = SLOW_
  */
 export function getPrometheusMetrics(): string {
   const metrics: string[] = [];
-  
+
   // Get all unique metric names
-  const names = new Set(monitor.getMetrics().map(m => m.name));
-  
+  const names = new Set(monitor.getMetrics().map((m) => m.name));
+
   for (const name of names) {
     const summary = monitor.getSummary(name);
     if (summary) {
-      metrics.push(`# TYPE ${name.replace(/\./g, '_')} summary`);
-      metrics.push(`${name.replace(/\./g, '_')}_count ${summary.count}`);
-      metrics.push(`${name.replace(/\./g, '_')}_avg ${summary.avg.toFixed(2)}`);
-      metrics.push(`${name.replace(/\./g, '_')}_p95 ${summary.p95.toFixed(2)}`);
-      metrics.push(`${name.replace(/\./g, '_')}_p99 ${summary.p99.toFixed(2)}`);
+      metrics.push(`# TYPE ${name.replace(/\./g, "_")} summary`);
+      metrics.push(`${name.replace(/\./g, "_")}_count ${summary.count}`);
+      metrics.push(`${name.replace(/\./g, "_")}_avg ${summary.avg.toFixed(2)}`);
+      metrics.push(`${name.replace(/\./g, "_")}_p95 ${summary.p95.toFixed(2)}`);
+      metrics.push(`${name.replace(/\./g, "_")}_p99 ${summary.p99.toFixed(2)}`);
     }
   }
-  
-  return metrics.join('\n');
+
+  return metrics.join("\n");
 }
 
 /**
@@ -193,16 +201,15 @@ export function getPrometheusMetrics(): string {
 export function getHealthStatus() {
   const apiSummary = monitor.getSummary(Metrics.API_RESPONSE_TIME);
   const dbSummary = monitor.getSummary(Metrics.DB_QUERY_TIME);
-  
+
   return {
-    status: 'healthy',
+    status: "healthy",
     timestamp: new Date().toISOString(),
     uptime: process.uptime ? process.uptime() : 0,
     memory: process.memoryUsage ? process.memoryUsage() : null,
     metrics: {
       api: apiSummary,
       database: dbSummary,
-    }
+    },
   };
 }
-

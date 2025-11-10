@@ -6,12 +6,12 @@
  * iOS 26 rounded-2xl design
  */
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { Plus, Minus } from 'lucide-react';
-import { fadeInUp, staggerContainer, staggerItem } from '@/lib/animations';
-import Image from 'next/image';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import { Plus, Minus } from "lucide-react";
+import { fadeInUp, staggerContainer, staggerItem } from "@/lib/animations";
+import Image from "next/image";
 
 export interface SmartFAQProps {
   vendorId?: string;
@@ -31,28 +31,34 @@ export interface SmartFAQProps {
 const defaultFAQs = [
   {
     question: "What are your delivery hours?",
-    answer: "We offer same-day delivery Monday through Sunday, 10am - 9pm. Orders placed before 7pm qualify for same-day delivery."
+    answer:
+      "We offer same-day delivery Monday through Sunday, 10am - 9pm. Orders placed before 7pm qualify for same-day delivery.",
   },
   {
     question: "Do you offer lab testing results?",
-    answer: "Yes! All our products come with third-party lab results showing cannabinoid profiles, terpene content, and safety testing for pesticides and contaminants."
+    answer:
+      "Yes! All our products come with third-party lab results showing cannabinoid profiles, terpene content, and safety testing for pesticides and contaminants.",
   },
   {
     question: "What's your return policy?",
-    answer: "We stand behind the quality of our products. If you're not satisfied, contact us within 24 hours of delivery for a full refund or replacement."
+    answer:
+      "We stand behind the quality of our products. If you're not satisfied, contact us within 24 hours of delivery for a full refund or replacement.",
   },
   {
     question: "Do I need a medical card?",
-    answer: "Requirements vary by location. Please check your local regulations. We serve both medical patients and recreational customers where permitted."
+    answer:
+      "Requirements vary by location. Please check your local regulations. We serve both medical patients and recreational customers where permitted.",
   },
   {
     question: "How is packaging discreet?",
-    answer: "All orders ship in unmarked, odor-proof packaging with no cannabis-related branding. Your privacy is our priority."
+    answer:
+      "All orders ship in unmarked, odor-proof packaging with no cannabis-related branding. Your privacy is our priority.",
   },
   {
     question: "What payment methods do you accept?",
-    answer: "We accept cash on delivery, debit cards, and digital payment options. Credit card availability varies by location."
-  }
+    answer:
+      "We accept cash on delivery, debit cards, and digital payment options. Credit card availability varies by location.",
+  },
 ];
 
 export function SmartFAQ({
@@ -63,13 +69,13 @@ export function SmartFAQ({
   subheadline,
   faqs = defaultFAQs,
   animate = true,
-  className = '',
+  className = "",
 }: SmartFAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
-    rootMargin: '-50px'
+    rootMargin: "-50px",
   });
 
   const toggleFAQ = (index: number) => {
@@ -91,21 +97,28 @@ export function SmartFAQ({
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={inView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.2,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="mb-8 flex justify-center"
               >
                 <div className="relative w-20 h-20 md:w-24 md:h-24">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '3s' }} />
-                  <Image 
-                    src={vendorLogo} 
-                    alt={vendorName || 'Vendor'}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse"
+                    style={{ animationDuration: "3s" }}
+                  />
+                  <Image
+                    src={vendorLogo}
+                    alt={vendorName || "Vendor"}
                     fill
                     className="relative object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-500"
                   />
                 </div>
               </motion.div>
             )}
-            <h2 
+            <h2
               className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white mb-4"
               style={{ fontWeight: 900 }}
             >
@@ -129,7 +142,7 @@ export function SmartFAQ({
         >
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
-            
+
             return (
               <motion.div
                 key={index}
@@ -142,7 +155,7 @@ export function SmartFAQ({
                     onClick={() => toggleFAQ(index)}
                     className="w-full text-left p-6 sm:p-8 flex items-center justify-between gap-4 hover:bg-[#141414] transition-colors"
                   >
-                    <span 
+                    <span
                       className="text-sm sm:text-base font-black uppercase tracking-wide text-white flex-1"
                       style={{ fontWeight: 900 }}
                     >
@@ -150,9 +163,17 @@ export function SmartFAQ({
                     </span>
                     <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 group-hover:border-white/20 transition-all">
                       {isOpen ? (
-                        <Minus size={16} className="text-white" strokeWidth={3} />
+                        <Minus
+                          size={16}
+                          className="text-white"
+                          strokeWidth={3}
+                        />
                       ) : (
-                        <Plus size={16} className="text-white" strokeWidth={3} />
+                        <Plus
+                          size={16}
+                          className="text-white"
+                          strokeWidth={3}
+                        />
                       )}
                     </div>
                   </button>
@@ -195,8 +216,18 @@ export function SmartFAQ({
             style={{ fontWeight: 900 }}
           >
             CONTACT US
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={3}
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
             </svg>
           </a>
         </motion.div>
@@ -204,4 +235,3 @@ export function SmartFAQ({
     </div>
   );
 }
-

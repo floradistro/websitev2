@@ -1,1 +1,10 @@
-var e=class{constructor(){this.type="none";}toJSONObject(){return {type:this.type}}},r=new e;export{r as a};
+var e = class {
+    constructor() {
+      this.type = "none";
+    }
+    toJSONObject() {
+      return { type: this.type };
+    }
+  },
+  r = new e();
+export { r as a };

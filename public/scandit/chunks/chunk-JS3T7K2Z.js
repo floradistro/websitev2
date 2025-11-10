@@ -1,1 +1,9 @@
-var t=class{constructor(e){this._licenseText=e;}get licenseText(){return this._licenseText}};export{t as a};
+var t = class {
+  constructor(e) {
+    this._licenseText = e;
+  }
+  get licenseText() {
+    return this._licenseText;
+  }
+};
+export { t as a };

@@ -18,7 +18,7 @@ export default function LoadingBar() {
     const timer1 = setTimeout(() => setProgress(40), 100);
     const timer2 = setTimeout(() => setProgress(60), 200);
     const timer3 = setTimeout(() => setProgress(80), 300);
-    
+
     // Complete after a short delay
     const completeTimer = setTimeout(() => {
       setProgress(100);
@@ -42,7 +42,7 @@ export default function LoadingBar() {
     <div
       className="fixed top-0 left-0 right-0 h-[2px] z-[200] pointer-events-none"
       style={{
-        background: 'transparent',
+        background: "transparent",
       }}
     >
       <div
@@ -55,4 +55,3 @@ export default function LoadingBar() {
     </div>
   );
 }
-

@@ -4,8 +4,12 @@
  * Prevents the duplicate API call issue seen in logs
  */
 
-import useSWR from 'swr';
-import { vendorFetcher, defaultSWRConfig, realtimeConfig } from '@/lib/swr-config';
+import useSWR from "swr";
+import {
+  vendorFetcher,
+  defaultSWRConfig,
+  realtimeConfig,
+} from "@/lib/swr-config";
 
 /**
  * Fetch vendor dashboard data
@@ -13,12 +17,12 @@ import { vendorFetcher, defaultSWRConfig, realtimeConfig } from '@/lib/swr-confi
  */
 export function useVendorDashboardSWR() {
   const { data, error, isLoading, mutate } = useSWR(
-    '/api/page-data/vendor-dashboard',
+    "/api/page-data/vendor-dashboard",
     vendorFetcher,
     {
       ...defaultSWRConfig,
       dedupingInterval: 10000, // Dashboard refreshes every 10s max
-    }
+    },
   );
 
   return {
@@ -35,12 +39,12 @@ export function useVendorDashboardSWR() {
  */
 export function useVendorProductsSWR() {
   const { data, error, isLoading, mutate } = useSWR(
-    '/api/vendor/products/full',
+    "/api/vendor/products/full",
     vendorFetcher,
     {
       ...defaultSWRConfig,
       dedupingInterval: 15000, // Products change less frequently
-    }
+    },
   );
 
   return {
@@ -57,9 +61,9 @@ export function useVendorProductsSWR() {
  */
 export function useVendorProfitStatsSWR() {
   const { data, error, isLoading, mutate } = useSWR(
-    '/api/vendor/profit-stats',
+    "/api/vendor/profit-stats",
     vendorFetcher,
-    defaultSWRConfig
+    defaultSWRConfig,
   );
 
   return {
@@ -76,9 +80,9 @@ export function useVendorProfitStatsSWR() {
  */
 export function useVendorInventorySWR() {
   const { data, error, isLoading, mutate } = useSWR(
-    '/api/vendor/inventory',
+    "/api/vendor/inventory",
     vendorFetcher,
-    realtimeConfig // ✅ Auto-refresh every 10s for inventory
+    realtimeConfig, // ✅ Auto-refresh every 10s for inventory
   );
 
   return {
@@ -92,11 +96,11 @@ export function useVendorInventorySWR() {
 /**
  * Fetch vendor analytics
  */
-export function useVendorAnalyticsSWR(timeRange: string = '30d') {
+export function useVendorAnalyticsSWR(timeRange: string = "30d") {
   const { data, error, isLoading, mutate } = useSWR(
     `/api/vendor/analytics/overview?range=${timeRange}`,
     vendorFetcher,
-    defaultSWRConfig
+    defaultSWRConfig,
   );
 
   return {
@@ -114,7 +118,7 @@ export function useVendorProductSWR(productId: string | null) {
   const { data, error, isLoading, mutate } = useSWR(
     productId ? `/api/vendor/products/${productId}` : null,
     vendorFetcher,
-    defaultSWRConfig
+    defaultSWRConfig,
   );
 
   return {
@@ -130,9 +134,9 @@ export function useVendorProductSWR(productId: string | null) {
  */
 export function useVendorLocationsSWR() {
   const { data, error, isLoading, mutate } = useSWR(
-    '/api/vendor/locations',
+    "/api/vendor/locations",
     vendorFetcher,
-    defaultSWRConfig
+    defaultSWRConfig,
   );
 
   return {
@@ -150,10 +154,9 @@ export function prefetchVendorDataSWR(endpoint: string) {
   // SWR automatically caches, so just trigger a fetch
   fetch(endpoint, {
     headers: {
-      'x-vendor-id': localStorage.getItem('vendor_id') || '',
+      "x-vendor-id": localStorage.getItem("vendor_id") || "",
     },
   }).catch(() => {
     // Silent fail for prefetch
   });
 }
-

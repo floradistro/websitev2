@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { X, Sparkles, Loader2, Save, Eye } from 'lucide-react';
+import { useState } from "react";
+import { X, Sparkles, Loader2, Save, Eye } from "lucide-react";
 
 interface AIKPICreatorProps {
   isOpen: boolean;
@@ -10,24 +10,29 @@ interface AIKPICreatorProps {
   vendorId: string;
 }
 
-export function AIKPICreator({ isOpen, onClose, onSave, vendorId }: AIKPICreatorProps) {
-  const [prompt, setPrompt] = useState('');
+export function AIKPICreator({
+  isOpen,
+  onClose,
+  onSave,
+  vendorId,
+}: AIKPICreatorProps) {
+  const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
   const [preview, setPreview] = useState<any>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
 
     setGenerating(true);
-    setError('');
+    setError("");
     setPreview(null);
 
     try {
-      const response = await fetch('/api/ai/generate-kpi', {
-        method: 'POST',
+      const response = await fetch("/api/ai/generate-kpi", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           prompt,
@@ -40,11 +45,13 @@ export function AIKPICreator({ isOpen, onClose, onSave, vendorId }: AIKPICreator
       if (data.success) {
         setPreview(data.kpi);
       } else {
-        setError(data.error || 'Failed to generate KPI');
+        setError(data.error || "Failed to generate KPI");
       }
     } catch (err) {
-      console.error('Error generating KPI:', err);
-      setError('Failed to generate KPI. Please try again.');
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error generating KPI:", err);
+      }
+      setError("Failed to generate KPI. Please try again.");
     } finally {
       setGenerating(false);
     }
@@ -61,9 +68,9 @@ export function AIKPICreator({ isOpen, onClose, onSave, vendorId }: AIKPICreator
   };
 
   const handleClose = () => {
-    setPrompt('');
+    setPrompt("");
     setPreview(null);
-    setError('');
+    setError("");
     onClose();
   };
 
@@ -72,7 +79,6 @@ export function AIKPICreator({ isOpen, onClose, onSave, vendorId }: AIKPICreator
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-black border border-white/10 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
-
         {/* Header */}
         <div className="border-b border-white/10 p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -80,7 +86,10 @@ export function AIKPICreator({ isOpen, onClose, onSave, vendorId }: AIKPICreator
               <Sparkles size={20} className="text-purple-400" />
             </div>
             <div>
-              <h2 className="text-xl font-black text-white" style={{ fontWeight: 900 }}>
+              <h2
+                className="text-xl font-black text-white"
+                style={{ fontWeight: 900 }}
+              >
                 AI KPI Creator
               </h2>
               <p className="text-sm text-white/40">
@@ -98,7 +107,6 @@ export function AIKPICreator({ isOpen, onClose, onSave, vendorId }: AIKPICreator
 
         {/* Content */}
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
-
           {/* Prompt Input */}
           <div>
             <label className="block text-sm font-medium text-white/80 mb-3">
@@ -121,11 +129,11 @@ export function AIKPICreator({ isOpen, onClose, onSave, vendorId }: AIKPICreator
             </div>
             <div className="space-y-2">
               {[
-                'Show me my top 5 selling products by revenue',
-                'What\'s my average order value this week?',
-                'Compare my sales this month vs last month',
-                'Show me products that need restocking',
-                'What\'s my profit margin on concentrates?',
+                "Show me my top 5 selling products by revenue",
+                "What's my average order value this week?",
+                "Compare my sales this month vs last month",
+                "Show me products that need restocking",
+                "What's my profit margin on concentrates?",
               ].map((example, idx) => (
                 <button
                   key={idx}
@@ -161,7 +169,10 @@ export function AIKPICreator({ isOpen, onClose, onSave, vendorId }: AIKPICreator
                   <div className="text-white/60 text-sm font-medium uppercase tracking-wider mb-2">
                     {preview.title}
                   </div>
-                  <div className="text-5xl font-black text-white mb-2" style={{ fontWeight: 900 }}>
+                  <div
+                    className="text-5xl font-black text-white mb-2"
+                    style={{ fontWeight: 900 }}
+                  >
                     {preview.value}
                   </div>
                   {preview.subtitle && (
@@ -171,12 +182,17 @@ export function AIKPICreator({ isOpen, onClose, onSave, vendorId }: AIKPICreator
                   )}
                 </div>
 
-                {preview.data && preview.visualization === 'list' && (
+                {preview.data && preview.visualization === "list" && (
                   <div className="space-y-2 pt-4 border-t border-white/10">
                     {preview.data.slice(0, 3).map((item: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-center text-sm">
+                      <div
+                        key={idx}
+                        className="flex justify-between items-center text-sm"
+                      >
                         <span className="text-white/80">{item.label}</span>
-                        <span className="text-white font-medium">{item.value}</span>
+                        <span className="text-white font-medium">
+                          {item.value}
+                        </span>
                       </div>
                     ))}
                   </div>

@@ -54,8 +54,7 @@ export const analytics = {
           currency: "USD",
         });
       }
-
-      }
+    }
   },
 
   // Track remove from cart event
@@ -78,14 +77,11 @@ export const analytics = {
           },
         ],
       });
-      }
+    }
   },
 
   // Track begin checkout event
-  beginCheckout: (cart: {
-    items: any[];
-    total: number;
-  }) => {
+  beginCheckout: (cart: { items: any[]; total: number }) => {
     if (typeof window !== "undefined" && window.gtag) {
       window.gtag("event", "begin_checkout", {
         currency: "USD",
@@ -97,7 +93,7 @@ export const analytics = {
           quantity: item.quantity,
         })),
       });
-      }
+    }
   },
 
   // Track purchase event
@@ -134,8 +130,7 @@ export const analytics = {
           content_ids: order.items.map((item) => item.productId),
         });
       }
-
-      }
+    }
   },
 
   // Track product view
@@ -158,7 +153,7 @@ export const analytics = {
           },
         ],
       });
-      }
+    }
   },
 
   // Track search
@@ -167,14 +162,13 @@ export const analytics = {
       window.gtag("event", "search", {
         search_term: searchTerm,
       });
-      }
+    }
   },
 
   // Custom event tracking
   event: (eventName: string, params?: any) => {
     if (typeof window !== "undefined" && window.gtag) {
       window.gtag("event", eventName, params);
-      }
+    }
   },
 };
-

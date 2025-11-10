@@ -15,7 +15,7 @@ export {
   updateComponentInstance,
   deleteComponentInstance,
   autoConfigureComponent,
-} from './registry';
+} from "./registry";
 
 // Types
 export type {
@@ -23,7 +23,7 @@ export type {
   ComponentVariant,
   FieldComponentBinding,
   VendorComponentInstance,
-} from './registry';
+} from "./registry";
 
 // Renderer
 export {
@@ -32,10 +32,6 @@ export {
   registerComponent,
   getRegisteredComponents,
   isComponentRegistered,
-} from './renderer';
+} from "./renderer";
 
-export type {
-  DynamicComponentProps,
-  DynamicSectionProps,
-} from './renderer';
-
+export type { DynamicComponentProps, DynamicSectionProps } from "./renderer";

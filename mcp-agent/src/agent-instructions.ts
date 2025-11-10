@@ -247,48 +247,118 @@ Now generate a COMPLETE storefront with ALL 12 pages configured.
 
 export const CANNABIS_VENDOR_SPECIFIC_CONTENT = {
   features: [
-    {icon: "flask-conical", title: "LAB TESTED", description: "Every product third-party tested for purity and potency"},
-    {icon: "truck", title: "FAST DELIVERY", description: "Same-day delivery available in your area"},
-    {icon: "lock", title: "DISCREET", description: "Plain packaging for complete privacy"},
-    {icon: "award", title: "PREMIUM QUALITY", description: "Only the finest cannabis products"}
+    {
+      icon: "flask-conical",
+      title: "LAB TESTED",
+      description: "Every product third-party tested for purity and potency",
+    },
+    {
+      icon: "truck",
+      title: "FAST DELIVERY",
+      description: "Same-day delivery available in your area",
+    },
+    {
+      icon: "lock",
+      title: "DISCREET",
+      description: "Plain packaging for complete privacy",
+    },
+    {
+      icon: "award",
+      title: "PREMIUM QUALITY",
+      description: "Only the finest cannabis products",
+    },
   ],
   faqs: [
-    {question: "Do you offer delivery?", answer: "Yes! We offer same-day delivery in our service area."},
-    {question: "Are your products lab tested?", answer: "Absolutely. All products are third-party tested for safety and potency."},
-    {question: "What payment methods do you accept?", answer: "We accept cash, debit, and select digital payment methods."},
-    {question: "Is my order discreet?", answer: "Yes, all orders ship in plain packaging with no branding."},
-    {question: "Do I need a medical card?", answer: "It depends on your state. Check your local regulations."}
+    {
+      question: "Do you offer delivery?",
+      answer: "Yes! We offer same-day delivery in our service area.",
+    },
+    {
+      question: "Are your products lab tested?",
+      answer:
+        "Absolutely. All products are third-party tested for safety and potency.",
+    },
+    {
+      question: "What payment methods do you accept?",
+      answer: "We accept cash, debit, and select digital payment methods.",
+    },
+    {
+      question: "Is my order discreet?",
+      answer: "Yes, all orders ship in plain packaging with no branding.",
+    },
+    {
+      question: "Do I need a medical card?",
+      answer: "It depends on your state. Check your local regulations.",
+    },
   ],
   about: {
-    mission: "To provide premium, lab-tested cannabis products with exceptional service and education.",
-    story: "Founded by cannabis enthusiasts, we're committed to quality, safety, and customer satisfaction.",
+    mission:
+      "To provide premium, lab-tested cannabis products with exceptional service and education.",
+    story:
+      "Founded by cannabis enthusiasts, we're committed to quality, safety, and customer satisfaction.",
     values: [
-      {title: "QUALITY FIRST", description: "Only the finest products make it to our shelves"},
-      {title: "TRANSPARENCY", description: "Full lab results and ingredient disclosure"},
-      {title: "EDUCATION", description: "Helping customers make informed decisions"}
-    ]
+      {
+        title: "QUALITY FIRST",
+        description: "Only the finest products make it to our shelves",
+      },
+      {
+        title: "TRANSPARENCY",
+        description: "Full lab results and ingredient disclosure",
+      },
+      {
+        title: "EDUCATION",
+        description: "Helping customers make informed decisions",
+      },
+    ],
   },
   contact: {
     email: "support@vendor.com",
     phone: "(555) 123-4567",
-    hours: "Mon-Sat: 9AM-8PM, Sun: 10AM-6PM"
+    hours: "Mon-Sat: 9AM-8PM, Sun: 10AM-6PM",
   },
   shipping: {
     deliveryOptions: [
-      {name: "Same-Day Delivery", price: "$10", time: "2-4 hours", description: "Order by 2PM for same-day service"},
-      {name: "Next-Day Delivery", price: "$5", time: "Next day", description: "Standard delivery option"},
-      {name: "In-Store Pickup", price: "FREE", time: "30 minutes", description: "Order online, pick up at store"}
-    ]
+      {
+        name: "Same-Day Delivery",
+        price: "$10",
+        time: "2-4 hours",
+        description: "Order by 2PM for same-day service",
+      },
+      {
+        name: "Next-Day Delivery",
+        price: "$5",
+        time: "Next day",
+        description: "Standard delivery option",
+      },
+      {
+        name: "In-Store Pickup",
+        price: "FREE",
+        time: "30 minutes",
+        description: "Order online, pick up at store",
+      },
+    ],
   },
   returns: {
-    policy: "We stand behind our products. If you're not satisfied, contact us within 7 days for a refund or exchange.",
+    policy:
+      "We stand behind our products. If you're not satisfied, contact us within 7 days for a refund or exchange.",
     timeframe: "7 days",
     process: [
-      {step: "Contact Support", description: "Email or call us with your order number"},
-      {step: "Return Authorization", description: "We'll provide a return authorization number"},
-      {step: "Ship Product Back", description: "Return unused product in original packaging"},
-      {step: "Refund Processed", description: "Refund issued within 5-7 business days"}
-    ]
-  }
+      {
+        step: "Contact Support",
+        description: "Email or call us with your order number",
+      },
+      {
+        step: "Return Authorization",
+        description: "We'll provide a return authorization number",
+      },
+      {
+        step: "Ship Product Back",
+        description: "Return unused product in original packaging",
+      },
+      {
+        step: "Refund Processed",
+        description: "Refund issued within 5-7 business days",
+      },
+    ],
+  },
 };
-

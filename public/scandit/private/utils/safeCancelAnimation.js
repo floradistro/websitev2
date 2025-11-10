@@ -1,1 +1,4 @@
-export{b as safeAwaitAnimation,a as safeCancelAnimation}from'../../chunks/chunk-SM5S3DDC.js';
+export {
+  b as safeAwaitAnimation,
+  a as safeCancelAnimation,
+} from "../../chunks/chunk-SM5S3DDC.js";

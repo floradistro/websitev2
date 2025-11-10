@@ -1,6 +1,6 @@
 /// <reference types="emscripten" />
-import { Color } from '../../Common.js';
-import '../Serializable.js';
+import { Color } from "../../Common.js";
+import "../Serializable.js";
 
 declare const primaryTeal100: Color;
 declare const primaryTeal75: Color;
@@ -27,4 +27,29 @@ declare const SecondaryBlue100: Color;
 declare const SecondaryBlue60: Color;
 declare const SecondaryBlue10: Color;
 
-export { SecondaryBlue10, SecondaryBlue100, SecondaryBlue60, SecondaryGreen100, SecondaryGreen20, SecondaryGreen40, SecondaryGreen60, SecondaryGreen80, SecondaryOrange100, SecondaryOrange20, SecondaryOrange40, SecondaryOrange60, SecondaryOrange80, SecondaryRed100, SecondaryRed20, SecondaryRed40, SecondaryRed60, SecondaryRed80, gray300, gray900, primaryTeal100, primaryTeal25, primaryTeal50, primaryTeal75 };
+export {
+  SecondaryBlue10,
+  SecondaryBlue100,
+  SecondaryBlue60,
+  SecondaryGreen100,
+  SecondaryGreen20,
+  SecondaryGreen40,
+  SecondaryGreen60,
+  SecondaryGreen80,
+  SecondaryOrange100,
+  SecondaryOrange20,
+  SecondaryOrange40,
+  SecondaryOrange60,
+  SecondaryOrange80,
+  SecondaryRed100,
+  SecondaryRed20,
+  SecondaryRed40,
+  SecondaryRed60,
+  SecondaryRed80,
+  gray300,
+  gray900,
+  primaryTeal100,
+  primaryTeal25,
+  primaryTeal50,
+  primaryTeal75,
+};

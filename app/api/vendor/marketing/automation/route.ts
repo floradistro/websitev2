@@ -3,13 +3,13 @@
  * Create and manage automation rules
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { requireVendor } from "@/lib/auth/middleware";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 export async function GET(request: NextRequest) {
@@ -21,16 +21,18 @@ export async function GET(request: NextRequest) {
 
     // Get automation rules
     const { data: rules, error } = await supabase
-      .from('marketing_automation_rules')
-      .select('*')
-      .eq('vendor_id', vendorId)
-      .order('created_at', { ascending: false });
+      .from("marketing_automation_rules")
+      .select("*")
+      .eq("vendor_id", vendorId)
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('Automation rules fetch error:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Automation rules fetch error:", error);
+      }
       return NextResponse.json(
-        { error: 'Failed to fetch automation rules', message: error.message },
-        { status: 500 }
+        { error: "Failed to fetch automation rules", message: error.message },
+        { status: 500 },
       );
     }
 
@@ -48,15 +50,17 @@ export async function GET(request: NextRequest) {
           ...rule,
           stats,
         };
-      })
+      }),
     );
 
     return NextResponse.json(rulesWithStats);
   } catch (error: any) {
-    console.error('Automation API error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Automation API error:", error);
+    }
     return NextResponse.json(
-      { error: 'Failed to load automation rules', message: error.message },
-      { status: 500 }
+      { error: "Failed to load automation rules", message: error.message },
+      { status: 500 },
     );
   }
 }
@@ -69,19 +73,26 @@ export async function POST(request: NextRequest) {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const { name, trigger_type, trigger_config, action_type, action_config, is_active } = body;
+    const {
+      name,
+      trigger_type,
+      trigger_config,
+      action_type,
+      action_config,
+      is_active,
+    } = body;
 
     // Validate required fields
     if (!name || !trigger_type || !action_type) {
       return NextResponse.json(
-        { error: 'Missing required fields: name, trigger_type, action_type' },
-        { status: 400 }
+        { error: "Missing required fields: name, trigger_type, action_type" },
+        { status: 400 },
       );
     }
 
     // Create automation rule
     const { data: rule, error: createError } = await supabase
-      .from('marketing_automation_rules')
+      .from("marketing_automation_rules")
       .insert({
         vendor_id: vendorId,
         name,
@@ -96,10 +107,15 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (createError) {
-      console.error('Automation rule creation error:', createError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Automation rule creation error:", createError);
+      }
       return NextResponse.json(
-        { error: 'Failed to create automation rule', message: createError.message },
-        { status: 500 }
+        {
+          error: "Failed to create automation rule",
+          message: createError.message,
+        },
+        { status: 500 },
       );
     }
 
@@ -108,10 +124,12 @@ export async function POST(request: NextRequest) {
       rule,
     });
   } catch (error: any) {
-    console.error('Automation rule creation error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Automation rule creation error:", error);
+    }
     return NextResponse.json(
-      { error: 'Failed to create automation rule', message: error.message },
-      { status: 500 }
+      { error: "Failed to create automation rule", message: error.message },
+      { status: 500 },
     );
   }
 }

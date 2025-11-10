@@ -20,8 +20,8 @@ import {
   Smartphone,
   Globe,
   Store,
-  Boxes
-} from 'lucide-react';
+  Boxes,
+} from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -43,10 +43,10 @@ export interface NavSection {
 // Top-level always-visible items
 export const topLevelNavItems: NavItem[] = [
   {
-    href: '/vendor/apps',
+    href: "/vendor/apps",
     icon: Home,
-    label: 'Dashboard',
-    description: 'Overview & metrics',
+    label: "Dashboard",
+    description: "Overview & metrics",
     isCore: true,
   },
 ];
@@ -55,136 +55,136 @@ export const topLevelNavItems: NavItem[] = [
 export const navSections: NavSection[] = [
   // CATALOG - Products + Suppliers + Lab Results
   {
-    label: 'Catalog',
+    label: "Catalog",
     icon: Package,
     defaultOpen: true,
     items: [
       {
-        href: '/vendor/products',
+        href: "/vendor/products",
         icon: Package,
-        label: 'Products',
-        description: 'Manage catalog & inventory',
-        appKey: 'products',
+        label: "Products",
+        description: "Manage catalog & inventory",
+        appKey: "products",
         isCore: true,
       },
       {
-        href: '/vendor/suppliers',
+        href: "/vendor/suppliers",
         icon: Boxes,
-        label: 'Suppliers',
-        description: 'Manage vendors & procurement',
-        appKey: 'products',
+        label: "Suppliers",
+        description: "Manage vendors & procurement",
+        appKey: "products",
       },
       {
-        href: '/vendor/lab-results',
+        href: "/vendor/lab-results",
         icon: FileText,
-        label: 'Lab Results',
-        description: 'COAs & compliance',
-        appKey: 'products',
+        label: "Lab Results",
+        description: "COAs & compliance",
+        appKey: "products",
       },
     ],
   },
 
   // COMMERCE - Orders, POS, Customers, Wholesale, Payouts
   {
-    label: 'Commerce',
+    label: "Commerce",
     icon: ShoppingBag,
     defaultOpen: false,
     items: [
       {
-        href: '/vendor/orders',
+        href: "/vendor/orders",
         icon: ShoppingBag,
-        label: 'Orders',
-        description: 'Customer orders',
-        appKey: 'orders',
+        label: "Orders",
+        description: "Customer orders",
+        appKey: "orders",
         isCore: true,
       },
       {
-        href: '/pos/register',
+        href: "/pos/register",
         icon: CreditCard,
-        label: 'Point of Sale',
-        description: 'In-store register',
-        appKey: 'pos',
+        label: "Point of Sale",
+        description: "In-store register",
+        appKey: "pos",
         isCore: true,
       },
       {
-        href: '/vendor/customers',
+        href: "/vendor/customers",
         icon: Users,
-        label: 'Customers',
-        description: 'Customer database',
-        appKey: 'customers',
+        label: "Customers",
+        description: "Customer database",
+        appKey: "customers",
       },
       {
-        href: '/vendor/wholesale-customers',
+        href: "/vendor/wholesale-customers",
         icon: Boxes,
-        label: 'Wholesale',
-        description: 'B2B customers',
-        appKey: 'products',
+        label: "Wholesale",
+        description: "B2B customers",
+        appKey: "products",
       },
       {
-        href: '/vendor/payouts',
+        href: "/vendor/payouts",
         icon: DollarSign,
-        label: 'Payouts',
-        description: 'Earnings & payments',
-        appKey: 'analytics',
+        label: "Payouts",
+        description: "Earnings & payments",
+        appKey: "analytics",
       },
     ],
   },
 
   // INSIGHTS - Analytics + Marketing
   {
-    label: 'Insights',
+    label: "Insights",
     icon: TrendingUp,
     defaultOpen: false,
     items: [
       {
-        href: '/vendor/analytics',
+        href: "/vendor/analytics",
         icon: BarChart3,
-        label: 'Analytics',
-        description: 'Performance data',
-        appKey: 'analytics',
+        label: "Analytics",
+        description: "Performance data",
+        appKey: "analytics",
       },
       {
-        href: '/vendor/marketing',
+        href: "/vendor/marketing",
         icon: Smartphone,
-        label: 'Marketing',
-        description: 'Loyalty & campaigns',
-        appKey: 'marketing',
+        label: "Marketing",
+        description: "Loyalty & campaigns",
+        appKey: "marketing",
       },
     ],
   },
 
   // STOREFRONT - Website, Branding, Media, Signage
   {
-    label: 'Storefront',
+    label: "Storefront",
     icon: Store,
     defaultOpen: false,
     items: [
       {
-        href: '/vendor/website',
+        href: "/vendor/website",
         icon: Globe,
-        label: 'Website',
-        description: 'Online presence',
+        label: "Website",
+        description: "Online presence",
       },
       {
-        href: '/vendor/branding',
+        href: "/vendor/branding",
         icon: Palette,
-        label: 'Branding',
-        description: 'Theme & design',
-        appKey: 'code',
+        label: "Branding",
+        description: "Theme & design",
+        appKey: "code",
       },
       {
-        href: '/vendor/media-library',
+        href: "/vendor/media-library",
         icon: Image,
-        label: 'Media',
-        description: 'Photos & assets',
-        appKey: 'products',
+        label: "Media",
+        description: "Photos & assets",
+        appKey: "products",
       },
       {
-        href: '/vendor/tv-menus',
+        href: "/vendor/tv-menus",
         icon: Tv,
-        label: 'Digital Signage',
-        description: 'In-store displays',
-        appKey: 'tv_menus',
+        label: "Digital Signage",
+        description: "In-store displays",
+        appKey: "tv_menus",
       },
     ],
   },
@@ -192,30 +192,38 @@ export const navSections: NavSection[] = [
 
 // Settings at bottom (always visible)
 export const settingsNavItem: NavItem = {
-  href: '/vendor/settings',
+  href: "/vendor/settings",
   icon: Settings,
-  label: 'Settings',
-  description: 'Account & config',
+  label: "Settings",
+  description: "Account & config",
   isCore: true,
 };
 
 // Flatten all items for searching/routing
 export const allNavItems: NavItem[] = [
   ...topLevelNavItems,
-  ...navSections.flatMap(section => section.items),
+  ...navSections.flatMap((section) => section.items),
   settingsNavItem,
 ];
 
 // Mobile bottom nav (most used features)
-export const mobileNavItems = allNavItems.filter(item => item.isCore);
+export const mobileNavItems = allNavItems.filter((item) => item.isCore);
 
 // Secondary features (accessed through main pages)
 export const secondaryFeatures = [
-  { href: '/vendor/locations', parent: '/vendor/settings', label: 'Locations' },
-  { href: '/vendor/employees', parent: '/vendor/settings', label: 'Team' },
-  { href: '/vendor/terminals', parent: '/vendor/settings', label: 'Terminals' },
-  { href: '/vendor/payment-processors', parent: '/vendor/settings', label: 'Payment Processors' },
-  { href: '/vendor/suppliers', parent: '/vendor/products', label: 'Suppliers' },
-  { href: '/vendor/reviews', parent: '/vendor/products', label: 'Reviews' },
-  { href: '/vendor/component-editor', parent: '/vendor/branding', label: 'Visual Editor' },
+  { href: "/vendor/locations", parent: "/vendor/settings", label: "Locations" },
+  { href: "/vendor/employees", parent: "/vendor/settings", label: "Team" },
+  { href: "/vendor/terminals", parent: "/vendor/settings", label: "Terminals" },
+  {
+    href: "/vendor/payment-processors",
+    parent: "/vendor/settings",
+    label: "Payment Processors",
+  },
+  { href: "/vendor/suppliers", parent: "/vendor/products", label: "Suppliers" },
+  { href: "/vendor/reviews", parent: "/vendor/products", label: "Reviews" },
+  {
+    href: "/vendor/component-editor",
+    parent: "/vendor/branding",
+    label: "Visual Editor",
+  },
 ];

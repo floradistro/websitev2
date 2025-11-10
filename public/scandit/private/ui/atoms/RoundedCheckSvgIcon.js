@@ -1,1 +1,1 @@
-export{a as RoundedCheckSvgIcon}from'../../../chunks/chunk-2QT7PJFA.js';
+export { a as RoundedCheckSvgIcon } from "../../../chunks/chunk-2QT7PJFA.js";

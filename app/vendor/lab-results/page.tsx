@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
-import { useAppAuth } from '@/context/AppAuthContext';
+import { useEffect, useState, useRef } from "react";
+import { useAppAuth } from "@/context/AppAuthContext";
 import {
   Upload,
   Trash2,
@@ -21,9 +21,9 @@ import {
   Beaker,
   ExternalLink,
   AlertTriangle,
-  Filter
-} from 'lucide-react';
-import Image from 'next/image';
+  Filter,
+} from "lucide-react";
+import Image from "next/image";
 
 interface COA {
   id: string;
@@ -61,22 +61,22 @@ interface COA {
   rawTestResults?: any;
 }
 
-type ViewMode = 'grid' | 'list';
-type LinkFilter = 'all' | 'linked' | 'unlinked';
+type ViewMode = "grid" | "list";
+type LinkFilter = "all" | "linked" | "unlinked";
 
 export default function VendorLabResults() {
   const { vendor, isAuthenticated, isLoading: authLoading } = useAppAuth();
   const [coas, setCoas] = useState<COA[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedCOAs, setSelectedCOAs] = useState<Set<string>>(new Set());
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [quickViewCOA, setQuickViewCOA] = useState<COA | null>(null);
-  const [linkFilter, setLinkFilter] = useState<LinkFilter>('all');
+  const [linkFilter, setLinkFilter] = useState<LinkFilter>("all");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Load COAs
@@ -91,20 +91,22 @@ export default function VendorLabResults() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/vendor/coas', {
+      const response = await fetch("/api/vendor/coas", {
         headers: {
-          'x-vendor-id': vendor?.id || '',
+          "x-vendor-id": vendor?.id || "",
         },
       });
 
       if (!response.ok) {
-        throw new Error('Failed to load COAs');
+        throw new Error("Failed to load COAs");
       }
 
       const data = await response.json();
       setCoas(data.coas || []);
     } catch (err: any) {
-      console.error('❌ Error loading COAs:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Error loading COAs:", err);
+      }
       setError(err.message);
     } finally {
       setLoading(false);
@@ -121,31 +123,33 @@ export default function VendorLabResults() {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList[i];
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append("file", file);
 
         // For now, just basic upload - you can add a modal for full COA metadata
-        formData.append('lab_name', 'TBD');
-        formData.append('test_date', new Date().toISOString().split('T')[0]);
-        formData.append('batch_number', `BATCH-${Date.now()}`);
+        formData.append("lab_name", "TBD");
+        formData.append("test_date", new Date().toISOString().split("T")[0]);
+        formData.append("batch_number", `BATCH-${Date.now()}`);
 
-        const response = await fetch('/api/vendor/coas', {
-          method: 'POST',
+        const response = await fetch("/api/vendor/coas", {
+          method: "POST",
           headers: {
-            'x-vendor-id': vendor?.id || '',
+            "x-vendor-id": vendor?.id || "",
           },
           body: formData,
         });
 
         if (!response.ok) {
-          throw new Error('Failed to upload COA');
+          throw new Error("Failed to upload COA");
         }
       }
 
       await loadCOAs();
       setSelectedCOAs(new Set());
     } catch (err) {
-      console.error('❌ Error uploading COAs:', err);
-      setError('Failed to upload COAs');
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Error uploading COAs:", err);
+      }
+      setError("Failed to upload COAs");
     } finally {
       setUploading(false);
     }
@@ -187,9 +191,9 @@ export default function VendorLabResults() {
     try {
       for (const coaId of selectedCOAs) {
         await fetch(`/api/vendor/coas?id=${encodeURIComponent(coaId)}`, {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
-            'x-vendor-id': vendor?.id || '',
+            "x-vendor-id": vendor?.id || "",
           },
         });
       }
@@ -197,17 +201,19 @@ export default function VendorLabResults() {
       await loadCOAs();
       setSelectedCOAs(new Set());
     } catch (err) {
-      console.error('❌ Error deleting COAs:', err);
-      setError('Failed to delete COAs');
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Error deleting COAs:", err);
+      }
+      setError("Failed to delete COAs");
     }
   };
 
   // Download COA
   const handleDownload = (coa: COA) => {
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = coa.fileUrl;
     a.download = coa.fileName || `COA-${coa.coaNumber}.pdf`;
-    a.target = '_blank';
+    a.target = "_blank";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -228,15 +234,15 @@ export default function VendorLabResults() {
     if (selectedCOAs.size === filteredCOAs.length) {
       setSelectedCOAs(new Set());
     } else {
-      setSelectedCOAs(new Set(filteredCOAs.map(c => c.id)));
+      setSelectedCOAs(new Set(filteredCOAs.map((c) => c.id)));
     }
   };
 
   // Filter COAs by search and link status
-  const filteredCOAs = coas.filter(coa => {
+  const filteredCOAs = coas.filter((coa) => {
     // Link filter
-    if (linkFilter === 'linked' && !coa.productId) return false;
-    if (linkFilter === 'unlinked' && coa.productId) return false;
+    if (linkFilter === "linked" && !coa.productId) return false;
+    if (linkFilter === "unlinked" && coa.productId) return false;
 
     // Search filter
     if (searchQuery) {
@@ -247,7 +253,13 @@ export default function VendorLabResults() {
       const matchesBatch = coa.batchNumber.toLowerCase().includes(query);
       const matchesLab = coa.testingLab.toLowerCase().includes(query);
 
-      if (!matchesName && !matchesCOA && !matchesSKU && !matchesBatch && !matchesLab) {
+      if (
+        !matchesName &&
+        !matchesCOA &&
+        !matchesSKU &&
+        !matchesBatch &&
+        !matchesLab
+      ) {
         return false;
       }
     }
@@ -258,9 +270,9 @@ export default function VendorLabResults() {
   // Stats
   const stats = {
     total: coas.length,
-    withProducts: coas.filter(c => c.productId).length,
-    expired: coas.filter(c => c.isExpired).length,
-    recent: coas.filter(c => {
+    withProducts: coas.filter((c) => c.productId).length,
+    expired: coas.filter((c) => c.isExpired).length,
+    recent: coas.filter((c) => {
       const uploadDate = new Date(c.uploadDate);
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -274,7 +286,9 @@ export default function VendorLabResults() {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-3 md:mb-4"></div>
-          <p className="text-white/60 text-[10px] uppercase tracking-[0.15em]">Loading...</p>
+          <p className="text-white/60 text-[10px] uppercase tracking-[0.15em]">
+            Loading...
+          </p>
         </div>
       </div>
     );
@@ -284,7 +298,9 @@ export default function VendorLabResults() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <p className="text-white/60 text-[10px] uppercase tracking-[0.15em]">Please log in</p>
+        <p className="text-white/60 text-[10px] uppercase tracking-[0.15em]">
+          Please log in
+        </p>
       </div>
     );
   }
@@ -316,20 +332,45 @@ export default function VendorLabResults() {
           {/* Stats Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4">
             <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-3 md:p-4">
-              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">Total</div>
-              <div className="text-xl md:text-2xl font-medium text-white">{stats.total}</div>
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">
+                Total
+              </div>
+              <div className="text-xl md:text-2xl font-medium text-white">
+                {stats.total}
+              </div>
             </div>
             <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-3 md:p-4">
-              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">Linked</div>
-              <div className="text-xl md:text-2xl font-medium" style={{ color: '#22c55e' }}>{stats.withProducts}</div>
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">
+                Linked
+              </div>
+              <div
+                className="text-xl md:text-2xl font-medium"
+                style={{ color: "#22c55e" }}
+              >
+                {stats.withProducts}
+              </div>
             </div>
             <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-3 md:p-4">
-              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">Recent</div>
-              <div className="text-xl md:text-2xl font-medium" style={{ color: '#3b82f6' }}>{stats.recent}</div>
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">
+                Recent
+              </div>
+              <div
+                className="text-xl md:text-2xl font-medium"
+                style={{ color: "#3b82f6" }}
+              >
+                {stats.recent}
+              </div>
             </div>
             <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-3 md:p-4">
-              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">Expired</div>
-              <div className="text-xl md:text-2xl font-medium" style={{ color: '#ef4444' }}>{stats.expired}</div>
+              <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">
+                Expired
+              </div>
+              <div
+                className="text-xl md:text-2xl font-medium"
+                style={{ color: "#ef4444" }}
+              >
+                {stats.expired}
+              </div>
             </div>
           </div>
 
@@ -337,7 +378,9 @@ export default function VendorLabResults() {
           {error && (
             <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-2xl p-3 flex items-center gap-3">
               <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-              <p className="text-red-500 text-[10px] uppercase tracking-[0.15em]">{error}</p>
+              <p className="text-red-500 text-[10px] uppercase tracking-[0.15em]">
+                {error}
+              </p>
               <button
                 onClick={() => setError(null)}
                 className="ml-auto text-red-500 hover:text-red-400"
@@ -383,13 +426,16 @@ export default function VendorLabResults() {
                   onClick={toggleSelectAll}
                   className="flex-shrink-0 flex items-center gap-2 px-3 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:bg-white/10 hover:border-white/20 hover:text-white transition-all"
                 >
-                  {selectedCOAs.size === filteredCOAs.length && filteredCOAs.length > 0 ? (
+                  {selectedCOAs.size === filteredCOAs.length &&
+                  filteredCOAs.length > 0 ? (
                     <CheckSquare className="w-3.5 h-3.5" />
                   ) : (
                     <Square className="w-3.5 h-3.5" />
                   )}
                   <span className="text-[10px] uppercase tracking-[0.15em]">
-                    {selectedCOAs.size === 0 ? 'Select All' : `${selectedCOAs.size} Selected`}
+                    {selectedCOAs.size === 0
+                      ? "Select All"
+                      : `${selectedCOAs.size} Selected`}
                   </span>
                 </button>
               )}
@@ -410,9 +456,9 @@ export default function VendorLabResults() {
               <button
                 onClick={() => setShowMobileFilters(!showMobileFilters)}
                 className={`flex-shrink-0 p-2.5 rounded-2xl border transition-all ${
-                  linkFilter !== 'all' || showMobileFilters
-                    ? 'bg-white/10 border-white/20 text-white'
-                    : 'bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20'
+                  linkFilter !== "all" || showMobileFilters
+                    ? "bg-white/10 border-white/20 text-white"
+                    : "bg-white/5 border-white/10 text-white/60 hover:bg-white/10 hover:border-white/20"
                 }`}
               >
                 <Filter className="w-3.5 h-3.5" />
@@ -420,21 +466,21 @@ export default function VendorLabResults() {
 
               <div className="hidden lg:flex gap-2">
                 <button
-                  onClick={() => setViewMode('grid')}
+                  onClick={() => setViewMode("grid")}
                   className={`p-2.5 rounded-2xl border transition-all ${
-                    viewMode === 'grid'
-                      ? 'bg-white/10 border-white/20 text-white'
-                      : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20'
+                    viewMode === "grid"
+                      ? "bg-white/10 border-white/20 text-white"
+                      : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20"
                   }`}
                 >
                   <Grid3x3 className="w-3.5 h-3.5" />
                 </button>
                 <button
-                  onClick={() => setViewMode('list')}
+                  onClick={() => setViewMode("list")}
                   className={`p-2.5 rounded-2xl border transition-all ${
-                    viewMode === 'list'
-                      ? 'bg-white/10 border-white/20 text-white'
-                      : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20'
+                    viewMode === "list"
+                      ? "bg-white/10 border-white/20 text-white"
+                      : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20"
                   }`}
                 >
                   <List className="w-3.5 h-3.5" />
@@ -447,42 +493,56 @@ export default function VendorLabResults() {
               <div className="flex gap-2 overflow-x-auto pb-1 mt-2">
                 <button
                   onClick={() => {
-                    setLinkFilter('all');
+                    setLinkFilter("all");
                     setShowMobileFilters(false);
                   }}
                   className={`flex-shrink-0 px-3 py-2 rounded-2xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
-                    linkFilter === 'all'
-                      ? 'bg-white/10 text-white border-white/20'
-                      : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'
+                    linkFilter === "all"
+                      ? "bg-white/10 text-white border-white/20"
+                      : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10"
                   }`}
                 >
                   All COAs
                 </button>
                 <button
                   onClick={() => {
-                    setLinkFilter('linked');
+                    setLinkFilter("linked");
                     setShowMobileFilters(false);
                   }}
                   className={`flex-shrink-0 px-3 py-2 rounded-2xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
-                    linkFilter === 'linked'
-                      ? 'border-green-500/20'
-                      : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'
+                    linkFilter === "linked"
+                      ? "border-green-500/20"
+                      : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10"
                   }`}
-                  style={linkFilter === 'linked' ? { backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' } : {}}
+                  style={
+                    linkFilter === "linked"
+                      ? {
+                          backgroundColor: "rgba(34, 197, 94, 0.1)",
+                          color: "#22c55e",
+                        }
+                      : {}
+                  }
                 >
                   Linked
                 </button>
                 <button
                   onClick={() => {
-                    setLinkFilter('unlinked');
+                    setLinkFilter("unlinked");
                     setShowMobileFilters(false);
                   }}
                   className={`flex-shrink-0 px-3 py-2 rounded-2xl text-[10px] uppercase tracking-[0.15em] transition-all border ${
-                    linkFilter === 'unlinked'
-                      ? 'border-yellow-500/20'
-                      : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10'
+                    linkFilter === "unlinked"
+                      ? "border-yellow-500/20"
+                      : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10"
                   }`}
-                  style={linkFilter === 'unlinked' ? { backgroundColor: 'rgba(234, 179, 8, 0.1)', color: '#eab308' } : {}}
+                  style={
+                    linkFilter === "unlinked"
+                      ? {
+                          backgroundColor: "rgba(234, 179, 8, 0.1)",
+                          color: "#eab308",
+                        }
+                      : {}
+                  }
                 >
                   Not Linked
                 </button>
@@ -524,7 +584,7 @@ export default function VendorLabResults() {
                 )}
               </div>
             </div>
-          ) : viewMode === 'grid' ? (
+          ) : viewMode === "grid" ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
               {filteredCOAs.map((coa) => (
                 <COACard
@@ -558,10 +618,15 @@ export default function VendorLabResults() {
           <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center border-4 border-dashed border-white/40">
             <div className="text-center">
               <Upload className="w-16 h-16 text-white mx-auto mb-4 animate-bounce" />
-              <p className="text-white font-black uppercase tracking-tight text-xl" style={{ fontWeight: 900 }}>
+              <p
+                className="text-white font-black uppercase tracking-tight text-xl"
+                style={{ fontWeight: 900 }}
+              >
                 Drop Files
               </p>
-              <p className="text-white/60 text-[10px] uppercase tracking-[0.15em] mt-2">PDF or images</p>
+              <p className="text-white/60 text-[10px] uppercase tracking-[0.15em] mt-2">
+                PDF or images
+              </p>
             </div>
           </div>
         )}
@@ -575,15 +640,18 @@ export default function VendorLabResults() {
           onDownload={() => handleDownload(quickViewCOA)}
           onDelete={async () => {
             if (confirm(`Delete COA "${quickViewCOA.coaNumber}"?`)) {
-              await fetch(`/api/vendor/coas?id=${encodeURIComponent(quickViewCOA.id)}`, {
-                method: 'DELETE',
-                headers: { 'x-vendor-id': vendor?.id || '' },
-              });
+              await fetch(
+                `/api/vendor/coas?id=${encodeURIComponent(quickViewCOA.id)}`,
+                {
+                  method: "DELETE",
+                  headers: { "x-vendor-id": vendor?.id || "" },
+                },
+              );
               await loadCOAs();
               setQuickViewCOA(null);
             }
           }}
-          vendorId={vendor?.id || ''}
+          vendorId={vendor?.id || ""}
         />
       )}
     </>
@@ -599,11 +667,19 @@ interface COACardProps {
   onQuickView: () => void;
 }
 
-function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COACardProps) {
+function COACard({
+  coa,
+  selected,
+  onToggleSelect,
+  onDownload,
+  onQuickView,
+}: COACardProps) {
   return (
     <div
       className={`group relative flex flex-col bg-[#0a0a0a] hover:bg-white/[0.02] border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
-        selected ? 'border-white/[0.12]' : 'border-white/[0.06] hover:border-white/[0.12]'
+        selected
+          ? "border-white/[0.12]"
+          : "border-white/[0.06] hover:border-white/[0.12]"
       }`}
     >
       {/* Selection Checkbox */}
@@ -626,7 +702,9 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
         <div className="absolute top-2 right-2 z-10">
           <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-red-500/20 backdrop-blur-sm border border-red-500/30">
             <AlertTriangle className="w-3 h-3 text-red-500" />
-            <span className="text-[9px] uppercase tracking-[0.15em] font-medium text-red-500">Expired</span>
+            <span className="text-[9px] uppercase tracking-[0.15em] font-medium text-red-500">
+              Expired
+            </span>
           </div>
         </div>
       )}
@@ -637,7 +715,7 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
         className="aspect-[4/3] bg-black relative cursor-pointer overflow-hidden"
       >
         {/* PDF Preview */}
-        {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith('.pdf') ? (
+        {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith(".pdf") ? (
           <div className="w-full h-full relative pointer-events-none">
             <iframe
               src={`${coa.fileUrl}#page=1&view=FitH&toolbar=0&navpanes=0&scrollbar=0`}
@@ -651,7 +729,7 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
         ) : coa.productImage ? (
           <Image
             src={coa.productImage}
-            alt={coa.productName || 'Product'}
+            alt={coa.productName || "Product"}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-contain p-4"
@@ -676,7 +754,7 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
       <div className="flex-1 p-3 border-t border-white/[0.06]">
         <div className="mb-2">
           <p className="text-white text-xs font-medium uppercase tracking-tight line-clamp-2">
-            {coa.productName || 'Unassigned'}
+            {coa.productName || "Unassigned"}
           </p>
           <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-mono">
             {coa.coaNumber}
@@ -686,17 +764,25 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
         {/* Cannabinoid Quick Info */}
         <div className="flex items-center gap-3 mb-2 pb-2 border-b border-white/[0.06]">
           <div>
-            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">THC</div>
+            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+              THC
+            </div>
             <div className="text-white text-xs font-medium">{coa.thc}</div>
           </div>
           <div>
-            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBD</div>
+            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+              CBD
+            </div>
             <div className="text-white text-xs font-medium">{coa.cbd}</div>
           </div>
           {coa.totalTerpenes && (
             <div>
-              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">Terps</div>
-              <div className="text-white text-xs font-medium">{coa.totalTerpenes}</div>
+              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                Terps
+              </div>
+              <div className="text-white text-xs font-medium">
+                {coa.totalTerpenes}
+              </div>
             </div>
           )}
         </div>
@@ -709,7 +795,12 @@ function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COA
           </div>
           <div className="flex items-center gap-1 text-white/40">
             <Calendar className="w-3 h-3" />
-            <span>{new Date(coa.testDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+            <span>
+              {new Date(coa.testDate).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
           </div>
         </div>
       </div>
@@ -738,11 +829,19 @@ interface COAListItemProps {
   onQuickView: () => void;
 }
 
-function COAListItem({ coa, selected, onToggleSelect, onDownload, onQuickView }: COAListItemProps) {
+function COAListItem({
+  coa,
+  selected,
+  onToggleSelect,
+  onDownload,
+  onQuickView,
+}: COAListItemProps) {
   return (
     <div
       className={`flex items-center gap-3 bg-[#0a0a0a] hover:bg-white/[0.02] border rounded-2xl p-3 transition-all ${
-        selected ? 'border-white/[0.12]' : 'border-white/[0.06] hover:border-white/[0.12]'
+        selected
+          ? "border-white/[0.12]"
+          : "border-white/[0.06] hover:border-white/[0.12]"
       }`}
     >
       {/* Checkbox */}
@@ -766,7 +865,7 @@ function COAListItem({ coa, selected, onToggleSelect, onDownload, onQuickView }:
         className="flex-shrink-0 w-16 h-16 bg-black rounded-xl overflow-hidden relative cursor-pointer hover:ring-2 ring-white/[0.12] transition-all"
       >
         {/* PDF Preview */}
-        {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith('.pdf') ? (
+        {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith(".pdf") ? (
           <div className="w-full h-full relative pointer-events-none">
             <iframe
               src={`${coa.fileUrl}#page=1&view=FitH&toolbar=0&navpanes=0&scrollbar=0`}
@@ -779,7 +878,7 @@ function COAListItem({ coa, selected, onToggleSelect, onDownload, onQuickView }:
         ) : coa.productImage ? (
           <Image
             src={coa.productImage}
-            alt={coa.productName || ''}
+            alt={coa.productName || ""}
             fill
             sizes="64px"
             className="object-contain p-2"
@@ -796,12 +895,14 @@ function COAListItem({ coa, selected, onToggleSelect, onDownload, onQuickView }:
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-2 mb-1">
           <p className="text-white text-xs font-medium uppercase tracking-tight truncate flex-1">
-            {coa.productName || 'Unassigned'}
+            {coa.productName || "Unassigned"}
           </p>
           {coa.isExpired && (
             <div className="flex items-center gap-1 flex-shrink-0">
               <AlertTriangle className="w-3 h-3 text-red-500" />
-              <span className="text-[9px] uppercase tracking-[0.15em] font-medium text-red-500">Expired</span>
+              <span className="text-[9px] uppercase tracking-[0.15em] font-medium text-red-500">
+                Expired
+              </span>
             </div>
           )}
         </div>
@@ -837,14 +938,19 @@ interface COAQuickViewModalProps {
   vendorId: string;
 }
 
-function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewModalProps) {
+function COAQuickViewModal({
+  coa,
+  onClose,
+  onDownload,
+  onDelete,
+}: COAQuickViewModalProps) {
   // Handle ESC key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -867,7 +973,9 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
               {coa.isExpired && (
                 <div className="flex items-center gap-1 px-2 py-1 rounded-xl bg-red-500/10 border border-red-500/20">
                   <AlertTriangle className="w-3 h-3 text-red-500" />
-                  <span className="text-[9px] uppercase tracking-[0.15em] font-medium text-red-500">Expired</span>
+                  <span className="text-[9px] uppercase tracking-[0.15em] font-medium text-red-500">
+                    Expired
+                  </span>
                 </div>
               )}
             </div>
@@ -886,7 +994,7 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
         {/* Content - Scrollable */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* PDF Preview */}
-          {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith('.pdf') && (
+          {coa.fileUrl && coa.fileUrl.toLowerCase().endsWith(".pdf") && (
             <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -938,12 +1046,18 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-xs font-medium uppercase tracking-tight">{coa.productName}</p>
+                  <p className="text-white text-xs font-medium uppercase tracking-tight">
+                    {coa.productName}
+                  </p>
                   {coa.productSku && (
-                    <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">SKU: {coa.productSku}</p>
+                    <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+                      SKU: {coa.productSku}
+                    </p>
                   )}
                   {coa.productCategory && (
-                    <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">{coa.productCategory}</p>
+                    <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+                      {coa.productCategory}
+                    </p>
                   )}
                 </div>
               </div>
@@ -965,16 +1079,22 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
               </div>
               <div>
                 <div className="text-white/40 mb-1">Batch</div>
-                <div className="text-white font-medium font-mono">{coa.batchNumber}</div>
+                <div className="text-white font-medium font-mono">
+                  {coa.batchNumber}
+                </div>
               </div>
               <div>
                 <div className="text-white/40 mb-1">Test Date</div>
-                <div className="text-white font-medium">{new Date(coa.testDate).toLocaleDateString()}</div>
+                <div className="text-white font-medium">
+                  {new Date(coa.testDate).toLocaleDateString()}
+                </div>
               </div>
               {coa.expiryDate && (
                 <div>
                   <div className="text-white/40 mb-1">Expiry</div>
-                  <div className={`font-medium ${coa.isExpired ? 'text-red-500' : 'text-white'}`}>
+                  <div
+                    className={`font-medium ${coa.isExpired ? "text-red-500" : "text-white"}`}
+                  >
                     {new Date(coa.expiryDate).toLocaleDateString()}
                   </div>
                 </div>
@@ -989,44 +1109,72 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
             </h3>
             <div className="grid grid-cols-2 gap-3 mb-3">
               <div className="bg-black/40 border border-white/[0.08] rounded-xl p-3">
-                <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">THC</div>
+                <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">
+                  THC
+                </div>
                 <div className="text-white text-xl font-medium">{coa.thc}</div>
               </div>
               <div className="bg-black/40 border border-white/[0.08] rounded-xl p-3">
-                <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">CBD</div>
+                <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">
+                  CBD
+                </div>
                 <div className="text-white text-xl font-medium">{coa.cbd}</div>
               </div>
             </div>
-            {(coa.thca || coa.cbda || coa.cbg || coa.cbn || coa.totalCannabinoids) && (
+            {(coa.thca ||
+              coa.cbda ||
+              coa.cbg ||
+              coa.cbn ||
+              coa.totalCannabinoids) && (
               <div className="grid grid-cols-3 gap-2">
                 {coa.thca && (
                   <div className="bg-black/20 rounded-xl p-2">
-                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">THCa</div>
-                    <div className="text-white text-xs font-medium">{coa.thca}</div>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                      THCa
+                    </div>
+                    <div className="text-white text-xs font-medium">
+                      {coa.thca}
+                    </div>
                   </div>
                 )}
                 {coa.cbda && (
                   <div className="bg-black/20 rounded-xl p-2">
-                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBDa</div>
-                    <div className="text-white text-xs font-medium">{coa.cbda}</div>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                      CBDa
+                    </div>
+                    <div className="text-white text-xs font-medium">
+                      {coa.cbda}
+                    </div>
                   </div>
                 )}
                 {coa.cbg && (
                   <div className="bg-black/20 rounded-xl p-2">
-                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBG</div>
-                    <div className="text-white text-xs font-medium">{coa.cbg}</div>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                      CBG
+                    </div>
+                    <div className="text-white text-xs font-medium">
+                      {coa.cbg}
+                    </div>
                   </div>
                 )}
                 {coa.cbn && (
                   <div className="bg-black/20 rounded-xl p-2">
-                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBN</div>
-                    <div className="text-white text-xs font-medium">{coa.cbn}</div>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                      CBN
+                    </div>
+                    <div className="text-white text-xs font-medium">
+                      {coa.cbn}
+                    </div>
                   </div>
                 )}
                 {coa.totalCannabinoids && (
                   <div className="bg-black/20 rounded-xl p-2">
-                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">Total</div>
-                    <div className="text-white text-xs font-medium">{coa.totalCannabinoids}</div>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
+                      Total
+                    </div>
+                    <div className="text-white text-xs font-medium">
+                      {coa.totalCannabinoids}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1040,15 +1188,23 @@ function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewM
                 Terpenes
               </h3>
               <div className="bg-black/40 border border-white/[0.08] rounded-xl p-3 mb-3">
-                <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">Total</div>
-                <div className="text-white text-xl font-medium">{coa.totalTerpenes}</div>
+                <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">
+                  Total
+                </div>
+                <div className="text-white text-xl font-medium">
+                  {coa.totalTerpenes}
+                </div>
               </div>
-              {coa.terpenes && typeof coa.terpenes === 'object' && (
+              {coa.terpenes && typeof coa.terpenes === "object" && (
                 <div className="grid grid-cols-3 gap-2">
                   {Object.entries(coa.terpenes).map(([name, value]) => (
                     <div key={name} className="bg-black/20 rounded-xl p-2">
-                      <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] capitalize">{name}</div>
-                      <div className="text-white text-xs font-medium">{String(value)}%</div>
+                      <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] capitalize">
+                        {name}
+                      </div>
+                      <div className="text-white text-xs font-medium">
+                        {String(value)}%
+                      </div>
                     </div>
                   ))}
                 </div>

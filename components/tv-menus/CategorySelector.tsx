@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface CategorySelectorProps {
   availableCategories: string[];
@@ -16,12 +16,14 @@ export default function CategorySelector({
   showAllOption = true,
 }: CategorySelectorProps) {
   const [isAllSelected, setIsAllSelected] = useState(
-    selectedCategories.length === 0 || selectedCategories.length === availableCategories.length
+    selectedCategories.length === 0 ||
+      selectedCategories.length === availableCategories.length,
   );
 
   useEffect(() => {
     setIsAllSelected(
-      selectedCategories.length === 0 || selectedCategories.length === availableCategories.length
+      selectedCategories.length === 0 ||
+        selectedCategories.length === availableCategories.length,
     );
   }, [selectedCategories, availableCategories]);
 
@@ -65,7 +67,7 @@ export default function CategorySelector({
         </label>
         <span className="text-xs text-white/40">
           {isAllSelected
-            ? 'All categories'
+            ? "All categories"
             : `${selectedCategories.length} selected`}
         </span>
       </div>
@@ -80,8 +82,8 @@ export default function CategorySelector({
               transition-all duration-200 ease-out
               ${
                 isAllSelected
-                  ? 'bg-white text-black shadow-lg shadow-white/20 scale-105'
-                  : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
+                  ? "bg-white text-black shadow-lg shadow-white/20 scale-105"
+                  : "bg-white/10 text-white hover:bg-white/20 hover:scale-105"
               }
             `}
           >
@@ -99,8 +101,8 @@ export default function CategorySelector({
               transition-all duration-200 ease-out
               ${
                 isCategorySelected(category)
-                  ? 'bg-white text-black shadow-lg shadow-white/20 scale-105'
-                  : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
+                  ? "bg-white text-black shadow-lg shadow-white/20 scale-105"
+                  : "bg-white/10 text-white hover:bg-white/20 hover:scale-105"
               }
             `}
           >
@@ -111,12 +113,14 @@ export default function CategorySelector({
 
       {availableCategories.length === 0 && (
         <div className="text-sm text-white/40 italic py-4 text-center bg-white/5 border border-white/10 rounded-lg">
-          No categories found. Make sure products have categories assigned in your inventory.
+          No categories found. Make sure products have categories assigned in
+          your inventory.
         </div>
       )}
 
       <p className="text-xs text-white/30 mt-2">
-        Select specific categories to display on the menu, or choose "All Categories" to show everything.
+        Select specific categories to display on the menu, or choose "All
+        Categories" to show everything.
       </p>
     </div>
   );

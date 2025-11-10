@@ -1,12 +1,12 @@
-import { ReactNode, ButtonHTMLAttributes } from 'react';
-import { LucideIcon } from 'lucide-react';
-import { ds, cn } from '@/lib/design-system';
+import { ReactNode, ButtonHTMLAttributes } from "react";
+import { LucideIcon } from "lucide-react";
+import { ds, cn } from "@/lib/design-system";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
-  size?: 'xs' | 'sm' | 'md';
+  variant?: "primary" | "secondary" | "ghost" | "danger";
+  size?: "xs" | "sm" | "md";
   icon?: LucideIcon;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   loading?: boolean;
   fullWidth?: boolean;
   children: ReactNode;
@@ -18,13 +18,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * Compact, professional, minimal padding
  */
 export function Button({
-  variant = 'primary',
-  size = 'sm',
+  variant = "primary",
+  size = "sm",
   icon: Icon,
-  iconPosition = 'left',
+  iconPosition = "left",
   loading = false,
   fullWidth = false,
-  className = '',
+  className = "",
   children,
   disabled,
   ...props
@@ -72,8 +72,8 @@ export function Button({
         baseStyles,
         sizeStyles[size],
         variantStyles[variant],
-        fullWidth && 'w-full',
-        className
+        fullWidth && "w-full",
+        className,
       )}
       disabled={disabled || loading}
       {...props}
@@ -82,9 +82,13 @@ export function Button({
         <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
       ) : (
         <>
-          {Icon && iconPosition === 'left' && <Icon size={size === 'xs' ? 12 : 14} strokeWidth={1.5} />}
+          {Icon && iconPosition === "left" && (
+            <Icon size={size === "xs" ? 12 : 14} strokeWidth={1.5} />
+          )}
           {children}
-          {Icon && iconPosition === 'right' && <Icon size={size === 'xs' ? 12 : 14} strokeWidth={1.5} />}
+          {Icon && iconPosition === "right" && (
+            <Icon size={size === "xs" ? 12 : 14} strokeWidth={1.5} />
+          )}
         </>
       )}
     </button>
@@ -96,15 +100,15 @@ export function Button({
  */
 export function IconButton({
   icon: Icon,
-  size = 'sm',
-  variant = 'ghost',
-  className = '',
+  size = "sm",
+  variant = "ghost",
+  className = "",
   ...props
-}: Omit<ButtonProps, 'children'> & { icon: LucideIcon }) {
+}: Omit<ButtonProps, "children"> & { icon: LucideIcon }) {
   const sizeStyles = {
-    xs: 'p-1',
-    sm: 'p-1.5',
-    md: 'p-2',
+    xs: "p-1",
+    sm: "p-1.5",
+    md: "p-2",
   };
 
   const iconSizes = {
@@ -118,8 +122,9 @@ export function IconButton({
       className={cn(
         `inline-flex items-center justify-center ${ds.effects.radius.md} ${ds.effects.transition.normal}`,
         sizeStyles[size],
-        variant === 'ghost' && `hover:${ds.colors.bg.elevated} ${ds.colors.text.quaternary} hover:${ds.colors.text.tertiary}`,
-        className
+        variant === "ghost" &&
+          `hover:${ds.colors.bg.elevated} ${ds.colors.text.quaternary} hover:${ds.colors.text.tertiary}`,
+        className,
       )}
       {...props}
     >

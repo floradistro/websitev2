@@ -3,14 +3,14 @@
  * Generates SMS content using OpenAI
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { createSMSGenerator } from '@/lib/marketing/sms-generator';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { createSMSGenerator } from "@/lib/marketing/sms-generator";
+import { requireVendor } from "@/lib/auth/middleware";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 export async function POST(request: NextRequest) {
@@ -31,13 +31,13 @@ export async function POST(request: NextRequest) {
 
     // Get vendor info
     const { data: vendor, error: vendorError } = await supabase
-      .from('vendors')
-      .select('id, vendor_name')
-      .eq('id', vendorId)
+      .from("vendors")
+      .select("id, vendor_name")
+      .eq("id", vendorId)
       .single();
 
     if (vendorError || !vendor) {
-      return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
     }
 
     // Initialize SMS generator
@@ -61,13 +61,15 @@ export async function POST(request: NextRequest) {
       sms: generatedSMS,
     });
   } catch (error: any) {
-    console.error('SMS generation error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("SMS generation error:", error);
+    }
     return NextResponse.json(
       {
-        error: 'Failed to generate SMS',
+        error: "Failed to generate SMS",
         message: error.message,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

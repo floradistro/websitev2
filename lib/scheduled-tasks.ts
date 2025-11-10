@@ -4,9 +4,9 @@
  * Enterprise automation patterns
  */
 
-import { jobQueue } from './job-queue';
-import { productCache, vendorCache, inventoryCache } from './cache-manager';
-import { getServiceSupabase } from './supabase/client';
+import { jobQueue } from "./job-queue";
+import { productCache, vendorCache, inventoryCache } from "./cache-manager";
+import { getServiceSupabase } from "./supabase/client";
 
 /**
  * Run all scheduled tasks
@@ -26,7 +26,9 @@ export async function runScheduledTasks(): Promise<void> {
 
     const duration = Date.now() - startTime;
   } catch (error) {
-    console.error('❌ Error in scheduled tasks:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Error in scheduled tasks:", error);
+    }
   }
 }
 
@@ -35,29 +37,28 @@ export async function runScheduledTasks(): Promise<void> {
  * Runs every hour
  */
 async function cleanupExpiredCache(): Promise<void> {
-  
   try {
     // Cache automatically expires based on TTL
     // This is just for logging/monitoring
     const stats = {
       product: productCache.getStats(),
       vendor: vendorCache.getStats(),
-      inventory: inventoryCache.getStats()
+      inventory: inventoryCache.getStats(),
     };
-
-    console.log('📊 Cache stats:', {
-      product: `${stats.product.size}/${stats.product.max}`,
-      vendor: `${stats.vendor.size}/${stats.vendor.max}`,
-      inventory: `${stats.inventory.size}/${stats.inventory.max}`
-    });
 
     // Optional: Force clear old caches during off-peak hours
     const hour = new Date().getHours();
     if (hour >= 2 && hour <= 4) {
-      await jobQueue.enqueue('cleanup-cache', { cacheType: 'all' }, { priority: 5 });
+      await jobQueue.enqueue(
+        "cleanup-cache",
+        { cacheType: "all" },
+        { priority: 5 },
+      );
     }
   } catch (error) {
-    console.error('❌ Cache cleanup failed:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Cache cleanup failed:", error);
+    }
   }
 }
 
@@ -66,33 +67,35 @@ async function cleanupExpiredCache(): Promise<void> {
  * Runs every 30 minutes
  */
 async function checkLowStockAlerts(): Promise<void> {
-  
   try {
     const supabase = getServiceSupabase();
-    
+
     // Find inventory items below threshold
     const { data: lowStock, error } = await supabase
-      .from('inventory')
-      .select(`
+      .from("inventory")
+      .select(
+        `
         id,
         quantity,
         low_stock_threshold,
         product:products(id, name),
         vendor:vendors(id, email, store_name)
-      `)
-      .lte('quantity', supabase.rpc('quantity_below_threshold'))
-      .gt('quantity', 0) // Still has some stock
+      `,
+      )
+      .lte("quantity", supabase.rpc("quantity_below_threshold"))
+      .gt("quantity", 0) // Still has some stock
       .limit(100);
 
     if (error) {
-      console.error('❌ Error fetching low stock:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Error fetching low stock:", error);
+      }
       return;
     }
 
     if (!lowStock || lowStock.length === 0) {
       return;
     }
-
 
     // Queue email notifications for vendors
     for (const item of lowStock) {
@@ -101,7 +104,7 @@ async function checkLowStockAlerts(): Promise<void> {
 
       if (vendor?.email && product?.name) {
         await jobQueue.enqueue(
-          'send-email',
+          "send-email",
           {
             to: vendor.email,
             subject: `Low Stock Alert: ${product.name}`,
@@ -113,15 +116,16 @@ async function checkLowStockAlerts(): Promise<void> {
               <p>Please restock soon to avoid running out.</p>
             `,
             productId: product.id,
-            vendorId: vendor.id
+            vendorId: vendor.id,
           },
-          { priority: 2 } // High priority
+          { priority: 2 }, // High priority
         );
       }
     }
-
   } catch (error) {
-    console.error('❌ Low stock check failed:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Low stock check failed:", error);
+    }
   }
 }
 
@@ -131,13 +135,12 @@ async function checkLowStockAlerts(): Promise<void> {
  */
 async function generateDailyMetrics(): Promise<void> {
   const hour = new Date().getHours();
-  
+
   // Only run at midnight (0) or 1 AM
   if (hour !== 0 && hour !== 1) {
     return;
   }
 
-  
   try {
     const supabase = getServiceSupabase();
     const yesterday = new Date();
@@ -149,45 +152,43 @@ async function generateDailyMetrics(): Promise<void> {
 
     // Get yesterday's orders
     const { data: orders, error: ordersError } = await supabase
-      .from('orders')
-      .select('id, total, status')
-      .gte('created_at', yesterday.toISOString())
-      .lt('created_at', today.toISOString());
+      .from("orders")
+      .select("id, total, status")
+      .gte("created_at", yesterday.toISOString())
+      .lt("created_at", today.toISOString());
 
     if (ordersError) {
-      console.error('❌ Error fetching orders:', ordersError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Error fetching orders:", ordersError);
+      }
       return;
     }
 
     const totalOrders = orders?.length || 0;
-    const totalRevenue = orders?.reduce((sum, order) => sum + parseFloat(order.total || '0'), 0) || 0;
-    const completedOrders = orders?.filter(o => o.status === 'completed').length || 0;
-
-    console.log('📈 Daily metrics:', {
-      date: yesterday.toISOString().split('T')[0],
-      totalOrders,
-      totalRevenue: `$${totalRevenue.toFixed(2)}`,
-      completedOrders,
-      completionRate: totalOrders > 0 ? `${((completedOrders / totalOrders) * 100).toFixed(1)}%` : '0%'
-    });
+    const totalRevenue =
+      orders?.reduce((sum, order) => sum + parseFloat(order.total || "0"), 0) ||
+      0;
+    const completedOrders =
+      orders?.filter((o) => o.status === "completed").length || 0;
 
     // Queue report generation
     await jobQueue.enqueue(
-      'generate-report',
+      "generate-report",
       {
-        type: 'daily-sales',
+        type: "daily-sales",
         date: yesterday.toISOString(),
         metrics: {
           totalOrders,
           totalRevenue,
-          completedOrders
-        }
+          completedOrders,
+        },
       },
-      { priority: 4 } // Low priority
+      { priority: 4 }, // Low priority
     );
-
   } catch (error) {
-    console.error('❌ Daily metrics generation failed:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Daily metrics generation failed:", error);
+    }
   }
 }
 
@@ -196,17 +197,18 @@ async function generateDailyMetrics(): Promise<void> {
  * Runs every 6 hours
  */
 async function cleanupOldJobs(): Promise<void> {
-  
   try {
     const stats = jobQueue.getStats();
-    
+
     // Clear history if it's getting too large
     if (stats.completed > 500 || stats.failed > 200) {
       jobQueue.clearHistory();
     } else {
     }
   } catch (error) {
-    console.error('❌ Job cleanup failed:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Job cleanup failed:", error);
+    }
   }
 }
 
@@ -215,10 +217,9 @@ async function cleanupOldJobs(): Promise<void> {
  * Call this on server startup
  */
 export function setupScheduledTasks(): void {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     return;
   }
-
 
   // Run immediately on startup
   runScheduledTasks();
@@ -228,8 +229,6 @@ export function setupScheduledTasks(): void {
   setInterval(() => {
     runScheduledTasks();
   }, intervalMs);
-
-  console.log(`✅ Scheduled tasks active (interval: ${intervalMs / 1000 / 60} minutes)`);
 }
 
 /**
@@ -237,20 +236,19 @@ export function setupScheduledTasks(): void {
  * Runs during off-peak hours
  */
 export async function refreshMaterializedViews(): Promise<void> {
-  
   try {
     const supabase = getServiceSupabase();
-    
+
     // Call the refresh function (if you have materialized views)
     // const { error } = await supabase.rpc('refresh_materialized_views');
-    
+
     // if (error) {
     //   console.error('❌ Failed to refresh materialized views:', error);
     //   return;
     // }
-    
   } catch (error) {
-    console.error('❌ Materialized views refresh failed:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Materialized views refresh failed:", error);
+    }
   }
 }
-

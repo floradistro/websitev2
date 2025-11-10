@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Save, Building2, MapPin, Users, Map, Eye, EyeOff } from 'lucide-react';
-import { useAppAuth } from '@/context/AppAuthContext';
-import { supabase } from '@/lib/supabase/client';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import { Save, Building2, MapPin, Users, Map, Eye, EyeOff } from "lucide-react";
+import { useAppAuth } from "@/context/AppAuthContext";
+import { supabase } from "@/lib/supabase/client";
+import Link from "next/link";
 
 export default function SettingsPage() {
   const { vendor } = useAppAuth();
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [settings, setSettings] = useState({
-    companyName: '',
-    contactName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
-    taxId: '',
+    companyName: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    taxId: "",
     siteHidden: false,
   });
 
@@ -34,29 +34,31 @@ export default function SettingsPage() {
 
     try {
       const { data, error } = await supabase
-        .from('vendors')
-        .select('*')
-        .eq('id', vendor.id)
+        .from("vendors")
+        .select("*")
+        .eq("id", vendor.id)
         .single();
 
       if (error) throw error;
 
       if (data) {
         setSettings({
-          companyName: data.store_name || '',
-          contactName: data.contact_name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          address: data.address || '',
-          city: data.city || '',
-          state: data.state || '',
-          zip: data.zip || '',
-          taxId: data.tax_id || '',
+          companyName: data.store_name || "",
+          contactName: data.contact_name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          address: data.address || "",
+          city: data.city || "",
+          state: data.state || "",
+          zip: data.zip || "",
+          taxId: data.tax_id || "",
           siteHidden: data.site_hidden || false,
         });
       }
     } catch (err) {
-      console.error('Error loading settings:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading settings:", err);
+      }
     }
   }
 
@@ -67,7 +69,7 @@ export default function SettingsPage() {
     try {
       setLoading(true);
       const { error } = await supabase
-        .from('vendors')
+        .from("vendors")
         .update({
           store_name: settings.companyName,
           contact_name: settings.contactName,
@@ -80,15 +82,17 @@ export default function SettingsPage() {
           tax_id: settings.taxId,
           site_hidden: settings.siteHidden,
         })
-        .eq('id', vendor.id);
+        .eq("id", vendor.id);
 
       if (error) throw error;
 
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err: any) {
-      console.error('Error saving settings:', err);
-      alert(err.message || 'Failed to save settings');
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error saving settings:", err);
+      }
+      alert(err.message || "Failed to save settings");
     } finally {
       setLoading(false);
     }
@@ -119,7 +123,9 @@ export default function SettingsPage() {
             </div>
             <div className="text-white/80 text-sm font-light">Locations</div>
           </div>
-          <p className="text-white/40 text-[11px] font-light">Manage store locations & addresses</p>
+          <p className="text-white/40 text-[11px] font-light">
+            Manage store locations & addresses
+          </p>
         </Link>
 
         <Link
@@ -132,7 +138,9 @@ export default function SettingsPage() {
             </div>
             <div className="text-white/80 text-sm font-light">Team</div>
           </div>
-          <p className="text-white/40 text-[11px] font-light">Employee management & permissions</p>
+          <p className="text-white/40 text-[11px] font-light">
+            Employee management & permissions
+          </p>
         </Link>
       </div>
 
@@ -155,7 +163,9 @@ export default function SettingsPage() {
               <input
                 type="text"
                 value={settings.companyName}
-                onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
+                onChange={(e) =>
+                  setSettings({ ...settings, companyName: e.target.value })
+                }
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="Your Company LLC"
               />
@@ -168,7 +178,9 @@ export default function SettingsPage() {
               <input
                 type="text"
                 value={settings.contactName}
-                onChange={(e) => setSettings({ ...settings, contactName: e.target.value })}
+                onChange={(e) =>
+                  setSettings({ ...settings, contactName: e.target.value })
+                }
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="John Doe"
               />
@@ -181,7 +193,9 @@ export default function SettingsPage() {
               <input
                 type="email"
                 value={settings.email}
-                onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                onChange={(e) =>
+                  setSettings({ ...settings, email: e.target.value })
+                }
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="contact@company.com"
               />
@@ -194,7 +208,9 @@ export default function SettingsPage() {
               <input
                 type="tel"
                 value={settings.phone}
-                onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                onChange={(e) =>
+                  setSettings({ ...settings, phone: e.target.value })
+                }
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="(555) 123-4567"
               />
@@ -207,7 +223,9 @@ export default function SettingsPage() {
               <input
                 type="text"
                 value={settings.taxId}
-                onChange={(e) => setSettings({ ...settings, taxId: e.target.value })}
+                onChange={(e) =>
+                  setSettings({ ...settings, taxId: e.target.value })
+                }
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="XX-XXXXXXX"
               />
@@ -232,7 +250,9 @@ export default function SettingsPage() {
               <input
                 type="text"
                 value={settings.address}
-                onChange={(e) => setSettings({ ...settings, address: e.target.value })}
+                onChange={(e) =>
+                  setSettings({ ...settings, address: e.target.value })
+                }
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="123 Main St"
               />
@@ -246,7 +266,9 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   value={settings.city}
-                  onChange={(e) => setSettings({ ...settings, city: e.target.value })}
+                  onChange={(e) =>
+                    setSettings({ ...settings, city: e.target.value })
+                  }
                   className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                   placeholder="Charlotte"
                 />
@@ -259,7 +281,9 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   value={settings.state}
-                  onChange={(e) => setSettings({ ...settings, state: e.target.value })}
+                  onChange={(e) =>
+                    setSettings({ ...settings, state: e.target.value })
+                  }
                   className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                   placeholder="NC"
                 />
@@ -272,7 +296,9 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   value={settings.zip}
-                  onChange={(e) => setSettings({ ...settings, zip: e.target.value })}
+                  onChange={(e) =>
+                    setSettings({ ...settings, zip: e.target.value })
+                  }
                   className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                   placeholder="28202"
                 />
@@ -296,7 +322,9 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-white/70 text-sm font-light mb-1">Hide Storefront</div>
+              <div className="text-white/70 text-sm font-light mb-1">
+                Hide Storefront
+              </div>
               <p className="text-white/40 text-[11px] font-light">
                 Show a coming soon page instead of your products
               </p>
@@ -304,14 +332,16 @@ export default function SettingsPage() {
 
             <button
               type="button"
-              onClick={() => setSettings({ ...settings, siteHidden: !settings.siteHidden })}
+              onClick={() =>
+                setSettings({ ...settings, siteHidden: !settings.siteHidden })
+              }
               className={`relative w-14 h-8 rounded-full transition-all ${
-                settings.siteHidden ? 'bg-white/[0.12]' : 'bg-white/[0.06]'
+                settings.siteHidden ? "bg-white/[0.12]" : "bg-white/[0.06]"
               }`}
             >
               <div
                 className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white/60 transition-all ${
-                  settings.siteHidden ? 'translate-x-6' : 'translate-x-0'
+                  settings.siteHidden ? "translate-x-6" : "translate-x-0"
                 }`}
               />
             </button>
@@ -325,9 +355,13 @@ export default function SettingsPage() {
             disabled={loading}
             className="group flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.12] px-8 py-4 rounded-2xl transition-all active:scale-[0.96] disabled:opacity-50"
           >
-            <Save size={16} className="text-white/60 group-hover:text-white/80 transition-colors" strokeWidth={1.5} />
+            <Save
+              size={16}
+              className="text-white/60 group-hover:text-white/80 transition-colors"
+              strokeWidth={1.5}
+            />
             <span className="text-white/60 group-hover:text-white/80 text-[10px] uppercase tracking-[0.2em] font-light transition-colors">
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading ? "Saving..." : "Save Changes"}
             </span>
           </button>
 

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,8 +12,8 @@ export async function POST(request: NextRequest) {
 
     if (!vendorId || !firstName || !lastName) {
       return NextResponse.json(
-        { error: 'Missing required fields: vendorId, firstName, lastName' },
-        { status: 400 }
+        { error: "Missing required fields: vendorId, firstName, lastName" },
+        { status: 400 },
       );
     }
 
@@ -25,8 +25,9 @@ export async function POST(request: NextRequest) {
 
     // First, try exact name match
     let { data: exactMatches, error: exactError } = await supabase
-      .from('vendor_customers')
-      .select(`
+      .from("vendor_customers")
+      .select(
+        `
         id,
         vendor_customer_number,
         loyalty_points,
@@ -42,17 +43,17 @@ export async function POST(request: NextRequest) {
           display_name,
           date_of_birth
         )
-      `)
-      .eq('vendor_id', vendorId)
-      .ilike('customers.first_name', firstNameLower)
-      .ilike('customers.last_name', lastNameLower);
+      `,
+      )
+      .eq("vendor_id", vendorId)
+      .ilike("customers.first_name", firstNameLower)
+      .ilike("customers.last_name", lastNameLower);
 
     if (exactError) {
-      console.error('Error searching for customer:', exactError);
-      return NextResponse.json(
-        { error: exactError.message },
-        { status: 500 }
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error searching for customer:", exactError);
+      }
+      return NextResponse.json({ error: exactError.message }, { status: 500 });
     }
 
     // Filter results
@@ -60,8 +61,8 @@ export async function POST(request: NextRequest) {
 
     // If we have multiple matches and a DOB, use it to narrow down
     if (matches.length > 1 && dateOfBirth) {
-      const dobMatches = matches.filter((vc: any) =>
-        vc.customers.date_of_birth === dateOfBirth
+      const dobMatches = matches.filter(
+        (vc: any) => vc.customers.date_of_birth === dateOfBirth,
       );
 
       if (dobMatches.length > 0) {
@@ -75,14 +76,14 @@ export async function POST(request: NextRequest) {
       const customerData = match.customers as any;
       const customer = {
         id: customerData.id,
-        first_name: customerData.first_name || '',
-        last_name: customerData.last_name || '',
+        first_name: customerData.first_name || "",
+        last_name: customerData.last_name || "",
         email: customerData.email,
         phone: customerData.phone,
         display_name: customerData.display_name,
         date_of_birth: customerData.date_of_birth,
         loyalty_points: match.loyalty_points || 0,
-        loyalty_tier: match.loyalty_tier || 'bronze',
+        loyalty_tier: match.loyalty_tier || "bronze",
         vendor_customer_number: match.vendor_customer_number,
         total_orders: match.total_orders || 0,
         total_spent: match.total_spent || 0,
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         customer,
-        matchType: 'exact'
+        matchType: "exact",
       });
     }
 
@@ -100,14 +101,14 @@ export async function POST(request: NextRequest) {
         const customerData = match.customers as any;
         return {
           id: customerData.id,
-          first_name: customerData.first_name || '',
-          last_name: customerData.last_name || '',
+          first_name: customerData.first_name || "",
+          last_name: customerData.last_name || "",
           email: customerData.email,
           phone: customerData.phone,
           display_name: customerData.display_name,
           date_of_birth: customerData.date_of_birth,
           loyalty_points: match.loyalty_points || 0,
-          loyalty_tier: match.loyalty_tier || 'bronze',
+          loyalty_tier: match.loyalty_tier || "bronze",
           vendor_customer_number: match.vendor_customer_number,
           total_orders: match.total_orders || 0,
           total_spent: match.total_spent || 0,
@@ -116,23 +117,24 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         customers,
-        matchType: 'multiple',
-        message: 'Multiple customers found with this name'
+        matchType: "multiple",
+        message: "Multiple customers found with this name",
       });
     }
 
     // No match found
     return NextResponse.json({
       customer: null,
-      matchType: 'none',
-      message: 'No customer found'
+      matchType: "none",
+      message: "No customer found",
     });
-
   } catch (error: any) {
-    console.error('Error in match-by-id endpoint:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in match-by-id endpoint:", error);
+    }
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
+      { error: "Internal server error", details: error.message },
+      { status: 500 },
     );
   }
 }

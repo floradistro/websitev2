@@ -1,8 +1,8 @@
-import { ProductCard } from './ProductCard';
-import { ProductsListSkeleton } from '@/components/skeletons/ProductsListSkeleton';
-import { AlertCircle } from 'lucide-react';
-import { ds, cn } from '@/components/ds';
-import { Product } from '@/lib/types/product';
+import { ProductCard } from "./ProductCard";
+import { ProductsListSkeleton } from "@/components/skeletons/ProductsListSkeleton";
+import { AlertCircle } from "lucide-react";
+import { ds, cn } from "@/components/ds";
+import { Product } from "@/lib/types/product";
 
 interface ProductsListProps {
   products: Product[];
@@ -12,7 +12,13 @@ interface ProductsListProps {
   onRetry?: () => void;
 }
 
-export function ProductsList({ products, isLoading, error, onViewProduct, onRetry }: ProductsListProps) {
+export function ProductsList({
+  products,
+  isLoading,
+  error,
+  onViewProduct,
+  onRetry,
+}: ProductsListProps) {
   if (isLoading) {
     return (
       <div role="status" aria-live="polite" aria-label="Loading products">
@@ -24,13 +30,30 @@ export function ProductsList({ products, isLoading, error, onViewProduct, onRetr
   if (error) {
     return (
       <div
-        className={cn("border rounded-lg p-6 text-center", "bg-white/5 border-white/20")}
+        className={cn(
+          "border rounded-lg p-6 text-center",
+          "bg-white/5 border-white/20",
+        )}
         role="alert"
         aria-live="assertive"
       >
-        <AlertCircle className={cn("w-12 h-12 mx-auto mb-3 text-white/60")} strokeWidth={1} aria-hidden="true" />
-        <h3 className={cn(ds.typography.size.base, ds.typography.weight.medium, "text-white/90 mb-2")}>Failed to Load Products</h3>
-        <p className={cn(ds.typography.size.xs, "text-white/60 mb-4")}>{error.message}</p>
+        <AlertCircle
+          className={cn("w-12 h-12 mx-auto mb-3 text-white/60")}
+          strokeWidth={1}
+          aria-hidden="true"
+        />
+        <h3
+          className={cn(
+            ds.typography.size.base,
+            ds.typography.weight.medium,
+            "text-white/90 mb-2",
+          )}
+        >
+          Failed to Load Products
+        </h3>
+        <p className={cn(ds.typography.size.xs, "text-white/60 mb-4")}>
+          {error.message}
+        </p>
         <button
           onClick={onRetry || (() => window.location.reload())}
           className={cn(
@@ -40,7 +63,7 @@ export function ProductsList({ products, isLoading, error, onViewProduct, onRetr
             ds.typography.size.xs,
             ds.typography.transform.uppercase,
             ds.typography.tracking.wide,
-            "focus:outline-none focus:ring-2 focus:ring-white/30"
+            "focus:outline-none focus:ring-2 focus:ring-white/30",
           )}
           aria-label="Retry loading products"
         >
@@ -53,12 +76,21 @@ export function ProductsList({ products, isLoading, error, onViewProduct, onRetr
   if (products.length === 0) {
     return (
       <div
-        className={cn("border-2 border-dashed rounded-lg p-12 text-center", ds.colors.bg.elevated, ds.colors.border.default)}
+        className={cn(
+          "border-2 border-dashed rounded-lg p-12 text-center",
+          ds.colors.bg.elevated,
+          ds.colors.border.default,
+        )}
         role="status"
         aria-live="polite"
       >
         <div className="max-w-md mx-auto">
-          <div className={cn("w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4", ds.colors.bg.hover)}>
+          <div
+            className={cn(
+              "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4",
+              ds.colors.bg.hover,
+            )}
+          >
             <svg
               className={cn("w-8 h-8", ds.colors.text.quaternary)}
               fill="none"
@@ -74,9 +106,18 @@ export function ProductsList({ products, isLoading, error, onViewProduct, onRetr
               />
             </svg>
           </div>
-          <h3 className={cn(ds.typography.size.sm, ds.typography.weight.medium, "text-white/90 mb-2")}>No Products Found</h3>
+          <h3
+            className={cn(
+              ds.typography.size.sm,
+              ds.typography.weight.medium,
+              "text-white/90 mb-2",
+            )}
+          >
+            No Products Found
+          </h3>
           <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
-            No products match your current filters. Try adjusting your search or filters.
+            No products match your current filters. Try adjusting your search or
+            filters.
           </p>
         </div>
       </div>
@@ -84,9 +125,18 @@ export function ProductsList({ products, isLoading, error, onViewProduct, onRetr
   }
 
   return (
-    <div id="products-list" className="space-y-4" role="list" aria-label={`${products.length} products`}>
+    <div
+      id="products-list"
+      className="space-y-4"
+      role="list"
+      aria-label={`${products.length} products`}
+    >
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} onView={onViewProduct} />
+        <ProductCard
+          key={product.id}
+          product={product}
+          onView={onViewProduct}
+        />
       ))}
     </div>
   );

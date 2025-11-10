@@ -8,32 +8,32 @@ const getBaseUrl = () => {
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  return 'http://localhost:3000';
+  return "http://localhost:3000";
 };
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const customerId = searchParams.get("customer");
-    
+
     if (!customerId) {
       return NextResponse.json(
         { success: false, error: "Customer ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     // Fetch orders from Supabase
     const response = await fetch(
-      `${getBaseUrl()}/api/supabase/orders?customer_id=${customerId}&per_page=100`
+      `${getBaseUrl()}/api/supabase/orders?customer_id=${customerId}&per_page=100`,
     );
-    
+
     const data = await response.json();
-    
+
     if (!data.success) {
-      throw new Error('Failed to fetch orders');
+      throw new Error("Failed to fetch orders");
     }
-    
+
     // Map to expected format for dashboard
     const orders = data.orders.map((order: any) => ({
       id: order.id,
@@ -54,32 +54,37 @@ export async function GET(request: NextRequest) {
         total: item.line_total,
         image: item.product_image ? { src: item.product_image } : null,
         meta_data: item.meta_data || {},
-        order_type: item.order_type || 'delivery',
+        order_type: item.order_type || "delivery",
         tier_name: item.tier_name,
-        pickup_location: item.pickup_location_name
+        pickup_location: item.pickup_location_name,
       })),
       shipping_lines: [],
       payment_method: order.payment_method,
       payment_method_title: order.payment_method_title,
       customer_note: order.customer_note,
-      has_delivery: order.delivery_type === 'delivery' || order.delivery_type === 'mixed',
-      has_pickup: order.delivery_type === 'pickup' || order.delivery_type === 'mixed',
-      pickup_location: order.pickup_location_id
+      has_delivery:
+        order.delivery_type === "delivery" || order.delivery_type === "mixed",
+      has_pickup:
+        order.delivery_type === "pickup" || order.delivery_type === "mixed",
+      pickup_location: order.pickup_location_id,
     }));
-    
+
     return NextResponse.json({
       success: true,
       orders,
-      total: data.pagination?.total || orders.length
+      total: data.pagination?.total || orders.length,
     });
-    
   } catch (error: any) {
-    console.error('Customer orders error:', error);
-    return NextResponse.json({ 
-      success: false,
-      orders: [],
-      error: error.message 
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("Customer orders error:", error);
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        orders: [],
+        error: error.message,
+      },
+      { status: 500 },
+    );
   }
 }
-

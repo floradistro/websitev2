@@ -1,7 +1,7 @@
-import { getTheme, tw } from '@/lib/dashboard-theme';
+import { getTheme, tw } from "@/lib/dashboard-theme";
 
-const vendorTheme = getTheme('vendor');
-import { LucideIcon } from 'lucide-react';
+const vendorTheme = getTheme("vendor");
+import { LucideIcon } from "lucide-react";
 
 interface InputProps {
   type?: string;
@@ -15,7 +15,7 @@ interface InputProps {
 }
 
 export function VendorInput({
-  type = 'text',
+  type = "text",
   value,
   onChange,
   placeholder,
@@ -26,11 +26,7 @@ export function VendorInput({
 }: InputProps) {
   return (
     <div className="space-y-2">
-      {label && (
-        <label className={vendorTheme.typography.label}>
-          {label}
-        </label>
-      )}
+      {label && <label className={vendorTheme.typography.label}>{label}</label>}
       <div className="relative">
         {Icon && (
           <Icon
@@ -46,12 +42,11 @@ export function VendorInput({
           disabled={disabled}
           className={tw(
             vendorTheme.components.input,
-            Icon && 'pl-10',
-            className
+            Icon && "pl-10",
+            className,
           )}
         />
       </div>
     </div>
   );
 }
-

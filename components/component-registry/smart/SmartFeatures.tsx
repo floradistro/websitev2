@@ -6,14 +6,14 @@
  * Luxury animated cards with icons + vendor logo
  */
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { 
-  Shield, 
-  Truck, 
-  Award, 
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import {
+  Shield,
+  Truck,
+  Award,
   Sparkles,
   FlaskConical,
   Lock,
@@ -22,9 +22,9 @@ import {
   Clock,
   Package,
   CheckCircle2,
-  Heart
-} from 'lucide-react';
-import { staggerContainer, staggerItem } from '@/lib/animations';
+  Heart,
+} from "lucide-react";
+import { staggerContainer, staggerItem } from "@/lib/animations";
 
 export interface SmartFeaturesProps {
   vendorId: string;
@@ -37,7 +37,7 @@ export interface SmartFeaturesProps {
     title: string;
     description: string;
   }>;
-  layout?: 'grid' | 'carousel';
+  layout?: "grid" | "carousel";
   columns?: 2 | 3 | 4;
   animate?: boolean;
   className?: string;
@@ -46,18 +46,18 @@ export interface SmartFeaturesProps {
 // Icon mapping
 const iconMap: Record<string, React.ComponentType<any>> = {
   shield: Shield,
-  'shield-check': Shield,
+  "shield-check": Shield,
   truck: Truck,
   award: Award,
   sparkles: Sparkles,
   flask: FlaskConical,
-  'flask-conical': FlaskConical,
+  "flask-conical": FlaskConical,
   lock: Lock,
   leaf: Leaf,
   star: Star,
   clock: Clock,
   package: Package,
-  'check-circle': CheckCircle2,
+  "check-circle": CheckCircle2,
   check: CheckCircle2,
   heart: Heart,
 };
@@ -65,44 +65,44 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 // Default features for cannabis/retail
 const defaultFeatures = [
   {
-    icon: 'flask-conical',
-    title: 'LAB TESTED',
-    description: 'Third-party tested for purity and potency'
+    icon: "flask-conical",
+    title: "LAB TESTED",
+    description: "Third-party tested for purity and potency",
   },
   {
-    icon: 'truck',
-    title: 'FAST DELIVERY',
-    description: 'Same-day delivery available'
+    icon: "truck",
+    title: "FAST DELIVERY",
+    description: "Same-day delivery available",
   },
   {
-    icon: 'shield',
-    title: 'DISCREET',
-    description: 'Unmarked, odor-proof packaging'
+    icon: "shield",
+    title: "DISCREET",
+    description: "Unmarked, odor-proof packaging",
   },
   {
-    icon: 'award',
-    title: 'PREMIUM',
-    description: 'Curated selection of top-shelf products'
-  }
+    icon: "award",
+    title: "PREMIUM",
+    description: "Curated selection of top-shelf products",
+  },
 ];
 
 export function SmartFeatures({
   vendorId,
   vendorName,
   vendorLogo,
-  headline = 'WHY CHOOSE US',
+  headline = "WHY CHOOSE US",
   subheadline,
   features = defaultFeatures,
-  layout = 'grid',
+  layout = "grid",
   columns = 4,
   animate = true,
-  className = '',
+  className = "",
 }: SmartFeaturesProps) {
   const [isClient, setIsClient] = useState(false);
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
-    rootMargin: '-50px'
+    rootMargin: "-50px",
   });
 
   useEffect(() => {
@@ -111,13 +111,13 @@ export function SmartFeatures({
 
   // SSR placeholder
   if (!isClient) {
-    return <div className={className} style={{ minHeight: '400px' }} />;
+    return <div className={className} style={{ minHeight: "400px" }} />;
   }
 
   const gridCols = {
-    2: 'grid-cols-1 md:grid-cols-2',
-    3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+    2: "grid-cols-1 md:grid-cols-2",
+    3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+    4: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
   };
 
   return (
@@ -136,22 +136,29 @@ export function SmartFeatures({
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={inView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.2,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="mb-8 flex justify-center"
               >
                 <div className="relative w-20 h-20 md:w-24 md:h-24">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '3s' }} />
-                  <Image 
-                    src={vendorLogo} 
-                    alt={vendorName || 'Vendor'}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse"
+                    style={{ animationDuration: "3s" }}
+                  />
+                  <Image
+                    src={vendorLogo}
+                    alt={vendorName || "Vendor"}
                     fill
                     className="relative object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-500"
                   />
                 </div>
               </motion.div>
             )}
-            
-            <h2 
+
+            <h2
               className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white mb-4"
               style={{ fontWeight: 900 }}
             >
@@ -175,39 +182,39 @@ export function SmartFeatures({
         >
           {features.map((feature, index) => {
             const IconComponent = iconMap[feature.icon.toLowerCase()] || Award;
-            
+
             return (
               <motion.div
                 key={index}
                 variants={animate ? staggerItem : undefined}
-                whileHover={{ 
+                whileHover={{
                   y: -4,
-                  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
+                  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
                 }}
                 className="group relative bg-[#0a0a0a] border border-white/5 hover:border-white/10 rounded-2xl p-6 sm:p-8 transition-all duration-300 hover:bg-[#141414] cursor-default"
               >
                 {/* Glow effect on hover */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity duration-500" />
-                
+
                 <div className="relative z-10">
                   {/* Icon */}
                   <div className="mb-4 sm:mb-6">
                     <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-white/20 group-hover:bg-white/10 transition-all duration-300">
-                      <IconComponent 
-                        className="w-6 h-6 sm:w-7 sm:h-7 text-white" 
+                      <IconComponent
+                        className="w-6 h-6 sm:w-7 sm:h-7 text-white"
                         strokeWidth={2}
                       />
                     </div>
                   </div>
-                  
+
                   {/* Title */}
-                  <h3 
+                  <h3
                     className="text-sm sm:text-base font-black uppercase tracking-[0.15em] text-white mb-2"
                     style={{ fontWeight: 900 }}
                   >
                     {feature.title}
                   </h3>
-                  
+
                   {/* Description */}
                   <p className="text-xs sm:text-sm text-white/60 leading-relaxed">
                     {feature.description}
@@ -221,4 +228,3 @@ export function SmartFeatures({
     </div>
   );
 }
-

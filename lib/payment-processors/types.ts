@@ -7,26 +7,31 @@
 // DATABASE TYPES
 // ============================================================
 
-export type ProcessorType = 'dejavoo' | 'authorize_net' | 'stripe' | 'square' | 'clover';
-export type PaymentEnvironment = 'production' | 'sandbox';
+export type ProcessorType =
+  | "dejavoo"
+  | "authorize_net"
+  | "stripe"
+  | "square"
+  | "clover";
+export type PaymentEnvironment = "production" | "sandbox";
 export type PaymentMethodType =
-  | 'cash'
-  | 'credit'
-  | 'debit'
-  | 'ebt_food'
-  | 'ebt_cash'
-  | 'gift_card'
-  | 'check'
-  | 'ach'
-  | 'mobile_wallet';
+  | "cash"
+  | "credit"
+  | "debit"
+  | "ebt_food"
+  | "ebt_cash"
+  | "gift_card"
+  | "check"
+  | "ach"
+  | "mobile_wallet";
 
 export type TransactionStatus =
-  | 'pending'
-  | 'approved'
-  | 'declined'
-  | 'error'
-  | 'voided'
-  | 'refunded';
+  | "pending"
+  | "approved"
+  | "declined"
+  | "error"
+  | "voided"
+  | "refunded";
 
 export interface PaymentProcessor {
   id: string;
@@ -69,7 +74,7 @@ export interface PaymentProcessor {
   created_at: string;
   updated_at: string;
   last_tested_at?: string;
-  last_test_status?: 'success' | 'failed';
+  last_test_status?: "success" | "failed";
   last_test_error?: string;
 }
 
@@ -134,7 +139,7 @@ export interface PaymentTransaction {
   user_id?: string;
 
   processor_type: ProcessorType;
-  transaction_type: 'sale' | 'return' | 'void' | 'auth' | 'capture' | 'refund';
+  transaction_type: "sale" | "return" | "void" | "auth" | "capture" | "refund";
   payment_method: PaymentMethodType;
 
   amount: number;

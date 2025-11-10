@@ -1,1 +1,8 @@
-function o(n,...t){return n.reduce((e,u,a)=>{var r;let i=(r=t[a])!=null?r:"";return e+u+String(i)},"")}export{o as a};
+function o(n, ...t) {
+  return n.reduce((e, u, a) => {
+    var r;
+    let i = (r = t[a]) != null ? r : "";
+    return e + u + String(i);
+  }, "");
+}
+export { o as a };

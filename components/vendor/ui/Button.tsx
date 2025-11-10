@@ -1,26 +1,26 @@
-import { getTheme, tw } from '@/lib/dashboard-theme';
-import { LucideIcon } from 'lucide-react';
+import { getTheme, tw } from "@/lib/dashboard-theme";
+import { LucideIcon } from "lucide-react";
 
-const vendorTheme = getTheme('vendor');
+const vendorTheme = getTheme("vendor");
 
 interface ButtonProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  variant?: "primary" | "secondary" | "danger" | "ghost";
   icon?: LucideIcon;
   onClick?: () => void;
   disabled?: boolean;
-  type?: 'button' | 'submit' | 'reset';
+  type?: "button" | "submit" | "reset";
   className?: string;
   loading?: boolean;
 }
 
 export function VendorButton({
   children,
-  variant = 'primary',
+  variant = "primary",
   icon: Icon,
   onClick,
   disabled,
-  type = 'button',
+  type = "button",
   className,
   loading,
 }: ButtonProps) {
@@ -32,9 +32,9 @@ export function VendorButton({
       className={tw(
         vendorTheme.components.button.base,
         vendorTheme.components.button[variant],
-        'flex items-center justify-center gap-2',
-        disabled && 'opacity-50 cursor-not-allowed',
-        className
+        "flex items-center justify-center gap-2",
+        disabled && "opacity-50 cursor-not-allowed",
+        className,
       )}
     >
       {loading ? (
@@ -46,4 +46,3 @@ export function VendorButton({
     </button>
   );
 }
-

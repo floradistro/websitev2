@@ -207,9 +207,6 @@ export class DejavooClient {
   ): Promise<T> {
     const url = `${this.baseUrl}/${endpoint}`;
 
-    console.log('🔵 DejaVoo API Request:', {
-      url,
-      payload: JSON.stringify(payload, null, 2)
     });
 
     try {
@@ -226,7 +223,9 @@ export class DejavooClient {
         let errorBody = '';
         try {
           errorBody = await response.text();
-          console.error('🔴 DejaVoo API Error Response:', errorBody);
+          if (process.env.NODE_ENV === 'development') {
+            console.error('🔴 DejaVoo API Error Response:', errorBody);
+          }
         } catch (e) {
           // Ignore
         }
@@ -287,7 +286,9 @@ export class DejavooClient {
 
       return true;
     } catch (error) {
-      console.error('Dejavoo connection test failed:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Dejavoo connection test failed:', error);
+      }
       return false;
     }
   }

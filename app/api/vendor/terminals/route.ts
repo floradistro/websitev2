@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * GET /api/vendor/terminals
@@ -16,46 +16,56 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get user's vendor_id
     const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('vendor_id, role')
-      .eq('id', user.id)
+      .from("users")
+      .select("vendor_id, role")
+      .eq("id", user.id)
       .single();
 
     if (userError || !userData?.vendor_id) {
-      return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
     }
 
     // Get location filter from query
     const { searchParams } = new URL(request.url);
-    const locationId = searchParams.get('location_id');
+    const locationId = searchParams.get("location_id");
 
     // Use the terminal_overview view for comprehensive data
     let query = supabase
-      .from('terminal_overview')
-      .select('*')
-      .eq('vendor_id', userData.vendor_id)
-      .order('location_name', { ascending: true });
+      .from("terminal_overview")
+      .select("*")
+      .eq("vendor_id", userData.vendor_id)
+      .order("location_name", { ascending: true });
 
     if (locationId) {
-      query = query.eq('location_id', locationId);
+      query = query.eq("location_id", locationId);
     }
 
     const { data: terminals, error } = await query;
 
     if (error) {
-      console.error('Error fetching terminals:', error);
-      return NextResponse.json({ error: 'Failed to fetch terminals' }, { status: 500 });
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching terminals:", error);
+      }
+      return NextResponse.json(
+        { error: "Failed to fetch terminals" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({ terminals });
   } catch (error) {
-    console.error('Terminals API error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("Terminals API error:", error);
+    }
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -74,18 +84,18 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get user's vendor_id
     const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('vendor_id, role')
-      .eq('id', user.id)
+      .from("users")
+      .select("vendor_id, role")
+      .eq("id", user.id)
       .single();
 
     if (userError || !userData?.vendor_id) {
-      return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
     }
 
     const body = await request.json();
@@ -93,29 +103,48 @@ export async function POST(request: NextRequest) {
 
     // Handle different actions
     switch (action) {
-      case 'create':
+      case "create":
         return await createTerminal(supabase, userData.vendor_id, terminalData);
 
-      case 'update':
-        return await updateTerminal(supabase, userData.vendor_id, id, terminalData);
+      case "update":
+        return await updateTerminal(
+          supabase,
+          userData.vendor_id,
+          id,
+          terminalData,
+        );
 
-      case 'delete':
+      case "delete":
         return await deleteTerminal(supabase, userData.vendor_id, id);
 
-      case 'activate':
-        return await setTerminalStatus(supabase, userData.vendor_id, id, 'active');
+      case "activate":
+        return await setTerminalStatus(
+          supabase,
+          userData.vendor_id,
+          id,
+          "active",
+        );
 
-      case 'deactivate':
-        return await setTerminalStatus(supabase, userData.vendor_id, id, 'inactive');
+      case "deactivate":
+        return await setTerminalStatus(
+          supabase,
+          userData.vendor_id,
+          id,
+          "inactive",
+        );
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
-    console.error('Terminals API error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Terminals API error:", error);
+    }
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 }
+      {
+        error: error instanceof Error ? error.message : "Internal server error",
+      },
+      { status: 500 },
     );
   }
 }
@@ -128,49 +157,52 @@ async function createTerminal(supabase: any, vendorId: string, data: any) {
   // Validate required fields
   if (!data.location_id || !data.register_name) {
     return NextResponse.json(
-      { error: 'Missing required fields: location_id, register_name' },
-      { status: 400 }
+      { error: "Missing required fields: location_id, register_name" },
+      { status: 400 },
     );
   }
 
   // Verify location belongs to vendor
   const { data: location, error: locationError } = await supabase
-    .from('locations')
-    .select('id, name')
-    .eq('id', data.location_id)
-    .eq('vendor_id', vendorId)
+    .from("locations")
+    .select("id, name")
+    .eq("id", data.location_id)
+    .eq("vendor_id", vendorId)
     .single();
 
   if (locationError || !location) {
-    return NextResponse.json({ error: 'Location not found or access denied' }, { status: 403 });
+    return NextResponse.json(
+      { error: "Location not found or access denied" },
+      { status: 403 },
+    );
   }
 
   // Generate register number if not provided
   if (!data.register_number) {
     const locationCode = location.name
-      .split(' ')
+      .split(" ")
       .map((word: string) => word[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .substring(0, 3);
 
     // Count existing registers for this location
     const { count } = await supabase
-      .from('pos_registers')
-      .select('*', { count: 'exact', head: true })
-      .eq('location_id', data.location_id);
+      .from("pos_registers")
+      .select("*", { count: "exact", head: true })
+      .eq("location_id", data.location_id);
 
-    data.register_number = `REG-${locationCode}-${String((count || 0) + 1).padStart(3, '0')}`;
+    data.register_number = `REG-${locationCode}-${String((count || 0) + 1).padStart(3, "0")}`;
   }
 
   // Get default payment processor for location if not specified
   if (!data.payment_processor_id) {
     const { data: defaultProcessor } = await supabase
-      .from('payment_processors')
-      .select('id')
-      .eq('location_id', data.location_id)
-      .eq('is_default', true)
-      .eq('is_active', true)
+      .from("payment_processors")
+      .select("id")
+      .eq("location_id", data.location_id)
+      .eq("is_default", true)
+      .eq("is_active", true)
       .single();
 
     if (defaultProcessor) {
@@ -185,13 +217,13 @@ async function createTerminal(supabase: any, vendorId: string, data: any) {
     register_number: data.register_number,
     register_name: data.register_name,
     device_name: data.device_name,
-    device_type: data.device_type || 'android_tablet',
+    device_type: data.device_type || "android_tablet",
     payment_processor_id: data.payment_processor_id,
     dejavoo_config_id: data.dejavoo_config_id,
     processor_type: data.processor_type,
     hardware_model: data.hardware_model,
     serial_number: data.serial_number,
-    status: data.status || 'active',
+    status: data.status || "active",
     allow_cash: data.allow_cash ?? true,
     allow_card: data.allow_card ?? true,
     allow_refunds: data.allow_refunds ?? true,
@@ -204,34 +236,53 @@ async function createTerminal(supabase: any, vendorId: string, data: any) {
   };
 
   const { data: terminal, error } = await supabase
-    .from('pos_registers')
+    .from("pos_registers")
     .insert(terminalData)
     .select()
     .single();
 
   if (error) {
-    console.error('Error creating terminal:', error);
-    return NextResponse.json({ error: 'Failed to create terminal' }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error creating terminal:", error);
+    }
+    return NextResponse.json(
+      { error: "Failed to create terminal" },
+      { status: 500 },
+    );
   }
 
-  return NextResponse.json({ terminal, message: 'Terminal created successfully' });
+  return NextResponse.json({
+    terminal,
+    message: "Terminal created successfully",
+  });
 }
 
-async function updateTerminal(supabase: any, vendorId: string, id: string, data: any) {
+async function updateTerminal(
+  supabase: any,
+  vendorId: string,
+  id: string,
+  data: any,
+) {
   if (!id) {
-    return NextResponse.json({ error: 'Terminal ID required' }, { status: 400 });
+    return NextResponse.json(
+      { error: "Terminal ID required" },
+      { status: 400 },
+    );
   }
 
   // Verify terminal belongs to vendor
   const { data: existing, error: checkError } = await supabase
-    .from('pos_registers')
-    .select('id')
-    .eq('id', id)
-    .eq('vendor_id', vendorId)
+    .from("pos_registers")
+    .select("id")
+    .eq("id", id)
+    .eq("vendor_id", vendorId)
     .single();
 
   if (checkError || !existing) {
-    return NextResponse.json({ error: 'Terminal not found or access denied' }, { status: 403 });
+    return NextResponse.json(
+      { error: "Terminal not found or access denied" },
+      { status: 403 },
+    );
   }
 
   // Update terminal
@@ -262,98 +313,141 @@ async function updateTerminal(supabase: any, vendorId: string, id: string, data:
 
   // Remove undefined fields
   Object.keys(updateData).forEach(
-    (key) => updateData[key as keyof typeof updateData] === undefined && delete updateData[key as keyof typeof updateData]
+    (key) =>
+      updateData[key as keyof typeof updateData] === undefined &&
+      delete updateData[key as keyof typeof updateData],
   );
 
   const { data: terminal, error } = await supabase
-    .from('pos_registers')
+    .from("pos_registers")
     .update(updateData)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
   if (error) {
-    console.error('Error updating terminal:', error);
-    return NextResponse.json({ error: 'Failed to update terminal' }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error updating terminal:", error);
+    }
+    return NextResponse.json(
+      { error: "Failed to update terminal" },
+      { status: 500 },
+    );
   }
 
-  return NextResponse.json({ terminal, message: 'Terminal updated successfully' });
+  return NextResponse.json({
+    terminal,
+    message: "Terminal updated successfully",
+  });
 }
 
 async function deleteTerminal(supabase: any, vendorId: string, id: string) {
   if (!id) {
-    return NextResponse.json({ error: 'Terminal ID required' }, { status: 400 });
+    return NextResponse.json(
+      { error: "Terminal ID required" },
+      { status: 400 },
+    );
   }
 
   // Verify terminal belongs to vendor
   const { data: existing, error: checkError } = await supabase
-    .from('pos_registers')
-    .select('id, current_session_id')
-    .eq('id', id)
-    .eq('vendor_id', vendorId)
+    .from("pos_registers")
+    .select("id, current_session_id")
+    .eq("id", id)
+    .eq("vendor_id", vendorId)
     .single();
 
   if (checkError || !existing) {
-    return NextResponse.json({ error: 'Terminal not found or access denied' }, { status: 403 });
+    return NextResponse.json(
+      { error: "Terminal not found or access denied" },
+      { status: 403 },
+    );
   }
 
   // Check if terminal has an active session
   if (existing.current_session_id) {
     return NextResponse.json(
-      { error: 'Cannot delete terminal with active session. Close the session first.' },
-      { status: 400 }
+      {
+        error:
+          "Cannot delete terminal with active session. Close the session first.",
+      },
+      { status: 400 },
     );
   }
 
-  const { error } = await supabase.from('pos_registers').delete().eq('id', id);
+  const { error } = await supabase.from("pos_registers").delete().eq("id", id);
 
   if (error) {
-    console.error('Error deleting terminal:', error);
-    return NextResponse.json({ error: 'Failed to delete terminal' }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error deleting terminal:", error);
+    }
+    return NextResponse.json(
+      { error: "Failed to delete terminal" },
+      { status: 500 },
+    );
   }
 
-  return NextResponse.json({ message: 'Terminal deleted successfully' });
+  return NextResponse.json({ message: "Terminal deleted successfully" });
 }
 
-async function setTerminalStatus(supabase: any, vendorId: string, id: string, status: string) {
+async function setTerminalStatus(
+  supabase: any,
+  vendorId: string,
+  id: string,
+  status: string,
+) {
   if (!id) {
-    return NextResponse.json({ error: 'Terminal ID required' }, { status: 400 });
+    return NextResponse.json(
+      { error: "Terminal ID required" },
+      { status: 400 },
+    );
   }
 
   // Verify terminal belongs to vendor
   const { data: existing, error: checkError } = await supabase
-    .from('pos_registers')
-    .select('id, current_session_id')
-    .eq('id', id)
-    .eq('vendor_id', vendorId)
+    .from("pos_registers")
+    .select("id, current_session_id")
+    .eq("id", id)
+    .eq("vendor_id", vendorId)
     .single();
 
   if (checkError || !existing) {
-    return NextResponse.json({ error: 'Terminal not found or access denied' }, { status: 403 });
+    return NextResponse.json(
+      { error: "Terminal not found or access denied" },
+      { status: 403 },
+    );
   }
 
   // Don't allow deactivation if there's an active session
-  if (status === 'inactive' && existing.current_session_id) {
+  if (status === "inactive" && existing.current_session_id) {
     return NextResponse.json(
-      { error: 'Cannot deactivate terminal with active session. Close the session first.' },
-      { status: 400 }
+      {
+        error:
+          "Cannot deactivate terminal with active session. Close the session first.",
+      },
+      { status: 400 },
     );
   }
 
   const { data: terminal, error } = await supabase
-    .from('pos_registers')
+    .from("pos_registers")
     .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
   if (error) {
-    console.error('Error updating terminal status:', error);
-    return NextResponse.json({ error: 'Failed to update terminal status' }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error updating terminal status:", error);
+    }
+    return NextResponse.json(
+      { error: "Failed to update terminal status" },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({
     terminal,
-    message: `Terminal ${status === 'active' ? 'activated' : 'deactivated'} successfully`,
+    message: `Terminal ${status === "active" ? "activated" : "deactivated"} successfully`,
   });
 }

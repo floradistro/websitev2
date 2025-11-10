@@ -1,6 +1,6 @@
 "use client";
 
-import useSWR from 'swr';
+import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -13,7 +13,7 @@ export function useProduct(productId: string | number) {
       revalidateOnReconnect: false,
       dedupingInterval: 60000, // 1 minute
       fallbackData: null,
-    }
+    },
   );
 
   return {
@@ -34,4 +34,3 @@ export function prefetchProduct(productId: string | number) {
   // This will prime the SWR cache
   fetch(`/api/product/${productId}`);
 }
-

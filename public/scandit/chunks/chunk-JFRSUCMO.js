@@ -1,4 +1,24 @@
-var e={SINGLE_IMAGE_UPLOADER_CONTAINER:"scandit-single-image-uploader-container"},t={SINGLE_IMAGE_UPLOADER_CONTAINER_STYLE:{backgroundColor:"#FFFFFF"},SINGLE_IMAGE_UPLOADER_ICON_STYLE:{fill:"#121619"},SINGLE_IMAGE_UPLOADER_INFORMATION_STYLE:{color:"#121619",marginBottom:"2em"},SINGLE_IMAGE_UPLOADER_BUTTON_STYLE:{color:"#FFFFFF",backgroundColor:"#121619",fontWeight:"bold",padding:"1.25em",width:"12em",textAlign:"center",textTransform:"uppercase"}},E=`
+var e = {
+    SINGLE_IMAGE_UPLOADER_CONTAINER: "scandit-single-image-uploader-container",
+  },
+  t = {
+    SINGLE_IMAGE_UPLOADER_CONTAINER_STYLE: { backgroundColor: "#FFFFFF" },
+    SINGLE_IMAGE_UPLOADER_ICON_STYLE: { fill: "#121619" },
+    SINGLE_IMAGE_UPLOADER_INFORMATION_STYLE: {
+      color: "#121619",
+      marginBottom: "2em",
+    },
+    SINGLE_IMAGE_UPLOADER_BUTTON_STYLE: {
+      color: "#FFFFFF",
+      backgroundColor: "#121619",
+      fontWeight: "bold",
+      padding: "1.25em",
+      width: "12em",
+      textAlign: "center",
+      textTransform: "uppercase",
+    },
+  },
+  E = `
   .${e.SINGLE_IMAGE_UPLOADER_CONTAINER} {
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
     display: flex;
@@ -28,4 +48,5 @@ var e={SINGLE_IMAGE_UPLOADER_CONTAINER:"scandit-single-image-uploader-container"
   .${e.SINGLE_IMAGE_UPLOADER_CONTAINER} label input[type="file"]:disabled + div {
     opacity: 0.5;
   }
-`;export{e as a,t as b,E as c};
+`;
+export { e as a, t as b, E as c };

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getRecentDeployments } from '@/lib/deployment/vercel';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getRecentDeployments } from "@/lib/deployment/vercel";
+import { requireVendor } from "@/lib/auth/middleware";
 
 /**
  * GET /api/vendor/website/vercel-deployments
@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
 
     if (!vercelProjectId) {
       return NextResponse.json(
-        { error: 'Vercel project not configured' },
-        { status: 500 }
+        { error: "Vercel project not configured" },
+        { status: 500 },
       );
     }
 
@@ -32,13 +32,14 @@ export async function GET(request: NextRequest) {
       deployments: deployments.deployments || [],
     });
   } catch (error: any) {
-    console.error('Error fetching Vercel deployments:', error);
-
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error fetching Vercel deployments:", error);
+    }
     return NextResponse.json(
       {
-        error: error.message || 'Failed to fetch deployments',
+        error: error.message || "Failed to fetch deployments",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

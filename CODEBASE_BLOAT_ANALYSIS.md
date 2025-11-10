@@ -12,6 +12,7 @@
 Your codebase has **significant but manageable bloat**, estimated at **15-25% redundant code**. The good news: most of it is safe to remove with proper verification.
 
 ### Key Findings:
+
 - ✅ **244 lines** of explicitly deprecated auth code ready for deletion
 - ⚠️ **5 duplicate Button components** across different directories (~500 lines)
 - ⚠️ **23 product API endpoints** with overlapping functionality
@@ -20,6 +21,7 @@ Your codebase has **significant but manageable bloat**, estimated at **15-25% re
 - ⚠️ **6 files over 1,000 lines** that need refactoring
 
 ### Impact:
+
 - **Immediately removable:** ~500 lines
 - **Short-term cleanup:** ~3,500 lines
 - **Refactoring opportunity:** ~7,500 lines
@@ -45,6 +47,7 @@ Your codebase has **significant but manageable bloat**, estimated at **15-25% re
 **Action:** Delete this file after verifying no imports remain.
 
 **Verification command:**
+
 ```bash
 grep -r "VendorAuthContext" app/ lib/ components/ --include="*.tsx" --include="*.ts"
 ```
@@ -59,17 +62,18 @@ grep -r "VendorAuthContext" app/ lib/ components/ --include="*.tsx" --include="*
 **Lines:** ~500 total
 **Confidence:** HIGH
 
-| File | Lines | Purpose | Keep? |
-|------|-------|---------|-------|
-| `/components/ui/Button.tsx` | 137 | POS-style primary | ✅ YES |
-| `/components/ds/Button.tsx` | 130 | Design system | ⚠️ MAYBE |
-| `/components/vendor/ui/Button.tsx` | 50 | Vendor theme | ⚠️ MAYBE |
-| `/components/ui/dashboard/Button.tsx` | ~100 | Dashboard | ❌ DUPLICATE |
-| `/components/component-registry/atomic/Button.tsx` | ~80 | Registry | ❌ DUPLICATE |
+| File                                               | Lines | Purpose           | Keep?        |
+| -------------------------------------------------- | ----- | ----------------- | ------------ |
+| `/components/ui/Button.tsx`                        | 137   | POS-style primary | ✅ YES       |
+| `/components/ds/Button.tsx`                        | 130   | Design system     | ⚠️ MAYBE     |
+| `/components/vendor/ui/Button.tsx`                 | 50    | Vendor theme      | ⚠️ MAYBE     |
+| `/components/ui/dashboard/Button.tsx`              | ~100  | Dashboard         | ❌ DUPLICATE |
+| `/components/component-registry/atomic/Button.tsx` | ~80   | Registry          | ❌ DUPLICATE |
 
 **Root Cause:** Three different design systems (ui/, ds/, vendor/ui/) creating fragmentation.
 
 **Recommendation:**
+
 1. Audit which Button is actually used in production
 2. Keep 1-2 variants maximum (base + themed wrapper)
 3. Consolidate others into the primary implementation
@@ -84,12 +88,12 @@ grep -r "VendorAuthContext" app/ lib/ components/ --include="*.tsx" --include="*
 **Lines:** ~400 total
 **Confidence:** HIGH
 
-| File | Lines | Used In |
-|------|-------|---------|
-| `/components/ui/Card.tsx` | ~100 | General UI |
-| `/components/ds/Card.tsx` | ~90 | Design system |
-| `/components/vendor/ui/Card.tsx` | ~80 | Vendor pages |
-| `/components/ui/dashboard/Card.tsx` | ~120 | Dashboard |
+| File                                | Lines | Used In       |
+| ----------------------------------- | ----- | ------------- |
+| `/components/ui/Card.tsx`           | ~100  | General UI    |
+| `/components/ds/Card.tsx`           | ~90   | Design system |
+| `/components/vendor/ui/Card.tsx`    | ~80   | Vendor pages  |
+| `/components/ui/dashboard/Card.tsx` | ~120  | Dashboard     |
 
 **Same issue as Button** - design system fragmentation.
 
@@ -131,6 +135,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=  # 0 references
 ```
 
 **Keep these (actively used):**
+
 ```bash
 # ✅ KEEP - Actively used
 REMOVE_BG_API_KEY=         # Used in 5 media endpoints
@@ -152,25 +157,27 @@ EXASEARCH_API_KEY=         # Used for AI research
 
 These endpoints contain migration SQL and diagnostic code that shouldn't be exposed in production:
 
-| Endpoint | Lines | Purpose | Action |
-|----------|-------|---------|--------|
-| `test-session-counter/` | 164 | Test POS function | Move to /scripts/ |
-| `fix-session-function/` | 154 | One-time DB fix | Move to /scripts/ |
-| `diagnose-rls/` | 243 | RLS debugging | Move to /scripts/ |
-| `run-migration/` | ~250 | Generic migrator | Move to /scripts/ |
-| `run-session-migration/` | ~250 | Session migration | Move to /scripts/ |
-| `run-wholesale-migration/` | ~215 | Wholesale migration | Move to /scripts/ |
-| `create-strain-products/` | 163 | Seed test data | Move to /scripts/ |
-| `migrate-theme/` | ~300 | Theme migration | Move to /scripts/ |
-| `create-vendor-supabase/` | ~465 | Vendor setup | Move to /scripts/ |
-| `check-tables/` | ~100 | Table verification | Move to /scripts/ |
+| Endpoint                   | Lines | Purpose             | Action            |
+| -------------------------- | ----- | ------------------- | ----------------- |
+| `test-session-counter/`    | 164   | Test POS function   | Move to /scripts/ |
+| `fix-session-function/`    | 154   | One-time DB fix     | Move to /scripts/ |
+| `diagnose-rls/`            | 243   | RLS debugging       | Move to /scripts/ |
+| `run-migration/`           | ~250  | Generic migrator    | Move to /scripts/ |
+| `run-session-migration/`   | ~250  | Session migration   | Move to /scripts/ |
+| `run-wholesale-migration/` | ~215  | Wholesale migration | Move to /scripts/ |
+| `create-strain-products/`  | 163   | Seed test data      | Move to /scripts/ |
+| `migrate-theme/`           | ~300  | Theme migration     | Move to /scripts/ |
+| `create-vendor-supabase/`  | ~465  | Vendor setup        | Move to /scripts/ |
+| `check-tables/`            | ~100  | Table verification  | Move to /scripts/ |
 
 **Why move them?**
+
 - Security: Migration endpoints shouldn't be exposed in production
 - Clarity: These are maintenance tools, not user-facing features
 - Organization: Better suited for `/scripts/` or `/tools/` directory
 
 **Action:**
+
 1. Verify these aren't called from the app
 2. Move to `/scripts/admin-tools/` directory
 3. Remove from `/app/api/admin/`
@@ -186,6 +193,7 @@ These endpoints contain migration SQL and diagnostic code that shouldn't be expo
 You have **23 different product-related API endpoints**. Many appear to have overlapping functionality:
 
 **General Product Endpoints:**
+
 - `/api/products` - General products listing
 - `/api/product` - Single product? ⚠️ Duplicate of above?
 - `/api/product-detail/[id]` - Product detail ⚠️ Duplicate?
@@ -193,6 +201,7 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 - `/api/products-cache` - Cached products (OK - cache layer)
 
 **Role-Specific Endpoints:**
+
 - `/api/admin/products` - Admin product management
 - `/api/vendor/products` - Vendor products
 - `/api/pos/products` - POS products
@@ -200,6 +209,7 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 - `/api/tv-display/products` - TV display products
 
 **Specialized Endpoints:**
+
 - `/api/bulk/products` - Bulk operations
 - `/api/vendor/product-fields` - Custom fields
 - `/api/vendor/product-pricing` - Pricing
@@ -210,6 +220,7 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 - `/api/admin/create-strain-products` - ⚠️ Seed data (one-time use)
 
 **SSR/Meta Endpoints:**
+
 - `/api/page-data/products` - SSR data
 - `/api/page-data/product/[id]` - SSR detail
 - `/api/page-data/vendor-products` - Vendor SSR
@@ -217,6 +228,7 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 - `/api/tv-menu/low-stock-products` - Low stock
 
 **Questions to answer:**
+
 1. What's the difference between `/api/products`, `/api/product`, and `/api/product-detail/[id]`?
 2. Why separate `/api/products-supabase` endpoint?
 3. Are all role-specific endpoints necessary or could they use the same endpoint with different permissions?
@@ -231,9 +243,11 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 **File 2:** `/lib/hooks/useDebounce.ts` (65 lines - enhanced with useDebouncedSearch)
 
 **Usage:** Only 1 file imports this hook:
+
 - `/app/vendor/products/components/ProductsFilters.tsx`
 
 **Action:**
+
 1. Keep `/lib/hooks/useDebounce.ts` (more complete)
 2. Delete `/hooks/useDebounce.ts`
 3. Update the single import if needed
@@ -250,22 +264,24 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 **Total Lines:** ~7,500
 **Confidence:** HIGH - Should be refactored
 
-| File | Lines | Issue |
-|------|-------|-------|
-| `/app/tv-display/page.tsx` | 1,732 | Monolithic TV display page |
-| `/components/vendor/ComponentInstanceEditor.tsx` | 1,378 | Complex editor component |
-| `/app/vendor/tv-menus/page.tsx` | 1,371 | Monolithic TV menu page |
-| `/app/vendor/lab-results/page.tsx` | 1,088 | Monolithic lab results page |
-| `/lib/themes.ts` | 1,029 | Huge theme config |
-| `/components/component-registry/pos/POSProductGrid.tsx` | 1,010 | Complex product grid |
+| File                                                    | Lines | Issue                       |
+| ------------------------------------------------------- | ----- | --------------------------- |
+| `/app/tv-display/page.tsx`                              | 1,732 | Monolithic TV display page  |
+| `/components/vendor/ComponentInstanceEditor.tsx`        | 1,378 | Complex editor component    |
+| `/app/vendor/tv-menus/page.tsx`                         | 1,371 | Monolithic TV menu page     |
+| `/app/vendor/lab-results/page.tsx`                      | 1,088 | Monolithic lab results page |
+| `/lib/themes.ts`                                        | 1,029 | Huge theme config           |
+| `/components/component-registry/pos/POSProductGrid.tsx` | 1,010 | Complex product grid        |
 
 **Why this matters:**
+
 - Hard to maintain
 - Hard to test
 - Hard to review in PRs
 - Increases cognitive load
 
 **Recommendation:**
+
 1. Split pages into smaller components
 2. Extract theme config to JSON files
 3. Break down complex components into composable parts
@@ -280,19 +296,22 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 **Confidence:** HIGH
 
 **Top offenders:**
+
 - `/app/tv-display/page.tsx` - 34 console calls
 - `/app/pos/register/page.tsx` - 57 console calls
 - `/app/vendor/tv-menus/page.tsx` - 19 console calls
 
 **Why this matters:**
+
 - Leaks internal state to browser console
 - No log levels (can't filter production logs)
 - Can't disable in production
 - Security risk (might log sensitive data)
 
 **Recommendation:**
+
 1. Create proper logging utility (or use library like `pino`)
-2. Replace all console.* calls
+2. Replace all console.\* calls
 3. Add log levels (debug, info, warn, error)
 4. Disable debug logs in production
 
@@ -304,11 +323,13 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 **Confidence:** MEDIUM
 
 **Top offenders:**
+
 - `/app/tv-display/page.tsx` - 136 comment blocks
 - `/app/pos/register/page.tsx` - 57 comment blocks
 - `/app/vendor/tv-menus/page.tsx` - 52 comment blocks
 
 **Why this matters:**
+
 - Creates confusion (is this code needed or not?)
 - Increases file size
 - Makes code harder to read
@@ -324,6 +345,7 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 **Confidence:** HIGH - Indicates technical debt
 
 **Examples found:**
+
 ```typescript
 // TODO: Implement proper error handling
 // FIXME: This is a temporary hack
@@ -331,11 +353,13 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 ```
 
 **Why this matters:**
+
 - Indicates incomplete features
 - Technical debt tracking
 - Areas that need attention
 
 **Recommendation:**
+
 1. Extract all TODOs into GitHub issues
 2. Prioritize and schedule fixes
 3. Remove TODO comments after creating issues
@@ -352,6 +376,7 @@ You have **23 different product-related API endpoints**. Many appear to have ove
 **Confidence:** 100% - Safe to delete
 
 Contains temporary deployment docs from October 2025:
+
 - DEPLOYMENT_IN_PROGRESS.md
 - READY_TO_DEPLOY.md
 - DEPLOYMENT_STATUS.md
@@ -381,16 +406,17 @@ Directory exists but contains no route.ts file.
 **Lines:** ~1,046 total
 **Confidence:** MEDIUM - Needs verification
 
-| File | Lines | Purpose | Status |
-|------|-------|---------|--------|
-| `/context/AuthContext.tsx` | ~169 | Customer auth (localStorage) | Active |
-| `/context/VendorAuthContext.tsx` | ~244 | Vendor auth (legacy) | ✅ DEPRECATED |
-| `/context/AdminAuthContext.tsx` | ~177 | Admin auth (Supabase) | Active |
-| `/context/AppAuthContext.tsx` | ~456 | Unified app auth (newer) | Active |
+| File                             | Lines | Purpose                      | Status        |
+| -------------------------------- | ----- | ---------------------------- | ------------- |
+| `/context/AuthContext.tsx`       | ~169  | Customer auth (localStorage) | Active        |
+| `/context/VendorAuthContext.tsx` | ~244  | Vendor auth (legacy)         | ✅ DEPRECATED |
+| `/context/AdminAuthContext.tsx`  | ~177  | Admin auth (Supabase)        | Active        |
+| `/context/AppAuthContext.tsx`    | ~456  | Unified app auth (newer)     | Active        |
 
 **Issue:** Having 4 auth contexts suggests incomplete migration to unified auth.
 
 **Recommendation:**
+
 1. Complete migration to AppAuthContext
 2. Remove deprecated VendorAuthContext (already marked)
 3. Consolidate remaining contexts if possible
@@ -403,16 +429,17 @@ Directory exists but contains no route.ts file.
 **Total Lines:** ~2,000+
 **Confidence:** MEDIUM
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `/lib/theme.ts` | ~200 | Base theme |
-| `/lib/themes.ts` | 1,029 | **HUGE** theme config |
-| `/lib/dashboard-theme.ts` | ~300 | Dashboard theme |
-| `/lib/design-system.ts` | ~500 | Design system theme |
+| File                      | Lines | Purpose               |
+| ------------------------- | ----- | --------------------- |
+| `/lib/theme.ts`           | ~200  | Base theme            |
+| `/lib/themes.ts`          | 1,029 | **HUGE** theme config |
+| `/lib/dashboard-theme.ts` | ~300  | Dashboard theme       |
+| `/lib/design-system.ts`   | ~500  | Design system theme   |
 
 **Issue:** Theme management is fragmented across multiple files.
 
 **Recommendation:**
+
 1. Consolidate theme definitions
 2. Move large theme objects to JSON
 3. Create single source of truth for theming
@@ -423,33 +450,35 @@ Directory exists but contains no route.ts file.
 
 ### Estimated Removable Code
 
-| Category | Files | Lines | Confidence |
-|----------|-------|-------|------------|
-| Deprecated Auth | 1 | 244 | HIGH ✅ |
-| Duplicate Hooks | 1 | 24 | HIGH ✅ |
-| Archive Files | 7 | ~500 | HIGH ✅ |
-| Empty Directories | 1 | 0 | HIGH ✅ |
-| Duplicate Components | 8 | ~1,000 | MEDIUM ⚠️ |
-| Diagnostic Endpoints | 11 | ~1,500 | MEDIUM ⚠️ |
-| **TOTAL IMMEDIATE** | **29** | **~3,268** | |
+| Category             | Files  | Lines      | Confidence |
+| -------------------- | ------ | ---------- | ---------- |
+| Deprecated Auth      | 1      | 244        | HIGH ✅    |
+| Duplicate Hooks      | 1      | 24         | HIGH ✅    |
+| Archive Files        | 7      | ~500       | HIGH ✅    |
+| Empty Directories    | 1      | 0          | HIGH ✅    |
+| Duplicate Components | 8      | ~1,000     | MEDIUM ⚠️  |
+| Diagnostic Endpoints | 11     | ~1,500     | MEDIUM ⚠️  |
+| **TOTAL IMMEDIATE**  | **29** | **~3,268** |            |
 
 ### Estimated Refactorable Code
 
-| Category | Files | Lines | Impact |
-|----------|-------|-------|--------|
-| Large Files | 6 | ~7,500 | Maintainability |
-| Console Logs | 20+ | - | Security/Quality |
-| Commented Code | 30 | ~500 | Readability |
-| TODO Comments | 569 | - | Tech Debt |
+| Category       | Files | Lines  | Impact           |
+| -------------- | ----- | ------ | ---------------- |
+| Large Files    | 6     | ~7,500 | Maintainability  |
+| Console Logs   | 20+   | -      | Security/Quality |
+| Commented Code | 30    | ~500   | Readability      |
+| TODO Comments  | 569   | -      | Tech Debt        |
 
 ### Bundle Size Impact
 
 **Current state:**
+
 - node_modules: 924MB
 - Build size: 102MB
 - Total TS/TSX files: 897
 
 **After cleanup:**
+
 - Estimated reduction: 5-10% bundle size
 - Removable files: 30-40
 - Consolidatable components: 15-20
@@ -465,6 +494,7 @@ Directory exists but contains no route.ts file.
 **Impact:** HIGH
 
 1. **Delete deprecated VendorAuthContext**
+
    ```bash
    # Verify no usage
    grep -r "VendorAuthContext" app/ lib/ components/
@@ -473,16 +503,19 @@ Directory exists but contains no route.ts file.
    ```
 
 2. **Remove duplicate useDebounce hook**
+
    ```bash
    rm hooks/useDebounce.ts
    ```
 
 3. **Delete archive directory**
+
    ```bash
    rm -rf .cursor/archive/
    ```
 
 4. **Delete empty directory**
+
    ```bash
    rm -rf app/api/admin/migrate-to-custom-fields/
    ```
@@ -579,6 +612,7 @@ Directory exists but contains no route.ts file.
     ```bash
     npx depcheck
     ```
+
     - Remove unused dependencies
 
 **Expected Impact:** Simpler architecture, easier to understand
@@ -614,6 +648,7 @@ Even though something appears unused, ALWAYS verify:
 ### Test After Each Phase
 
 After each cleanup phase:
+
 1. Run `npm run build` ✅
 2. Run dev server ✅
 3. Test critical user flows ✅
@@ -623,6 +658,7 @@ After each cleanup phase:
 ### Create Backup Branch
 
 Before starting ANY cleanup:
+
 ```bash
 git checkout -b cleanup-bloat-2025-11-09
 git push -u origin cleanup-bloat-2025-11-09
@@ -635,6 +671,7 @@ If anything breaks, you can always revert.
 ## 📈 METRICS
 
 ### Current State
+
 - **Total TS/TSX files:** 897
 - **Total API routes:** 283
 - **Total components:** 206
@@ -643,6 +680,7 @@ If anything breaks, you can always revert.
 - **Build size:** 102MB
 
 ### Target State (After All Phases)
+
 - **Total TS/TSX files:** ~850-870 (-30 to -50 files)
 - **Total API routes:** ~270 (-13 diagnostic endpoints)
 - **Total components:** ~190 (-16 duplicates)
@@ -666,17 +704,20 @@ From the previous cleanup attempt that failed:
 ## 💡 RECOMMENDATIONS
 
 ### Priority Order
+
 1. Start with Phase 1 (safe deletions)
 2. Monitor for 1-2 days
 3. Proceed to Phase 2 if no issues
 4. Phase 3 & 4 can be done incrementally
 
 ### Team Involvement
+
 - Get approval for Phase 2+ before proceeding
 - Share this document with the team
 - Create GitHub issues for tracking
 
 ### Documentation
+
 - Document what was deleted and why
 - Update README with cleanup results
 - Keep this analysis for future reference
@@ -718,6 +759,7 @@ Your codebase has **manageable bloat** that can be cleaned up systematically. Th
 - **15-20%** overall code reduction potential
 
 **Next Steps:**
+
 1. Review this document with your team
 2. Get approval for Phase 1 deletions
 3. Create git branch for cleanup

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
 
 /**
  * Get vendor reviews from real database
@@ -16,8 +16,9 @@ export async function GET(request: NextRequest) {
 
     // Fetch real reviews from database
     const { data: reviews, error } = await supabase
-      .from('reviews')
-      .select(`
+      .from("reviews")
+      .select(
+        `
         id,
         product_id,
         rating,
@@ -29,13 +30,16 @@ export async function GET(request: NextRequest) {
         response_date,
         product:products!inner(id, name, vendor_id),
         customer:customers(id, first_name, last_name)
-      `)
-      .eq('products.vendor_id', vendorId)
-      .order('created_at', { ascending: false })
+      `,
+      )
+      .eq("products.vendor_id", vendorId)
+      .order("created_at", { ascending: false })
       .limit(100);
 
     if (error) {
-      console.error('Error fetching reviews:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching reviews:", error);
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -43,28 +47,29 @@ export async function GET(request: NextRequest) {
     const mappedReviews = (reviews || []).map((r: any) => ({
       id: r.id,
       productId: r.product_id,
-      productName: r.product?.name || 'Unknown Product',
-      customerName: r.customer 
+      productName: r.product?.name || "Unknown Product",
+      customerName: r.customer
         ? `${r.customer.first_name} ${r.customer.last_name}`
-        : 'Anonymous',
+        : "Anonymous",
       rating: r.rating,
       date: r.created_at,
-      comment: r.comment || '',
+      comment: r.comment || "",
       verified: r.verified_purchase || false,
       response: r.response || undefined,
-      responseDate: r.response_date || undefined
+      responseDate: r.response_date || undefined,
     }));
 
     return NextResponse.json({
       success: true,
-      reviews: mappedReviews
+      reviews: mappedReviews,
     });
-
   } catch (error: any) {
-    console.error('Reviews API error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Reviews API error:", error);
+    }
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch reviews' },
-      { status: 500 }
+      { error: error.message || "Failed to fetch reviews" },
+      { status: 500 },
     );
   }
 }
@@ -83,8 +88,8 @@ export async function POST(request: NextRequest) {
 
     if (!reviewId || !response) {
       return NextResponse.json(
-        { error: 'Review ID and response required' },
-        { status: 400 }
+        { error: "Review ID and response required" },
+        { status: 400 },
       );
     }
 
@@ -92,31 +97,33 @@ export async function POST(request: NextRequest) {
 
     // Update review with vendor response
     const { data: review, error } = await supabase
-      .from('reviews')
+      .from("reviews")
       .update({
         response,
-        response_date: new Date().toISOString()
+        response_date: new Date().toISOString(),
       })
-      .eq('id', reviewId)
+      .eq("id", reviewId)
       .select()
       .single();
 
     if (error) {
-      console.error('Error updating review:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error updating review:", error);
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
-      review
+      review,
     });
-
   } catch (error: any) {
-    console.error('Review response error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Review response error:", error);
+    }
     return NextResponse.json(
-      { error: error.message || 'Failed to submit response' },
-      { status: 500 }
+      { error: error.message || "Failed to submit response" },
+      { status: 500 },
     );
   }
 }
-

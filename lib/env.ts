@@ -13,7 +13,7 @@ const requiredEnvVars = {
 
 // Optional environment variables with defaults
 const optionalEnvVars = {
-  NODE_ENV: process.env.NODE_ENV || 'development',
+  NODE_ENV: process.env.NODE_ENV || "development",
   VERCEL_URL: process.env.VERCEL_URL,
   ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
   OPENAI_API_KEY: process.env.OPENAI_API_KEY,
@@ -40,13 +40,13 @@ function validateRequiredEnvVars() {
 
   if (missing.length > 0) {
     throw new Error(
-      `Missing required environment variables:\n${missing.map(v => `  - ${v}`).join('\n')}\n\nPlease check your .env.local file.`
+      `Missing required environment variables:\n${missing.map((v) => `  - ${v}`).join("\n")}\n\nPlease check your .env.local file.`,
     );
   }
 }
 
 // Run validation on import (fails fast at startup)
-if (typeof window === 'undefined') {
+if (typeof window === "undefined") {
   // Only validate on server-side
   validateRequiredEnvVars();
 }
@@ -87,8 +87,8 @@ export const env = {
   app: {
     nodeEnv: optionalEnvVars.NODE_ENV,
     vercelUrl: optionalEnvVars.VERCEL_URL,
-    isProd: optionalEnvVars.NODE_ENV === 'production',
-    isDev: optionalEnvVars.NODE_ENV === 'development',
+    isProd: optionalEnvVars.NODE_ENV === "production",
+    isDev: optionalEnvVars.NODE_ENV === "development",
   },
 } as const;
 

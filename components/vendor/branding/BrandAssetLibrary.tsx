@@ -1,9 +1,16 @@
 "use client";
 
-import { useState } from 'react';
-import { Upload, Image as ImageIcon, Trash2, Download, Copy, Check } from 'lucide-react';
-import { ds, cn } from '@/lib/design-system';
-import type { AssetVariant } from '@/types/branding';
+import { useState } from "react";
+import {
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+  Download,
+  Copy,
+  Check,
+} from "lucide-react";
+import { ds, cn } from "@/lib/design-system";
+import type { AssetVariant } from "@/types/branding";
 
 interface BrandAssetLibraryProps {
   vendorId: string;
@@ -17,27 +24,27 @@ interface BrandAssetLibraryProps {
  */
 export function BrandAssetLibrary({
   vendorId,
-  onAssetSelect
+  onAssetSelect,
 }: BrandAssetLibraryProps) {
   const [assets, setAssets] = useState<AssetVariant[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<AssetVariant | null>(null);
   const [uploading, setUploading] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
-  const handleUpload = async (file: File, type: AssetVariant['type']) => {
+  const handleUpload = async (file: File, type: AssetVariant["type"]) => {
     setUploading(true);
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', type);
+      formData.append("file", file);
+      formData.append("type", type);
 
-      const response = await fetch('/api/supabase/vendor/upload', {
-        method: 'POST',
-        headers: { 'x-vendor-id': vendorId },
-        body: formData
+      const response = await fetch("/api/supabase/vendor/upload", {
+        method: "POST",
+        headers: { "x-vendor-id": vendorId },
+        body: formData,
       });
 
-      if (!response.ok) throw new Error('Upload failed');
+      if (!response.ok) throw new Error("Upload failed");
 
       const data = await response.json();
 
@@ -49,21 +56,23 @@ export function BrandAssetLibrary({
         width: undefined,
         height: undefined,
         fileSize: data.file.size,
-        uploadedAt: new Date().toISOString()
+        uploadedAt: new Date().toISOString(),
       };
 
-      setAssets(prev => [...prev, newAsset]);
+      setAssets((prev) => [...prev, newAsset]);
     } catch (err) {
-      console.error('Upload failed:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Upload failed:", err);
+      }
     } finally {
       setUploading(false);
     }
   };
 
   const handleDelete = async (assetId: string) => {
-    if (!confirm('Are you sure you want to delete this asset?')) return;
+    if (!confirm("Are you sure you want to delete this asset?")) return;
 
-    setAssets(prev => prev.filter(a => a.id !== assetId));
+    setAssets((prev) => prev.filter((a) => a.id !== assetId));
     if (selectedAsset?.id === assetId) {
       setSelectedAsset(null);
     }
@@ -75,68 +84,69 @@ export function BrandAssetLibrary({
       setCopiedUrl(url);
       setTimeout(() => setCopiedUrl(null), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to copy:", err);
+      }
     }
   };
 
   const handleDownload = (asset: AssetVariant) => {
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = asset.url;
     link.download = asset.name;
     link.click();
   };
 
   const formatFileSize = (bytes: number = 0): string => {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) return "0 B";
     const k = 1024;
-    const sizes = ['B', 'KB', 'MB'];
+    const sizes = ["B", "KB", "MB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   };
 
   const groupedAssets = {
-    logos: assets.filter(a => a.type === 'logo'),
-    banners: assets.filter(a => a.type === 'banner'),
-    icons: assets.filter(a => a.type === 'icon'),
-    patterns: assets.filter(a => a.type === 'pattern')
+    logos: assets.filter((a) => a.type === "logo"),
+    banners: assets.filter((a) => a.type === "banner"),
+    icons: assets.filter((a) => a.type === "icon"),
+    patterns: assets.filter((a) => a.type === "pattern"),
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h3 className={cn(
-          ds.typography.size.sm,
-          ds.typography.weight.medium,
-          ds.colors.text.secondary,
-          'mb-2'
-        )}>
+        <h3
+          className={cn(
+            ds.typography.size.sm,
+            ds.typography.weight.medium,
+            ds.colors.text.secondary,
+            "mb-2",
+          )}
+        >
           Brand Asset Library
         </h3>
-        <p className={cn(
-          ds.typography.size.xs,
-          ds.colors.text.quaternary
-        )}>
+        <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
           Upload and manage all your brand assets in one place
         </p>
       </div>
 
       {/* Upload zones */}
       <div className="grid grid-cols-2 gap-4">
-        {(['logo', 'banner', 'icon', 'pattern'] as const).map((type) => (
+        {(["logo", "banner", "icon", "pattern"] as const).map((type) => (
           <label
             key={type}
             className={cn(
-              'relative',
-              'border-2 border-dashed',
+              "relative",
+              "border-2 border-dashed",
               ds.colors.border.default,
-              'hover:border-white/20',
+              "hover:border-white/20",
               ds.effects.radius.lg,
-              'p-4',
-              'text-center',
-              'cursor-pointer',
+              "p-4",
+              "text-center",
+              "cursor-pointer",
               ds.effects.transition.normal,
-              uploading && 'opacity-50 pointer-events-none'
+              uploading && "opacity-50 pointer-events-none",
             )}
           >
             <input
@@ -150,19 +160,26 @@ export function BrandAssetLibrary({
               disabled={uploading}
             />
 
-            <Upload size={24} className={cn(ds.colors.text.quaternary, 'mx-auto mb-2')} />
-            <div className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              'capitalize',
-              'mb-1'
-            )}>
+            <Upload
+              size={24}
+              className={cn(ds.colors.text.quaternary, "mx-auto mb-2")}
+            />
+            <div
+              className={cn(
+                ds.typography.size.xs,
+                ds.colors.text.tertiary,
+                "capitalize",
+                "mb-1",
+              )}
+            >
               {type}
             </div>
-            <div className={cn(
-              ds.typography.size.micro,
-              ds.colors.text.quaternary
-            )}>
+            <div
+              className={cn(
+                ds.typography.size.micro,
+                ds.colors.text.quaternary,
+              )}
+            >
               Click to upload
             </div>
           </label>
@@ -175,13 +192,15 @@ export function BrandAssetLibrary({
 
         return (
           <div key={group}>
-            <h4 className={cn(
-              ds.typography.size.xs,
-              ds.typography.weight.medium,
-              'capitalize',
-              ds.colors.text.tertiary,
-              'mb-3'
-            )}>
+            <h4
+              className={cn(
+                ds.typography.size.xs,
+                ds.typography.weight.medium,
+                "capitalize",
+                ds.colors.text.tertiary,
+                "mb-3",
+              )}
+            >
               {group} ({groupAssets.length})
             </h4>
 
@@ -190,16 +209,16 @@ export function BrandAssetLibrary({
                 <div
                   key={asset.id}
                   className={cn(
-                    'relative group',
-                    'border',
+                    "relative group",
+                    "border",
                     selectedAsset?.id === asset.id
-                      ? 'border-white/30'
+                      ? "border-white/30"
                       : ds.colors.border.default,
                     ds.effects.radius.lg,
-                    'overflow-hidden',
-                    'cursor-pointer',
+                    "overflow-hidden",
+                    "cursor-pointer",
                     ds.effects.transition.normal,
-                    'hover:border-white/20'
+                    "hover:border-white/20",
                   )}
                   onClick={() => {
                     setSelectedAsset(asset);
@@ -207,12 +226,14 @@ export function BrandAssetLibrary({
                   }}
                 >
                   {/* Image */}
-                  <div className={cn(
-                    'aspect-square',
-                    'bg-white/5',
-                    'flex items-center justify-center',
-                    'overflow-hidden'
-                  )}>
+                  <div
+                    className={cn(
+                      "aspect-square",
+                      "bg-white/5",
+                      "flex items-center justify-center",
+                      "overflow-hidden",
+                    )}
+                  >
                     {asset.url ? (
                       <img
                         src={asset.url}
@@ -220,40 +241,51 @@ export function BrandAssetLibrary({
                         className="w-full h-full object-contain p-2"
                       />
                     ) : (
-                      <ImageIcon size={32} className={ds.colors.text.quaternary} />
+                      <ImageIcon
+                        size={32}
+                        className={ds.colors.text.quaternary}
+                      />
                     )}
                   </div>
 
                   {/* Info */}
-                  <div className={cn(
-                    'p-2',
-                    ds.colors.bg.elevated,
-                    'border-t',
-                    ds.colors.border.default
-                  )}>
-                    <div className={cn(
-                      ds.typography.size.micro,
-                      ds.colors.text.tertiary,
-                      'truncate mb-1'
-                    )}>
+                  <div
+                    className={cn(
+                      "p-2",
+                      ds.colors.bg.elevated,
+                      "border-t",
+                      ds.colors.border.default,
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        ds.typography.size.micro,
+                        ds.colors.text.tertiary,
+                        "truncate mb-1",
+                      )}
+                    >
                       {asset.name}
                     </div>
-                    <div className={cn(
-                      ds.typography.size.micro,
-                      ds.colors.text.quaternary
-                    )}>
+                    <div
+                      className={cn(
+                        ds.typography.size.micro,
+                        ds.colors.text.quaternary,
+                      )}
+                    >
                       {formatFileSize(asset.fileSize)}
                     </div>
                   </div>
 
                   {/* Actions overlay */}
-                  <div className={cn(
-                    'absolute inset-0',
-                    'bg-black/80',
-                    'flex items-center justify-center gap-2',
-                    'opacity-0 group-hover:opacity-100',
-                    ds.effects.transition.fast
-                  )}>
+                  <div
+                    className={cn(
+                      "absolute inset-0",
+                      "bg-black/80",
+                      "flex items-center justify-center gap-2",
+                      "opacity-0 group-hover:opacity-100",
+                      ds.effects.transition.fast,
+                    )}
+                  >
                     <button
                       type="button"
                       onClick={(e) => {
@@ -261,13 +293,13 @@ export function BrandAssetLibrary({
                         handleCopyUrl(asset.url);
                       }}
                       className={cn(
-                        'p-2',
+                        "p-2",
                         ds.effects.radius.md,
                         ds.colors.bg.elevated,
-                        'hover:bg-white/[0.08]',
+                        "hover:bg-white/[0.08]",
                         ds.colors.text.tertiary,
-                        'hover:text-white/90',
-                        ds.effects.transition.fast
+                        "hover:text-white/90",
+                        ds.effects.transition.fast,
                       )}
                       title="Copy URL"
                     >
@@ -285,13 +317,13 @@ export function BrandAssetLibrary({
                         handleDownload(asset);
                       }}
                       className={cn(
-                        'p-2',
+                        "p-2",
                         ds.effects.radius.md,
                         ds.colors.bg.elevated,
-                        'hover:bg-white/[0.08]',
+                        "hover:bg-white/[0.08]",
                         ds.colors.text.tertiary,
-                        'hover:text-white/90',
-                        ds.effects.transition.fast
+                        "hover:text-white/90",
+                        ds.effects.transition.fast,
                       )}
                       title="Download"
                     >
@@ -305,13 +337,13 @@ export function BrandAssetLibrary({
                         handleDelete(asset.id);
                       }}
                       className={cn(
-                        'p-2',
+                        "p-2",
                         ds.effects.radius.md,
                         ds.colors.bg.elevated,
-                        'hover:bg-red-500/20',
+                        "hover:bg-red-500/20",
                         ds.colors.text.tertiary,
-                        'hover:text-red-400',
-                        ds.effects.transition.fast
+                        "hover:text-red-400",
+                        ds.effects.transition.fast,
                       )}
                       title="Delete"
                     >
@@ -327,44 +359,55 @@ export function BrandAssetLibrary({
 
       {/* Empty state */}
       {assets.length === 0 && (
-        <div className={cn(
-          'text-center py-12',
-          ds.colors.bg.elevated,
-          'border',
-          ds.colors.border.default,
-          ds.effects.radius.lg
-        )}>
-          <ImageIcon size={48} className={cn(ds.colors.text.quaternary, 'mx-auto mb-4')} />
-          <p className={cn(
-            ds.typography.size.sm,
-            ds.colors.text.tertiary,
-            'mb-2'
-          )}>
+        <div
+          className={cn(
+            "text-center py-12",
+            ds.colors.bg.elevated,
+            "border",
+            ds.colors.border.default,
+            ds.effects.radius.lg,
+          )}
+        >
+          <ImageIcon
+            size={48}
+            className={cn(ds.colors.text.quaternary, "mx-auto mb-4")}
+          />
+          <p
+            className={cn(
+              ds.typography.size.sm,
+              ds.colors.text.tertiary,
+              "mb-2",
+            )}
+          >
             No assets uploaded yet
           </p>
-          <p className={cn(
-            ds.typography.size.xs,
-            ds.colors.text.quaternary
-          )}>
-            Upload logos, banners, icons, and patterns to build your brand library
+          <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
+            Upload logos, banners, icons, and patterns to build your brand
+            library
           </p>
         </div>
       )}
 
       {/* Tips */}
-      <div className={cn(
-        'p-3',
-        ds.colors.bg.elevated,
-        'border',
-        ds.colors.border.default,
-        ds.effects.radius.lg
-      )}>
-        <div className={cn(
-          ds.typography.size.micro,
-          ds.colors.text.quaternary,
-          'space-y-1'
-        )}>
-          <div>💡 <strong>Asset Tips:</strong></div>
+      <div
+        className={cn(
+          "p-3",
+          ds.colors.bg.elevated,
+          "border",
+          ds.colors.border.default,
+          ds.effects.radius.lg,
+        )}
+      >
+        <div
+          className={cn(
+            ds.typography.size.micro,
+            ds.colors.text.quaternary,
+            "space-y-1",
+          )}
+        >
+          <div>
+            💡 <strong>Asset Tips:</strong>
+          </div>
           <div>• Upload multiple versions (light/dark, color/mono)</div>
           <div>• Logos: 300x300px minimum, transparent PNG recommended</div>
           <div>• Banners: 1920x600px for best quality</div>

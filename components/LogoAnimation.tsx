@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 export default function LogoAnimation() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -14,7 +14,7 @@ export default function LogoAnimation() {
     if (!mounted || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     // Set canvas size
@@ -22,7 +22,8 @@ export default function LogoAnimation() {
     canvas.height = 800;
 
     // Particle system
-    const particles: Array<{ x: number; y: number; vx: number; vy: number }> = [];
+    const particles: Array<{ x: number; y: number; vx: number; vy: number }> =
+      [];
     const numParticles = 60;
     const maxDistance = 150;
 
@@ -32,7 +33,7 @@ export default function LogoAnimation() {
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         vx: (Math.random() - 0.5) * 0.6,
-        vy: (Math.random() - 0.5) * 0.6
+        vy: (Math.random() - 0.5) * 0.6,
       });
     }
 
@@ -57,7 +58,7 @@ export default function LogoAnimation() {
         if (p.y > canvas.height) p.y = 0;
 
         // Draw particle (very subtle)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
         ctx.beginPath();
         ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
         ctx.fill();

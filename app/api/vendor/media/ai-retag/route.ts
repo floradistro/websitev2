@@ -1,15 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { withErrorHandler } from '@/lib/api-handler';
-import { requireVendor } from '@/lib/auth/middleware';
-import OpenAI from 'openai';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { withErrorHandler } from "@/lib/api-handler";
+import { requireVendor } from "@/lib/auth/middleware";
+import OpenAI from "openai";
 
 // Lazy-load OpenAI client
 let openai: OpenAI | null = null;
 function getOpenAI() {
   if (!openai) {
     openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || '',
+      apiKey: process.env.OPENAI_API_KEY || "",
     });
   }
   return openai;
@@ -19,13 +19,13 @@ function getOpenAI() {
 async function analyzeImageWithAI(imageUrl: string) {
   try {
     const response = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o',
+      model: "gpt-4o",
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: [
             {
-              type: 'text',
+              type: "text",
               text: `Analyze this image and return ONLY a JSON object with this exact structure:
 {
   "category": "product_photos" | "social_media" | "print_marketing" | "promotional" | "brand_assets" | "menus",
@@ -50,20 +50,20 @@ Categories:
 - "brand_assets": Logos, brand elements, templates, style guides
 - "menus": Menu boards, price lists, category headers, digital menus
 
-Respond with ONLY the JSON, no other text.`
+Respond with ONLY the JSON, no other text.`,
             },
             {
-              type: 'image_url',
+              type: "image_url",
               image_url: {
                 url: imageUrl,
-                detail: 'high'
-              }
-            }
-          ]
-        }
+                detail: "high",
+              },
+            },
+          ],
+        },
       ],
       max_tokens: 500,
-      temperature: 0.3
+      temperature: 0.3,
     });
 
     const content = response.choices[0]?.message?.content?.trim();
@@ -76,7 +76,9 @@ Respond with ONLY the JSON, no other text.`
     const analysis = JSON.parse(jsonMatch[0]);
     return analysis;
   } catch (error: any) {
-    console.error('❌ AI analysis error:', error.message);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ AI analysis error:", error.message);
+    }
     return null;
   }
 }
@@ -93,33 +95,36 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     const { fileId } = body;
 
     if (!fileId) {
-      return NextResponse.json({ error: 'File ID required' }, { status: 400 });
+      return NextResponse.json({ error: "File ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
 
     // Get the file
     const { data: file, error: fetchError } = await supabase
-      .from('vendor_media')
-      .select('*')
-      .eq('id', fileId)
-      .eq('vendor_id', vendorId)
+      .from("vendor_media")
+      .select("*")
+      .eq("id", fileId)
+      .eq("vendor_id", vendorId)
       .single();
 
     if (fetchError || !file) {
-      return NextResponse.json({ error: 'File not found' }, { status: 404 });
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
     // Analyze with AI
     const aiAnalysis = await analyzeImageWithAI(file.file_url);
 
     if (!aiAnalysis) {
-      return NextResponse.json({ error: 'AI analysis failed' }, { status: 500 });
+      return NextResponse.json(
+        { error: "AI analysis failed" },
+        { status: 500 },
+      );
     }
 
     // Update metadata
     const { data: updated, error: updateError } = await supabase
-      .from('vendor_media')
+      .from("vendor_media")
       .update({
         category: aiAnalysis.category,
         ai_tags: aiAnalysis.tags,
@@ -127,27 +132,28 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         dominant_colors: aiAnalysis.colors,
         detected_content: aiAnalysis.detected_content,
         quality_score: aiAnalysis.quality_score,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
-      .eq('id', fileId)
+      .eq("id", fileId)
       .select()
       .single();
 
     if (updateError) {
-      console.error('❌ Update error:', updateError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Update error:", updateError);
+      }
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
-
-    console.log('✅ AI re-tagged:', file.file_name);
 
     return NextResponse.json({
       success: true,
       file: updated,
-      analysis: aiAnalysis
+      analysis: aiAnalysis,
     });
-
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 });

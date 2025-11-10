@@ -4,17 +4,17 @@
  */
 
 const REQUIRED_ENV_VARS = [
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY',
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
 ] as const;
 
 const OPTIONAL_ENV_VARS = [
-  'ANTHROPIC_API_KEY',
-  'OPENAI_API_KEY',
-  'AUTHORIZE_NET_API_LOGIN_ID',
-  'AUTHORIZE_NET_TRANSACTION_KEY',
-  'VERCEL_URL',
-  'NEXT_PUBLIC_SITE_URL',
+  "ANTHROPIC_API_KEY",
+  "OPENAI_API_KEY",
+  "AUTHORIZE_NET_API_LOGIN_ID",
+  "AUTHORIZE_NET_TRANSACTION_KEY",
+  "VERCEL_URL",
+  "NEXT_PUBLIC_SITE_URL",
 ] as const;
 
 /**
@@ -42,23 +42,22 @@ export function validateEnvironment(): void {
   // Throw error if required vars are missing
   if (missing.length > 0) {
     throw new Error(
-      `❌ Missing required environment variables:\n${missing.map(v => `  - ${v}`).join('\n')}\n\n` +
-      `Please check your .env.local file and ensure all required variables are set.`
+      `❌ Missing required environment variables:\n${missing.map((v) => `  - ${v}`).join("\n")}\n\n` +
+        `Please check your .env.local file and ensure all required variables are set.`,
     );
   }
 
   // Log warnings for optional vars (only in development)
-  if (warnings.length > 0 && process.env.NODE_ENV === 'development') {
+  if (warnings.length > 0 && process.env.NODE_ENV === "development") {
     console.warn(
-      `⚠️  Optional environment variables not set:\n${warnings.map(v => `  - ${v}`).join('\n')}`
+      `⚠️  Optional environment variables not set:\n${warnings.map((v) => `  - ${v}`).join("\n")}`,
     );
   }
 
   // Validate variable formats
   validateFormats();
 
-  if (process.env.NODE_ENV === 'development') {
-    console.log('✅ Environment variables validated successfully');
+  if (process.env.NODE_ENV === "development") {
   }
 }
 
@@ -68,20 +67,20 @@ export function validateEnvironment(): void {
 function validateFormats(): void {
   // Validate Supabase URL format
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (supabaseUrl && !supabaseUrl.startsWith('https://')) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL must start with https://');
+  if (supabaseUrl && !supabaseUrl.startsWith("https://")) {
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL must start with https://");
   }
 
   // Validate API keys are not empty strings
   const apiKeys = [
-    'SUPABASE_SERVICE_ROLE_KEY',
-    'ANTHROPIC_API_KEY',
-    'OPENAI_API_KEY',
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "ANTHROPIC_API_KEY",
+    "OPENAI_API_KEY",
   ];
 
   for (const key of apiKeys) {
     const value = process.env[key];
-    if (value === '') {
+    if (value === "") {
       throw new Error(`${key} cannot be an empty string`);
     }
   }
@@ -106,12 +105,12 @@ export function getEnv(key: string, fallback?: string): string {
 /**
  * Check if we're in production
  */
-export const isProduction = process.env.NODE_ENV === 'production';
+export const isProduction = process.env.NODE_ENV === "production";
 
 /**
  * Check if we're in development
  */
-export const isDevelopment = process.env.NODE_ENV === 'development';
+export const isDevelopment = process.env.NODE_ENV === "development";
 
 /**
  * Get the site URL
@@ -119,4 +118,4 @@ export const isDevelopment = process.env.NODE_ENV === 'development';
 export const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.VERCEL_URL ||
-  'http://localhost:3000';
+  "http://localhost:3000";

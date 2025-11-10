@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ShoppingCart,
   Package,
@@ -13,9 +13,9 @@ import {
   Megaphone,
   Code2,
   LucideIcon,
-  ArrowUpRight
-} from 'lucide-react';
-import { useAppAuth } from '@/context/AppAuthContext';
+  ArrowUpRight,
+} from "lucide-react";
+import { useAppAuth } from "@/context/AppAuthContext";
 
 interface App {
   key: string;
@@ -34,94 +34,94 @@ interface BadgeCounts {
 
 const APPS: App[] = [
   {
-    key: 'pos',
-    name: 'Point of Sale',
-    description: 'Process sales and manage transactions in real-time',
+    key: "pos",
+    name: "Point of Sale",
+    description: "Process sales and manage transactions in real-time",
     icon: ShoppingCart,
-    route: '/pos/register',
-    category: 'Operations',
-    gradient: 'from-blue-600 to-cyan-500',
-    glowColor: 'blue'
+    route: "/pos/register",
+    category: "Operations",
+    gradient: "from-blue-600 to-cyan-500",
+    glowColor: "blue",
   },
   {
-    key: 'orders',
-    name: 'Order Queue',
-    description: 'Manage and fulfill customer pickup and delivery orders',
+    key: "orders",
+    name: "Order Queue",
+    description: "Manage and fulfill customer pickup and delivery orders",
     icon: Package,
-    route: '/pos/orders',
-    category: 'Operations',
-    gradient: 'from-purple-600 to-pink-500',
-    glowColor: 'purple'
+    route: "/pos/orders",
+    category: "Operations",
+    gradient: "from-purple-600 to-pink-500",
+    glowColor: "purple",
   },
   {
-    key: 'tv_menus',
-    name: 'Digital Menus',
-    description: 'Create stunning TV displays for your store locations',
+    key: "tv_menus",
+    name: "Digital Menus",
+    description: "Create stunning TV displays for your store locations",
     icon: Monitor,
-    route: '/vendor/tv-menus',
-    category: 'Marketing',
-    gradient: 'from-green-600 to-emerald-500',
-    glowColor: 'green'
+    route: "/vendor/tv-menus",
+    category: "Marketing",
+    gradient: "from-green-600 to-emerald-500",
+    glowColor: "green",
   },
   {
-    key: 'inventory',
-    name: 'Inventory',
-    description: 'Track stock levels and manage inventory across locations',
+    key: "inventory",
+    name: "Inventory",
+    description: "Track stock levels and manage inventory across locations",
     icon: PackageSearch,
-    route: '/vendor/inventory',
-    category: 'Operations',
-    gradient: 'from-orange-600 to-amber-500',
-    glowColor: 'orange'
+    route: "/vendor/inventory",
+    category: "Operations",
+    gradient: "from-orange-600 to-amber-500",
+    glowColor: "orange",
   },
   {
-    key: 'products',
-    name: 'Products',
-    description: 'Manage your complete product catalog and pricing',
+    key: "products",
+    name: "Products",
+    description: "Manage your complete product catalog and pricing",
     icon: Tag,
-    route: '/vendor/products',
-    category: 'Management',
-    gradient: 'from-red-600 to-rose-500',
-    glowColor: 'red'
+    route: "/vendor/products",
+    category: "Management",
+    gradient: "from-red-600 to-rose-500",
+    glowColor: "red",
   },
   {
-    key: 'analytics',
-    name: 'Analytics',
-    description: 'Deep insights into sales, performance, and trends',
+    key: "analytics",
+    name: "Analytics",
+    description: "Deep insights into sales, performance, and trends",
     icon: BarChart3,
-    route: '/vendor/dashboard',
-    category: 'Intelligence',
-    gradient: 'from-indigo-600 to-violet-500',
-    glowColor: 'indigo'
+    route: "/vendor/dashboard",
+    category: "Intelligence",
+    gradient: "from-indigo-600 to-violet-500",
+    glowColor: "indigo",
   },
   {
-    key: 'customers',
-    name: 'Customers',
-    description: 'Build relationships and understand your customer base',
+    key: "customers",
+    name: "Customers",
+    description: "Build relationships and understand your customer base",
     icon: Users,
-    route: '/vendor/customers',
-    category: 'Growth',
-    gradient: 'from-teal-600 to-cyan-500',
-    glowColor: 'teal'
+    route: "/vendor/customers",
+    category: "Growth",
+    gradient: "from-teal-600 to-cyan-500",
+    glowColor: "teal",
   },
   {
-    key: 'marketing',
-    name: 'Marketing',
-    description: 'Create powerful campaigns and promotional content',
+    key: "marketing",
+    name: "Marketing",
+    description: "Create powerful campaigns and promotional content",
     icon: Megaphone,
-    route: '/vendor/marketing',
-    category: 'Growth',
-    gradient: 'from-fuchsia-600 to-pink-500',
-    glowColor: 'fuchsia'
+    route: "/vendor/marketing",
+    category: "Growth",
+    gradient: "from-fuchsia-600 to-pink-500",
+    glowColor: "fuchsia",
   },
   {
-    key: 'code',
-    name: 'Code',
-    description: 'Build custom apps with AI - storefronts, panels, and more',
+    key: "code",
+    name: "Code",
+    description: "Build custom apps with AI - storefronts, panels, and more",
     icon: Code2,
-    route: '/vendor/code',
-    category: 'Development',
-    gradient: 'from-emerald-600 to-teal-500',
-    glowColor: 'emerald'
+    route: "/vendor/code",
+    category: "Development",
+    gradient: "from-emerald-600 to-teal-500",
+    glowColor: "emerald",
   },
 ];
 
@@ -129,7 +129,7 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
   const { user, hasAppAccess } = useAppAuth();
   const router = useRouter();
 
-  const accessibleApps = APPS.filter(app => hasAppAccess(app.key));
+  const accessibleApps = APPS.filter((app) => hasAppAccess(app.key));
 
   const handleMouseEnter = (route: string) => {
     router.prefetch(route);
@@ -153,17 +153,17 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
 
   // Color mapping for icons - Muted, refined palette
   const iconColors: Record<string, string> = {
-    blue: 'text-blue-400/70',
-    purple: 'text-purple-400/70',
-    green: 'text-green-400/70',
-    orange: 'text-orange-400/70',
-    red: 'text-red-400/70',
-    indigo: 'text-indigo-400/70',
-    teal: 'text-teal-400/70',
-    fuchsia: 'text-fuchsia-400/70',
-    emerald: 'text-emerald-400/70',
-    cyan: 'text-cyan-400/70',
-    pink: 'text-pink-400/70'
+    blue: "text-blue-400/70",
+    purple: "text-purple-400/70",
+    green: "text-green-400/70",
+    orange: "text-orange-400/70",
+    red: "text-red-400/70",
+    indigo: "text-indigo-400/70",
+    teal: "text-teal-400/70",
+    fuchsia: "text-fuchsia-400/70",
+    emerald: "text-emerald-400/70",
+    cyan: "text-cyan-400/70",
+    pink: "text-pink-400/70",
   };
 
   return (
@@ -171,7 +171,7 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
       <div className="grid grid-cols-4 gap-x-10 gap-y-8">
         {accessibleApps.map((app) => {
           const Icon = app.icon;
-          const iconColor = iconColors[app.glowColor] || 'text-white';
+          const iconColor = iconColors[app.glowColor] || "text-white";
 
           return (
             <Link
@@ -197,7 +197,7 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
                 {badgeCounts[app.key] > 0 && (
                   <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-black">
                     <span className="text-white text-[9px] font-semibold">
-                      {badgeCounts[app.key] > 99 ? '99+' : badgeCounts[app.key]}
+                      {badgeCounts[app.key] > 99 ? "99+" : badgeCounts[app.key]}
                     </span>
                   </div>
                 )}

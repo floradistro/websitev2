@@ -56,11 +56,11 @@ logger.info("User action completed", { userId: "123" });
 
 ### File Locations
 
-| Environment | File | Purpose |
-|-------------|------|---------|
-| Client (Browser) | `instrumentation-client.ts` | Browser error tracking |
-| Server (API Routes) | `sentry.server.config.ts` | Server-side error tracking |
-| Edge (Middleware) | `sentry.edge.config.ts` | Edge runtime tracking |
+| Environment         | File                        | Purpose                    |
+| ------------------- | --------------------------- | -------------------------- |
+| Client (Browser)    | `instrumentation-client.ts` | Browser error tracking     |
+| Server (API Routes) | `sentry.server.config.ts`   | Server-side error tracking |
+| Edge (Middleware)   | `sentry.edge.config.ts`     | Edge runtime tracking      |
 
 ### Production Configuration
 
@@ -83,7 +83,7 @@ Sentry.init({
 
   // Performance monitoring sample rate
   // 10% in production (reduce costs), 100% in development
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
 
   // Integrations
   integrations: [
@@ -98,8 +98,8 @@ Sentry.init({
     // Remove cookies (may contain auth tokens)
     if (event.request) {
       delete event.request.cookies;
-      delete event.request.headers?.['authorization'];
-      delete event.request.headers?.['cookie'];
+      delete event.request.headers?.["authorization"];
+      delete event.request.headers?.["cookie"];
     }
 
     // Remove customer email from user context
@@ -126,8 +126,8 @@ Sentry.init({
 
   // Ignore known errors
   ignoreErrors: [
-    'ResizeObserver loop limit exceeded', // Benign browser error
-    'Non-Error promise rejection captured', // Usually user cancellations
+    "ResizeObserver loop limit exceeded", // Benign browser error
+    "Non-Error promise rejection captured", // Usually user cancellations
     /NEXT_NOT_FOUND/, // Next.js 404s
   ],
 });
@@ -169,8 +169,8 @@ try {
   Sentry.captureException(error, {
     // Tags for filtering/grouping
     tags: {
-      component: 'payment',
-      severity: 'critical',
+      component: "payment",
+      severity: "critical",
       vendor_id: vendorId,
     },
 
@@ -178,7 +178,7 @@ try {
     contexts: {
       payment: {
         amount: data.amount,
-        currency: 'USD',
+        currency: "USD",
         payment_method: data.method,
       },
       vendor: {
@@ -189,11 +189,11 @@ try {
 
     // Breadcrumbs (what happened before the error)
     // Automatically tracked by Sentry, but you can add custom ones
-    level: 'error',
+    level: "error",
   });
 
   // Show user-friendly error
-  throw new Error('Payment processing failed. Please try again.');
+  throw new Error("Payment processing failed. Please try again.");
 }
 ```
 
@@ -201,8 +201,8 @@ try {
 
 ```typescript
 // app/api/vendor/products/route.ts
-import { requireVendor } from '@/lib/auth/middleware';
-import * as Sentry from '@sentry/nextjs';
+import { requireVendor } from "@/lib/auth/middleware";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(request: NextRequest) {
   try {
@@ -212,20 +212,19 @@ export async function GET(request: NextRequest) {
     const { vendorId } = authResult;
 
     const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('vendor_id', vendorId);
+      .from("products")
+      .select("*")
+      .eq("vendor_id", vendorId);
 
     if (error) throw error;
 
     return NextResponse.json({ success: true, products: data });
-
   } catch (error) {
     // Log to Sentry with context
     Sentry.captureException(error, {
       tags: {
-        endpoint: '/api/vendor/products',
-        method: 'GET',
+        endpoint: "/api/vendor/products",
+        method: "GET",
         vendor_id: vendorId,
       },
       contexts: {
@@ -238,8 +237,8 @@ export async function GET(request: NextRequest) {
 
     // Return user-friendly error
     return NextResponse.json(
-      { error: 'Failed to load products' },
-      { status: 500 }
+      { error: "Failed to load products" },
+      { status: 500 },
     );
   }
 }
@@ -285,30 +284,30 @@ function CheckoutButton({ cart, onCheckout }) {
 async function fetchProducts(vendorId: string) {
   return Sentry.startSpan(
     {
-      op: 'http.client',
-      name: 'GET /api/supabase/products',
+      op: "http.client",
+      name: "GET /api/supabase/products",
     },
     async (span) => {
       // Add request context
-      span.setAttribute('vendor_id', vendorId);
+      span.setAttribute("vendor_id", vendorId);
 
       const startTime = performance.now();
 
       const response = await fetch(`/api/supabase/products`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const duration = performance.now() - startTime;
 
       // Add response metrics
-      span.setAttribute('duration_ms', duration);
-      span.setAttribute('status', response.status);
+      span.setAttribute("duration_ms", duration);
+      span.setAttribute("status", response.status);
 
       const data = await response.json();
-      span.setAttribute('product_count', data.products.length);
+      span.setAttribute("product_count", data.products.length);
 
       return data;
-    }
+    },
   );
 }
 ```
@@ -319,29 +318,29 @@ async function fetchProducts(vendorId: string) {
 async function getInventoryWithTracking(productId: string, locationId: string) {
   return Sentry.startSpan(
     {
-      op: 'db.query',
-      name: 'Get Inventory',
+      op: "db.query",
+      name: "Get Inventory",
     },
     async (span) => {
-      span.setAttribute('product_id', productId);
-      span.setAttribute('location_id', locationId);
+      span.setAttribute("product_id", productId);
+      span.setAttribute("location_id", locationId);
 
       const { data, error } = await supabase
-        .from('inventory')
-        .select('*')
-        .eq('product_id', productId)
-        .eq('location_id', locationId)
+        .from("inventory")
+        .select("*")
+        .eq("product_id", productId)
+        .eq("location_id", locationId)
         .single();
 
       if (error) {
-        span.setAttribute('error', true);
+        span.setAttribute("error", true);
         Sentry.captureException(error);
         throw error;
       }
 
-      span.setAttribute('quantity', data.quantity);
+      span.setAttribute("quantity", data.quantity);
       return data;
-    }
+    },
   );
 }
 ```
@@ -352,35 +351,35 @@ async function getInventoryWithTracking(productId: string, locationId: string) {
 async function processOrderWithTracking(orderId: string) {
   return Sentry.startSpan(
     {
-      op: 'order.process',
-      name: 'Process Order',
+      op: "order.process",
+      name: "Process Order",
     },
     async (parentSpan) => {
-      parentSpan.setAttribute('order_id', orderId);
+      parentSpan.setAttribute("order_id", orderId);
 
       // Child span 1: Validate order
       const order = await Sentry.startSpan(
-        { op: 'order.validate', name: 'Validate Order' },
-        async () => validateOrder(orderId)
+        { op: "order.validate", name: "Validate Order" },
+        async () => validateOrder(orderId),
       );
 
       // Child span 2: Process payment
       const payment = await Sentry.startSpan(
-        { op: 'payment.process', name: 'Process Payment' },
-        async () => processPayment(order)
+        { op: "payment.process", name: "Process Payment" },
+        async () => processPayment(order),
       );
 
       // Child span 3: Update inventory
       await Sentry.startSpan(
-        { op: 'inventory.update', name: 'Update Inventory' },
-        async () => updateInventory(order.items)
+        { op: "inventory.update", name: "Update Inventory" },
+        async () => updateInventory(order.items),
       );
 
-      parentSpan.setAttribute('total_amount', order.total);
-      parentSpan.setAttribute('payment_status', payment.status);
+      parentSpan.setAttribute("total_amount", order.total);
+      parentSpan.setAttribute("payment_status", payment.status);
 
       return { order, payment };
-    }
+    },
   );
 }
 ```
@@ -401,14 +400,14 @@ const { logger } = Sentry;
 
 ### Log Levels
 
-| Level | Use Case | Example |
-|-------|----------|---------|
-| `trace` | Detailed debugging | Database connection details |
-| `debug` | Development info | Cache hits/misses |
-| `info` | Normal operations | User logged in, order placed |
-| `warn` | Potential issues | Rate limit approaching |
-| `error` | Errors that can be recovered | Failed to send email |
-| `fatal` | Critical failures | Database unavailable |
+| Level   | Use Case                     | Example                      |
+| ------- | ---------------------------- | ---------------------------- |
+| `trace` | Detailed debugging           | Database connection details  |
+| `debug` | Development info             | Cache hits/misses            |
+| `info`  | Normal operations            | User logged in, order placed |
+| `warn`  | Potential issues             | Rate limit approaching       |
+| `error` | Errors that can be recovered | Failed to send email         |
+| `fatal` | Critical failures            | Database unavailable         |
 
 ### Examples
 
@@ -436,7 +435,7 @@ logger.info("Order fulfilled successfully", {
 
 // Warn (potential issues)
 logger.warn("Rate limit approaching threshold", {
-  endpoint: '/api/vendor/products',
+  endpoint: "/api/vendor/products",
   vendor_id: vendorId,
   current_rate: 280,
   limit: 300,
@@ -453,7 +452,7 @@ logger.error("Failed to send order confirmation email", {
 
 // Fatal (critical failures)
 logger.fatal("Database connection pool exhausted", {
-  database: 'postgres',
+  database: "postgres",
   active_connections: 100,
   max_connections: 100,
   queue_size: 50,
@@ -491,23 +490,23 @@ logger.info(logger.fmt`User ${userId} completed checkout`, {
 async function processPayment(data: PaymentData) {
   return Sentry.startSpan(
     {
-      op: 'payment.process',
-      name: 'Process Payment',
+      op: "payment.process",
+      name: "Process Payment",
     },
     async (span) => {
       try {
         // Add payment context
-        span.setAttribute('amount', data.amount);
-        span.setAttribute('payment_method', data.method);
-        span.setAttribute('vendor_id', data.vendorId);
-        span.setAttribute('terminal_id', data.terminalId);
+        span.setAttribute("amount", data.amount);
+        span.setAttribute("payment_method", data.method);
+        span.setAttribute("vendor_id", data.vendorId);
+        span.setAttribute("terminal_id", data.terminalId);
 
         // Process payment
         const result = await paymentProcessor.charge(data);
 
         // Track success metrics
-        span.setAttribute('transaction_id', result.transactionId);
-        span.setAttribute('status', result.status);
+        span.setAttribute("transaction_id", result.transactionId);
+        span.setAttribute("status", result.status);
 
         logger.info("Payment processed successfully", {
           transaction_id: result.transactionId,
@@ -516,13 +515,12 @@ async function processPayment(data: PaymentData) {
         });
 
         return result;
-
       } catch (error) {
         // Critical error - capture with full context
         Sentry.captureException(error, {
           tags: {
-            component: 'payment',
-            severity: 'critical',
+            component: "payment",
+            severity: "critical",
             vendor_id: data.vendorId,
           },
           contexts: {
@@ -542,7 +540,7 @@ async function processPayment(data: PaymentData) {
 
         throw error;
       }
-    }
+    },
   );
 }
 ```
@@ -553,16 +551,16 @@ async function processPayment(data: PaymentData) {
 async function fulfillOrder(orderId: string, locationId: string) {
   return Sentry.startSpan(
     {
-      op: 'order.fulfill',
-      name: 'Fulfill Order',
+      op: "order.fulfill",
+      name: "Fulfill Order",
     },
     async (span) => {
-      span.setAttribute('order_id', orderId);
-      span.setAttribute('location_id', locationId);
+      span.setAttribute("order_id", orderId);
+      span.setAttribute("location_id", locationId);
 
       try {
         // Call atomic fulfillment function
-        const result = await supabase.rpc('fulfill_order_atomically', {
+        const result = await supabase.rpc("fulfill_order_atomically", {
           p_order_id: orderId,
           p_location_id: locationId,
         });
@@ -576,12 +574,11 @@ async function fulfillOrder(orderId: string, locationId: string) {
         });
 
         return result.data;
-
       } catch (error) {
         Sentry.captureException(error, {
           tags: {
-            component: 'order_fulfillment',
-            severity: 'high',
+            component: "order_fulfillment",
+            severity: "high",
           },
           contexts: {
             order: { id: orderId, location_id: locationId },
@@ -595,7 +592,7 @@ async function fulfillOrder(orderId: string, locationId: string) {
 
         throw error;
       }
-    }
+    },
   );
 }
 ```
@@ -607,24 +604,24 @@ async function adjustInventory(
   productId: string,
   locationId: string,
   adjustment: number,
-  reason: string
+  reason: string,
 ) {
   return Sentry.startSpan(
     {
-      op: 'inventory.adjust',
-      name: 'Adjust Inventory',
+      op: "inventory.adjust",
+      name: "Adjust Inventory",
     },
     async (span) => {
-      span.setAttribute('product_id', productId);
-      span.setAttribute('location_id', locationId);
-      span.setAttribute('adjustment', adjustment);
+      span.setAttribute("product_id", productId);
+      span.setAttribute("location_id", locationId);
+      span.setAttribute("adjustment", adjustment);
 
       try {
         const { data: current } = await supabase
-          .from('inventory')
-          .select('quantity')
-          .eq('product_id', productId)
-          .eq('location_id', locationId)
+          .from("inventory")
+          .select("quantity")
+          .eq("product_id", productId)
+          .eq("location_id", locationId)
           .single();
 
         const oldQuantity = current?.quantity || 0;
@@ -632,10 +629,10 @@ async function adjustInventory(
 
         // Update inventory
         await supabase
-          .from('inventory')
+          .from("inventory")
           .update({ quantity: newQuantity })
-          .eq('product_id', productId)
-          .eq('location_id', locationId);
+          .eq("product_id", productId)
+          .eq("location_id", locationId);
 
         // Log the change
         logger.info("Inventory adjusted", {
@@ -655,10 +652,9 @@ async function adjustInventory(
             reason,
           });
         }
-
       } catch (error) {
         Sentry.captureException(error, {
-          tags: { component: 'inventory' },
+          tags: { component: "inventory" },
           contexts: {
             inventory: {
               product_id: productId,
@@ -669,7 +665,7 @@ async function adjustInventory(
         });
         throw error;
       }
-    }
+    },
   );
 }
 ```
@@ -688,9 +684,9 @@ logger.info("User logged in successfully", {
 // Failed login
 logger.warn("Authentication failed", {
   email: hashEmail(email), // Hash PII
-  reason: 'invalid_credentials',
+  reason: "invalid_credentials",
   ip_address: request.ip,
-  user_agent: request.headers.get('user-agent'),
+  user_agent: request.headers.get("user-agent"),
 });
 
 // Suspicious activity
@@ -699,12 +695,12 @@ if (failedAttempts > 5) {
     email: hashEmail(email),
     failed_attempts: failedAttempts,
     ip_address: request.ip,
-    time_window: '5 minutes',
+    time_window: "5 minutes",
   });
 
-  Sentry.captureMessage('Potential brute force attack', {
-    level: 'warning',
-    tags: { component: 'auth', security: 'high' },
+  Sentry.captureMessage("Potential brute force attack", {
+    level: "warning",
+    tags: { component: "auth", security: "high" },
   });
 }
 ```
@@ -714,28 +710,31 @@ if (failedAttempts > 5) {
 ```typescript
 async function calculatePriceWithTracking(
   product: Product,
-  promotions: Promotion[]
+  promotions: Promotion[],
 ) {
   return Sentry.startSpan(
     {
-      op: 'pricing.calculate',
-      name: 'Calculate Product Price',
+      op: "pricing.calculate",
+      name: "Calculate Product Price",
     },
     async (span) => {
-      span.setAttribute('product_id', product.id);
-      span.setAttribute('regular_price', product.regular_price);
-      span.setAttribute('promotion_count', promotions.length);
+      span.setAttribute("product_id", product.id);
+      span.setAttribute("regular_price", product.regular_price);
+      span.setAttribute("promotion_count", promotions.length);
 
       const result = calculatePrice(product, promotions);
 
       // Track pricing metrics
-      span.setAttribute('final_price', result.finalPrice);
-      span.setAttribute('savings', result.savings);
-      span.setAttribute('discount_applied', result.savings > 0);
+      span.setAttribute("final_price", result.finalPrice);
+      span.setAttribute("savings", result.savings);
+      span.setAttribute("discount_applied", result.savings > 0);
 
       if (result.appliedPromotion) {
-        span.setAttribute('promotion_id', result.appliedPromotion.id);
-        span.setAttribute('promotion_type', result.appliedPromotion.promotion_type);
+        span.setAttribute("promotion_id", result.appliedPromotion.id);
+        span.setAttribute(
+          "promotion_type",
+          result.appliedPromotion.promotion_type,
+        );
       }
 
       // Alert on unusual discounts
@@ -750,7 +749,7 @@ async function calculatePriceWithTracking(
       }
 
       return result;
-    }
+    },
   );
 }
 ```
@@ -767,7 +766,7 @@ Sentry.captureException(error);
 
 // ✅ GOOD: With context
 Sentry.captureException(error, {
-  tags: { component: 'payment', vendor_id: vendorId },
+  tags: { component: "payment", vendor_id: vendorId },
   contexts: { payment: { amount, method } },
 });
 ```
@@ -815,9 +814,9 @@ logger.error("Payment failed"); // Actual error
 
 ```typescript
 Sentry.addBreadcrumb({
-  category: 'cart',
-  message: 'Item added to cart',
-  level: 'info',
+  category: "cart",
+  message: "Item added to cart",
+  level: "info",
   data: {
     product_id: productId,
     quantity: 1,
@@ -834,7 +833,7 @@ Sentry.addBreadcrumb({
 ```typescript
 Sentry.captureException(error, {
   // Custom fingerprinting to group related errors
-  fingerprint: ['payment-processor-timeout', vendorId],
+  fingerprint: ["payment-processor-timeout", vendorId],
 });
 
 // Without this, each timeout might create a separate issue
@@ -848,6 +847,7 @@ Sentry.captureException(error, {
 ### Events Not Appearing in Sentry
 
 1. **Check DSN is set:**
+
    ```bash
    echo $NEXT_PUBLIC_SENTRY_DSN
    ```
@@ -858,6 +858,7 @@ Sentry.captureException(error, {
    - Ensure `Sentry.init()` is called
 
 3. **Check sample rate:**
+
    ```typescript
    // If tracesSampleRate is too low, you might not see events
    tracesSampleRate: 1.0, // 100% for testing
@@ -872,11 +873,13 @@ Sentry.captureException(error, {
 ### Source Maps Not Working
 
 1. **Verify auth token:**
+
    ```bash
    echo $SENTRY_AUTH_TOKEN
    ```
 
 2. **Check build output:**
+
    ```bash
    npm run build
    # Should see: "Uploading source maps to Sentry"
@@ -894,11 +897,13 @@ Sentry.captureException(error, {
 If Sentry is causing performance issues:
 
 1. **Lower sample rate:**
+
    ```typescript
    tracesSampleRate: 0.1, // Only sample 10% of transactions
    ```
 
 2. **Reduce breadcrumb size:**
+
    ```typescript
    maxBreadcrumbs: 50, // Default is 100
    ```

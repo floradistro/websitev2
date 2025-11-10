@@ -5,8 +5,8 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, ChevronDown, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import { MapPin, ChevronDown, Check } from "lucide-react";
 
 export interface SmartShopControlsProps {
   vendorId: string;
@@ -21,14 +21,14 @@ export function SmartShopControls({
   onCategoryChange,
   onSortChange,
   onLocationChange,
-  className = '',
+  className = "",
 }: SmartShopControlsProps) {
   const [categories, setCategories] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState('default');
+  const [sortBy, setSortBy] = useState("default");
   const [isLocationOpen, setIsLocationOpen] = useState(false);
   const locationDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -36,30 +36,40 @@ export function SmartShopControls({
   useEffect(() => {
     async function loadData() {
       try {
-        const res = await fetch('/api/page-data/products');
+        const res = await fetch("/api/page-data/products");
         if (res.ok) {
           const result = await res.json();
           if (result.success) {
             const products = result.data.products || [];
-            const vendorProducts = products.filter((p: any) => p.vendor_id === vendorId);
+            const vendorProducts = products.filter(
+              (p: any) => p.vendor_id === vendorId,
+            );
             setAllProducts(vendorProducts);
-            
+
             // Extract categories
             const categoryMap = new Map();
             vendorProducts.forEach((product: any) => {
               if (product.categories && Array.isArray(product.categories)) {
                 product.categories.forEach((cat: any) => {
                   if (cat && cat.slug && !categoryMap.has(cat.slug)) {
-                    categoryMap.set(cat.slug, { id: cat.id, name: cat.name, slug: cat.slug });
+                    categoryMap.set(cat.slug, {
+                      id: cat.id,
+                      name: cat.name,
+                      slug: cat.slug,
+                    });
                   }
                 });
               }
             });
-            setCategories(Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name)));
-            
+            setCategories(
+              Array.from(categoryMap.values()).sort((a, b) =>
+                a.name.localeCompare(b.name),
+              ),
+            );
+
             // Get locations - ONLY for this vendor (CRITICAL)
             const allLocations = result.data.locations || [];
-            
+
             // Find which location IDs are actually used by this vendor's products
             const vendorLocationIds = new Set<string>();
             vendorProducts.forEach((product: any) => {
@@ -71,29 +81,37 @@ export function SmartShopControls({
                 });
               }
             });
-            
+
             // Filter to only active locations that this vendor actually uses
             const vendorLocations = allLocations.filter((loc: any) => {
-              const isActive = loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true;
+              const isActive =
+                loc.is_active === "1" ||
+                loc.is_active === 1 ||
+                loc.is_active === true;
               const isVendorLocation = vendorLocationIds.has(loc.id.toString());
               return isActive && isVendorLocation;
             });
-            
+
             setLocations(vendorLocations);
           }
         }
       } catch (err) {
-        console.error('Failed to load shop data:', err);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Failed to load shop data:", err);
+        }
       }
     }
-    
+
     loadData();
   }, [vendorId]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (locationDropdownRef.current && !locationDropdownRef.current.contains(event.target as Node)) {
+      if (
+        locationDropdownRef.current &&
+        !locationDropdownRef.current.contains(event.target as Node)
+      ) {
         setIsLocationOpen(false);
       }
     };
@@ -110,26 +128,28 @@ export function SmartShopControls({
     setSortBy(sort);
     onSortChange?.(sort);
   };
-  
+
   const handleLocationSelect = (locationId: string | null) => {
     setSelectedLocation(locationId);
     setIsLocationOpen(false);
     onLocationChange?.(locationId);
   };
 
-  const selectedLocationData = locations.find(loc => loc.id?.toString() === selectedLocation);
+  const selectedLocationData = locations.find(
+    (loc) => loc.id?.toString() === selectedLocation,
+  );
 
   return (
     <div className={`space-y-3 ${className}`}>
       {/* Category Tabs - Exact Yacht Club marketplace style */}
       {categories.length > 0 && (
         <nav className="flex items-center gap-4 overflow-x-auto scrollbar-hide -mx-6 px-6 sm:mx-0 sm:px-0">
-          <button 
+          <button
             onClick={() => handleCategoryClick(null)}
             className={`pb-3 px-2 whitespace-nowrap flex-shrink-0 uppercase tracking-[0.12em] text-xs transition-all ${
-              !selectedCategory 
-                ? 'border-b-2 border-white font-black text-white' 
-                : 'text-white/60 hover:text-white font-black'
+              !selectedCategory
+                ? "border-b-2 border-white font-black text-white"
+                : "text-white/60 hover:text-white font-black"
             }`}
             style={{ fontWeight: 900 }}
           >
@@ -140,9 +160,9 @@ export function SmartShopControls({
               key={category.slug}
               onClick={() => handleCategoryClick(category.slug)}
               className={`pb-3 px-2 whitespace-nowrap flex-shrink-0 uppercase tracking-[0.12em] text-xs transition-all ${
-                selectedCategory === category.slug 
-                  ? 'border-b-2 border-white font-black text-white' 
-                  : 'text-white/60 hover:text-white font-black'
+                selectedCategory === category.slug
+                  ? "border-b-2 border-white font-black text-white"
+                  : "text-white/60 hover:text-white font-black"
               }`}
               style={{ fontWeight: 900 }}
             >
@@ -169,10 +189,15 @@ export function SmartShopControls({
               <div className="flex items-center gap-2 truncate">
                 <MapPin size={14} className="flex-shrink-0 text-white/60" />
                 <span className="truncate">
-                  {selectedLocationData ? selectedLocationData.name : 'All Locations'}
+                  {selectedLocationData
+                    ? selectedLocationData.name
+                    : "All Locations"}
                 </span>
               </div>
-              <ChevronDown size={14} className={`flex-shrink-0 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown
+                size={14}
+                className={`flex-shrink-0 transition-transform ${isLocationOpen ? "rotate-180" : ""}`}
+              />
             </button>
 
             {isLocationOpen && (
@@ -184,30 +209,44 @@ export function SmartShopControls({
                   >
                     <div className="flex items-center gap-3">
                       <MapPin size={16} className="text-white/40" />
-                      <p className="text-xs font-medium uppercase tracking-wider text-white">All Locations</p>
+                      <p className="text-xs font-medium uppercase tracking-wider text-white">
+                        All Locations
+                      </p>
                     </div>
-                    {!selectedLocation && <Check size={14} strokeWidth={2} className="text-white" />}
+                    {!selectedLocation && (
+                      <Check size={14} strokeWidth={2} className="text-white" />
+                    )}
                   </button>
 
                   {locations.map((location: any) => (
                     <button
                       key={location.id}
-                      onClick={() => handleLocationSelect(location.id.toString())}
+                      onClick={() =>
+                        handleLocationSelect(location.id.toString())
+                      }
                       className="w-full px-4 py-3 text-left hover:bg-white/5 transition-colors flex items-center justify-between"
                     >
                       <div className="flex items-center gap-3">
                         <MapPin size={16} className="text-white/40" />
                         <div className="min-w-0">
-                          <p className="text-xs font-medium uppercase tracking-wider text-white">{location.name}</p>
+                          <p className="text-xs font-medium uppercase tracking-wider text-white">
+                            {location.name}
+                          </p>
                           {(location.city || location.state) && (
                             <p className="text-[10px] text-white/50 font-light tracking-wide mt-0.5 truncate">
-                              {location.city}{location.city && location.state && ", "}{location.state}
+                              {location.city}
+                              {location.city && location.state && ", "}
+                              {location.state}
                             </p>
                           )}
                         </div>
                       </div>
                       {selectedLocation === location.id.toString() && (
-                        <Check size={14} strokeWidth={2} className="text-white" />
+                        <Check
+                          size={14}
+                          strokeWidth={2}
+                          className="text-white"
+                        />
                       )}
                     </button>
                   ))}
@@ -232,4 +271,3 @@ export function SmartShopControls({
     </div>
   );
 }
-

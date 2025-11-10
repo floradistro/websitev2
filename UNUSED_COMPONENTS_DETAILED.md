@@ -1,14 +1,17 @@
 # UNUSED COMPONENTS - COMPLETE BREAKDOWN
+
 **Total: 153 components | Estimated: ~15,000 lines**
 
 ---
 
 ## CATEGORY 1: CORE UI COMPONENTS (23 components)
+
 **Location:** `components/ui/*`  
 **Purpose:** Generic UI building blocks  
 **Safe to Delete:** YES - these are unused duplicates
 
 ### Generic UI Elements (20 components)
+
 1. `POSTextarea.tsx` - POS-specific textarea input
 2. `StatsGrid.tsx` - Grid for displaying statistics
 3. `QuickActionCard.tsx` - Card for quick actions
@@ -31,6 +34,7 @@
 20. `dashboard/Stat.tsx` - Dashboard stat display
 
 ### Top-level UI (3 components)
+
 21. `AdminPageWrapper.tsx` - Wrapper for admin pages
 22. `VendorProfitWidget.tsx` - Profit display widget
 23. `LogoAnimation.tsx` - Animated logo component
@@ -40,6 +44,7 @@
 ---
 
 ## CATEGORY 2: COMPONENT REGISTRY - SMART (18 components)
+
 **Location:** `components/component-registry/smart/*`  
 **Purpose:** "Smart" storefront components (old architecture)  
 **Safe to Delete:** MAYBE - check if component editor is still needed
@@ -73,6 +78,7 @@
 ---
 
 ## CATEGORY 3: COMPONENT REGISTRY - ATOMIC (7 components)
+
 **Location:** `components/component-registry/atomic/*`  
 **Purpose:** Atomic design pattern components  
 **Safe to Delete:** YES - atomic pattern was eliminated
@@ -90,6 +96,7 @@
 ---
 
 ## CATEGORY 4: COMPONENT REGISTRY - COMPOSITE (2 components)
+
 **Location:** `components/component-registry/composite/*`  
 **Purpose:** Composite pattern components
 
@@ -101,6 +108,7 @@
 ---
 
 ## CATEGORY 5: COMPONENT REGISTRY - POS (10 components)
+
 **Location:** `components/component-registry/pos/*`  
 **Purpose:** POS system components (old registry version)  
 **Safe to Delete:** MAYBE - check if these are duplicates of working POS
@@ -122,10 +130,12 @@
 ---
 
 ## CATEGORY 6: VENDOR UI COMPONENTS (24 components)
+
 **Location:** `components/vendor/ui/*` and `components/vendor/branding/*`  
 **Purpose:** Vendor-specific UI elements
 
 ### Vendor UI (12 components)
+
 1. `vendor/ui/Card.tsx` - Vendor card wrapper
 2. `vendor/ui/PageHeader.tsx` - Page header
 3. `vendor/ui/Grid.tsx` - Grid layout
@@ -138,6 +148,7 @@
 10. `vendor/ui/Input.tsx` - Input component
 
 ### Vendor Branding (9 components) ⚠️ NEWLY ADDED
+
 11. `vendor/branding/BrandPreview.tsx` - **NEW TODAY - May become used**
 12. `vendor/branding/BrandAssetLibrary.tsx` - Asset library
 13. `vendor/branding/PolicyEditor.tsx` - **NEW TODAY - May become used**
@@ -150,6 +161,7 @@
 20. `vendor/branding/ColorPicker.tsx` - Color picker
 
 ### Vendor Other (5 components)
+
 21. `vendor/TemplateMarketplace.tsx` - Template marketplace
 22. `vendor/VendorStat.tsx` - Vendor stat widget
 23. `vendor/SimpleScopeSelector.tsx` - Scope selector
@@ -172,6 +184,7 @@
 ---
 
 ## CATEGORY 7: VENDOR CODE COMPONENTS (2 components)
+
 **Location:** `components/vendor/code/*`  
 **Purpose:** Code editor functionality
 
@@ -184,6 +197,7 @@
 ---
 
 ## CATEGORY 8: HOMEPAGE & STOREFRONT (4 components)
+
 **Location:** `components/HomePage/*`  
 **Purpose:** Homepage-specific components
 
@@ -198,6 +212,7 @@
 ---
 
 ## CATEGORY 9: DESIGN SYSTEM DUPLICATES (5 components)
+
 **Location:** `components/ds/*`  
 **Purpose:** Design system components (duplicate of ShadCN)
 
@@ -213,6 +228,7 @@
 ---
 
 ## CATEGORY 10: ADMIN COMPONENTS (4 components)
+
 **Location:** `components/admin/*`  
 **Purpose:** Admin panel components
 
@@ -227,6 +243,7 @@
 ---
 
 ## CATEGORY 11: PRODUCT COMPONENTS (8 components)
+
 **Location:** Various  
 **Purpose:** Product display/management
 
@@ -245,6 +262,7 @@
 ---
 
 ## CATEGORY 12: CUSTOMER COMPONENTS (1 component)
+
 **Location:** `components/customer/*`  
 **Purpose:** Customer-facing features
 
@@ -256,6 +274,7 @@
 ---
 
 ## CATEGORY 13: ANIMATION COMPONENTS (3 components)
+
 **Location:** `components/animations/*`  
 **Purpose:** Animation utilities
 
@@ -269,6 +288,7 @@
 ---
 
 ## CATEGORY 14: DISPLAY GROUPS (2 components)
+
 **Location:** `components/display-groups/*`  
 **Purpose:** Display group management
 
@@ -281,6 +301,7 @@
 ---
 
 ## CATEGORY 15: FIELD COMPONENTS (2 components)
+
 **Location:** `components/fields/inline/*`  
 **Purpose:** Inline field editors
 
@@ -293,6 +314,7 @@
 ---
 
 ## CATEGORY 16: ORDER & SHIPPING (6 components)
+
 **Location:** Various  
 **Purpose:** Order and shipping features
 
@@ -309,6 +331,7 @@
 ---
 
 ## CATEGORY 17: MISC UTILITIES (11 components)
+
 **Location:** Various  
 **Purpose:** Miscellaneous utility components
 
@@ -338,8 +361,9 @@
 ## DELETION STRATEGY
 
 ### HIGH PRIORITY (Delete Now) - 90 components
-1. All UI duplicates (components/ui/*, components/ds/*) - 28 components
-2. All atomic components - 7 components  
+
+1. All UI duplicates (components/ui/_, components/ds/_) - 28 components
+2. All atomic components - 7 components
 3. All composite components - 2 components
 4. Product skeletons and old product components - 8 components
 5. Old homepage components - 4 components
@@ -354,6 +378,7 @@
 **Estimated Lines Saved:** ~10,000 lines
 
 ### MEDIUM PRIORITY (Verify then Delete) - 40 components
+
 1. Component Registry Smart components - 18 components
 2. Component Registry POS components - 10 components
 3. Display group components - 2 components
@@ -364,6 +389,7 @@
 **Estimated Lines Saved:** ~4,000 lines
 
 ### LOW PRIORITY (Keep for Now) - 23 components
+
 1. **New branding components (added today)** - 5 components
    - BrandPreview.tsx
    - BusinessHoursEditor.tsx
@@ -387,6 +413,7 @@
 Would you like me to delete the HIGH PRIORITY components (90 components, ~10,000 lines)?
 
 This includes:
+
 - All duplicate UI components
 - All atomic/composite components
 - Old product/homepage components

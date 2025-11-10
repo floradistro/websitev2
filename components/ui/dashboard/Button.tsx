@@ -1,31 +1,31 @@
-import { getTheme, tw, ThemeName } from '@/lib/dashboard-theme';
-import { LucideIcon } from 'lucide-react';
+import { getTheme, tw, ThemeName } from "@/lib/dashboard-theme";
+import { LucideIcon } from "lucide-react";
 
 interface ButtonProps {
   children: React.ReactNode;
   theme?: ThemeName;
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  variant?: "primary" | "secondary" | "danger" | "ghost";
   icon?: LucideIcon;
   onClick?: () => void;
   disabled?: boolean;
-  type?: 'button' | 'submit' | 'reset';
+  type?: "button" | "submit" | "reset";
   className?: string;
   loading?: boolean;
 }
 
 export function DashboardButton({
   children,
-  theme = 'admin',
-  variant = 'primary',
+  theme = "admin",
+  variant = "primary",
   icon: Icon,
   onClick,
   disabled,
-  type = 'button',
+  type = "button",
   className,
   loading,
 }: ButtonProps) {
   const themeObj = getTheme(theme);
-  
+
   return (
     <button
       type={type}
@@ -34,9 +34,9 @@ export function DashboardButton({
       className={tw(
         themeObj.components.button.base,
         themeObj.components.button[variant],
-        'flex items-center justify-center gap-2',
-        disabled && 'opacity-50 cursor-not-allowed',
-        className
+        "flex items-center justify-center gap-2",
+        disabled && "opacity-50 cursor-not-allowed",
+        className,
       )}
     >
       {loading ? (
@@ -48,4 +48,3 @@ export function DashboardButton({
     </button>
   );
 }
-

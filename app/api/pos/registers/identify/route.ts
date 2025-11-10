@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 // POST /api/pos/registers/identify - Identify/claim a register for this device
 export async function POST(request: NextRequest) {
@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
 
     if (!deviceId || !locationId) {
       return NextResponse.json(
-        { error: 'deviceId and locationId are required' },
-        { status: 400 }
+        { error: "deviceId and locationId are required" },
+        { status: 400 },
       );
     }
 
@@ -19,22 +19,26 @@ export async function POST(request: NextRequest) {
     // If registerId provided, claim that specific register
     if (registerId) {
       const { data: register, error } = await supabase
-        .from('pos_registers')
+        .from("pos_registers")
         .update({
           device_id: deviceId,
           last_active_at: new Date().toISOString(),
-          last_ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+          last_ip_address:
+            request.headers.get("x-forwarded-for") ||
+            request.headers.get("x-real-ip"),
         })
-        .eq('id', registerId)
-        .eq('location_id', locationId)
+        .eq("id", registerId)
+        .eq("location_id", locationId)
         .select()
         .single();
 
       if (error) {
-        console.error('Error claiming register:', error);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error claiming register:", error);
+        }
         return NextResponse.json(
-          { error: 'Failed to claim register' },
-          { status: 500 }
+          { error: "Failed to claim register" },
+          { status: 500 },
         );
       }
 
@@ -47,22 +51,24 @@ export async function POST(request: NextRequest) {
 
     // Otherwise, try to find existing register by device ID
     const { data: existingRegister } = await supabase
-      .from('pos_registers')
-      .select('*')
-      .eq('device_id', deviceId)
-      .eq('location_id', locationId)
-      .eq('status', 'active')
+      .from("pos_registers")
+      .select("*")
+      .eq("device_id", deviceId)
+      .eq("location_id", locationId)
+      .eq("status", "active")
       .single();
 
     if (existingRegister) {
       // Update last active
       await supabase
-        .from('pos_registers')
+        .from("pos_registers")
         .update({
           last_active_at: new Date().toISOString(),
-          last_ip_address: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
+          last_ip_address:
+            request.headers.get("x-forwarded-for") ||
+            request.headers.get("x-real-ip"),
         })
-        .eq('id', existingRegister.id);
+        .eq("id", existingRegister.id);
 
       return NextResponse.json({
         success: true,
@@ -73,26 +79,27 @@ export async function POST(request: NextRequest) {
 
     // No existing register found - need to manually assign one
     const { data: availableRegisters } = await supabase
-      .from('pos_registers')
-      .select('*')
-      .eq('location_id', locationId)
-      .eq('status', 'active')
-      .is('device_id', null)
-      .order('register_number')
+      .from("pos_registers")
+      .select("*")
+      .eq("location_id", locationId)
+      .eq("status", "active")
+      .is("device_id", null)
+      .order("register_number")
       .limit(10);
 
     return NextResponse.json({
       success: false,
       needsAssignment: true,
       availableRegisters: availableRegisters || [],
-      message: 'Please select a register for this device',
+      message: "Please select a register for this device",
     });
   } catch (error: any) {
-    console.error('Error in POST /api/pos/registers/identify:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in POST /api/pos/registers/identify:", error);
+    }
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
-      { status: 500 }
+      { error: error.message || "Internal server error" },
+      { status: 500 },
     );
   }
 }
-

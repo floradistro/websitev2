@@ -4,14 +4,14 @@
  * Amazon/Apple-style live stock tracking
  */
 
-import { createClient, RealtimeChannel } from '@supabase/supabase-js';
-import { inventoryCache } from './cache-manager';
+import { createClient, RealtimeChannel } from "@supabase/supabase-js";
+import { inventoryCache } from "./cache-manager";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export type InventoryChangeEvent = {
-  eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+  eventType: "INSERT" | "UPDATE" | "DELETE";
   old: any;
   new: any;
   table: string;
@@ -32,15 +32,14 @@ export class RealtimeInventoryManager {
 
   constructor() {
     // Only create client on browser side
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       this.supabase = createClient(supabaseUrl, supabaseAnonKey, {
         realtime: {
           params: {
-            eventsPerSecond: 10 // Rate limiting
-          }
-        }
+            eventsPerSecond: 10, // Rate limiting
+          },
+        },
       });
-      console.log('📡 RealtimeInventoryManager initialized');
     }
   }
 
@@ -57,14 +56,17 @@ export class RealtimeInventoryManager {
   /**
    * Subscribe to inventory changes for a specific product
    */
-  subscribeToProduct(productId: string, handler: InventoryChangeHandler): string {
+  subscribeToProduct(
+    productId: string,
+    handler: InventoryChangeHandler,
+  ): string {
     if (!this.supabase) {
-      console.warn('⚠️  Realtime not available (server-side)');
-      return '';
+      console.warn("⚠️  Realtime not available (server-side)");
+      return "";
     }
 
     const channelName = `inventory-product-${productId}`;
-    
+
     // Store handler
     if (!this.handlers.has(channelName)) {
       this.handlers.set(channelName, new Set());
@@ -73,24 +75,20 @@ export class RealtimeInventoryManager {
 
     // Create channel if it doesn't exist
     if (!this.channels.has(channelName)) {
-      console.log(`📡 Creating real-time channel: ${channelName}`);
-      
       const channel = this.supabase
         .channel(channelName)
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-            schema: 'public',
-            table: 'inventory',
-            filter: `product_id=eq.${productId}`
+            event: "*", // Listen to all events (INSERT, UPDATE, DELETE)
+            schema: "public",
+            table: "inventory",
+            filter: `product_id=eq.${productId}`,
           },
           (payload: any) => {
-            console.log('📡 Inventory change detected:', payload);
-            
             // Invalidate inventory cache
             inventoryCache.invalidatePattern(`.*product.*${productId}.*`);
-            
+
             // Notify all handlers
             const handlers = this.handlers.get(channelName);
             if (handlers) {
@@ -98,22 +96,23 @@ export class RealtimeInventoryManager {
                 eventType: payload.eventType,
                 old: payload.old,
                 new: payload.new,
-                table: payload.table
+                table: payload.table,
               };
-              
-              handlers.forEach(h => {
+
+              handlers.forEach((h) => {
                 try {
                   h(event);
                 } catch (error) {
-                  console.error('Error in inventory change handler:', error);
+                  if (process.env.NODE_ENV === "development") {
+                    console.error("Error in inventory change handler:", error);
+                  }
                 }
               });
             }
-          }
+          },
         )
         .subscribe((status: string) => {
-          console.log(`📡 Channel ${channelName} status:`, status);
-          this.isConnected = status === 'SUBSCRIBED';
+          this.isConnected = status === "SUBSCRIBED";
         });
 
       this.channels.set(channelName, channel);
@@ -127,12 +126,12 @@ export class RealtimeInventoryManager {
    */
   subscribeToVendor(vendorId: string, handler: InventoryChangeHandler): string {
     if (!this.supabase) {
-      console.warn('⚠️  Realtime not available (server-side)');
-      return '';
+      console.warn("⚠️  Realtime not available (server-side)");
+      return "";
     }
 
     const channelName = `inventory-vendor-${vendorId}`;
-    
+
     // Store handler
     if (!this.handlers.has(channelName)) {
       this.handlers.set(channelName, new Set());
@@ -141,24 +140,20 @@ export class RealtimeInventoryManager {
 
     // Create channel if it doesn't exist
     if (!this.channels.has(channelName)) {
-      console.log(`📡 Creating vendor real-time channel: ${channelName}`);
-      
       const channel = this.supabase
         .channel(channelName)
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: '*',
-            schema: 'public',
-            table: 'inventory',
-            filter: `vendor_id=eq.${vendorId}`
+            event: "*",
+            schema: "public",
+            table: "inventory",
+            filter: `vendor_id=eq.${vendorId}`,
           },
           (payload: any) => {
-            console.log('📡 Vendor inventory change:', payload);
-            
             // Invalidate vendor caches
             inventoryCache.invalidatePattern(`.*vendor.*${vendorId}.*`);
-            
+
             // Notify handlers
             const handlers = this.handlers.get(channelName);
             if (handlers) {
@@ -166,22 +161,22 @@ export class RealtimeInventoryManager {
                 eventType: payload.eventType,
                 old: payload.old,
                 new: payload.new,
-                table: payload.table
+                table: payload.table,
               };
-              
-              handlers.forEach(h => {
+
+              handlers.forEach((h) => {
                 try {
                   h(event);
                 } catch (error) {
-                  console.error('Error in vendor inventory handler:', error);
+                  if (process.env.NODE_ENV === "development") {
+                    console.error("Error in vendor inventory handler:", error);
+                  }
                 }
               });
             }
-          }
+          },
         )
-        .subscribe((status: string) => {
-          console.log(`📡 Vendor channel ${channelName} status:`, status);
-        });
+        .subscribe((status: string) => {});
 
       this.channels.set(channelName, channel);
     }
@@ -195,7 +190,6 @@ export class RealtimeInventoryManager {
   unsubscribe(channelName: string): void {
     const channel = this.channels.get(channelName);
     if (channel) {
-      console.log(`📡 Unsubscribing from channel: ${channelName}`);
       this.supabase.removeChannel(channel);
       this.channels.delete(channelName);
       this.handlers.delete(channelName);
@@ -206,7 +200,6 @@ export class RealtimeInventoryManager {
    * Unsubscribe from all channels
    */
   unsubscribeAll(): void {
-    console.log('📡 Unsubscribing from all channels');
     this.channels.forEach((channel, name) => {
       this.supabase.removeChannel(channel);
     });
@@ -231,6 +224,5 @@ export class RealtimeInventoryManager {
 }
 
 // Export singleton instance for convenience
-export const realtimeInventory = typeof window !== 'undefined' 
-  ? RealtimeInventoryManager.getInstance() 
-  : null;
+export const realtimeInventory =
+  typeof window !== "undefined" ? RealtimeInventoryManager.getInstance() : null;

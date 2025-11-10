@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 /**
  * POST /api/admin/run-session-migration
@@ -11,8 +11,6 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
-
-    console.log('🔧 Creating increment_session_counter function...');
 
     const sql = `
 CREATE OR REPLACE FUNCTION increment_session_counter(
@@ -57,33 +55,38 @@ COMMENT ON FUNCTION increment_session_counter IS
     `;
 
     // Execute the SQL using rpc
-    const { data, error } = await supabase.rpc('exec_sql', { sql });
+    const { data, error } = await supabase.rpc("exec_sql", { sql });
 
     if (error) {
-      console.error('❌ Could not execute via RPC:', error);
-
-      return NextResponse.json({
-        success: false,
-        error: 'Could not execute SQL via RPC',
-        message: 'Please execute the SQL manually in Supabase Dashboard',
-        sql: sql
-      }, { status: 500 });
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Could not execute via RPC:", error);
+      }
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Could not execute SQL via RPC",
+          message: "Please execute the SQL manually in Supabase Dashboard",
+          sql: sql,
+        },
+        { status: 500 },
+      );
     }
-
-    console.log('✅ Function created successfully!');
 
     return NextResponse.json({
       success: true,
-      message: 'increment_session_counter function created successfully'
+      message: "increment_session_counter function created successfully",
     });
-
   } catch (error: any) {
-    console.error('❌ Error creating function:', error);
-
-    return NextResponse.json({
-      success: false,
-      error: error.message,
-      details: error.toString()
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Error creating function:", error);
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message,
+        details: error.toString(),
+      },
+      { status: 500 },
+    );
   }
 }

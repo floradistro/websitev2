@@ -3,8 +3,8 @@
  * Type definitions and helper functions for storefront templates
  */
 
-import { headers } from 'next/headers';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { headers } from "next/headers";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 export interface VendorStorefront {
   id: string;
@@ -36,23 +36,27 @@ export interface VendorStorefront {
  */
 export async function getVendorFromHeaders(): Promise<string | null> {
   const headersList = await headers();
-  return headersList.get('x-vendor-id');
+  return headersList.get("x-vendor-id");
 }
 
 /**
  * Get vendor storefront data from database
  */
-export async function getVendorStorefront(vendorId: string): Promise<VendorStorefront | null> {
+export async function getVendorStorefront(
+  vendorId: string,
+): Promise<VendorStorefront | null> {
   const supabase = getServiceSupabase();
 
   const { data, error } = await supabase
-    .from('vendors')
-    .select('*')
-    .eq('id', vendorId)
+    .from("vendors")
+    .select("*")
+    .eq("id", vendorId)
     .single();
 
   if (error || !data) {
-    console.error('Error fetching vendor:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error fetching vendor:", error);
+    }
     return null;
   }
 

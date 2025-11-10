@@ -4,7 +4,7 @@
  */
 
 export interface LocationProfile {
-  locationType: 'checkout' | 'entrance' | 'waiting' | 'wall_menu' | 'other';
+  locationType: "checkout" | "entrance" | "waiting" | "wall_menu" | "other";
   dwellTimeSeconds: number;
   viewingDistanceFeet: number;
   businessGoals: string[];
@@ -27,36 +27,43 @@ export class CategoryRecommender {
   static recommend(
     location: LocationProfile,
     availableCategories: string[],
-    productCounts: { [category: string]: number }
+    productCounts: { [category: string]: number },
   ): CategoryRecommendation {
     const { locationType, dwellTimeSeconds, businessGoals } = location;
 
     // Location-specific strategies
     const strategies = {
       checkout: {
-        focus: 'impulse',
+        focus: "impulse",
         categories: this.getImpulseCategories(availableCategories),
-        reasoning: 'Checkout displays should show quick-decision, impulse buy items like edibles, beverages, and accessories.',
+        reasoning:
+          "Checkout displays should show quick-decision, impulse buy items like edibles, beverages, and accessories.",
       },
       entrance: {
-        focus: 'popular',
-        categories: this.getPopularCategories(availableCategories, productCounts),
-        reasoning: 'Entrance displays create first impressions. Show your most popular categories to draw customers in.',
+        focus: "popular",
+        categories: this.getPopularCategories(
+          availableCategories,
+          productCounts,
+        ),
+        reasoning:
+          "Entrance displays create first impressions. Show your most popular categories to draw customers in.",
       },
       waiting: {
-        focus: 'educational',
+        focus: "educational",
         categories: availableCategories, // Show everything
-        reasoning: 'Waiting areas have longer viewing times. Display full product range with educational content.',
+        reasoning:
+          "Waiting areas have longer viewing times. Display full product range with educational content.",
       },
       wall_menu: {
-        focus: 'comprehensive',
+        focus: "comprehensive",
         categories: availableCategories, // Show everything
-        reasoning: 'Main wall menus serve as primary product browser. Display all categories.',
+        reasoning:
+          "Main wall menus serve as primary product browser. Display all categories.",
       },
       other: {
-        focus: 'custom',
+        focus: "custom",
         categories: this.getBalancedSelection(availableCategories),
-        reasoning: 'Balanced category mix for general viewing.',
+        reasoning: "Balanced category mix for general viewing.",
       },
     };
 
@@ -67,22 +74,27 @@ export class CategoryRecommender {
     if (dwellTimeSeconds < 15 && finalCategories.length > 3) {
       // Short dwell time = fewer categories
       finalCategories = finalCategories.slice(0, 3);
-      strategy.reasoning += ' Limited to 3 categories due to short viewing time.';
+      strategy.reasoning +=
+        " Limited to 3 categories due to short viewing time.";
     }
 
     // Adjust based on business goals
-    if (businessGoals.includes('Increase high-margin sales')) {
+    if (businessGoals.includes("Increase high-margin sales")) {
       finalCategories = this.prioritizeHighMargin(finalCategories);
-      strategy.reasoning += ' Prioritized high-margin categories.';
+      strategy.reasoning += " Prioritized high-margin categories.";
     }
 
-    if (businessGoals.includes('Clear old inventory')) {
+    if (businessGoals.includes("Clear old inventory")) {
       // Could filter to categories with excess inventory
-      strategy.reasoning += ' Consider showing categories with excess stock.';
+      strategy.reasoning += " Consider showing categories with excess stock.";
     }
 
     // Generate alternatives
-    const alternatives = this.generateAlternatives(availableCategories, locationType, productCounts);
+    const alternatives = this.generateAlternatives(
+      availableCategories,
+      locationType,
+      productCounts,
+    );
 
     return {
       recommended: finalCategories,
@@ -95,9 +107,15 @@ export class CategoryRecommender {
    * Get impulse buy categories
    */
   private static getImpulseCategories(categories: string[]): string[] {
-    const impulseTypes = ['edibles', 'beverages', 'accessories', 'pre-rolls', 'tinctures'];
+    const impulseTypes = [
+      "edibles",
+      "beverages",
+      "accessories",
+      "pre-rolls",
+      "tinctures",
+    ];
     return categories.filter((cat) =>
-      impulseTypes.some((type) => cat.toLowerCase().includes(type))
+      impulseTypes.some((type) => cat.toLowerCase().includes(type)),
     );
   }
 
@@ -106,7 +124,7 @@ export class CategoryRecommender {
    */
   private static getPopularCategories(
     categories: string[],
-    productCounts: { [category: string]: number }
+    productCounts: { [category: string]: number },
   ): string[] {
     return categories
       .sort((a, b) => (productCounts[b] || 0) - (productCounts[a] || 0))
@@ -119,13 +137,16 @@ export class CategoryRecommender {
   private static getBalancedSelection(categories: string[]): string[] {
     // Try to get one from each major type
     const types = {
-      flower: categories.find((c) => c.toLowerCase().includes('flower')),
-      edible: categories.find((c) => c.toLowerCase().includes('edible')),
-      concentrate: categories.find((c) => c.toLowerCase().includes('concentrate')),
-      other: categories.find((c) =>
-        !c.toLowerCase().includes('flower') &&
-        !c.toLowerCase().includes('edible') &&
-        !c.toLowerCase().includes('concentrate')
+      flower: categories.find((c) => c.toLowerCase().includes("flower")),
+      edible: categories.find((c) => c.toLowerCase().includes("edible")),
+      concentrate: categories.find((c) =>
+        c.toLowerCase().includes("concentrate"),
+      ),
+      other: categories.find(
+        (c) =>
+          !c.toLowerCase().includes("flower") &&
+          !c.toLowerCase().includes("edible") &&
+          !c.toLowerCase().includes("concentrate"),
       ),
     };
 
@@ -138,10 +159,10 @@ export class CategoryRecommender {
   private static prioritizeHighMargin(categories: string[]): string[] {
     // In a real system, would query actual margin data
     // For now, assume concentrates/edibles have higher margins
-    const highMargin = ['concentrates', 'edibles', 'tinctures', 'vapes'];
+    const highMargin = ["concentrates", "edibles", "tinctures", "vapes"];
 
     const prioritized = categories.filter((cat) =>
-      highMargin.some((type) => cat.toLowerCase().includes(type))
+      highMargin.some((type) => cat.toLowerCase().includes(type)),
     );
 
     return prioritized.length > 0 ? prioritized : categories;
@@ -153,17 +174,18 @@ export class CategoryRecommender {
   private static generateAlternatives(
     categories: string[],
     locationType: string,
-    productCounts: { [category: string]: number }
+    productCounts: { [category: string]: number },
   ): Array<{ name: string; categories: string[]; rationale: string }> {
     const alternatives = [];
 
     // Alternative 1: Single category focus
-    const topCategory = Object.entries(productCounts)
-      .sort(([, a], [, b]) => b - a)[0]?.[0];
+    const topCategory = Object.entries(productCounts).sort(
+      ([, a], [, b]) => b - a,
+    )[0]?.[0];
 
     if (topCategory) {
       alternatives.push({
-        name: 'Single Category Focus',
+        name: "Single Category Focus",
         categories: [topCategory],
         rationale: `Focus exclusively on ${topCategory} for maximum impact and simplicity.`,
       });
@@ -177,24 +199,26 @@ export class CategoryRecommender {
 
     if (topThree.length >= 2) {
       alternatives.push({
-        name: 'Best Sellers',
+        name: "Best Sellers",
         categories: topThree,
-        rationale: 'Display only your top-selling categories to maximize conversion.',
+        rationale:
+          "Display only your top-selling categories to maximize conversion.",
       });
     }
 
     // Alternative 3: Premium only
     const premium = categories.filter((cat) =>
-      ['concentrate', 'vape', 'tincture'].some((type) =>
-        cat.toLowerCase().includes(type)
-      )
+      ["concentrate", "vape", "tincture"].some((type) =>
+        cat.toLowerCase().includes(type),
+      ),
     );
 
     if (premium.length > 0) {
       alternatives.push({
-        name: 'Premium Products',
+        name: "Premium Products",
         categories: premium,
-        rationale: 'Showcase high-margin premium products for increased revenue.',
+        rationale:
+          "Showcase high-margin premium products for increased revenue.",
       });
     }
 

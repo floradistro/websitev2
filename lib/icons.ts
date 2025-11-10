@@ -17,7 +17,7 @@ export {
   ArrowRight,
   ArrowUpRight,
   ArrowDownRight,
-  
+
   // Actions
   Plus,
   Minus,
@@ -33,7 +33,7 @@ export {
   AlertCircle,
   AlertTriangle,
   Info,
-  
+
   // Business
   Package,
   ShoppingCart,
@@ -43,7 +43,7 @@ export {
   CreditCard,
   Receipt,
   Tag,
-  
+
   // Users & Auth
   User,
   Users,
@@ -54,7 +54,7 @@ export {
   Unlock,
   Eye,
   EyeOff,
-  
+
   // Data & Analytics
   TrendingUp,
   TrendingDown,
@@ -62,7 +62,7 @@ export {
   PieChart,
   Activity,
   Target,
-  
+
   // Content
   FileText,
   File,
@@ -72,7 +72,7 @@ export {
   FileCode,
   Code,
   Terminal,
-  
+
   // Settings & System
   Settings,
   Sliders,
@@ -84,19 +84,19 @@ export {
   Wifi,
   WifiOff,
   Zap,
-  
+
   // Communication
   Bell,
   MessageSquare,
   Mail,
   Send,
   Phone,
-  
+
   // Location & Navigation
   MapPin,
   Globe,
   Compass,
-  
+
   // Media
   Play,
   Pause,
@@ -104,7 +104,7 @@ export {
   Star,
   Heart,
   Share2,
-  
+
   // Misc
   Calendar,
   Clock,
@@ -121,7 +121,7 @@ export {
   ExternalLink,
   Link2,
   Unlink,
-  
+
   // New additions for vendor
   Sparkles,
   Wand2,
@@ -133,14 +133,13 @@ export {
   Droplet,
   Move,
   GripVertical,
-  
+
   // Notifications
   CheckSquare,
-  
+
   // React & Testing
   FlaskConical,
-  
-} from 'lucide-react';
+} from "lucide-react";
 
 // Export commonly used icon props
 export const iconProps = {
@@ -149,4 +148,3 @@ export const iconProps = {
   large: { size: 20, strokeWidth: 1.5 },
   xl: { size: 24, strokeWidth: 1.5 },
 };
-

@@ -1,1 +1,1 @@
-export{a as getDataCaptureViewStyles}from'../chunks/chunk-MQ6H2ORR.js';
+export { a as getDataCaptureViewStyles } from "../chunks/chunk-MQ6H2ORR.js";

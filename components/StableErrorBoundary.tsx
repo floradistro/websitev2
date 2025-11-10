@@ -1,7 +1,7 @@
 "use client";
 
-import { Component, ReactNode } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { Component, ReactNode } from "react";
+import { AlertTriangle } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -24,7 +24,9 @@ export class StableErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('ErrorBoundary caught:', error, errorInfo);
+    if (process.env.NODE_ENV === "development") {
+      console.error("ErrorBoundary caught:", error, errorInfo);
+    }
   }
 
   render() {
@@ -37,9 +39,11 @@ export class StableErrorBoundary extends Component<Props, State> {
         <div className="flex items-center justify-center min-h-[400px] bg-[#1a1a1a] border border-white/10 p-8">
           <div className="text-center max-w-md">
             <AlertTriangle size={48} className="text-yellow-500 mx-auto mb-4" />
-            <h2 className="text-white text-xl font-medium mb-2">Something went wrong</h2>
+            <h2 className="text-white text-xl font-medium mb-2">
+              Something went wrong
+            </h2>
             <p className="text-white/60 text-sm mb-4">
-              {this.state.error?.message || 'An unexpected error occurred'}
+              {this.state.error?.message || "An unexpected error occurred"}
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -55,4 +59,3 @@ export class StableErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
-

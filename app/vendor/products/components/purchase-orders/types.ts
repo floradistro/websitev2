@@ -21,7 +21,7 @@ export interface POItem {
 export interface PurchaseOrder {
   id: string;
   po_number: string;
-  po_type?: 'inbound' | 'outbound';
+  po_type?: "inbound" | "outbound";
   status: string;
   total?: number;
   created_at?: string;

@@ -1,18 +1,25 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-export type UserRole = 'vendor_owner' | 'vendor_manager' | 'location_manager' | 'pos_staff' | 'inventory_staff' | 'readonly' | 'admin';
+export type UserRole =
+  | "vendor_owner"
+  | "vendor_manager"
+  | "location_manager"
+  | "pos_staff"
+  | "inventory_staff"
+  | "readonly"
+  | "admin";
 
 interface Vendor {
   id: string;
   store_name: string;
   slug: string;
   logo_url?: string;
-  vendor_type?: 'standard' | 'distributor' | 'both';
+  vendor_type?: "standard" | "distributor" | "both";
   wholesale_enabled?: boolean;
   pos_enabled?: boolean;
-  marketing_provider?: 'builtin' | 'alpineiq';
+  marketing_provider?: "builtin" | "alpineiq";
   marketing_config?: any;
 }
 
@@ -83,38 +90,40 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
   // Helper: Check if user has admin privileges (DRY - Don't Repeat Yourself)
   const isAdminRole = (role: UserRole) => {
-    return role === 'vendor_owner' || role === 'vendor_manager' || role === 'admin';
+    return (
+      role === "vendor_owner" || role === "vendor_manager" || role === "admin"
+    );
   };
 
   // Helper: Get accessible apps for user (DRY - Don't Repeat Yourself)
   const getAccessibleApps = (role: UserRole, serverApps?: string[]) => {
-    const defaultApps = ['pos', 'customers', 'tv_menus'];
-    return isAdminRole(role) ? [] : (serverApps || defaultApps);
+    const defaultApps = ["pos", "customers", "tv_menus"];
+    return isAdminRole(role) ? [] : serverApps || defaultApps;
   };
 
   // Helper function to fetch locations from server (DRY - Don't Repeat Yourself)
   const fetchLocationsFromServer = async () => {
     try {
-      console.log('🔄 Fetching locations from server...');
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      console.log("🔄 Fetching locations from server...");
+      const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
       const data = await response.json();
       if (data.success && data.locations) {
-        console.log('✅ Got locations from server:', data.locations.length);
+        console.log("✅ Got locations from server:", data.locations.length);
         // CRITICAL: Set locations FIRST, then set isLoading to false
         // This prevents the component from rendering with locations=[] and isLoading=false
         setLocations(data.locations);
-        localStorage.setItem('app_locations', JSON.stringify(data.locations));
+        localStorage.setItem("app_locations", JSON.stringify(data.locations));
         setIsLoading(false); // Move here from finally - only after locations are set
       } else {
-        console.error('⚠️ Refresh failed or no locations returned:', data);
+        console.error("⚠️ Refresh failed or no locations returned:", data);
         setIsLoading(false);
       }
     } catch (err) {
-      console.error('Failed to fetch locations:', err);
+      console.error("Failed to fetch locations:", err);
       setIsLoading(false);
     }
   };
@@ -124,9 +133,9 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
 
     async function initAuth() {
-      const savedUser = localStorage.getItem('app_user');
-      const savedApps = localStorage.getItem('app_accessible_apps');
-      const savedLocations = localStorage.getItem('app_locations');
+      const savedUser = localStorage.getItem("app_user");
+      const savedApps = localStorage.getItem("app_accessible_apps");
+      const savedLocations = localStorage.getItem("app_locations");
 
       if (savedUser && mounted) {
         try {
@@ -143,8 +152,12 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
           if (savedApps) {
             const parsedApps = JSON.parse(savedApps);
             // If empty array and not admin, use default apps
-            const defaultApps = ['pos', 'customers', 'tv_menus'];
-            setAccessibleApps(parsedApps.length === 0 && !isAdminRole(userData.role) ? defaultApps : parsedApps);
+            const defaultApps = ["pos", "customers", "tv_menus"];
+            setAccessibleApps(
+              parsedApps.length === 0 && !isAdminRole(userData.role)
+                ? defaultApps
+                : parsedApps,
+            );
           } else {
             // No saved apps - get defaults based on role
             setAccessibleApps(getAccessibleApps(userData.role));
@@ -152,7 +165,9 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
           // Handle locations - fetch from server if missing or empty
           if (!savedLocations || JSON.parse(savedLocations).length === 0) {
-            console.warn('⚠️  No locations or empty array - fetching immediately!');
+            console.warn(
+              "⚠️  No locations or empty array - fetching immediately!",
+            );
             setLocations([]);
             if (mounted && userData) {
               // CRITICAL FIX: Keep isLoading=true while fetching locations
@@ -164,24 +179,33 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
           } else {
             const parsedLocations = JSON.parse(savedLocations);
             setLocations(parsedLocations);
-            console.log('📍 Loaded locations from localStorage:', parsedLocations.length, 'locations');
+            console.log(
+              "📍 Loaded locations from localStorage:",
+              parsedLocations.length,
+              "locations",
+            );
             setIsLoading(false);
           }
 
           // Ensure legacy keys are set for backwards compatibility
-          if (userData.vendor_id && !localStorage.getItem('vendor_id')) {
-            localStorage.setItem('vendor_id', userData.vendor_id);
+          if (userData.vendor_id && !localStorage.getItem("vendor_id")) {
+            localStorage.setItem("vendor_id", userData.vendor_id);
           }
-          if (userData.vendor?.email && !localStorage.getItem('vendor_email')) {
-            localStorage.setItem('vendor_email', userData.vendor.email);
+          if (userData.vendor?.email && !localStorage.getItem("vendor_email")) {
+            localStorage.setItem("vendor_email", userData.vendor.email);
           }
 
-          console.log('✅ Loaded user from localStorage:', userData.name, `(${userData.role})`, '- session will be validated on refresh');
+          console.log(
+            "✅ Loaded user from localStorage:",
+            userData.name,
+            `(${userData.role})`,
+            "- session will be validated on refresh",
+          );
         } catch (error) {
-          console.error('Failed to load user from localStorage:', error);
-          localStorage.removeItem('app_user');
-          localStorage.removeItem('app_accessible_apps');
-          localStorage.removeItem('app_locations');
+          console.error("Failed to load user from localStorage:", error);
+          localStorage.removeItem("app_user");
+          localStorage.removeItem("app_accessible_apps");
+          localStorage.removeItem("app_locations");
           setIsLoading(false);
         }
       } else {
@@ -203,41 +227,44 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
     // CRITICAL FIX: Don't refresh immediately on page load - trust localStorage
     // Only refresh periodically and when tab becomes visible
     // This prevents logout on every page refresh
-    console.log('🔐 Session refresh scheduled - will refresh in 5 minutes');
+    console.log("🔐 Session refresh scheduled - will refresh in 5 minutes");
 
     // Refresh every 5 minutes to keep session alive (more frequent = better UX)
-    const refreshInterval = setInterval(() => {
-      console.log('🔄 Auto-refreshing session...');
-      refreshUserData();
-    }, 5 * 60 * 1000); // 5 minutes
+    const refreshInterval = setInterval(
+      () => {
+        console.log("🔄 Auto-refreshing session...");
+        refreshUserData();
+      },
+      5 * 60 * 1000,
+    ); // 5 minutes
 
     // Refresh when tab becomes visible (user comes back)
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isAuthenticated) {
-        console.log('👁️  Tab visible - refreshing session...');
+      if (document.visibilityState === "visible" && isAuthenticated) {
+        console.log("👁️  Tab visible - refreshing session...");
         refreshUserData();
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       clearInterval(refreshInterval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [isAuthenticated]);
 
   async function login(email: string, password: string): Promise<boolean> {
     try {
       // CRITICAL FIX: Clear ALL localStorage BEFORE login to prevent stale data
-      console.log('🧹 Clearing all auth data before fresh login...');
-      localStorage.removeItem('app_user');
-      localStorage.removeItem('app_accessible_apps');
-      localStorage.removeItem('app_locations');
-      localStorage.removeItem('app_login_timestamp');
-      localStorage.removeItem('vendor_id');
-      localStorage.removeItem('vendor_email');
-      localStorage.removeItem('supabase_session');
+      console.log("🧹 Clearing all auth data before fresh login...");
+      localStorage.removeItem("app_user");
+      localStorage.removeItem("app_accessible_apps");
+      localStorage.removeItem("app_locations");
+      localStorage.removeItem("app_login_timestamp");
+      localStorage.removeItem("vendor_id");
+      localStorage.removeItem("vendor_email");
+      localStorage.removeItem("supabase_session");
 
       // Reset state immediately
       setUser(null);
@@ -248,24 +275,28 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
       // SECURITY FIX: Session token now stored in HTTP-only cookie (XSS protection)
       // Try new unified app login endpoint first
-      let response = await fetch('/api/auth/app-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      let response = await fetch("/api/auth/app-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
-        credentials: 'include' // Include cookies in request
+        credentials: "include", // Include cookies in request
       });
 
-      console.log('📡 Login response status:', response.status, response.statusText);
+      console.log(
+        "📡 Login response status:",
+        response.status,
+        response.statusText,
+      );
 
       let data;
       try {
         data = await response.json();
       } catch (parseError) {
-        console.error('❌ Failed to parse login response:', parseError);
-        throw new Error('Invalid response from server');
+        console.error("❌ Failed to parse login response:", parseError);
+        throw new Error("Invalid response from server");
       }
 
-      console.log('📥 Login response received:', {
+      console.log("📥 Login response received:", {
         status: response.status,
         success: data.success,
         hasUser: !!data.user,
@@ -274,19 +305,23 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         appsCount: data.apps?.length || 0,
         role: data.user?.role,
         error: data.error,
-        message: data.message
+        message: data.message,
       });
 
       // Check for HTTP error
       if (!response.ok) {
-        console.error('❌ HTTP Error:', response.status, data.error);
-        throw new Error(data.error || `Login failed with status ${response.status}`);
+        console.error("❌ HTTP Error:", response.status, data.error);
+        throw new Error(
+          data.error || `Login failed with status ${response.status}`,
+        );
       }
 
       // Check for unsuccessful response
       if (!data.success || !data.user) {
-        console.error('❌ Login failed:', data.error || 'No user data');
-        throw new Error(data.error || 'Login failed. Please check your credentials.');
+        console.error("❌ Login failed:", data.error || "No user data");
+        throw new Error(
+          data.error || "Login failed. Please check your credentials.",
+        );
       }
 
       // Store user data
@@ -297,7 +332,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         role: data.user.role,
         vendor_id: data.user.vendor_id,
         employee_code: data.user.employee_code,
-        vendor: data.user.vendor
+        vendor: data.user.vendor,
       };
 
       setUser(userData);
@@ -310,29 +345,34 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
       // Store locations
       const userLocations = data.locations || [];
-      console.log('🗺️  Login response locations:', data.locations);
-      console.log('🗺️  Setting locations:', userLocations);
+      console.log("🗺️  Login response locations:", data.locations);
+      console.log("🗺️  Setting locations:", userLocations);
       setLocations(userLocations);
 
       // Save to localStorage (but NOT session token - it's in HTTP-only cookie)
-      localStorage.setItem('app_user', JSON.stringify(userData));
-      localStorage.setItem('app_accessible_apps', JSON.stringify(apps));
-      localStorage.setItem('app_locations', JSON.stringify(userLocations));
-      localStorage.setItem('app_login_timestamp', Date.now().toString()); // Track login time for cookie verification grace period
-      console.log('💾 Saved to localStorage - locations count:', userLocations.length);
+      localStorage.setItem("app_user", JSON.stringify(userData));
+      localStorage.setItem("app_accessible_apps", JSON.stringify(apps));
+      localStorage.setItem("app_locations", JSON.stringify(userLocations));
+      localStorage.setItem("app_login_timestamp", Date.now().toString()); // Track login time for cookie verification grace period
+      console.log(
+        "💾 Saved to localStorage - locations count:",
+        userLocations.length,
+      );
       // Also set legacy keys for backwards compatibility
-      localStorage.setItem('vendor_id', userData.vendor_id);
+      localStorage.setItem("vendor_id", userData.vendor_id);
       if (data.user.vendor) {
-        localStorage.setItem('vendor_email', data.user.vendor.email || userData.email);
+        localStorage.setItem(
+          "vendor_email",
+          data.user.vendor.email || userData.email,
+        );
       }
       // Clean up old session storage
-      localStorage.removeItem('supabase_session');
+      localStorage.removeItem("supabase_session");
 
-      console.log('✅ Login successful:', userData.name, `(${userData.role})`);
+      console.log("✅ Login successful:", userData.name, `(${userData.role})`);
       return true;
-
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       return false;
     }
   }
@@ -340,24 +380,24 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
   async function logout() {
     try {
       // Call logout API to clear HTTP-only cookie
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
       }).catch(() => {
         // Ignore errors - logout locally anyway
       });
     } finally {
       // Clear all storage
-      localStorage.removeItem('supabase_session');
-      localStorage.removeItem('app_user');
-      localStorage.removeItem('app_accessible_apps');
-      localStorage.removeItem('app_locations');
-      localStorage.removeItem('app_login_timestamp');
+      localStorage.removeItem("supabase_session");
+      localStorage.removeItem("app_user");
+      localStorage.removeItem("app_accessible_apps");
+      localStorage.removeItem("app_locations");
+      localStorage.removeItem("app_login_timestamp");
       // Also clear old vendor auth data for backwards compatibility
-      localStorage.removeItem('vendor_id');
-      localStorage.removeItem('vendor_email');
-      localStorage.removeItem('vendor_slug');
-      localStorage.removeItem('vendor_user');
+      localStorage.removeItem("vendor_id");
+      localStorage.removeItem("vendor_email");
+      localStorage.removeItem("vendor_slug");
+      localStorage.removeItem("vendor_user");
 
       setUser(null);
       setVendor(null);
@@ -365,7 +405,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
       setAccessibleApps([]);
       setLocations([]);
 
-      console.log('✅ User logged out');
+      console.log("✅ User logged out");
     }
   }
 
@@ -374,22 +414,26 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Re-fetch user data AND refresh session token
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Include cookies with session token
+      const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // Include cookies with session token
       });
 
       // CRITICAL FIX: Only logout on ACTUAL session expiration, not network errors
       if (!response.ok) {
         // Check if it's specifically a 401 Unauthorized (session expired)
         if (response.status === 401) {
-          console.warn('⚠️  Session expired (401) - logging out');
+          console.warn("⚠️  Session expired (401) - logging out");
           logout();
           return;
         }
         // For other errors (500, network issues), just log and keep user logged in
-        console.error('⚠️  Session refresh failed with status', response.status, '- keeping user logged in');
+        console.error(
+          "⚠️  Session refresh failed with status",
+          response.status,
+          "- keeping user logged in",
+        );
         return;
       }
 
@@ -397,14 +441,14 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
       // Check for explicit expiration flag
       if (data.expired) {
-        console.warn('⚠️  Session expired (expired flag) - logging out');
+        console.warn("⚠️  Session expired (expired flag) - logging out");
         logout();
         return;
       }
 
       if (data.success && data.user) {
         if (data.refreshed) {
-          console.log('🔄 Session token refreshed successfully');
+          console.log("🔄 Session token refreshed successfully");
         }
         const updatedUser: AppUser = {
           id: data.user.id,
@@ -413,7 +457,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
           role: data.user.role,
           vendor_id: data.user.vendor_id,
           employee_code: data.user.employee_code,
-          vendor: data.user.vendor
+          vendor: data.user.vendor,
         };
 
         setUser(updatedUser);
@@ -426,22 +470,30 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
         const userLocations = data.locations || [];
         setLocations(userLocations);
 
-        localStorage.setItem('app_user', JSON.stringify(updatedUser));
-        localStorage.setItem('app_accessible_apps', JSON.stringify(apps));
-        localStorage.setItem('app_locations', JSON.stringify(userLocations));
+        localStorage.setItem("app_user", JSON.stringify(updatedUser));
+        localStorage.setItem("app_accessible_apps", JSON.stringify(apps));
+        localStorage.setItem("app_locations", JSON.stringify(userLocations));
         // Also set legacy keys for backwards compatibility
-        localStorage.setItem('vendor_id', updatedUser.vendor_id);
+        localStorage.setItem("vendor_id", updatedUser.vendor_id);
         if (data.user.vendor) {
-          localStorage.setItem('vendor_email', data.user.vendor.email || updatedUser.email);
+          localStorage.setItem(
+            "vendor_email",
+            data.user.vendor.email || updatedUser.email,
+          );
         }
 
-        console.log('✅ User data refreshed:', updatedUser.name);
+        console.log("✅ User data refreshed:", updatedUser.name);
       } else {
-        console.warn('⚠️  Refresh returned success=false - keeping user logged in with cached data');
+        console.warn(
+          "⚠️  Refresh returned success=false - keeping user logged in with cached data",
+        );
       }
     } catch (error) {
       // CRITICAL FIX: Network errors should NOT log user out
-      console.error('⚠️  Network error during refresh - keeping user logged in:', error);
+      console.error(
+        "⚠️  Network error during refresh - keeping user logged in:",
+        error,
+      );
       // Don't logout on network errors - keep user logged in with cached localStorage data
     }
   }
@@ -456,7 +508,8 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
     return accessibleApps.includes(appKey);
   }
 
-  const primaryLocation = locations.find(l => l.is_primary) || locations[0] || null;
+  const primaryLocation =
+    locations.find((l) => l.is_primary) || locations[0] || null;
 
   return (
     <AppAuthContext.Provider

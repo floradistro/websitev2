@@ -1,1 +1,17 @@
-var e=(o=>(o.Blob="blob",o.MediaDevices="mediaDevices",o.OffscreenCanvas="offscreenCanvas",o.HttpProtocol="httpProtocol",o.SecureContext="secureContext",o.UrlObject="urlObject",o.WebWorkers="webWorkers",o.WebAssembly="webAssembly",o.WebAssemblyErrorFree="webAssemblyErrorFree",o.WebGL="webGL",o.SharedArrayBuffer="sharedArrayBuffer",o.CrossOriginIsolated="crossOriginIsolated",o.AnimationApi="animationApi",o))(e||{});export{e as a};
+var e = ((o) => (
+  (o.Blob = "blob"),
+  (o.MediaDevices = "mediaDevices"),
+  (o.OffscreenCanvas = "offscreenCanvas"),
+  (o.HttpProtocol = "httpProtocol"),
+  (o.SecureContext = "secureContext"),
+  (o.UrlObject = "urlObject"),
+  (o.WebWorkers = "webWorkers"),
+  (o.WebAssembly = "webAssembly"),
+  (o.WebAssemblyErrorFree = "webAssemblyErrorFree"),
+  (o.WebGL = "webGL"),
+  (o.SharedArrayBuffer = "sharedArrayBuffer"),
+  (o.CrossOriginIsolated = "crossOriginIsolated"),
+  (o.AnimationApi = "animationApi"),
+  o
+))(e || {});
+export { e as a };

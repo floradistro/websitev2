@@ -3,11 +3,11 @@
  * Renders icons with consistent sizing and styling
  */
 
-import React from 'react';
+import React from "react";
 
 export interface IconProps {
   name: string; // Emoji or SVG identifier
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
   color?: string;
   className?: string;
   emoji?: boolean; // True if using emoji instead of SVG
@@ -15,30 +15,31 @@ export interface IconProps {
 
 export function Icon({
   name,
-  size = 'md',
+  size = "md",
   color,
-  className = '',
+  className = "",
   emoji = true,
 }: IconProps) {
-  
   const sizeClasses: Record<string, string> = {
-    xs: 'text-xs',
-    sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-xl',
-    xl: 'text-2xl',
-    '2xl': 'text-4xl',
+    xs: "text-xs",
+    sm: "text-sm",
+    md: "text-base",
+    lg: "text-xl",
+    xl: "text-2xl",
+    "2xl": "text-4xl",
   };
-  
+
   const baseClasses = [
-    'inline-flex items-center justify-center',
+    "inline-flex items-center justify-center",
     sizeClasses[size],
-    color ? '' : 'text-current',
+    color ? "" : "text-current",
     className,
-  ].filter(Boolean).join(' ');
-  
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   const style = color ? { color } : undefined;
-  
+
   if (emoji) {
     return (
       <span className={baseClasses} style={style} role="img" aria-label={name}>
@@ -46,7 +47,7 @@ export function Icon({
       </span>
     );
   }
-  
+
   // TODO: Add SVG icon support (Heroicons, etc.)
   return (
     <span className={baseClasses} style={style}>
@@ -54,4 +55,3 @@ export function Icon({
     </span>
   );
 }
-

@@ -38,8 +38,8 @@ export default function ImageLightbox({
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   useEffect(() => {
@@ -91,7 +91,7 @@ export default function ImageLightbox({
         const touch2 = e.touches[1];
         const distance = Math.hypot(
           touch2.clientX - touch1.clientX,
-          touch2.clientY - touch1.clientY
+          touch2.clientY - touch1.clientY,
         );
 
         if (lastDistance > 0) {
@@ -108,12 +108,12 @@ export default function ImageLightbox({
     };
 
     const element = imageRef.current;
-    element.addEventListener('touchmove', handleTouchMove, { passive: false });
-    element.addEventListener('touchend', handleTouchEnd);
+    element.addEventListener("touchmove", handleTouchMove, { passive: false });
+    element.addEventListener("touchend", handleTouchEnd);
 
     return () => {
-      element.removeEventListener('touchmove', handleTouchMove);
-      element.removeEventListener('touchend', handleTouchEnd);
+      element.removeEventListener("touchmove", handleTouchMove);
+      element.removeEventListener("touchend", handleTouchEnd);
     };
   }, [isOpen, zoom]);
 
@@ -238,13 +238,17 @@ export default function ImageLightbox({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        style={{ touchAction: zoom > 1 ? 'none' : 'auto' }}
+        style={{ touchAction: zoom > 1 ? "none" : "auto" }}
       >
         <img
           src={currentImage.src}
           alt={currentImage.alt}
           className={`max-w-full max-h-full object-contain transition-transform duration-200 select-none ${
-            zoom > 1 ? "cursor-grab active:cursor-grabbing" : isMobile ? "" : "cursor-zoom-in"
+            zoom > 1
+              ? "cursor-grab active:cursor-grabbing"
+              : isMobile
+                ? ""
+                : "cursor-zoom-in"
           }`}
           style={{
             transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
@@ -364,4 +368,3 @@ export default function ImageLightbox({
 
   return createPortal(lightboxContent, document.body);
 }
-

@@ -6,21 +6,28 @@
  * Usage: <AnimatedSection animation="fadeInUp">...</AnimatedSection>
  */
 
-import { motion, Variants } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { 
-  fadeIn, 
-  fadeInUp, 
-  fadeInDown, 
+import { motion, Variants } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import {
+  fadeIn,
+  fadeInUp,
+  fadeInDown,
   scaleIn,
   slideInLeft,
   slideInRight,
-  staggerContainer
-} from '@/lib/animations';
+  staggerContainer,
+} from "@/lib/animations";
 
 interface AnimatedSectionProps {
   children: React.ReactNode;
-  animation?: 'fadeIn' | 'fadeInUp' | 'fadeInDown' | 'scaleIn' | 'slideInLeft' | 'slideInRight' | 'stagger';
+  animation?:
+    | "fadeIn"
+    | "fadeInUp"
+    | "fadeInDown"
+    | "scaleIn"
+    | "slideInLeft"
+    | "slideInRight"
+    | "stagger";
   delay?: number;
   className?: string;
   threshold?: number;
@@ -34,21 +41,21 @@ const animations: Record<string, Variants> = {
   scaleIn,
   slideInLeft,
   slideInRight,
-  stagger: staggerContainer
+  stagger: staggerContainer,
 };
 
 export function AnimatedSection({
   children,
-  animation = 'fadeInUp',
+  animation = "fadeInUp",
   delay = 0,
-  className = '',
+  className = "",
   threshold = 0.1,
-  triggerOnce = true
+  triggerOnce = true,
 }: AnimatedSectionProps) {
   const { ref, inView } = useInView({
     triggerOnce,
     threshold,
-    rootMargin: '-50px'
+    rootMargin: "-50px",
   });
 
   const selectedAnimation = animations[animation];
@@ -64,9 +71,9 @@ export function AnimatedSection({
           ...selectedAnimation.visible,
           transition: {
             ...(selectedAnimation.visible as any).transition,
-            delay
-          }
-        }
+            delay,
+          },
+        },
       }}
       className={className}
     >
@@ -74,4 +81,3 @@ export function AnimatedSection({
     </motion.div>
   );
 }
-

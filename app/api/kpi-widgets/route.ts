@@ -1,36 +1,38 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 // GET - Fetch all KPI widgets for a vendor
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const vendorId = searchParams.get('vendorId');
+    const vendorId = searchParams.get("vendorId");
 
     if (!vendorId) {
       return NextResponse.json(
-        { success: false, error: 'Vendor ID is required' },
-        { status: 400 }
+        { success: false, error: "Vendor ID is required" },
+        { status: 400 },
       );
     }
 
     const { data: widgets, error } = await supabase
-      .from('custom_kpi_widgets')
-      .select('*')
-      .eq('vendor_id', vendorId)
-      .eq('is_visible', true)
-      .order('position', { ascending: true });
+      .from("custom_kpi_widgets")
+      .select("*")
+      .eq("vendor_id", vendorId)
+      .eq("is_visible", true)
+      .order("position", { ascending: true });
 
     if (error) {
-      console.error('Error fetching KPI widgets:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching KPI widgets:", error);
+      }
       return NextResponse.json(
-        { success: false, error: 'Failed to fetch KPI widgets' },
-        { status: 500 }
+        { success: false, error: "Failed to fetch KPI widgets" },
+        { status: 500 },
       );
     }
 
@@ -38,12 +40,13 @@ export async function GET(request: NextRequest) {
       success: true,
       widgets: widgets || [],
     });
-
   } catch (error) {
-    console.error('Error in GET /api/kpi-widgets:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in GET /api/kpi-widgets:", error);
+    }
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -56,26 +59,27 @@ export async function POST(request: NextRequest) {
 
     if (!vendorId || !kpi) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
+        { success: false, error: "Missing required fields" },
+        { status: 400 },
       );
     }
 
     // Get the current max position
     const { data: existingWidgets } = await supabase
-      .from('custom_kpi_widgets')
-      .select('position')
-      .eq('vendor_id', vendorId)
-      .order('position', { ascending: false })
+      .from("custom_kpi_widgets")
+      .select("position")
+      .eq("vendor_id", vendorId)
+      .order("position", { ascending: false })
       .limit(1);
 
-    const nextPosition = existingWidgets && existingWidgets.length > 0
-      ? existingWidgets[0].position + 1
-      : 0;
+    const nextPosition =
+      existingWidgets && existingWidgets.length > 0
+        ? existingWidgets[0].position + 1
+        : 0;
 
     // Insert the new widget
     const { data: newWidget, error } = await supabase
-      .from('custom_kpi_widgets')
+      .from("custom_kpi_widgets")
       .insert({
         vendor_id: vendorId,
         title: kpi.title,
@@ -83,9 +87,9 @@ export async function POST(request: NextRequest) {
         subtitle: kpi.subtitle,
         change: kpi.change,
         change_label: kpi.changeLabel,
-        visualization: kpi.visualization || 'number',
+        visualization: kpi.visualization || "number",
         data: kpi.data || null,
-        original_prompt: kpi.originalPrompt || '',
+        original_prompt: kpi.originalPrompt || "",
         query: kpi.query,
         position: nextPosition,
         is_visible: true,
@@ -94,10 +98,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Error saving KPI widget:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error saving KPI widget:", error);
+      }
       return NextResponse.json(
-        { success: false, error: 'Failed to save KPI widget' },
-        { status: 500 }
+        { success: false, error: "Failed to save KPI widget" },
+        { status: 500 },
       );
     }
 
@@ -105,12 +111,13 @@ export async function POST(request: NextRequest) {
       success: true,
       widget: newWidget,
     });
-
   } catch (error) {
-    console.error('Error in POST /api/kpi-widgets:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in POST /api/kpi-widgets:", error);
+    }
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -119,37 +126,40 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const widgetId = searchParams.get('id');
+    const widgetId = searchParams.get("id");
 
     if (!widgetId) {
       return NextResponse.json(
-        { success: false, error: 'Widget ID is required' },
-        { status: 400 }
+        { success: false, error: "Widget ID is required" },
+        { status: 400 },
       );
     }
 
     const { error } = await supabase
-      .from('custom_kpi_widgets')
+      .from("custom_kpi_widgets")
       .delete()
-      .eq('id', widgetId);
+      .eq("id", widgetId);
 
     if (error) {
-      console.error('Error deleting KPI widget:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error deleting KPI widget:", error);
+      }
       return NextResponse.json(
-        { success: false, error: 'Failed to delete KPI widget' },
-        { status: 500 }
+        { success: false, error: "Failed to delete KPI widget" },
+        { status: 500 },
       );
     }
 
     return NextResponse.json({
       success: true,
     });
-
   } catch (error) {
-    console.error('Error in DELETE /api/kpi-widgets:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in DELETE /api/kpi-widgets:", error);
+    }
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { success: false, error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

@@ -1,6 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { rateLimiter, RateLimitConfigs, getIdentifier } from '@/lib/rate-limiter';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import {
+  rateLimiter,
+  RateLimitConfigs,
+  getIdentifier,
+} from "@/lib/rate-limiter";
 
 /**
  * Update customer profile
@@ -12,19 +16,22 @@ export async function PUT(request: NextRequest) {
     const allowed = rateLimiter.check(identifier, RateLimitConfigs.api);
 
     if (!allowed) {
-      const resetTime = rateLimiter.getResetTime(identifier, RateLimitConfigs.api);
+      const resetTime = rateLimiter.getResetTime(
+        identifier,
+        RateLimitConfigs.api,
+      );
       return NextResponse.json(
         {
           success: false,
-          error: 'Too many update requests. Please try again later.',
-          retryAfter: resetTime
+          error: "Too many update requests. Please try again later.",
+          retryAfter: resetTime,
         },
         {
           status: 429,
           headers: {
-            'Retry-After': resetTime.toString()
-          }
-        }
+            "Retry-After": resetTime.toString(),
+          },
+        },
       );
     }
 
@@ -33,8 +40,8 @@ export async function PUT(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { success: false, error: 'User ID required' },
-        { status: 400 }
+        { success: false, error: "User ID required" },
+        { status: 400 },
       );
     }
 
@@ -48,24 +55,26 @@ export async function PUT(request: NextRequest) {
     if (updateData.billing) updates.billing_address = updateData.billing;
     if (updateData.shipping) updates.shipping_address = updateData.shipping;
     if (updateData.avatar_url) updates.avatar_url = updateData.avatar_url;
-    
+
     updates.updated_at = new Date().toISOString();
-    
+
     const { data: customer, error: updateError } = await supabase
-      .from('customers')
+      .from("customers")
       .update(updates)
-      .eq('id', userId)
+      .eq("id", userId)
       .select()
       .single();
-    
+
     if (updateError) {
-      console.error('Update error:', updateError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Update error:", updateError);
+      }
       return NextResponse.json(
-        { success: false, error: 'Failed to update profile' },
-        { status: 500 }
+        { success: false, error: "Failed to update profile" },
+        { status: 500 },
       );
     }
-    
+
     const user = {
       id: customer.id,
       email: customer.email,
@@ -74,20 +83,20 @@ export async function PUT(request: NextRequest) {
       username: customer.username,
       billing: customer.billing_address,
       shipping: customer.shipping_address,
-      avatar_url: customer.avatar_url
+      avatar_url: customer.avatar_url,
     };
-    
+
     return NextResponse.json({
       success: true,
-      user
+      user,
     });
-    
   } catch (error: any) {
-    console.error('Update profile error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Update profile error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: 'Update failed. Please try again.' },
-      { status: 500 }
+      { success: false, error: "Update failed. Please try again." },
+      { status: 500 },
     );
   }
 }
-

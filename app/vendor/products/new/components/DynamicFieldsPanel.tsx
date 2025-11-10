@@ -1,8 +1,8 @@
 "use client";
 
-import { X, Eye, EyeOff } from 'lucide-react';
-import SectionHeader from '@/components/ui/SectionHeader';
-import { ds, cn } from '@/components/ds';
+import { X, Eye, EyeOff } from "lucide-react";
+import SectionHeader from "@/components/ui/SectionHeader";
+import { ds, cn } from "@/components/ds";
 
 interface DynamicField {
   name: string;
@@ -26,7 +26,10 @@ interface DynamicField {
 interface DynamicFieldsPanelProps {
   dynamicFields: DynamicField[];
   customFieldValues: Record<string, unknown>;
-  onFieldChange: (fieldName: string, value: string | string[] | boolean | number) => void;
+  onFieldChange: (
+    fieldName: string,
+    value: string | string[] | boolean | number,
+  ) => void;
   fieldVisibility?: Record<string, boolean>;
   onFieldVisibilityChange?: (fieldName: string, visible: boolean) => void;
 }
@@ -36,19 +39,23 @@ export default function DynamicFieldsPanel({
   customFieldValues,
   onFieldChange,
   fieldVisibility = {},
-  onFieldVisibilityChange
+  onFieldVisibilityChange,
 }: DynamicFieldsPanelProps) {
   if (!dynamicFields || dynamicFields.length === 0) {
     return null;
   }
 
-  const labelClasses = "block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black";
-  const inputClasses = cn(ds.colors.bg.primary, "w-full border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs");
+  const labelClasses =
+    "block text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2 font-black";
+  const inputClasses = cn(
+    ds.colors.bg.primary,
+    "w-full border border-white/10 rounded-xl text-white placeholder-white/20 px-3 py-2.5 focus:outline-none focus:border-white/20 transition-all text-xs",
+  );
   const descClasses = "text-white/40 text-[10px] mt-1.5";
 
   // Steve Jobs style: Subtle indicator for inherited fields
   const renderLabel = (field: DynamicField, isRequired: boolean) => {
-    const displayLabel = field.label || field.name || 'Field';
+    const displayLabel = field.label || field.name || "Field";
     const isVisible = fieldVisibility[field.name] !== false; // Default to visible
 
     return (
@@ -56,7 +63,8 @@ export default function DynamicFieldsPanel({
         <span className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2">
             <span>
-              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
+              {displayLabel}{" "}
+              {isRequired && <span className="text-red-400">*</span>}
             </span>
             {field.inherited && (
               <span
@@ -77,14 +85,20 @@ export default function DynamicFieldsPanel({
               }}
               className={`flex items-center gap-1.5 px-2 py-1 rounded transition-all ${
                 isVisible
-                  ? 'bg-white/10 border border-white/20 text-white/80 hover:bg-white/15'
-                  : 'bg-white/5 border border-white/10 text-white/40 hover:bg-white/10'
+                  ? "bg-white/10 border border-white/20 text-white/80 hover:bg-white/15"
+                  : "bg-white/5 border border-white/10 text-white/40 hover:bg-white/10"
               }`}
-              title={isVisible ? 'Visible on storefront' : 'Hidden on storefront'}
+              title={
+                isVisible ? "Visible on storefront" : "Hidden on storefront"
+              }
             >
-              {isVisible ? <Eye size={12} strokeWidth={1.5} /> : <EyeOff size={12} strokeWidth={1.5} />}
+              {isVisible ? (
+                <Eye size={12} strokeWidth={1.5} />
+              ) : (
+                <EyeOff size={12} strokeWidth={1.5} />
+              )}
               <span className="text-[8px] font-black uppercase tracking-[0.15em]">
-                {isVisible ? 'Show' : 'Hide'}
+                {isVisible ? "Show" : "Hide"}
               </span>
             </button>
           )}
@@ -95,17 +109,20 @@ export default function DynamicFieldsPanel({
 
   const renderField = (field: DynamicField, index: number) => {
     const rawValue = customFieldValues[field.name];
-    const fieldValue = typeof rawValue === 'string' || typeof rawValue === 'number' ? rawValue : '';
+    const fieldValue =
+      typeof rawValue === "string" || typeof rawValue === "number"
+        ? rawValue
+        : "";
     const handleChange = (value: string | string[] | boolean | number) => {
       onFieldChange(field.name, value);
     };
 
     const isRequired = !!(field.required || field.isRequired);
-    const displayLabel = field.label || field.name || 'Field';
+    const displayLabel = field.label || field.name || "Field";
 
     switch (field.type) {
-      case 'text':
-      case 'url':
+      case "text":
+      case "url":
         return (
           <div key={index}>
             {renderLabel(field, isRequired)}
@@ -117,11 +134,13 @@ export default function DynamicFieldsPanel({
               placeholder={field.placeholder}
               className={inputClasses}
             />
-            {field.description && <p className={descClasses}>{field.description}</p>}
+            {field.description && (
+              <p className={descClasses}>{field.description}</p>
+            )}
           </div>
         );
 
-      case 'textarea':
+      case "textarea":
         return (
           <div key={index} className="lg:col-span-2">
             {renderLabel(field, isRequired)}
@@ -133,11 +152,13 @@ export default function DynamicFieldsPanel({
               rows={3}
               className={`${inputClasses} resize-none`}
             />
-            {field.description && <p className={descClasses}>{field.description}</p>}
+            {field.description && (
+              <p className={descClasses}>{field.description}</p>
+            )}
           </div>
         );
 
-      case 'number':
+      case "number":
         return (
           <div key={index}>
             {renderLabel(field, isRequired)}
@@ -154,16 +175,21 @@ export default function DynamicFieldsPanel({
                 className={inputClasses}
               />
               {field.suffix && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black uppercase tracking-[0.15em]" style={{ fontWeight: 900 }}>
+                <span
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 text-[10px] font-black uppercase tracking-[0.15em]"
+                  style={{ fontWeight: 900 }}
+                >
                   {field.suffix}
                 </span>
               )}
             </div>
-            {field.description && <p className={descClasses}>{field.description}</p>}
+            {field.description && (
+              <p className={descClasses}>{field.description}</p>
+            )}
           </div>
         );
 
-      case 'select':
+      case "select":
         return (
           <div key={index}>
             {renderLabel(field, isRequired)}
@@ -180,11 +206,13 @@ export default function DynamicFieldsPanel({
                 </option>
               ))}
             </select>
-            {field.description && <p className={descClasses}>{field.description}</p>}
+            {field.description && (
+              <p className={descClasses}>{field.description}</p>
+            )}
           </div>
         );
 
-      case 'multiselect':
+      case "multiselect":
         const arrayValue = Array.isArray(rawValue) ? rawValue : [];
         return (
           <div key={index}>
@@ -194,12 +222,17 @@ export default function DynamicFieldsPanel({
               {arrayValue.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {arrayValue.map((item: string, idx: number) => (
-                    <div key={idx} className="bg-white/10 border border-white/20 rounded px-2 py-1 flex items-center gap-1.5 text-[10px] text-white">
+                    <div
+                      key={idx}
+                      className="bg-white/10 border border-white/20 rounded px-2 py-1 flex items-center gap-1.5 text-[10px] text-white"
+                    >
                       <span>{item}</span>
                       <button
                         type="button"
                         onClick={() => {
-                          const newValue = arrayValue.filter((_: string, i: number) => i !== idx);
+                          const newValue = arrayValue.filter(
+                            (_: string, i: number) => i !== idx,
+                          );
                           handleChange(newValue);
                         }}
                         className="text-white/60 hover:text-red-400 transition-colors"
@@ -215,7 +248,9 @@ export default function DynamicFieldsPanel({
                 value=""
                 onChange={(e) => {
                   if (e.target.value) {
-                    const currentValues = Array.isArray(rawValue) ? rawValue : [];
+                    const currentValues = Array.isArray(rawValue)
+                      ? rawValue
+                      : [];
                     if (!currentValues.includes(e.target.value)) {
                       handleChange([...currentValues, e.target.value]);
                     }
@@ -225,18 +260,24 @@ export default function DynamicFieldsPanel({
               >
                 <option value="">Add {displayLabel}...</option>
                 {field.options?.map((option, idx) => (
-                  <option key={idx} value={option} disabled={arrayValue.includes(option)}>
+                  <option
+                    key={idx}
+                    value={option}
+                    disabled={arrayValue.includes(option)}
+                  >
                     {option}
                   </option>
                 ))}
               </select>
             </div>
-            {field.description && <p className={descClasses}>{field.description}</p>}
+            {field.description && (
+              <p className={descClasses}>{field.description}</p>
+            )}
           </div>
         );
 
-      case 'checkbox':
-        const boolValue = rawValue === true || rawValue === 'true';
+      case "checkbox":
+        const boolValue = rawValue === true || rawValue === "true";
         return (
           <div key={index} className="lg:col-span-2">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -244,11 +285,21 @@ export default function DynamicFieldsPanel({
                 type="checkbox"
                 checked={boolValue}
                 onChange={(e) => handleChange(e.target.checked)}
-                className={cn(ds.colors.bg.primary, "w-4 h-4 rounded border-white/20")}
+                className={cn(
+                  ds.colors.bg.primary,
+                  "w-4 h-4 rounded border-white/20",
+                )}
               />
               <div>
-                <span className="text-white text-[10px] uppercase tracking-[0.15em] font-black" style={{ fontWeight: 900 }}>{displayLabel}</span>
-                {field.description && <p className={descClasses}>{field.description}</p>}
+                <span
+                  className="text-white text-[10px] uppercase tracking-[0.15em] font-black"
+                  style={{ fontWeight: 900 }}
+                >
+                  {displayLabel}
+                </span>
+                {field.description && (
+                  <p className={descClasses}>{field.description}</p>
+                )}
               </div>
             </label>
           </div>
@@ -258,7 +309,8 @@ export default function DynamicFieldsPanel({
         return (
           <div key={index}>
             <label className={labelClasses} style={{ fontWeight: 900 }}>
-              {displayLabel} {isRequired && <span className="text-red-400">*</span>}
+              {displayLabel}{" "}
+              {isRequired && <span className="text-red-400">*</span>}
             </label>
             <input
               type="text"
@@ -268,7 +320,9 @@ export default function DynamicFieldsPanel({
               placeholder={field.placeholder}
               className={inputClasses}
             />
-            {field.description && <p className={descClasses}>{field.description}</p>}
+            {field.description && (
+              <p className={descClasses}>{field.description}</p>
+            )}
           </div>
         );
     }
@@ -278,7 +332,7 @@ export default function DynamicFieldsPanel({
   const grouped: Record<string, DynamicField[]> = {};
   const ungrouped: DynamicField[] = [];
 
-  dynamicFields.forEach(field => {
+  dynamicFields.forEach((field) => {
     if (field.groupName) {
       if (!grouped[field.groupName]) {
         grouped[field.groupName] = [];
@@ -297,7 +351,10 @@ export default function DynamicFieldsPanel({
         {/* Grouped fields */}
         {Object.entries(grouped).map(([groupName, fields]) => (
           <div key={groupName}>
-            <h3 className="text-[10px] uppercase tracking-[0.15em] text-white/60 mb-3 font-black border-b border-white/5 pb-2" style={{ fontWeight: 900 }}>
+            <h3
+              className="text-[10px] uppercase tracking-[0.15em] text-white/60 mb-3 font-black border-b border-white/5 pb-2"
+              style={{ fontWeight: 900 }}
+            >
               {groupName}
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

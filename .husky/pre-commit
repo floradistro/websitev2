@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run lint-staged
+npx lint-staged
+
+# Block console.log in production code
+if git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|js|jsx)$' | xargs grep -l 'console\.log' 2>/dev/null; then
+  echo "❌ ERROR: console.log found in staged files!"
+  echo "Remove console.log statements before committing."
+  echo "Allowed: console.error and console.warn (in development guards)"
+  exit 1
+fi

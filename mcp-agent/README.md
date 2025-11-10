@@ -5,12 +5,15 @@ Autonomous storefront generation service using Claude for the WhaleTools platfor
 ## Setup
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Configure Environment
+
 Create `.env` file:
+
 ```env
 ANTHROPIC_API_KEY=sk-ant-xxxxx
 E2B_API_KEY=e2b_xxxxx
@@ -21,11 +24,13 @@ PORT=3001
 ```
 
 ### 3. Run Locally
+
 ```bash
 npm run dev
 ```
 
 ### 4. Test
+
 ```bash
 curl -X POST http://localhost:3001/api/generate-storefront \
   -H "Authorization: Bearer your-secret-key" \
@@ -78,9 +83,11 @@ Next.js App → Agent Server → Claude API → Database
 ## API Endpoints
 
 ### POST /api/generate-storefront
+
 Generate a complete storefront for a vendor.
 
 **Request**:
+
 ```json
 {
   "vendorId": "uuid",
@@ -94,6 +101,7 @@ Generate a complete storefront for a vendor.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -106,6 +114,7 @@ Generate a complete storefront for a vendor.
 ```
 
 ### GET /health
+
 Health check endpoint.
 
 ## How It Works
@@ -123,4 +132,3 @@ Health check endpoint.
 - Claude API usage (bulk of cost)
 - E2B sandbox execution
 - Minimal compute costs
-

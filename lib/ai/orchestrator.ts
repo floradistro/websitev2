@@ -3,31 +3,35 @@
  * Manages conversation loop with Claude AI using WebSocket
  */
 
-import Anthropic from '@anthropic-ai/sdk'
-import { sessionManager, Message, ContentBlock } from './session-manager'
-import { executeToolsParallel, formatToolResultsForClaude, ToolResult } from './tool-executor'
-import { withTimeout, retryWithBackoff } from './utils'
+import Anthropic from "@anthropic-ai/sdk";
+import { sessionManager, Message, ContentBlock } from "./session-manager";
+import {
+  executeToolsParallel,
+  formatToolResultsForClaude,
+  ToolResult,
+} from "./tool-executor";
+import { withTimeout, retryWithBackoff } from "./utils";
 
 // Claude API configuration
-const CLAUDE_MODEL = 'claude-sonnet-4-5-20250929'
-const CLAUDE_MAX_TOKENS = 8000
-const CLAUDE_TIMEOUT = 180000 // 180 seconds (3 min) for Claude responses
+const CLAUDE_MODEL = "claude-sonnet-4-5-20250929";
+const CLAUDE_MAX_TOKENS = 8000;
+const CLAUDE_TIMEOUT = 180000; // 180 seconds (3 min) for Claude responses
 
 // WebSocket message types
 export type WSMessageType =
-  | 'connection_established'
-  | 'text_delta'
-  | 'tool_use_start'
-  | 'tool_use_progress'
-  | 'tool_use_complete'
-  | 'message_complete'
-  | 'error'
-  | 'thinking'
+  | "connection_established"
+  | "text_delta"
+  | "tool_use_start"
+  | "tool_use_progress"
+  | "tool_use_complete"
+  | "message_complete"
+  | "error"
+  | "thinking";
 
 export interface WSMessage {
-  type: WSMessageType
-  data?: any
-  timestamp: number
+  type: WSMessageType;
+  data?: any;
+  timestamp: number;
 }
 
 /**
@@ -35,18 +39,18 @@ export interface WSMessage {
  * Manages the conversation loop with Claude AI
  */
 export class AIOrchestrator {
-  private anthropic: Anthropic
-  private abortController: AbortController | null = null
-  private isProcessing = false
+  private anthropic: Anthropic;
+  private abortController: AbortController | null = null;
+  private isProcessing = false;
 
   constructor() {
-    const apiKey = process.env.ANTHROPIC_API_KEY
+    const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey) {
-      throw new Error('ANTHROPIC_API_KEY not configured')
+      throw new Error("ANTHROPIC_API_KEY not configured");
     }
 
-    this.anthropic = new Anthropic({ apiKey })
+    this.anthropic = new Anthropic({ apiKey });
   }
 
   /**
@@ -57,58 +61,63 @@ export class AIOrchestrator {
     appId: string,
     vendorId: string,
     userMessage: string,
-    sendUpdate: (message: WSMessage) => void
+    sendUpdate: (message: WSMessage) => void,
   ): Promise<void> {
     if (this.isProcessing) {
-      throw new Error('Already processing a message')
+      throw new Error("Already processing a message");
     }
 
-    this.isProcessing = true
-    this.abortController = new AbortController()
+    this.isProcessing = true;
+    this.abortController = new AbortController();
 
     try {
       // Get or create session
-      let session = await sessionManager.getSession(sessionId)
+      let session = await sessionManager.getSession(sessionId);
 
       if (!session) {
-        session = await sessionManager.createSession(sessionId, appId, vendorId)
+        session = await sessionManager.createSession(
+          sessionId,
+          appId,
+          vendorId,
+        );
       }
 
       // Add user message to session
       await sessionManager.addMessage(sessionId, {
-        role: 'user',
-        content: userMessage
-      })
+        role: "user",
+        content: userMessage,
+      });
 
       sendUpdate({
-        type: 'connection_established',
+        type: "connection_established",
         data: { sessionId, appId },
-        timestamp: Date.now()
-      })
+        timestamp: Date.now(),
+      });
 
       // Start conversation loop
-      await this.conversationLoop(sessionId, appId, vendorId, sendUpdate)
+      await this.conversationLoop(sessionId, appId, vendorId, sendUpdate);
 
       sendUpdate({
-        type: 'message_complete',
-        timestamp: Date.now()
-      })
+        type: "message_complete",
+        timestamp: Date.now(),
+      });
     } catch (error: any) {
-      console.error('❌ Orchestrator error:', error)
-
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ Orchestrator error:", error);
+      }
       sendUpdate({
-        type: 'error',
+        type: "error",
         data: {
-          message: error.message || 'An error occurred',
-          code: error.code
+          message: error.message || "An error occurred",
+          code: error.code,
         },
-        timestamp: Date.now()
-      })
+        timestamp: Date.now(),
+      });
 
-      throw error
+      throw error;
     } finally {
-      this.isProcessing = false
-      this.abortController = null
+      this.isProcessing = false;
+      this.abortController = null;
     }
   }
 
@@ -120,59 +129,54 @@ export class AIOrchestrator {
     sessionId: string,
     appId: string,
     vendorId: string,
-    sendUpdate: (message: WSMessage) => void
+    sendUpdate: (message: WSMessage) => void,
   ): Promise<void> {
-    const maxIterations = 10 // Prevent infinite loops
-    let iteration = 0
+    const maxIterations = 10; // Prevent infinite loops
+    let iteration = 0;
 
     while (iteration < maxIterations) {
-      iteration++
-
-      console.log(`🔄 Conversation iteration ${iteration}...`)
+      iteration++;
 
       // Check for abort
       if (this.abortController?.signal.aborted) {
-        throw new Error('Request cancelled by user')
+        throw new Error("Request cancelled by user");
       }
 
       // Get conversation history
-      const messages = await sessionManager.getConversationHistory(sessionId)
+      const messages = await sessionManager.getConversationHistory(sessionId);
 
       // Prepare messages for Claude API
-      const claudeMessages = this.formatMessagesForClaude(messages)
+      const claudeMessages = this.formatMessagesForClaude(messages);
 
       // Call Claude API with timeout
       const response = await withTimeout(
         this.callClaude(claudeMessages, sendUpdate),
         CLAUDE_TIMEOUT,
-        undefined // No fallback - let it throw on timeout
-      )
+        undefined, // No fallback - let it throw on timeout
+      );
 
       // Save assistant message to session
       await sessionManager.addMessage(sessionId, {
-        role: 'assistant',
-        content: response.content
-      })
+        role: "assistant",
+        content: response.content,
+      });
 
       // Extract tool uses
       const toolUses = response.content.filter(
-        (block: any) => block.type === 'tool_use'
-      )
+        (block: any) => block.type === "tool_use",
+      );
 
       // If no tools to execute, we're done
       if (toolUses.length === 0) {
-        console.log('✅ No tools to execute - conversation complete')
-        break
+        break;
       }
-
-      console.log(`🔧 Executing ${toolUses.length} tools...`)
 
       // Execute tools in parallel
       const toolResults = await executeToolsParallel(
         toolUses.map((t: any) => ({
           id: t.id,
           name: t.name,
-          input: t.input
+          input: t.input,
         })),
         {
           sessionId,
@@ -180,34 +184,36 @@ export class AIOrchestrator {
           vendorId,
           onProgress: (toolId, status, data) => {
             sendUpdate({
-              type: 'tool_use_progress',
+              type: "tool_use_progress",
               data: { toolId, status, data },
-              timestamp: Date.now()
-            })
-          }
-        }
-      )
+              timestamp: Date.now(),
+            });
+          },
+        },
+      );
 
       // Send tool completion update
       sendUpdate({
-        type: 'tool_use_complete',
+        type: "tool_use_complete",
         data: { toolResults },
-        timestamp: Date.now()
-      })
+        timestamp: Date.now(),
+      });
 
       // Add tool results as a user message
-      const toolResultContent = formatToolResultsForClaude(toolResults)
+      const toolResultContent = formatToolResultsForClaude(toolResults);
 
       await sessionManager.addMessage(sessionId, {
-        role: 'user',
-        content: toolResultContent
-      })
+        role: "user",
+        content: toolResultContent,
+      });
 
       // Continue loop - Claude will process tool results
     }
 
     if (iteration >= maxIterations) {
-      console.warn('⚠️  Max conversation iterations reached')
+      if (process.env.NODE_ENV === "development") {
+        console.warn("⚠️  Max conversation iterations reached");
+      }
     }
   }
 
@@ -216,98 +222,98 @@ export class AIOrchestrator {
    */
   private async callClaude(
     messages: any[],
-    sendUpdate: (message: WSMessage) => void
+    sendUpdate: (message: WSMessage) => void,
   ): Promise<any> {
     const stream = await this.anthropic.messages.create({
       model: CLAUDE_MODEL,
       max_tokens: CLAUDE_MAX_TOKENS,
       messages,
       tools: this.getToolDefinitions(),
-      stream: true
-    })
+      stream: true,
+    });
 
-    const content: ContentBlock[] = []
-    let currentTextBlock = ''
-    let currentToolUse: any = null
+    const content: ContentBlock[] = [];
+    let currentTextBlock = "";
+    let currentToolUse: any = null;
 
     for await (const event of stream) {
       // Check for abort
       if (this.abortController?.signal.aborted) {
-        throw new Error('Request cancelled by user')
+        throw new Error("Request cancelled by user");
       }
 
-      if (event.type === 'content_block_start') {
-        if (event.content_block.type === 'text') {
-          currentTextBlock = ''
-        } else if (event.content_block.type === 'tool_use') {
+      if (event.type === "content_block_start") {
+        if (event.content_block.type === "text") {
+          currentTextBlock = "";
+        } else if (event.content_block.type === "tool_use") {
           currentToolUse = {
-            type: 'tool_use',
+            type: "tool_use",
             id: event.content_block.id,
             name: event.content_block.name,
-            input: {}
-          }
+            input: {},
+          };
 
           sendUpdate({
-            type: 'tool_use_start',
+            type: "tool_use_start",
             data: {
               toolId: event.content_block.id,
-              toolName: event.content_block.name
+              toolName: event.content_block.name,
             },
-            timestamp: Date.now()
-          })
+            timestamp: Date.now(),
+          });
         }
-      } else if (event.type === 'content_block_delta') {
-        if (event.delta.type === 'text_delta') {
-          currentTextBlock += event.delta.text
+      } else if (event.type === "content_block_delta") {
+        if (event.delta.type === "text_delta") {
+          currentTextBlock += event.delta.text;
 
           // Stream text to client
           sendUpdate({
-            type: 'text_delta',
+            type: "text_delta",
             data: { text: event.delta.text },
-            timestamp: Date.now()
-          })
-        } else if (event.delta.type === 'input_json_delta') {
+            timestamp: Date.now(),
+          });
+        } else if (event.delta.type === "input_json_delta") {
           // Accumulate tool input
           if (currentToolUse) {
             try {
               currentToolUse.input = {
                 ...currentToolUse.input,
-                ...JSON.parse(event.delta.partial_json || '{}')
-              }
+                ...JSON.parse(event.delta.partial_json || "{}"),
+              };
             } catch (e) {
               // Ignore incomplete JSON chunks during streaming
             }
           }
         }
-      } else if (event.type === 'content_block_stop') {
+      } else if (event.type === "content_block_stop") {
         if (currentTextBlock) {
           content.push({
-            type: 'text',
-            text: currentTextBlock
-          })
-          currentTextBlock = ''
+            type: "text",
+            text: currentTextBlock,
+          });
+          currentTextBlock = "";
         }
 
         if (currentToolUse) {
-          content.push(currentToolUse)
-          currentToolUse = null
+          content.push(currentToolUse);
+          currentToolUse = null;
         }
       }
     }
 
-    return { content }
+    return { content };
   }
 
   /**
    * Format session messages for Claude API
    */
   private formatMessagesForClaude(messages: Message[]): any[] {
-    return messages.map(msg => ({
+    return messages.map((msg) => ({
       role: msg.role,
       content: Array.isArray(msg.content)
         ? msg.content
-        : [{ type: 'text', text: msg.content as string }]
-    }))
+        : [{ type: "text", text: msg.content as string }],
+    }));
   }
 
   /**
@@ -316,56 +322,61 @@ export class AIOrchestrator {
   private getToolDefinitions(): any[] {
     return [
       {
-        name: 'web_search',
-        description: 'Search the web for current information, documentation, libraries, or examples. Use this when you need up-to-date information.',
+        name: "web_search",
+        description:
+          "Search the web for current information, documentation, libraries, or examples. Use this when you need up-to-date information.",
         input_schema: {
-          type: 'object',
+          type: "object",
           properties: {
             query: {
-              type: 'string',
-              description: 'The search query to execute'
-            }
+              type: "string",
+              description: "The search query to execute",
+            },
           },
-          required: ['query']
-        }
+          required: ["query"],
+        },
       },
       {
-        name: 'get_current_code',
-        description: 'Read the current content of a file in the app. Use this before making edits to see what currently exists.',
+        name: "get_current_code",
+        description:
+          "Read the current content of a file in the app. Use this before making edits to see what currently exists.",
         input_schema: {
-          type: 'object',
+          type: "object",
           properties: {
             file_path: {
-              type: 'string',
-              description: 'The path to the file (e.g., "src/App.tsx", "styles.css")'
-            }
+              type: "string",
+              description:
+                'The path to the file (e.g., "src/App.tsx", "styles.css")',
+            },
           },
-          required: ['file_path']
-        }
+          required: ["file_path"],
+        },
       },
       {
-        name: 'apply_edit',
-        description: 'Apply an edit to a file. Provide the old content (or empty string for new files) and the new content.',
+        name: "apply_edit",
+        description:
+          "Apply an edit to a file. Provide the old content (or empty string for new files) and the new content.",
         input_schema: {
-          type: 'object',
+          type: "object",
           properties: {
             file_path: {
-              type: 'string',
-              description: 'The path to the file'
+              type: "string",
+              description: "The path to the file",
             },
             old_content: {
-              type: 'string',
-              description: 'The current content of the file (use get_current_code first)'
+              type: "string",
+              description:
+                "The current content of the file (use get_current_code first)",
             },
             new_content: {
-              type: 'string',
-              description: 'The new content to write to the file'
-            }
+              type: "string",
+              description: "The new content to write to the file",
+            },
           },
-          required: ['file_path', 'new_content']
-        }
-      }
-    ]
+          required: ["file_path", "new_content"],
+        },
+      },
+    ];
   }
 
   /**
@@ -373,8 +384,7 @@ export class AIOrchestrator {
    */
   cancel(): void {
     if (this.abortController) {
-      this.abortController.abort()
-      console.log('🛑 Request cancelled')
+      this.abortController.abort();
     }
   }
 
@@ -382,9 +392,9 @@ export class AIOrchestrator {
    * Check if currently processing
    */
   isActive(): boolean {
-    return this.isProcessing
+    return this.isProcessing;
   }
 }
 
 // Export singleton instance
-export const aiOrchestrator = new AIOrchestrator()
+export const aiOrchestrator = new AIOrchestrator();

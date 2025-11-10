@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -12,49 +12,55 @@ export async function DELETE(
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) return authResult;
     const { vendorId } = authResult;
-    
+
     const supabase = getServiceSupabase();
-    
+
     // Verify vendor owns this COA
     const { data: existing } = await supabase
-      .from('vendor_coas')
-      .select('vendor_id, file_url')
-      .eq('id', id)
+      .from("vendor_coas")
+      .select("vendor_id, file_url")
+      .eq("id", id)
       .single();
-    
+
     if (!existing || existing.vendor_id !== vendorId) {
-      return NextResponse.json({ error: 'COA not found or unauthorized' }, { status: 404 });
+      return NextResponse.json(
+        { error: "COA not found or unauthorized" },
+        { status: 404 },
+      );
     }
-    
+
     // Delete from database
     const { error: deleteError } = await supabase
-      .from('vendor_coas')
+      .from("vendor_coas")
       .delete()
-      .eq('id', id);
-    
+      .eq("id", id);
+
     if (deleteError) {
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
-    
+
     // Optionally delete file from Supabase Storage
-    if (existing.file_url && existing.file_url.includes('supabase.co/storage')) {
-      const pathMatch = existing.file_url.match(/\/storage\/v1\/object\/public\/([^\/]+)\/(.+)$/);
+    if (
+      existing.file_url &&
+      existing.file_url.includes("supabase.co/storage")
+    ) {
+      const pathMatch = existing.file_url.match(
+        /\/storage\/v1\/object\/public\/([^\/]+)\/(.+)$/,
+      );
       if (pathMatch) {
         const [, bucket, path] = pathMatch;
-        await supabase.storage
-          .from(bucket)
-          .remove([path]);
+        await supabase.storage.from(bucket).remove([path]);
       }
     }
-    
+
     return NextResponse.json({
       success: true,
-      message: 'COA deleted'
+      message: "COA deleted",
     });
-    
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

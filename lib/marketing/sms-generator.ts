@@ -3,7 +3,7 @@
  * Optimized for 160-character limit with cannabis compliance
  */
 
-import OpenAI from 'openai';
+import OpenAI from "openai";
 
 export interface SMSGenerationParams {
   vendor: {
@@ -11,21 +11,21 @@ export interface SMSGenerationParams {
     name: string;
   };
   campaignType:
-    | 'flash_sale'
-    | 'new_product'
-    | 'order_ready'
-    | 'win_back'
-    | 'birthday'
-    | 'loyalty_points'
-    | 'event_reminder'
-    | 'restock_alert';
+    | "flash_sale"
+    | "new_product"
+    | "order_ready"
+    | "win_back"
+    | "birthday"
+    | "loyalty_points"
+    | "event_reminder"
+    | "restock_alert";
   productData?: {
     name: string;
     price: number;
     category?: string;
   };
   discountData?: {
-    type: 'percentage' | 'fixed_amount';
+    type: "percentage" | "fixed_amount";
     value: number;
   };
   orderData?: {
@@ -72,7 +72,7 @@ export class SMSGenerator {
     // Add link placeholder if needed
     let message = content.message;
     if (params.includeLink) {
-      message += ' {{shop_link}}';
+      message += " {{shop_link}}";
     }
 
     // Calculate segments
@@ -102,10 +102,10 @@ export class SMSGenerator {
     const prompt = this.buildPrompt(params);
 
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: "gpt-4",
       messages: [
         {
-          role: 'system',
+          role: "system",
           content: `You are an expert SMS marketing copywriter for cannabis dispensaries.
 Create ultra-concise, compliant, and actionable text messages.
 
@@ -122,15 +122,15 @@ STRICT RULES:
 - Output valid JSON only`,
         },
         {
-          role: 'user',
+          role: "user",
           content: prompt,
         },
       ],
-      response_format: { type: 'json_object' },
+      response_format: { type: "json_object" },
       temperature: 0.7,
     });
 
-    const response = JSON.parse(completion.choices[0].message.content || '{}');
+    const response = JSON.parse(completion.choices[0].message.content || "{}");
     return response;
   }
 
@@ -141,7 +141,7 @@ STRICT RULES:
     const templates = {
       flash_sale: `Create a FLASH SALE text message for ${params.vendor.name}.
 
-Offer: ${params.discountData?.value}${params.discountData?.type === 'percentage' ? '%' : '$'} off
+Offer: ${params.discountData?.value}${params.discountData?.type === "percentage" ? "%" : "$"} off
 Time-sensitive promotion.
 
 Create urgency. Be direct. Include promo code hint.`,
@@ -156,7 +156,7 @@ Announce new arrival. Make it exciting. Keep it brief.`,
       order_ready: `Create an ORDER READY notification for ${params.vendor.name}.
 
 Order: #${params.orderData?.order_number}
-${params.orderData?.pickup_location ? `Location: ${params.orderData.pickup_location}` : ''}
+${params.orderData?.pickup_location ? `Location: ${params.orderData.pickup_location}` : ""}
 
 Let customer know order is ready for pickup. Be clear and helpful.`,
 
@@ -175,15 +175,15 @@ Celebrate their day. Be warm. Mention exclusive discount.`,
 
       loyalty_points: `Create a LOYALTY POINTS update for ${params.vendor.name}.
 
-${params.loyaltyData?.points_earned ? `Points Earned: ${params.loyaltyData.points_earned}` : ''}
-${params.loyaltyData?.points_balance ? `Balance: ${params.loyaltyData.points_balance} pts` : ''}
-${params.loyaltyData?.tier_name ? `Tier: ${params.loyaltyData.tier_name}` : ''}
+${params.loyaltyData?.points_earned ? `Points Earned: ${params.loyaltyData.points_earned}` : ""}
+${params.loyaltyData?.points_balance ? `Balance: ${params.loyaltyData.points_balance} pts` : ""}
+${params.loyaltyData?.tier_name ? `Tier: ${params.loyaltyData.tier_name}` : ""}
 
 Congratulate on points. Show balance. Brief and clear.`,
 
       event_reminder: `Create an EVENT REMINDER for ${params.vendor.name}.
 
-${params.additionalContext || 'Special event happening soon'}
+${params.additionalContext || "Special event happening soon"}
 
 Remind about event. Create excitement. Include timing if relevant.`,
 
@@ -200,8 +200,8 @@ Alert customer. Create urgency (limited stock). Encourage quick action.`,
     return `${basePrompt}
 
 Store: ${params.vendor.name}
-${params.additionalContext ? `Context: ${params.additionalContext}` : ''}
-${params.includeLink ? 'Note: Link will be added separately, keep message to 140 chars' : 'Keep to 160 chars max'}
+${params.additionalContext ? `Context: ${params.additionalContext}` : ""}
+${params.includeLink ? "Note: Link will be added separately, keep message to 140 chars" : "Keep to 160 chars max"}
 
 Generate JSON with this structure:
 {
@@ -214,25 +214,29 @@ Generate JSON with this structure:
   /**
    * Check cannabis compliance
    */
-  private checkCompliance(message: string): { passed: boolean; issues: string[] } {
+  private checkCompliance(message: string): {
+    passed: boolean;
+    issues: string[];
+  } {
     const issues: string[] = [];
 
     // Check for medical claims
-    const medicalTerms = /medic(al|ine)|treat(ment)?|cure|heal|therapy|diagnos/i;
+    const medicalTerms =
+      /medic(al|ine)|treat(ment)?|cure|heal|therapy|diagnos/i;
     if (medicalTerms.test(message)) {
-      issues.push('Contains potential medical claims');
+      issues.push("Contains potential medical claims");
     }
 
     // Check for age-inappropriate language
     const inappropriateTerms = /kid|child|teen|youth|young/i;
     if (inappropriateTerms.test(message)) {
-      issues.push('Contains age-inappropriate references');
+      issues.push("Contains age-inappropriate references");
     }
 
     // Check for excessive promotional language (spam indicators)
     const spamTerms = /FREE!!!|CLICK NOW!!!|LIMITED TIME!!!/i;
     if (spamTerms.test(message)) {
-      issues.push('Excessive promotional language (spam risk)');
+      issues.push("Excessive promotional language (spam risk)");
     }
 
     return {
@@ -246,14 +250,14 @@ Generate JSON with this structure:
    */
   async generateVariants(
     params: SMSGenerationParams,
-    count: number = 3
+    count: number = 3,
   ): Promise<GeneratedSMS[]> {
     const variants: GeneratedSMS[] = [];
 
     for (let i = 0; i < count; i++) {
       const variant = await this.generateMessage({
         ...params,
-        additionalContext: `${params.additionalContext || ''} Variant ${i + 1} - Try different wording`,
+        additionalContext: `${params.additionalContext || ""} Variant ${i + 1} - Try different wording`,
       });
       variants.push(variant);
     }
@@ -276,7 +280,7 @@ Generate JSON with this structure:
 export function createSMSGenerator(openAIKey?: string): SMSGenerator {
   const apiKey = openAIKey || process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error('OpenAI API key required');
+    throw new Error("OpenAI API key required");
   }
   return new SMSGenerator(apiKey);
 }

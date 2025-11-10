@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Grid3x3, Settings, Trash2, Monitor } from 'lucide-react';
-import GroupConfigWizard from './GroupConfigWizard';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Grid3x3, Settings, Trash2, Monitor } from "lucide-react";
+import GroupConfigWizard from "./GroupConfigWizard";
 
 interface DisplayGroup {
   id: string;
@@ -30,7 +30,9 @@ interface DisplayGroupManagerProps {
   vendorId: string;
 }
 
-export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerProps) {
+export default function DisplayGroupManager({
+  vendorId,
+}: DisplayGroupManagerProps) {
   const [groups, setGroups] = useState<DisplayGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [showWizard, setShowWizard] = useState(false);
@@ -49,58 +51,69 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
         setGroups(data.groups);
       }
     } catch (error) {
-      console.error('Error loading display groups:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading display groups:", error);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteGroup = async (groupId: string) => {
-    if (!confirm('Delete this display group? Individual displays will not be affected.')) {
+    if (
+      !confirm(
+        "Delete this display group? Individual displays will not be affected.",
+      )
+    ) {
       return;
     }
 
     try {
       const response = await fetch(`/api/display-groups/${groupId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       const data = await response.json();
       if (data.success) {
-        setGroups(groups.filter(g => g.id !== groupId));
+        setGroups(groups.filter((g) => g.id !== groupId));
       }
     } catch (error) {
-      console.error('Error deleting group:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error deleting group:", error);
+      }
     }
   };
 
   const handleCreateGroup = async (groupData: any) => {
-    console.log('💾 Saving display group configuration:', groupData);
     try {
       if (selectedGroup) {
         // Update existing group
-        console.log('📝 Updating existing group:', selectedGroup.id);
-        const response = await fetch(`/api/display-groups/${selectedGroup.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(groupData),
-        });
+
+        const response = await fetch(
+          `/api/display-groups/${selectedGroup.id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(groupData),
+          },
+        );
 
         const data = await response.json();
-        console.log('✅ Update response:', data);
+
         if (data.success) {
-          console.log('✅ Display group updated successfully');
           await loadGroups();
           setShowWizard(false);
           setSelectedGroup(null);
         } else {
-          console.error('❌ Failed to update display group:', data.error);
+          if (process.env.NODE_ENV === "development") {
+            console.error("❌ Failed to update display group:", data.error);
+          }
         }
       } else {
         // Create new group
-        const response = await fetch('/api/display-groups', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/display-groups", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...groupData,
             vendorId,
@@ -114,7 +127,9 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
         }
       }
     } catch (error) {
-      console.error('Error saving group:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error saving group:", error);
+      }
     }
   };
 
@@ -161,24 +176,42 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
               Video Wall Management
             </h3>
             <p className="text-white/70 text-sm mb-3">
-              Make multiple TVs side-by-side look identical (same theme & layout) while showing different product categories.
+              Make multiple TVs side-by-side look identical (same theme &
+              layout) while showing different product categories.
             </p>
             <div className="bg-black/30 rounded-lg p-4 space-y-2 text-sm">
               <div className="flex items-start gap-3">
-                <span className="bg-purple-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</span>
-                <span className="text-white/80">Click "Create Display Group" and select your TVs</span>
+                <span className="bg-purple-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                  1
+                </span>
+                <span className="text-white/80">
+                  Click "Create Display Group" and select your TVs
+                </span>
               </div>
               <div className="flex items-start gap-3">
-                <span className="bg-purple-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</span>
-                <span className="text-white/80">Pick a theme and grid size for all TVs</span>
+                <span className="bg-purple-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                  2
+                </span>
+                <span className="text-white/80">
+                  Pick a theme and grid size for all TVs
+                </span>
               </div>
               <div className="flex items-start gap-3">
-                <span className="bg-purple-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</span>
-                <span className="text-white/80">Assign categories: TV1 → Flower, TV2 → Edibles, TV3 → Concentrates</span>
+                <span className="bg-purple-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                  3
+                </span>
+                <span className="text-white/80">
+                  Assign categories: TV1 → Flower, TV2 → Edibles, TV3 →
+                  Concentrates
+                </span>
               </div>
               <div className="flex items-start gap-3">
-                <span className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">✓</span>
-                <span className="text-white/80">Refresh your TV windows - they'll sync automatically!</span>
+                <span className="bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                  ✓
+                </span>
+                <span className="text-white/80">
+                  Refresh your TV windows - they'll sync automatically!
+                </span>
               </div>
             </div>
             <div className="mt-3 text-xs text-purple-300 flex items-center gap-2">
@@ -193,9 +226,12 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
       {groups.length === 0 ? (
         <div className="text-center py-12 bg-white/5 rounded-xl border border-white/10">
           <Grid3x3 className="w-16 h-16 text-white/20 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">No Display Groups Yet</h3>
+          <h3 className="text-lg font-medium text-white mb-2">
+            No Display Groups Yet
+          </h3>
           <p className="text-white/60 text-sm mb-6 max-w-md mx-auto">
-            Create a display group to unify multiple TVs into a cohesive video wall. All displays will share the same theme, layout, and style.
+            Create a display group to unify multiple TVs into a cohesive video
+            wall. All displays will share the same theme, layout, and style.
           </p>
           <button
             onClick={() => setShowWizard(true)}
@@ -217,9 +253,13 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
               {/* Group Header */}
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">{group.name}</h3>
+                  <h3 className="text-lg font-semibold text-white">
+                    {group.name}
+                  </h3>
                   {group.description && (
-                    <p className="text-white/60 text-sm mt-1">{group.description}</p>
+                    <p className="text-white/60 text-sm mt-1">
+                      {group.description}
+                    </p>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -280,9 +320,9 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
                               <div className="flex items-center gap-2 mt-1">
                                 <div
                                   className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                                    member.device.connection_status === 'online'
-                                      ? 'bg-green-400'
-                                      : 'bg-gray-400'
+                                    member.device.connection_status === "online"
+                                      ? "bg-green-400"
+                                      : "bg-gray-400"
                                   }`}
                                 />
                                 <span className="text-xs text-white/40">
@@ -304,7 +344,9 @@ export default function DisplayGroupManager({ vendorId }: DisplayGroupManagerPro
                                 ))}
                               </div>
                             ) : (
-                              <span className="text-white/40 italic">All categories</span>
+                              <span className="text-white/40 italic">
+                                All categories
+                              </span>
                             )}
                           </div>
                         </div>

@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { MCP_TOOLS, executeMCPTool } from '@/lib/ai/mcp-tools';
+import { NextRequest, NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { MCP_TOOLS, executeMCPTool } from "@/lib/ai/mcp-tools";
 
 /**
  * Claude-Powered Code Generation for Storefronts
  * POST /api/ai/claude-code-gen
- * 
+ *
  * Capabilities:
  * - Generate component code
  * - Modify existing components
@@ -24,46 +24,57 @@ export async function POST(request: NextRequest) {
       vendorId,
       action, // 'generate' | 'modify' | 'optimize' | 'debug'
     } = await request.json();
-    
+
     if (!prompt) {
       return NextResponse.json(
-        { success: false, error: 'Prompt required' },
-        { status: 400 }
+        { success: false, error: "Prompt required" },
+        { status: 400 },
       );
     }
-    
+
     // Get Claude API key from Supabase
     const supabase = getServiceSupabase();
     const { data: config, error: configError } = await supabase
-      .from('ai_config')
-      .select('api_key, model, max_tokens, temperature')
-      .eq('provider', 'anthropic')
+      .from("ai_config")
+      .select("api_key, model, max_tokens, temperature")
+      .eq("provider", "anthropic")
       .single();
-    
+
     if (configError || !config) {
       return NextResponse.json(
-        { success: false, error: 'AI configuration not found' },
-        { status: 500 }
+        { success: false, error: "AI configuration not found" },
+        { status: 500 },
       );
     }
-    
+
     // Initialize Claude
     const anthropic = new Anthropic({
       apiKey: config.api_key,
     });
-    
+
     // Fetch vendor data for context using MCP tools
     let vendorData = null;
     let vendorProducts = null;
-    
+
     if (vendorId) {
-      vendorData = await executeMCPTool('get_vendor_info', { vendor_id: vendorId });
-      vendorProducts = await executeMCPTool('get_vendor_products', { vendor_id: vendorId, limit: 10 });
+      vendorData = await executeMCPTool("get_vendor_info", {
+        vendor_id: vendorId,
+      });
+      vendorProducts = await executeMCPTool("get_vendor_products", {
+        vendor_id: vendorId,
+        limit: 10,
+      });
     }
-    
+
     // Build system context about Yacht Club architecture
-    const systemContext = buildYachtClubContext(action, componentKey, pageType, vendorData, vendorProducts);
-    
+    const systemContext = buildYachtClubContext(
+      action,
+      componentKey,
+      pageType,
+      vendorData,
+      vendorProducts,
+    );
+
     // Build user message with all context
     const userMessage = buildUserMessage({
       prompt,
@@ -74,10 +85,10 @@ export async function POST(request: NextRequest) {
       vendorId,
       action,
     });
-    
+
     // Check if streaming is requested
-    const stream = request.headers.get('accept') === 'text/event-stream';
-    
+    const stream = request.headers.get("accept") === "text/event-stream";
+
     if (stream) {
       // STREAMING MODE with animations
       const encoder = new TextEncoder();
@@ -85,111 +96,137 @@ export async function POST(request: NextRequest) {
         async start(controller) {
           try {
             const stream = await anthropic.messages.stream({
-              model: config.model || 'claude-sonnet-4-20250514',
+              model: config.model || "claude-sonnet-4-20250514",
               max_tokens: config.max_tokens || 8000,
               temperature: 1.0,
               system: systemContext,
               tools: MCP_TOOLS as any,
               messages: [
                 {
-                  role: 'user',
+                  role: "user",
                   content: userMessage,
                 },
               ],
             });
-            
-            let fullText = '';
+
+            let fullText = "";
             let toolInputs: any[] = [];
-            
+
             // Send initial event
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'start', message: 'Analyzing vendor data...' })}\n\n`));
-            
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({ type: "start", message: "Analyzing vendor data..." })}\n\n`,
+              ),
+            );
+
             for await (const event of stream) {
               // Handle tool use
-              if (event.type === 'content_block_start' && (event as any).content_block?.type === 'tool_use') {
+              if (
+                event.type === "content_block_start" &&
+                (event as any).content_block?.type === "tool_use"
+              ) {
                 const toolName = (event as any).content_block.name;
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'thinking', message: `Using ${toolName}...` })}\n\n`));
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ type: "thinking", message: `Using ${toolName}...` })}\n\n`,
+                  ),
+                );
               }
-              
-              if (event.type === 'content_block_delta') {
-                if (event.delta.type === 'text_delta') {
+
+              if (event.type === "content_block_delta") {
+                if (event.delta.type === "text_delta") {
                   const text = event.delta.text;
                   fullText += text;
-                  
+
                   // Stream each character
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-                    type: 'content', 
-                    text: text,
-                    fullText: fullText
-                  })}\n\n`));
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({
+                        type: "content",
+                        text: text,
+                        fullText: fullText,
+                      })}\n\n`,
+                    ),
+                  );
                 }
-                
+
                 // Collect tool inputs
-                if ((event.delta as any).type === 'input_json_delta') {
+                if ((event.delta as any).type === "input_json_delta") {
                   // Tool input streaming
                 }
               }
-              
-              if (event.type === 'message_start') {
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'thinking', message: 'Generating components...' })}\n\n`));
+
+              if (event.type === "message_start") {
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ type: "thinking", message: "Generating components..." })}\n\n`,
+                  ),
+                );
               }
             }
-            
+
             // Parse final response
             const parsed = parseClaudeResponse(fullText, action);
-            
+
             // Get final message with usage stats
             const finalMessage = await stream.finalMessage();
-            
+
             // Send completion event
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-              type: 'complete',
-              ...parsed,
-              usage: finalMessage.usage
-            })}\n\n`));
-            
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  type: "complete",
+                  ...parsed,
+                  usage: finalMessage.usage,
+                })}\n\n`,
+              ),
+            );
+
             controller.close();
           } catch (error: any) {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-              type: 'error',
-              error: error.message 
-            })}\n\n`));
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({
+                  type: "error",
+                  error: error.message,
+                })}\n\n`,
+              ),
+            );
             controller.close();
           }
         },
       });
-      
+
       return new Response(readable, {
         headers: {
-          'Content-Type': 'text/event-stream',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
         },
       });
     }
-    
+
     // NON-STREAMING MODE (fallback)
     const message = await anthropic.messages.create({
-      model: config.model || 'claude-3-5-sonnet-20241022',
+      model: config.model || "claude-3-5-sonnet-20241022",
       max_tokens: config.max_tokens || 8000,
       temperature: 1.0,
       system: systemContext,
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: userMessage,
         },
       ],
     });
-    
+
     // Extract response
-    const responseText = message.content[0].type === 'text' 
-      ? message.content[0].text 
-      : '';
-    
+    const responseText =
+      message.content[0].type === "text" ? message.content[0].text : "";
+
     // Parse Claude's response
     const parsed = parseClaudeResponse(responseText, action);
-    
+
     return NextResponse.json({
       success: true,
       ...parsed,
@@ -198,12 +235,13 @@ export async function POST(request: NextRequest) {
         output_tokens: message.usage.output_tokens,
       },
     });
-    
   } catch (error: any) {
-    console.error('Claude code gen error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Claude code gen error:", error);
+    }
     return NextResponse.json(
-      { success: false, error: error.message || 'AI generation failed' },
-      { status: 500 }
+      { success: false, error: error.message || "AI generation failed" },
+      { status: 500 },
     );
   }
 }
@@ -212,33 +250,37 @@ export async function POST(request: NextRequest) {
  * Build comprehensive system context about Yacht Club
  */
 function buildYachtClubContext(
-  action: string, 
-  componentKey?: string, 
+  action: string,
+  componentKey?: string,
   pageType?: string,
   vendorData?: any,
-  vendorProducts?: any
+  vendorProducts?: any,
 ): string {
-  let vendorContext = '';
-  
+  let vendorContext = "";
+
   if (vendorData) {
     vendorContext = `\n\n## CURRENT VENDOR CONTEXT
 Store Name: ${vendorData.store_name}
 Slug: ${vendorData.slug}
-Tagline: ${vendorData.tagline || 'N/A'}
-Brand Colors: Primary ${vendorData.primary_color || '#000'}, Secondary ${vendorData.secondary_color || '#fff'}
-Logo: ${vendorData.logo_url || 'Not set'}
+Tagline: ${vendorData.tagline || "N/A"}
+Brand Colors: Primary ${vendorData.primary_color || "#000"}, Secondary ${vendorData.secondary_color || "#fff"}
+Logo: ${vendorData.logo_url || "Not set"}
 `;
   }
-  
+
   if (vendorProducts && vendorProducts.products?.length > 0) {
     vendorContext += `\n## VENDOR PRODUCTS (Sample)
-${vendorProducts.products.slice(0, 5).map((p: any) => 
-  `- ${p.name} (${p.category || 'uncategorized'}) - $${p.price || '0'} - Stock: ${p.stock}`
-).join('\n')}
+${vendorProducts.products
+  .slice(0, 5)
+  .map(
+    (p: any) =>
+      `- ${p.name} (${p.category || "uncategorized"}) - $${p.price || "0"} - Stock: ${p.stock}`,
+  )
+  .join("\n")}
 Total Products: ${vendorProducts.total}
 `;
   }
-  
+
   return `You are Claude Sonnet 4, an expert AI coding assistant integrated into Yacht Club, a multi-vendor cannabis marketplace platform.
 
 ## YOUR MISSION
@@ -381,14 +423,14 @@ vendor_component_instances (
 \`\`\`
 
 ## YOUR TASK
-${action === 'generate' ? 'Generate new component configuration based on user request' : ''}
-${action === 'modify' ? 'Modify existing component props' : ''}
-${action === 'optimize' ? 'Optimize component for performance and conversion' : ''}
-${action === 'debug' ? 'Debug and fix component issues' : ''}
+${action === "generate" ? "Generate new component configuration based on user request" : ""}
+${action === "modify" ? "Modify existing component props" : ""}
+${action === "optimize" ? "Optimize component for performance and conversion" : ""}
+${action === "debug" ? "Debug and fix component issues" : ""}
 
 Current context:
-- Component: ${componentKey || 'Multiple'}
-- Page Type: ${pageType || 'Unknown'}
+- Component: ${componentKey || "Multiple"}
+- Page Type: ${pageType || "Unknown"}
 
 ## CRITICAL INSTRUCTIONS
 
@@ -467,11 +509,11 @@ Good Response:
     {
       "component_key": "text",
       "props": {
-        "content": "${vendorData?.store_name || 'Premium Cannabis'} - ${vendorData?.tagline || 'Quality You Can Trust'}",
+        "content": "${vendorData?.store_name || "Premium Cannabis"} - ${vendorData?.tagline || "Quality You Can Trust"}",
         "variant": "headline",
         "size": "4xl",
         "align": "center",
-        "color": "${vendorData?.primary_color || '#ffffff'}"
+        "color": "${vendorData?.primary_color || "#ffffff"}"
       },
       "reasoning": "Using actual store name and tagline creates authentic brand presence"
     }
@@ -495,32 +537,32 @@ function buildUserMessage(context: any): string {
     vendorId,
     action,
   } = context;
-  
+
   let message = `Action: ${action}\n\n`;
-  
+
   if (componentKey) {
     message += `Component Type: ${componentKey}\n`;
   }
-  
+
   if (pageType) {
     message += `Page Type: ${pageType}\n`;
   }
-  
+
   if (vendorId) {
     message += `Vendor ID: ${vendorId}\n`;
   }
-  
+
   if (currentProps) {
     message += `\nCurrent Props:\n\`\`\`json\n${JSON.stringify(currentProps, null, 2)}\n\`\`\`\n`;
   }
-  
+
   if (currentCode) {
     message += `\nCurrent Code:\n\`\`\`typescript\n${currentCode}\n\`\`\`\n`;
   }
-  
+
   message += `\n\nUser Request:\n${prompt}\n`;
   message += `\n\nIMPORTANT: Start your response with \`\`\`json and end with \`\`\`. Output ONLY the JSON code block, nothing else.`;
-  
+
   return message;
 }
 
@@ -532,12 +574,12 @@ function parseClaudeResponse(responseText: string, action: string): any {
     // Extract JSON from markdown code blocks if present
     const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
     const jsonText = jsonMatch ? jsonMatch[1] : responseText;
-    
+
     const parsed = JSON.parse(jsonText);
-    
+
     return {
       components: parsed.components || [],
-      explanation: parsed.explanation || '',
+      explanation: parsed.explanation || "",
       warnings: parsed.warnings || [],
       suggestions: parsed.suggestions || [],
       rawResponse: responseText,
@@ -547,7 +589,7 @@ function parseClaudeResponse(responseText: string, action: string): any {
     return {
       components: [],
       explanation: responseText,
-      warnings: ['Failed to parse structured response'],
+      warnings: ["Failed to parse structured response"],
       suggestions: [],
       rawResponse: responseText,
     };
@@ -561,18 +603,18 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
     const { data: config, error } = await supabase
-      .from('ai_config')
-      .select('provider, model, created_at')
-      .eq('provider', 'anthropic')
+      .from("ai_config")
+      .select("provider, model, created_at")
+      .eq("provider", "anthropic")
       .single();
-    
+
     if (error || !config) {
       return NextResponse.json({
         success: false,
         configured: false,
       });
     }
-    
+
     return NextResponse.json({
       success: true,
       configured: true,
@@ -582,8 +624,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-

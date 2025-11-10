@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import Image from 'next/image';
-import { ShoppingBag, Eye, Package, ArrowDownAZ, PackageCheck } from 'lucide-react';
-import Link from 'next/link';
-import { POSQuickView } from './POSQuickView';
-import { POSVendorDropdown } from './POSVendorDropdown';
-import { useAppAuth } from '@/context/AppAuthContext';
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import Image from "next/image";
+import {
+  ShoppingBag,
+  Eye,
+  Package,
+  ArrowDownAZ,
+  PackageCheck,
+} from "lucide-react";
+import Link from "next/link";
+import { POSQuickView } from "./POSQuickView";
+import { POSVendorDropdown } from "./POSVendorDropdown";
+import { useAppAuth } from "@/context/AppAuthContext";
 
 interface PricingTier {
   break_id: string;
@@ -53,7 +59,7 @@ interface POSProductGridProps {
   registerId?: string;
   onAddToCart: (product: Product, quantity: number) => void;
   onProductClick?: (productSlug: string) => void;
-  displayMode?: 'cards' | 'list' | 'compact';
+  displayMode?: "cards" | "list" | "compact";
   showInventory?: boolean;
   skuInput?: string;
   onSkuInputChange?: (value: string) => void;
@@ -64,19 +70,24 @@ interface POSProductGridProps {
 
 // Category hierarchy - subcategories grouped under parent categories
 const CATEGORY_HIERARCHY: Record<string, string[]> = {
-  'Beverages': ['Day Drinker (5mg)', 'Golden Hour (10mg)', 'Darkside (30mg)', 'Riptide (60mg)'],
+  Beverages: [
+    "Day Drinker (5mg)",
+    "Golden Hour (10mg)",
+    "Darkside (30mg)",
+    "Riptide (60mg)",
+  ],
 };
 
 export function POSProductGrid({
   locationId,
-  locationName = 'Location',
+  locationName = "Location",
   vendorId,
   userId,
-  userName = 'Staff',
+  userName = "Staff",
   registerId,
   onAddToCart,
   onProductClick,
-  displayMode = 'cards',
+  displayMode = "cards",
   showInventory = true,
   skuInput,
   onSkuInputChange,
@@ -88,17 +99,25 @@ export function POSProductGrid({
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const [selectedStrainType, setSelectedStrainType] = useState<string | null>(null);
-  const [selectedConsistency, setSelectedConsistency] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
+    null,
+  );
+  const [selectedStrainType, setSelectedStrainType] = useState<string | null>(
+    null,
+  );
+  const [selectedConsistency, setSelectedConsistency] = useState<string | null>(
+    null,
+  );
   const [selectedFlavor, setSelectedFlavor] = useState<string | null>(null);
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(
+    null,
+  );
 
   // Alphabetical scroll indicator
   const [sortAlphabetically, setSortAlphabetically] = useState(false);
-  const [currentLetter, setCurrentLetter] = useState<string>('');
+  const [currentLetter, setCurrentLetter] = useState<string>("");
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const productRefsMap = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -113,24 +132,28 @@ export function POSProductGrid({
     if (!sortAlphabetically) {
       productRefsMap.current.clear();
       setShowScrollIndicator(false);
-      setCurrentLetter('');
+      setCurrentLetter("");
     }
   }, [sortAlphabetically]);
 
   const loadInventory = async () => {
     try {
-      const response = await fetch(`/api/pos/inventory?locationId=${locationId}`);
+      const response = await fetch(
+        `/api/pos/inventory?locationId=${locationId}`,
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to load inventory');
+        throw new Error(errorData.error || "Failed to load inventory");
       }
 
       const { products: inventoryProducts } = await response.json();
       setProducts(inventoryProducts || []);
       setError(null);
     } catch (err: any) {
-      console.error('Error loading inventory:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading inventory:", err);
+      }
       setError(err.message);
     } finally {
       setLoading(false);
@@ -151,7 +174,7 @@ export function POSProductGrid({
     const containerRect = container.getBoundingClientRect();
     const centerY = containerRect.top + containerRect.height / 2;
 
-    let closestLetter = '';
+    let closestLetter = "";
     let closestDistance = Infinity;
 
     productRefsMap.current.forEach((element, letter) => {
@@ -180,7 +203,7 @@ export function POSProductGrid({
 
       container.scrollTo({
         top: offset,
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   }, []);
@@ -189,12 +212,12 @@ export function POSProductGrid({
   const categories = useMemo(() => {
     const allCategories = new Set(
       products
-        .map(p => p.category)
-        .filter((cat): cat is string => typeof cat === 'string')
+        .map((p) => p.category)
+        .filter((cat): cat is string => typeof cat === "string"),
     );
     const parents = new Set<string>();
 
-    allCategories.forEach(cat => {
+    allCategories.forEach((cat) => {
       // Check if this category is a subcategory
       let isSubcategory = false;
       for (const [parent, subs] of Object.entries(CATEGORY_HIERARCHY)) {
@@ -209,37 +232,41 @@ export function POSProductGrid({
       }
     });
 
-    return ['all', ...Array.from(parents).sort()];
+    return ["all", ...Array.from(parents).sort()];
   }, [products]);
 
   // Get subcategories for the selected parent category
   const availableSubcategories = useMemo(() => {
-    if (selectedCategory === 'all') return [];
+    if (selectedCategory === "all") return [];
 
     const subcats = CATEGORY_HIERARCHY[selectedCategory];
     if (!subcats) return [];
 
     // Only show subcategories that have products
-    return subcats.filter(subcat =>
-      products.some(p => p.category === subcat)
+    return subcats.filter((subcat) =>
+      products.some((p) => p.category === subcat),
     );
   }, [selectedCategory, products]);
 
   // Get available strain types for current category
   const availableStrainTypes = useMemo(() => {
-    const relevantCategories = ['Flower', 'Concentrates', 'Vape'];
+    const relevantCategories = ["Flower", "Concentrates", "Vape"];
 
     const strainTypes = new Set<string>();
-    products.forEach(product => {
+    products.forEach((product) => {
       // When "all" is selected, show strain types from all relevant categories
-      if (selectedCategory === 'all') {
-        if (relevantCategories.includes(product.category || '')) {
-          const strainType = product.fields?.find(f => f.label === 'strain_type')?.value;
+      if (selectedCategory === "all") {
+        if (relevantCategories.includes(product.category || "")) {
+          const strainType = product.fields?.find(
+            (f) => f.label === "strain_type",
+          )?.value;
           if (strainType) strainTypes.add(strainType);
         }
       } else if (product.category === selectedCategory) {
         // When specific category selected, only show for that category
-        const strainType = product.fields?.find(f => f.label === 'strain_type')?.value;
+        const strainType = product.fields?.find(
+          (f) => f.label === "strain_type",
+        )?.value;
         if (strainType) strainTypes.add(strainType);
       }
     });
@@ -249,10 +276,12 @@ export function POSProductGrid({
   // Get available consistencies for concentrates
   const availableConsistencies = useMemo(() => {
     const consistencies = new Set<string>();
-    products.forEach(product => {
-      if (selectedCategory === 'all' || product.category === 'Concentrates') {
-        if (product.category === 'Concentrates') {
-          const consistency = product.fields?.find(f => f.label === 'consistency')?.value;
+    products.forEach((product) => {
+      if (selectedCategory === "all" || product.category === "Concentrates") {
+        if (product.category === "Concentrates") {
+          const consistency = product.fields?.find(
+            (f) => f.label === "consistency",
+          )?.value;
           if (consistency) consistencies.add(consistency);
         }
       }
@@ -262,12 +291,17 @@ export function POSProductGrid({
 
   // Get available flavors for beverages
   const availableFlavors = useMemo(() => {
-    const beverageCategories = ['Day Drinker (5mg)', 'Golden Hour (10mg)', 'Darkside (30mg)', 'Riptide (60mg)'];
+    const beverageCategories = [
+      "Day Drinker (5mg)",
+      "Golden Hour (10mg)",
+      "Darkside (30mg)",
+      "Riptide (60mg)",
+    ];
 
     const flavors = new Set<string>();
-    products.forEach(product => {
-      if (beverageCategories.includes(product.category || '')) {
-        const flavor = product.fields?.find(f => f.label === 'flavor')?.value;
+    products.forEach((product) => {
+      if (beverageCategories.includes(product.category || "")) {
+        const flavor = product.fields?.find((f) => f.label === "flavor")?.value;
         if (flavor) flavors.add(flavor);
       }
     });
@@ -276,14 +310,17 @@ export function POSProductGrid({
 
   // Filter products
   const filteredProducts = useMemo(() => {
-    return products.filter(product => {
+    return products.filter((product) => {
       // Search filter
-      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      if (
+        searchQuery &&
+        !product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
         return false;
       }
 
       // Category filter - handle both parent categories and subcategories
-      if (selectedCategory !== 'all') {
+      if (selectedCategory !== "all") {
         // If a subcategory is selected, filter by that
         if (selectedSubcategory) {
           if (product.category !== selectedSubcategory) {
@@ -294,7 +331,7 @@ export function POSProductGrid({
           const subcats = CATEGORY_HIERARCHY[selectedCategory];
           if (subcats) {
             // Parent has subcategories - show products matching any subcategory
-            if (!subcats.includes(product.category || '')) {
+            if (!subcats.includes(product.category || "")) {
               return false;
             }
           } else {
@@ -308,7 +345,9 @@ export function POSProductGrid({
 
       // Strain type filter
       if (selectedStrainType) {
-        const strainType = product.fields?.find(f => f.label === 'strain_type')?.value;
+        const strainType = product.fields?.find(
+          (f) => f.label === "strain_type",
+        )?.value;
         if (strainType !== selectedStrainType) {
           return false;
         }
@@ -316,7 +355,9 @@ export function POSProductGrid({
 
       // Consistency filter
       if (selectedConsistency) {
-        const consistency = product.fields?.find(f => f.label === 'consistency')?.value;
+        const consistency = product.fields?.find(
+          (f) => f.label === "consistency",
+        )?.value;
         if (consistency !== selectedConsistency) {
           return false;
         }
@@ -324,7 +365,7 @@ export function POSProductGrid({
 
       // Flavor filter
       if (selectedFlavor) {
-        const flavor = product.fields?.find(f => f.label === 'flavor')?.value;
+        const flavor = product.fields?.find((f) => f.label === "flavor")?.value;
         if (flavor !== selectedFlavor) {
           return false;
         }
@@ -332,14 +373,22 @@ export function POSProductGrid({
 
       return true;
     });
-  }, [products, searchQuery, selectedCategory, selectedSubcategory, selectedStrainType, selectedConsistency, selectedFlavor]);
+  }, [
+    products,
+    searchQuery,
+    selectedCategory,
+    selectedSubcategory,
+    selectedStrainType,
+    selectedConsistency,
+    selectedFlavor,
+  ]);
 
   // Group products by first letter for alphabetical indicator
   const productsByLetter = useMemo(() => {
     const grouped = new Map<string, Product[]>();
 
-    filteredProducts.forEach(product => {
-      const firstLetter = product.name[0]?.toUpperCase() || '#';
+    filteredProducts.forEach((product) => {
+      const firstLetter = product.name[0]?.toUpperCase() || "#";
       if (!grouped.has(firstLetter)) {
         grouped.set(firstLetter, []);
       }
@@ -365,7 +414,9 @@ export function POSProductGrid({
       // e.g., "2g - $40" means $40 total, so unit price = $40 / 2 = $20
       price = priceTier.price ? priceTier.price / priceTier.qty : product.price;
     } else {
-      quantity = parseFloat(prompt(`Enter quantity for ${product.name}:`, '1') || '0');
+      quantity = parseFloat(
+        prompt(`Enter quantity for ${product.name}:`, "1") || "0",
+      );
       price = product.price;
     }
 
@@ -404,8 +455,8 @@ export function POSProductGrid({
           className="flex-1 overflow-y-auto px-4 pb-4 pt-4"
           style={{
             minHeight: 0,
-            WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain'
+            WebkitOverflowScrolling: "touch",
+            overscrollBehavior: "contain",
           }}
         >
           <div className="grid grid-cols-3 gap-4">
@@ -443,11 +494,22 @@ export function POSProductGrid({
         <div className="flex-shrink-0 p-4 border-t border-white/5">
           <div className="flex items-center justify-center gap-3 text-white/40">
             <div className="flex gap-1">
-              <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-2 h-2 bg-white/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div
+                className="w-2 h-2 bg-white/40 rounded-full animate-bounce"
+                style={{ animationDelay: "0ms" }}
+              />
+              <div
+                className="w-2 h-2 bg-white/40 rounded-full animate-bounce"
+                style={{ animationDelay: "150ms" }}
+              />
+              <div
+                className="w-2 h-2 bg-white/40 rounded-full animate-bounce"
+                style={{ animationDelay: "300ms" }}
+              />
             </div>
-            <span className="text-xs uppercase tracking-[0.15em]">Loading products</span>
+            <span className="text-xs uppercase tracking-[0.15em]">
+              Loading products
+            </span>
           </div>
         </div>
       </div>
@@ -457,7 +519,9 @@ export function POSProductGrid({
   if (error) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6">
-        <div className="text-red-500 font-bold mb-2">Error Loading Inventory</div>
+        <div className="text-red-500 font-bold mb-2">
+          Error Loading Inventory
+        </div>
         <div className="text-white/60">{error}</div>
         <button
           onClick={loadInventory}
@@ -500,7 +564,7 @@ export function POSProductGrid({
                   }
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && onSkuSubmit) {
+                  if (e.key === "Enter" && onSkuSubmit) {
                     e.preventDefault();
                     onSkuSubmit(e as any);
                   }
@@ -541,23 +605,33 @@ export function POSProductGrid({
               }}
               className="bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all min-w-[140px] cursor-pointer appearance-none pr-8"
               style={{
-                colorScheme: 'dark'
+                colorScheme: "dark",
               }}
             >
               {categories.map((cat) => (
                 <option
                   key={cat}
-                  value={cat || 'all'}
-                  style={{ backgroundColor: '#000', color: '#fff' }}
+                  value={cat || "all"}
+                  style={{ backgroundColor: "#000", color: "#fff" }}
                 >
-                  {cat === 'all' ? 'All Categories' : cat}
+                  {cat === "all" ? "All Categories" : cat}
                 </option>
               ))}
             </select>
             {/* Dropdown arrow */}
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg className="w-3 h-3 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              <svg
+                className="w-3 h-3 text-white/60"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                strokeWidth={2.5}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
             </div>
           </div>
@@ -567,8 +641,8 @@ export function POSProductGrid({
             onClick={() => setSortAlphabetically(!sortAlphabetically)}
             className={`px-4 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] transition-all font-light border flex items-center gap-2 ${
               sortAlphabetically
-                ? 'bg-white/[0.1] border-white/[0.15] text-white/80'
-                : 'bg-white/[0.02] border-white/[0.06] text-white/60 hover:bg-white/[0.04] hover:text-white/80'
+                ? "bg-white/[0.1] border-white/[0.15] text-white/80"
+                : "bg-white/[0.02] border-white/[0.06] text-white/60 hover:bg-white/[0.04] hover:text-white/80"
             }`}
           >
             <ArrowDownAZ size={14} strokeWidth={1.5} />
@@ -577,13 +651,16 @@ export function POSProductGrid({
         </div>
 
         {/* Dynamic Filter Pills - Single horizontal row, Apple-style */}
-        {(availableSubcategories.length > 0 || availableStrainTypes.length > 0 || availableConsistencies.length > 0 || availableFlavors.length > 0) && (
+        {(availableSubcategories.length > 0 ||
+          availableStrainTypes.length > 0 ||
+          availableConsistencies.length > 0 ||
+          availableFlavors.length > 0) && (
           <div
             className="flex items-center gap-2 pt-2 overflow-x-auto hide-scrollbar"
             style={{
-              WebkitOverflowScrolling: 'touch',
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none'
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
             }}
           >
             {/* All filters in one seamless row */}
@@ -591,15 +668,17 @@ export function POSProductGrid({
               <button
                 key={`subcat-${subcat}`}
                 onClick={() => {
-                  setSelectedSubcategory(subcat === selectedSubcategory ? null : subcat);
+                  setSelectedSubcategory(
+                    subcat === selectedSubcategory ? null : subcat,
+                  );
                   if (subcat !== selectedSubcategory) {
                     setSelectedFlavor(null);
                   }
                 }}
                 className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
                   selectedSubcategory === subcat
-                    ? 'bg-white text-black shadow-lg'
-                    : 'bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm'
+                    ? "bg-white text-black shadow-lg"
+                    : "bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm"
                 }`}
               >
                 {subcat}
@@ -609,11 +688,15 @@ export function POSProductGrid({
             {availableStrainTypes.map((strain) => (
               <button
                 key={`strain-${strain}`}
-                onClick={() => setSelectedStrainType(strain === selectedStrainType ? null : strain)}
+                onClick={() =>
+                  setSelectedStrainType(
+                    strain === selectedStrainType ? null : strain,
+                  )
+                }
                 className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
                   selectedStrainType === strain
-                    ? 'bg-white text-black shadow-lg'
-                    : 'bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm'
+                    ? "bg-white text-black shadow-lg"
+                    : "bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm"
                 }`}
               >
                 {strain}
@@ -623,11 +706,15 @@ export function POSProductGrid({
             {availableConsistencies.map((consistency) => (
               <button
                 key={`consistency-${consistency}`}
-                onClick={() => setSelectedConsistency(consistency === selectedConsistency ? null : consistency)}
+                onClick={() =>
+                  setSelectedConsistency(
+                    consistency === selectedConsistency ? null : consistency,
+                  )
+                }
                 className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
                   selectedConsistency === consistency
-                    ? 'bg-white text-black shadow-lg'
-                    : 'bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm'
+                    ? "bg-white text-black shadow-lg"
+                    : "bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm"
                 }`}
               >
                 {consistency}
@@ -637,11 +724,13 @@ export function POSProductGrid({
             {availableFlavors.map((flavor) => (
               <button
                 key={`flavor-${flavor}`}
-                onClick={() => setSelectedFlavor(flavor === selectedFlavor ? null : flavor)}
+                onClick={() =>
+                  setSelectedFlavor(flavor === selectedFlavor ? null : flavor)
+                }
                 className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
                   selectedFlavor === flavor
-                    ? 'bg-white text-black shadow-lg'
-                    : 'bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm'
+                    ? "bg-white text-black shadow-lg"
+                    : "bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm"
                 }`}
               >
                 {flavor}
@@ -649,7 +738,10 @@ export function POSProductGrid({
             ))}
 
             {/* Clear All - Only show if any filter is active */}
-            {(selectedSubcategory || selectedStrainType || selectedConsistency || selectedFlavor) && (
+            {(selectedSubcategory ||
+              selectedStrainType ||
+              selectedConsistency ||
+              selectedFlavor) && (
               <>
                 {/* Subtle divider */}
                 <div className="w-px h-5 bg-white/10 flex-shrink-0 mx-1" />
@@ -677,40 +769,49 @@ export function POSProductGrid({
           onScroll={handleScroll}
           className="absolute inset-0 overflow-y-auto overflow-x-hidden px-4 pb-4 pt-1"
           style={{
-            WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain'
+            WebkitOverflowScrolling: "touch",
+            overscrollBehavior: "contain",
           }}
         >
           {filteredProducts.length === 0 ? (
             <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
               <div className="text-white/40">No products found</div>
             </div>
-          ) : displayMode === 'cards' ? (
+          ) : displayMode === "cards" ? (
             sortAlphabetically ? (
               <>
-                {Array.from(productsByLetter.entries()).map(([letter, products]) => (
-                  <div key={letter} ref={(el) => { if (el) productRefsMap.current.set(letter, el); }}>
-                    {/* Letter Header */}
-                    <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-sm py-2 mb-3">
-                      <h3 className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-light">{letter}</h3>
-                    </div>
+                {Array.from(productsByLetter.entries()).map(
+                  ([letter, products]) => (
+                    <div
+                      key={letter}
+                      ref={(el) => {
+                        if (el) productRefsMap.current.set(letter, el);
+                      }}
+                    >
+                      {/* Letter Header */}
+                      <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-sm py-2 mb-3">
+                        <h3 className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-light">
+                          {letter}
+                        </h3>
+                      </div>
 
-                    {/* Products Grid for this letter */}
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      {products.map((product) => (
-                        <ProductCard
-                          key={product.id}
-                          product={product}
-                          onAddToCart={handleAddProduct}
-                          onProductClick={onProductClick}
-                          onQuickView={setQuickViewProduct}
-                          showInventory={showInventory}
-                          vendorLogo={vendor?.logo_url || null}
-                        />
-                      ))}
+                      {/* Products Grid for this letter */}
+                      <div className="grid grid-cols-3 gap-4 mb-6">
+                        {products.map((product) => (
+                          <ProductCard
+                            key={product.id}
+                            product={product}
+                            onAddToCart={handleAddProduct}
+                            onProductClick={onProductClick}
+                            onQuickView={setQuickViewProduct}
+                            showInventory={showInventory}
+                            vendorLogo={vendor?.logo_url || null}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ),
+                )}
               </>
             ) : (
               <div className="grid grid-cols-3 gap-4 pt-1">
@@ -728,76 +829,88 @@ export function POSProductGrid({
               </div>
             )
           ) : (
-          // List view
-          <div className="space-y-2">
-            {filteredProducts.map((product) => (
-              <button
-                key={product.id}
-                onClick={() => handleAddProduct(product)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-between"
-              >
-                <div className="flex items-center gap-4 flex-1">
-                  {product.image_url && (
-                    <div className="w-16 h-16 bg-white/5 rounded-xl overflow-hidden relative flex-shrink-0">
-                      <Image
-                        src={product.image_url}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="flex-1 text-left">
-                    <div className="text-white font-bold">{product.name}</div>
-                    {product.category && (
-                      <div className="text-white/40 text-xs">{product.category}</div>
+            // List view
+            <div className="space-y-2">
+              {filteredProducts.map((product) => (
+                <button
+                  key={product.id}
+                  onClick={() => handleAddProduct(product)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    {product.image_url && (
+                      <div className="w-16 h-16 bg-white/5 rounded-xl overflow-hidden relative flex-shrink-0">
+                        <Image
+                          src={product.image_url}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
                     )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-6">
-                  {showInventory && (
-                    <div className={`text-sm font-bold ${
-                      product.inventory_quantity > 10 ? 'text-green-500' :
-                      product.inventory_quantity > 0 ? 'text-yellow-500' :
-                      'text-red-500'
-                    }`}>
-                      {product.inventory_quantity} in stock
+
+                    <div className="flex-1 text-left">
+                      <div className="text-white font-bold">{product.name}</div>
+                      {product.category && (
+                        <div className="text-white/40 text-xs">
+                          {product.category}
+                        </div>
+                      )}
                     </div>
-                  )}
-                  
-                  <div className="text-white font-black text-xl" style={{ fontWeight: 900 }}>
-                    ${product.price.toFixed(2)}
                   </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
+
+                  <div className="flex items-center gap-6">
+                    {showInventory && (
+                      <div
+                        className={`text-sm font-bold ${
+                          product.inventory_quantity > 10
+                            ? "text-green-500"
+                            : product.inventory_quantity > 0
+                              ? "text-yellow-500"
+                              : "text-red-500"
+                        }`}
+                      >
+                        {product.inventory_quantity} in stock
+                      </div>
+                    )}
+
+                    <div
+                      className="text-white font-black text-xl"
+                      style={{ fontWeight: 900 }}
+                    >
+                      ${product.price.toFixed(2)}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Alphabetical Scroll Indicator */}
-        {sortAlphabetically && showScrollIndicator && availableLetters.length > 1 && (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5 py-2">
-            {availableLetters.map((letter) => (
-              <button
-                key={letter}
-                onClick={() => jumpToLetter(letter)}
-                className={`
+        {sortAlphabetically &&
+          showScrollIndicator &&
+          availableLetters.length > 1 && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5 py-2">
+              {availableLetters.map((letter) => (
+                <button
+                  key={letter}
+                  onClick={() => jumpToLetter(letter)}
+                  className={`
                   w-5 h-5 flex items-center justify-center text-[9px] font-light tracking-wide
                   transition-all duration-200 rounded-full
-                  ${currentLetter === letter
-                    ? 'bg-white/20 text-white scale-125'
-                    : 'bg-white/[0.05] text-white/40 hover:bg-white/[0.1] hover:text-white/60'
+                  ${
+                    currentLetter === letter
+                      ? "bg-white/20 text-white scale-125"
+                      : "bg-white/[0.05] text-white/40 hover:bg-white/[0.1] hover:text-white/60"
                   }
                 `}
-              >
-                {letter}
-              </button>
-            ))}
-          </div>
-        )}
+                >
+                  {letter}
+                </button>
+              ))}
+            </div>
+          )}
       </div>
 
       {/* Quick View Modal */}
@@ -822,8 +935,17 @@ interface ProductCardProps {
   vendorLogo: string | null;
 }
 
-function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showInventory, vendorLogo }: ProductCardProps) {
-  const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
+function ProductCard({
+  product,
+  onAddToCart,
+  onProductClick,
+  onQuickView,
+  showInventory,
+  vendorLogo,
+}: ProductCardProps) {
+  const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(
+    null,
+  );
   const [showAddButton, setShowAddButton] = useState(false);
 
   const tiers = product.pricing_tiers || [];
@@ -846,13 +968,13 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
   const handleAddClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (selectedTierIndex !== null && tiers[selectedTierIndex]) {
       onAddToCart(product, tiers[selectedTierIndex]);
     } else {
       onAddToCart(product);
     }
-    
+
     // Reset selection
     setSelectedTierIndex(null);
     setShowAddButton(false);
@@ -861,7 +983,7 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
   const handleProductClick = (e: React.MouseEvent) => {
     // Only trigger if clicking on image or name, not on buttons
     if (onProductClick && product.name) {
-      const productSlug = product.name.toLowerCase().replace(/\s+/g, '-');
+      const productSlug = product.name.toLowerCase().replace(/\s+/g, "-");
       onProductClick(productSlug);
     }
   };
@@ -905,7 +1027,7 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
             <Package size={48} className="text-white/20" />
           </div>
         )}
-        
+
         {/* Quick View Button */}
         {onQuickView && (
           <button
@@ -943,15 +1065,21 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
         {/* Stock Status */}
         {showInventory && (
           <div className="flex items-center gap-1.5 mb-3">
-            <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-              product.inventory_quantity > 0 ? 'bg-green-500' : 'bg-red-500/60'
-            }`} />
+            <div
+              className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                product.inventory_quantity > 0
+                  ? "bg-green-500"
+                  : "bg-red-500/60"
+              }`}
+            />
             <span className="text-[10px] uppercase tracking-[0.15em] text-white/60">
-              {product.inventory_quantity > 0 ? `${product.inventory_quantity} in stock` : 'Out of Stock'}
+              {product.inventory_quantity > 0
+                ? `${product.inventory_quantity} in stock`
+                : "Out of Stock"}
             </span>
           </div>
         )}
-        
+
         {/* Pricing Tier Selector */}
         {tiers.length > 0 && product.inventory_quantity > 0 ? (
           <div className="space-y-2 pt-3 mt-auto border-t border-white/5">
@@ -962,26 +1090,45 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
                 onClick={(e) => e.stopPropagation()}
                 className="w-full appearance-none bg-white/5 border border-white/10 rounded-2xl px-3 py-3 pr-8 text-[10px] uppercase tracking-[0.15em] text-white hover:border-white/20 focus:border-white/20 focus:outline-none transition-all"
                 style={{
-                  colorScheme: 'dark'
+                  colorScheme: "dark",
                 }}
               >
-                <option value="" style={{ backgroundColor: '#000', color: '#fff' }}>Select Quantity</option>
+                <option
+                  value=""
+                  style={{ backgroundColor: "#000", color: "#fff" }}
+                >
+                  Select Quantity
+                </option>
                 {tiers.map((tier, index) => {
-                  const price = tier.price || (product.price * tier.qty);
+                  const price = tier.price || product.price * tier.qty;
                   return (
-                    <option key={index} value={index} style={{ backgroundColor: '#000', color: '#fff' }}>
+                    <option
+                      key={index}
+                      value={index}
+                      style={{ backgroundColor: "#000", color: "#fff" }}
+                    >
                       {tier.label} - ${price.toFixed(0)}
                     </option>
                   );
                 })}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-3 h-3 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                <svg
+                  className="w-3 h-3 text-white/40"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </div>
             </div>
-            
+
             {showAddButton && (
               <button
                 onClick={handleAddClick}
@@ -1007,4 +1154,3 @@ function ProductCard({ product, onAddToCart, onProductClick, onQuickView, showIn
     </div>
   );
 }
-

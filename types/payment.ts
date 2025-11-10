@@ -12,7 +12,7 @@ export interface CartItem {
   price: string | number;
   quantity: string | number;
   vendor_id?: string;
-  orderType?: 'delivery' | 'pickup';
+  orderType?: "delivery" | "pickup";
   locationId?: string;
   locationName?: string;
 }

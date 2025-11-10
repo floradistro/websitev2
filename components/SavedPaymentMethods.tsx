@@ -36,28 +36,33 @@ export default function SavedPaymentMethods() {
 
   const loadPaymentMethods = async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
-      
+
       // Use proxy to avoid CORS
       const response = await axios.get(`/api/customers/${user.id}`);
 
       const customerData = response.data;
-      const methodsMeta = customerData.meta_data?.find((m: any) => m.key === 'payment_methods');
-      
+      const methodsMeta = customerData.meta_data?.find(
+        (m: any) => m.key === "payment_methods",
+      );
+
       if (methodsMeta && methodsMeta.value) {
         try {
-          const parsed = typeof methodsMeta.value === 'string' 
-            ? JSON.parse(methodsMeta.value)
-            : methodsMeta.value;
+          const parsed =
+            typeof methodsMeta.value === "string"
+              ? JSON.parse(methodsMeta.value)
+              : methodsMeta.value;
           setMethods(Array.isArray(parsed) ? parsed : []);
         } catch {
           setMethods([]);
         }
       }
     } catch (error) {
-      console.error("Error loading payment methods:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading payment methods:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -65,32 +70,31 @@ export default function SavedPaymentMethods() {
 
   const handleAddCard = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) return;
 
     try {
-      
       // Create payment profile via Authorize.net (tokenize card)
-      const tokenizeResponse = await fetch('/api/authorize-tokenize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const tokenizeResponse = await fetch("/api/authorize-tokenize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           cardNumber: newCard.cardNumber.replace(/\s/g, ""),
-          expMonth: newCard.expiry.split('/')[0],
-          expYear: '20' + newCard.expiry.split('/')[1],
+          expMonth: newCard.expiry.split("/")[0],
+          expYear: "20" + newCard.expiry.split("/")[1],
           cvv: newCard.cvv,
           customerEmail: user.email,
           customerName: newCard.name,
-        })
+        }),
       });
 
       const tokenData = await tokenizeResponse.json();
-      
+
       if (!tokenData.success) {
         showNotification({
-          type: 'error',
-          title: 'Card Save Failed',
-          message: tokenData.error || 'Failed to save card',
+          type: "error",
+          title: "Card Save Failed",
+          message: tokenData.error || "Failed to save card",
         });
         return;
       }
@@ -98,11 +102,11 @@ export default function SavedPaymentMethods() {
       // Save tokenized card to customer metadata
       const newMethod: PaymentMethod = {
         id: tokenData.paymentProfileId || Date.now().toString(),
-        type: 'card',
+        type: "card",
         last4: newCard.cardNumber.slice(-4),
         brand: detectCardBrand(newCard.cardNumber),
-        exp_month: newCard.expiry.split('/')[0],
-        exp_year: '20' + newCard.expiry.split('/')[1],
+        exp_month: newCard.expiry.split("/")[0],
+        exp_year: "20" + newCard.expiry.split("/")[1],
         is_default: methods.length === 0,
       };
 
@@ -112,22 +116,23 @@ export default function SavedPaymentMethods() {
       await axios.put(`/api/customers/${user.id}`, {
         meta_data: [
           {
-            key: 'payment_methods',
-            value: JSON.stringify(updatedMethods)
-          }
-        ]
+            key: "payment_methods",
+            value: JSON.stringify(updatedMethods),
+          },
+        ],
       });
 
       setMethods(updatedMethods);
       setShowAddCard(false);
       setNewCard({ cardNumber: "", expiry: "", cvv: "", name: "" });
-      
     } catch (error) {
-      console.error("Error saving payment method:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error saving payment method:", error);
+      }
       showNotification({
-        type: 'error',
-        title: 'Payment Error',
-        message: 'Failed to save payment method. Please try again.',
+        type: "error",
+        title: "Payment Error",
+        message: "Failed to save payment method. Please try again.",
       });
     }
   };
@@ -136,25 +141,27 @@ export default function SavedPaymentMethods() {
     if (!user) return;
 
     try {
-      const updatedMethods = methods.filter(m => m.id !== methodId);
+      const updatedMethods = methods.filter((m) => m.id !== methodId);
 
       // Use proxy to avoid CORS
       await axios.put(`/api/customers/${user.id}`, {
         meta_data: [
           {
-            key: 'payment_methods',
-            value: JSON.stringify(updatedMethods)
-          }
-        ]
+            key: "payment_methods",
+            value: JSON.stringify(updatedMethods),
+          },
+        ],
       });
 
       setMethods(updatedMethods);
     } catch (error) {
-      console.error("Error removing payment method:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error removing payment method:", error);
+      }
       showNotification({
-        type: 'error',
-        title: 'Removal Error',
-        message: 'Failed to remove payment method. Please try again.',
+        type: "error",
+        title: "Removal Error",
+        message: "Failed to remove payment method. Please try again.",
       });
     }
   };
@@ -179,7 +186,9 @@ export default function SavedPaymentMethods() {
   return (
     <div className="bg-[#2a2a2a] border border-white/10">
       <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
-        <h2 className="text-sm uppercase tracking-[0.2em] text-white font-medium">Payment Methods</h2>
+        <h2 className="text-sm uppercase tracking-[0.2em] text-white font-medium">
+          Payment Methods
+        </h2>
         <button
           onClick={() => setShowAddCard(!showAddCard)}
           className="text-[10px] uppercase tracking-[0.2em] text-white/60 hover:text-white transition-smooth flex items-center gap-2"
@@ -188,13 +197,18 @@ export default function SavedPaymentMethods() {
           Add Card
         </button>
       </div>
-      
+
       <div className="p-6 space-y-4">
         {/* Add New Card Form */}
         {showAddCard && (
-          <form onSubmit={handleAddCard} className="bg-[#3a3a3a] border border-white/10 p-6 space-y-4">
-            <h3 className="text-xs uppercase tracking-[0.2em] text-white/80 mb-4">Add New Card</h3>
-            
+          <form
+            onSubmit={handleAddCard}
+            className="bg-[#3a3a3a] border border-white/10 p-6 space-y-4"
+          >
+            <h3 className="text-xs uppercase tracking-[0.2em] text-white/80 mb-4">
+              Add New Card
+            </h3>
+
             <div>
               <label className="block text-[10px] uppercase tracking-[0.2em] text-white/60 mb-2 font-medium">
                 Cardholder Name
@@ -202,7 +216,9 @@ export default function SavedPaymentMethods() {
               <input
                 type="text"
                 value={newCard.name}
-                onChange={(e) => setNewCard({ ...newCard, name: e.target.value })}
+                onChange={(e) =>
+                  setNewCard({ ...newCard, name: e.target.value })
+                }
                 className="w-full px-4 py-3 text-sm bg-black/20 border border-white/10 text-white focus:border-white/30 focus:outline-none transition-all"
                 required
               />
@@ -255,7 +271,12 @@ export default function SavedPaymentMethods() {
                 <input
                   type="text"
                   value={newCard.cvv}
-                  onChange={(e) => setNewCard({ ...newCard, cvv: e.target.value.replace(/\D/g, "") })}
+                  onChange={(e) =>
+                    setNewCard({
+                      ...newCard,
+                      cvv: e.target.value.replace(/\D/g, ""),
+                    })
+                  }
                   maxLength={4}
                   className="w-full px-4 py-3 text-sm bg-black/20 border border-white/10 text-white focus:border-white/30 focus:outline-none transition-all"
                   placeholder="123"
@@ -292,7 +313,9 @@ export default function SavedPaymentMethods() {
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10">
               <CreditCard size={24} className="text-white/20" />
             </div>
-            <p className="text-white/40 text-xs uppercase tracking-[0.2em] mb-4">No saved cards</p>
+            <p className="text-white/40 text-xs uppercase tracking-[0.2em] mb-4">
+              No saved cards
+            </p>
             <button
               onClick={() => setShowAddCard(true)}
               className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 text-[10px] uppercase tracking-[0.2em] hover:bg-white/90 transition-all font-medium"
@@ -341,4 +364,3 @@ export default function SavedPaymentMethods() {
     </div>
   );
 }
-

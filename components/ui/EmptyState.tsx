@@ -1,5 +1,5 @@
-import { LucideIcon } from 'lucide-react';
-import { ReactNode } from 'react';
+import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -14,7 +14,7 @@ export function EmptyState({
   title,
   description,
   action,
-  className = '',
+  className = "",
 }: EmptyStateProps) {
   return (
     <div className={`p-16 text-center ${className}`}>
@@ -27,4 +27,3 @@ export function EmptyState({
     </div>
   );
 }
-

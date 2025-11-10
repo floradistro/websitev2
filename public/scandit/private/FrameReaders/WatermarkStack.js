@@ -1,1 +1,1 @@
-export{a as WatermarkStack}from'../../chunks/chunk-QHBIT2WY.js';
+export { a as WatermarkStack } from "../../chunks/chunk-QHBIT2WY.js";

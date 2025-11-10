@@ -1,1 +1,16 @@
-var r=class{constructor(){}setProperty(t,e){this[t]=e;}getProperty(t){return this[t]}toJSONObject(){return Object.keys(this).reduce((t,e)=>(t[e]=this.getProperty(e),t),{})}};export{r as a};
+var r = class {
+  constructor() {}
+  setProperty(t, e) {
+    this[t] = e;
+  }
+  getProperty(t) {
+    return this[t];
+  }
+  toJSONObject() {
+    return Object.keys(this).reduce(
+      (t, e) => ((t[e] = this.getProperty(e)), t),
+      {},
+    );
+  }
+};
+export { r as a };

@@ -53,7 +53,7 @@ export default function POSRegisterPage() {
       const location = { id: singleLocation.id, name: singleLocation.name };
       setSelectedLocation(location);
       localStorage.setItem('pos_selected_location', JSON.stringify(location));
-      console.log('🎯 Auto-selected single location:', singleLocation.name);
+
     }
   }, [locations, selectedLocation]);
 
@@ -65,7 +65,6 @@ export default function POSRegisterPage() {
         return;
       }
 
-      console.log('💰 Fetching tax rate from API for:', selectedLocation.name);
       setTaxError(null);
 
       try {
@@ -98,12 +97,11 @@ export default function POSRegisterPage() {
 
         setTaxRate(rate);
         setTaxBreakdown(taxes);
-        console.log(`✅ Tax rate loaded from API: ${(rate * 100)}%`);
-        console.log(`   Tax breakdown (${taxes.length} items):`, taxes);
-        console.log(`   Full location data:`, location.settings?.tax_config);
 
       } catch (error: any) {
-        console.error('❌ TAX LOAD FAILED:', error.message);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ TAX LOAD FAILED:', error.message);
+        }
         setTaxError(error.message);
         setTaxRate(null);
         alert(`TAX CONFIGURATION ERROR:\n\n${error.message}\n\nPOS cannot operate without tax configuration.`);
@@ -132,7 +130,9 @@ export default function POSRegisterPage() {
           setShowSessionModal(true);
         }
       } catch (error) {
-        console.error('Error checking for existing session:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error checking for existing session:', error);
+        }
       }
     };
 
@@ -176,7 +176,9 @@ export default function POSRegisterPage() {
           setShowSessionModal(false);
         }
       } catch (error) {
-        console.error('Error starting new session:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error starting new session:', error);
+        }
         alert('Failed to start new session');
       }
     }
@@ -190,10 +192,12 @@ export default function POSRegisterPage() {
       const data = await response.json();
       if (data.success) {
         setPromotions(data.promotions || []);
-        console.log('🎉 Loaded promotions:', data.promotions?.length || 0);
+
       }
     } catch (error) {
-      console.error('Error loading promotions:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading promotions:', error);
+      }
     }
   };
 
@@ -215,7 +219,7 @@ export default function POSRegisterPage() {
 
           // Kick out ONLY if session is explicitly closed
           if (session && session.status === 'closed') {
-            console.log('❌ Session closed, returning to register selector');
+
             setSessionId(null);
             setRegisterId(null);
             setCart([]);
@@ -246,7 +250,9 @@ export default function POSRegisterPage() {
         }
       }
     } catch (error) {
-      console.error('Error loading session:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error loading session:', error);
+      }
     }
   };
 
@@ -482,12 +488,6 @@ export default function POSRegisterPage() {
         ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`
         : 'Walk-In';
 
-      console.log('🛒 Creating sale:', {
-        items: cart.length,
-        total: `$${total.toFixed(2)}`,
-        payment: paymentData.paymentMethod
-      });
-
       // Call sales API
       const response = await fetch('/api/pos/sales/create', {
         method: 'POST',
@@ -516,8 +516,6 @@ export default function POSRegisterPage() {
 
       const result = await response.json();
 
-      console.log('✅ Sale completed:', result.order.order_number);
-
       // Clear cart and state FIRST
       setCart([]);
       setSelectedCustomer(null);
@@ -535,12 +533,15 @@ export default function POSRegisterPage() {
 
       // Reload session in background (non-blocking)
       loadActiveSession().catch(err =>
-        console.error('Failed to reload session:', err)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to reload session:', err);
+        }
       );
 
     } catch (error: any) {
-      console.error('❌ Sale failed:', error);
-
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Sale failed:', error);
+      }
       // Show user-friendly error
       alert(
         `❌ Sale Failed\n\n` +
@@ -565,7 +566,7 @@ export default function POSRegisterPage() {
   // CRITICAL FIX: Wait for context to load before showing location selector
   // This prevents "No locations found" when navigating back from dashboard
   if (isLoading) {
-    console.log('⏳ POS waiting for auth context to load...');
+
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Loading...</div>
@@ -575,7 +576,6 @@ export default function POSRegisterPage() {
 
   // Show location selector if not selected (for admins or multi-location staff)
   if (!selectedLocation) {
-    console.log('📍 POS showing location selector - locations available:', locations.length, 'isLoading:', isLoading);
 
     // If still loading context, show loading state
     if (isLoading) {
@@ -589,8 +589,9 @@ export default function POSRegisterPage() {
     // If context finished loading but has no locations (and user is logged in), show error
     // DO NOT auto-reload - this causes bootloop when switching locations with active session
     if (locations.length === 0 && vendor?.id) {
-      console.error('🚨 CRITICAL: Context has no locations! Vendor:', vendor.id, 'User:', user?.email);
-
+      if (process.env.NODE_ENV === 'development') {
+        console.error('🚨 CRITICAL: Context has no locations! Vendor:', vendor.id, 'User:', user?.email);
+      }
       return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
           <div className="max-w-md text-center">
@@ -622,7 +623,7 @@ export default function POSRegisterPage() {
           setSelectedLocation(location);
           // CRITICAL FIX: Persist to localStorage
           localStorage.setItem('pos_selected_location', JSON.stringify(location));
-          console.log('✅ Location selected:', locationName);
+
         }}
       />
     );
@@ -640,13 +641,13 @@ export default function POSRegisterPage() {
           if (sessionId) {
             setSessionId(sessionId);
           }
-          console.log('🔐 Register selected:', id, 'Has processor:', hasProcessor);
+
         }}
         onBackToLocationSelector={() => {
           // Clear location selection to go back to location selector
           setSelectedLocation(null);
           localStorage.removeItem('pos_selected_location');
-          console.log('🔙 Cleared location selection, returning to location selector');
+
         }}
       />
     );

@@ -3,10 +3,10 @@
  * Catches and displays errors gracefully with retry functionality
  */
 
-'use client';
+"use client";
 
-import React, { Component, ReactNode } from 'react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import React, { Component, ReactNode } from "react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -39,8 +39,8 @@ export class AnalyticsErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log error to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('[Analytics Error Boundary]', error, errorInfo);
+    if (process.env.NODE_ENV === "development") {
+      console.error("[Analytics Error Boundary]", error, errorInfo);
     }
 
     // Call optional error handler
@@ -85,24 +85,25 @@ export class AnalyticsErrorBoundary extends Component<Props, State> {
                     Something went wrong
                   </h2>
                   <p className="text-white/60 text-sm mb-4">
-                    We encountered an error while loading the analytics. This has been logged
-                    and we'll look into it.
+                    We encountered an error while loading the analytics. This
+                    has been logged and we'll look into it.
                   </p>
 
-                  {process.env.NODE_ENV === 'development' && this.state.error && (
-                    <details className="mb-4">
-                      <summary className="text-white/40 text-xs cursor-pointer hover:text-white/60 transition mb-2">
-                        Error details (development only)
-                      </summary>
-                      <div className="bg-black/40 border border-white/10 rounded-lg p-4 overflow-auto max-h-64">
-                        <pre className="text-red-300 text-xs font-mono whitespace-pre-wrap">
-                          {this.state.error.toString()}
-                          {'\n\n'}
-                          {this.state.errorInfo?.componentStack}
-                        </pre>
-                      </div>
-                    </details>
-                  )}
+                  {process.env.NODE_ENV === "development" &&
+                    this.state.error && (
+                      <details className="mb-4">
+                        <summary className="text-white/40 text-xs cursor-pointer hover:text-white/60 transition mb-2">
+                          Error details (development only)
+                        </summary>
+                        <div className="bg-black/40 border border-white/10 rounded-lg p-4 overflow-auto max-h-64">
+                          <pre className="text-red-300 text-xs font-mono whitespace-pre-wrap">
+                            {this.state.error.toString()}
+                            {"\n\n"}
+                            {this.state.errorInfo?.componentStack}
+                          </pre>
+                        </div>
+                      </details>
+                    )}
 
                   <div className="flex items-center gap-3">
                     <button
@@ -141,7 +142,7 @@ interface ErrorBoundaryWrapperProps {
 }
 
 export function withAnalyticsErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>
+  Component: React.ComponentType<P>,
 ): React.FC<P> {
   return function WrappedComponent(props: P) {
     return (

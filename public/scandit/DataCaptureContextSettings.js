@@ -1,1 +1,1 @@
-export{a as DataCaptureContextSettings}from'./chunks/chunk-7SW2PEHB.js';
+export { a as DataCaptureContextSettings } from "./chunks/chunk-7SW2PEHB.js";

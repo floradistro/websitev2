@@ -1,5 +1,5 @@
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { NextRequest, NextResponse } from 'next/server';
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { NextRequest, NextResponse } from "next/server";
 
 // GET /api/vendor/suppliers - List all suppliers for vendor
 export async function GET(request: NextRequest) {
@@ -7,34 +7,36 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
 
-    const vendorId = searchParams.get('vendor_id');
-    const active = searchParams.get('active'); // 'true', 'false', or null (all)
-    const search = searchParams.get('search');
+    const vendorId = searchParams.get("vendor_id");
+    const active = searchParams.get("active"); // 'true', 'false', or null (all)
+    const search = searchParams.get("search");
 
     if (!vendorId) {
       return NextResponse.json(
-        { success: false, error: 'vendor_id is required' },
-        { status: 400 }
+        { success: false, error: "vendor_id is required" },
+        { status: 400 },
       );
     }
 
     let query = supabase
-      .from('suppliers')
-      .select(`
+      .from("suppliers")
+      .select(
+        `
         *,
         supplier_vendor:supplier_vendor_id(
           id,
           store_name
         )
-      `)
-      .eq('vendor_id', vendorId)
-      .order('created_at', { ascending: false });
+      `,
+      )
+      .eq("vendor_id", vendorId)
+      .order("created_at", { ascending: false });
 
     // Filter by active status
-    if (active === 'true') {
-      query = query.eq('is_active', true);
-    } else if (active === 'false') {
-      query = query.eq('is_active', false);
+    if (active === "true") {
+      query = query.eq("is_active", true);
+    } else if (active === "false") {
+      query = query.eq("is_active", false);
     }
 
     // Search by name (either external name or vendor business name)
@@ -44,48 +46,56 @@ export async function GET(request: NextRequest) {
       const { data: allSuppliers, error } = await query;
 
       if (error) {
-        console.error('Error fetching suppliers:', error);
+        if (process.env.NODE_ENV === "development") {
+          console.error("Error fetching suppliers:", error);
+        }
         return NextResponse.json(
           { success: false, error: error.message },
-          { status: 500 }
+          { status: 500 },
         );
       }
 
-      const filtered = allSuppliers?.filter(supplier => {
+      const filtered = allSuppliers?.filter((supplier) => {
         const searchLower = search.toLowerCase();
-        const externalName = supplier.external_name?.toLowerCase() || '';
-        const vendorName = supplier.supplier_vendor?.business_name?.toLowerCase() || '';
-        return externalName.includes(searchLower) || vendorName.includes(searchLower);
+        const externalName = supplier.external_name?.toLowerCase() || "";
+        const vendorName =
+          supplier.supplier_vendor?.business_name?.toLowerCase() || "";
+        return (
+          externalName.includes(searchLower) || vendorName.includes(searchLower)
+        );
       });
 
       return NextResponse.json({
         success: true,
         data: filtered || [],
-        count: filtered?.length || 0
+        count: filtered?.length || 0,
       });
     }
 
     const { data: suppliers, error, count } = await query;
 
     if (error) {
-      console.error('Error fetching suppliers:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching suppliers:", error);
+      }
       return NextResponse.json(
         { success: false, error: error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({
       success: true,
       data: suppliers || [],
-      count: count || suppliers?.length || 0
+      count: count || suppliers?.length || 0,
     });
-
   } catch (error: any) {
-    console.error('Error in GET /api/vendor/suppliers:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in GET /api/vendor/suppliers:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -99,30 +109,33 @@ export async function POST(request: NextRequest) {
 
     if (!vendor_id) {
       return NextResponse.json(
-        { success: false, error: 'vendor_id is required' },
-        { status: 400 }
+        { success: false, error: "vendor_id is required" },
+        { status: 400 },
       );
     }
 
     if (!action) {
       return NextResponse.json(
-        { success: false, error: 'action is required' },
-        { status: 400 }
+        { success: false, error: "action is required" },
+        { status: 400 },
       );
     }
 
     switch (action) {
-      case 'create': {
+      case "create": {
         // Validate: must have either supplier_vendor_id OR external_name
         if (!supplierData.supplier_vendor_id && !supplierData.external_name) {
           return NextResponse.json(
-            { success: false, error: 'Either supplier_vendor_id or external_name is required' },
-            { status: 400 }
+            {
+              success: false,
+              error: "Either supplier_vendor_id or external_name is required",
+            },
+            { status: 400 },
           );
         }
 
         const { data: newSupplier, error } = await supabase
-          .from('suppliers')
+          .from("suppliers")
           .insert({
             vendor_id,
             supplier_vendor_id: supplierData.supplier_vendor_id || null,
@@ -139,54 +152,64 @@ export async function POST(request: NextRequest) {
             country: supplierData.country || null,
             payment_terms: supplierData.payment_terms || null,
             notes: supplierData.notes || null,
-            is_active: supplierData.is_active !== undefined ? supplierData.is_active : true
+            is_active:
+              supplierData.is_active !== undefined
+                ? supplierData.is_active
+                : true,
           })
           .select()
           .maybeSingle();
 
         if (error) {
-          console.error('❌ Error creating supplier:', error);
+          if (process.env.NODE_ENV === "development") {
+            console.error("❌ Error creating supplier:", error);
+          }
           return NextResponse.json(
             { success: false, error: error.message },
-            { status: 500 }
+            { status: 500 },
           );
         }
 
         if (!newSupplier) {
-          console.error('❌ Supplier creation returned null');
+          if (process.env.NODE_ENV === "development") {
+            console.error("❌ Supplier creation returned null");
+          }
           return NextResponse.json(
-            { success: false, error: 'Failed to create supplier' },
-            { status: 500 }
+            { success: false, error: "Failed to create supplier" },
+            { status: 500 },
           );
         }
 
         return NextResponse.json({
           success: true,
           data: newSupplier,
-          message: 'Supplier created successfully'
+          message: "Supplier created successfully",
         });
       }
 
-      case 'update': {
+      case "update": {
         const { id } = supplierData;
 
         if (!id) {
           return NextResponse.json(
-            { success: false, error: 'supplier id is required for update' },
-            { status: 400 }
+            { success: false, error: "supplier id is required for update" },
+            { status: 400 },
           );
         }
 
         // Validate: must have either supplier_vendor_id OR external_name
         if (!supplierData.supplier_vendor_id && !supplierData.external_name) {
           return NextResponse.json(
-            { success: false, error: 'Either supplier_vendor_id or external_name is required' },
-            { status: 400 }
+            {
+              success: false,
+              error: "Either supplier_vendor_id or external_name is required",
+            },
+            { status: 400 },
           );
         }
 
         const { data: updatedSupplier, error } = await supabase
-          .from('suppliers')
+          .from("suppliers")
           .update({
             supplier_vendor_id: supplierData.supplier_vendor_id || null,
             external_name: supplierData.external_name || null,
@@ -203,93 +226,114 @@ export async function POST(request: NextRequest) {
             payment_terms: supplierData.payment_terms || null,
             notes: supplierData.notes || null,
             is_active: supplierData.is_active,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
-          .eq('id', id)
-          .eq('vendor_id', vendor_id) // Ensure vendor owns this supplier
+          .eq("id", id)
+          .eq("vendor_id", vendor_id) // Ensure vendor owns this supplier
           .select()
           .maybeSingle();
 
         if (error) {
-          console.error('❌ Error updating supplier:', error);
+          if (process.env.NODE_ENV === "development") {
+            console.error("❌ Error updating supplier:", error);
+          }
           return NextResponse.json(
             { success: false, error: error.message },
-            { status: 500 }
+            { status: 500 },
           );
         }
 
         if (!updatedSupplier) {
-          console.error('❌ Supplier update affected 0 rows - supplier may have been deleted');
+          if (process.env.NODE_ENV === "development") {
+            console.error(
+              "❌ Supplier update affected 0 rows - supplier may have been deleted",
+            );
+          }
           return NextResponse.json(
-            { success: false, error: 'Supplier not found or was deleted. Please refresh the page.' },
-            { status: 404 }
+            {
+              success: false,
+              error:
+                "Supplier not found or was deleted. Please refresh the page.",
+            },
+            { status: 404 },
           );
         }
 
         return NextResponse.json({
           success: true,
           data: updatedSupplier,
-          message: 'Supplier updated successfully'
+          message: "Supplier updated successfully",
         });
       }
 
-      case 'delete': {
+      case "delete": {
         const { id } = supplierData;
 
         if (!id) {
           return NextResponse.json(
-            { success: false, error: 'supplier id is required for delete' },
-            { status: 400 }
+            { success: false, error: "supplier id is required for delete" },
+            { status: 400 },
           );
         }
 
         // Soft delete by setting is_active to false
         const { data: deletedSupplier, error } = await supabase
-          .from('suppliers')
+          .from("suppliers")
           .update({
             is_active: false,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
-          .eq('id', id)
-          .eq('vendor_id', vendor_id) // Ensure vendor owns this supplier
+          .eq("id", id)
+          .eq("vendor_id", vendor_id) // Ensure vendor owns this supplier
           .select()
           .maybeSingle();
 
         if (error) {
-          console.error('❌ Error deleting supplier:', error);
+          if (process.env.NODE_ENV === "development") {
+            console.error("❌ Error deleting supplier:", error);
+          }
           return NextResponse.json(
             { success: false, error: error.message },
-            { status: 500 }
+            { status: 500 },
           );
         }
 
         if (!deletedSupplier) {
-          console.error('❌ Supplier delete affected 0 rows - supplier may have been deleted');
+          if (process.env.NODE_ENV === "development") {
+            console.error(
+              "❌ Supplier delete affected 0 rows - supplier may have been deleted",
+            );
+          }
           return NextResponse.json(
-            { success: false, error: 'Supplier not found or was already deleted. Please refresh the page.' },
-            { status: 404 }
+            {
+              success: false,
+              error:
+                "Supplier not found or was already deleted. Please refresh the page.",
+            },
+            { status: 404 },
           );
         }
 
         return NextResponse.json({
           success: true,
           data: deletedSupplier,
-          message: 'Supplier deactivated successfully'
+          message: "Supplier deactivated successfully",
         });
       }
 
       default:
         return NextResponse.json(
           { success: false, error: `Unknown action: ${action}` },
-          { status: 400 }
+          { status: 400 },
         );
     }
-
   } catch (error: any) {
-    console.error('Error in POST /api/vendor/suppliers:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in POST /api/vendor/suppliers:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

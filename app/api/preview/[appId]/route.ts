@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServiceSupabase } from '@/lib/supabase/client'
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * GET /api/preview/[appId] - Serve live preview of app files
@@ -7,27 +7,27 @@ import { getServiceSupabase } from '@/lib/supabase/client'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ appId: string }> }
+  { params }: { params: Promise<{ appId: string }> },
 ) {
   try {
-    const { appId } = await params
-    const supabase = getServiceSupabase()
+    const { appId } = await params;
+    const supabase = getServiceSupabase();
 
     // Get all files for this app
     const { data: files, error } = await supabase
-      .from('app_files')
-      .select('filepath, content')
-      .eq('app_id', appId)
-      .order('filepath')
+      .from("app_files")
+      .select("filepath, content")
+      .eq("app_id", appId)
+      .order("filepath");
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Find the page.tsx content
-    const pageFile = files?.find(f => f.filepath === 'app/page.tsx')
-    const layoutFile = files?.find(f => f.filepath === 'app/layout.tsx')
-    const globalsFile = files?.find(f => f.filepath === 'app/globals.css')
+    const pageFile = files?.find((f) => f.filepath === "app/page.tsx");
+    const layoutFile = files?.find((f) => f.filepath === "app/layout.tsx");
+    const globalsFile = files?.find((f) => f.filepath === "app/globals.css");
 
     if (!pageFile) {
       return new NextResponse(
@@ -37,8 +37,8 @@ export async function GET(
             <p style="color:#999">App has no page.tsx file yet</p>
           </div>
         </body></html>`,
-        { headers: { 'Content-Type': 'text/html' } }
-      )
+        { headers: { "Content-Type": "text/html" } },
+      );
     }
 
     // Create a preview HTML page that renders the React component
@@ -53,28 +53,29 @@ export async function GET(
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  ${globalsFile ? `<style>${globalsFile.content}</style>` : ''}
+  ${globalsFile ? `<style>${globalsFile.content}</style>` : ""}
 </head>
 <body>
   <div id="root"></div>
 
   <script type="text/babel">
     // Convert the page content to JSX
-    ${pageFile.content.replace(/^export default /m, '// Removed: export default ')}
+    ${pageFile.content.replace(/^export default /m, "// Removed: export default ")}
 
     // Render the page
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<HomePage />);
   </script>
 </body>
-</html>`
+</html>`;
 
     return new NextResponse(previewHtml, {
-      headers: { 'Content-Type': 'text/html' }
-    })
-
+      headers: { "Content-Type": "text/html" },
+    });
   } catch (error: any) {
-    console.error('Preview error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    if (process.env.NODE_ENV === "development") {
+      console.error("Preview error:", error);
+    }
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -4,7 +4,7 @@
  * Automatically brands emails with vendor's colors, logo, etc.
  */
 
-import OpenAI from 'openai';
+import OpenAI from "openai";
 
 export interface EmailGenerationParams {
   vendor: {
@@ -17,14 +17,14 @@ export interface EmailGenerationParams {
     };
   };
   campaignType:
-    | 'welcome'
-    | 'new_product'
-    | 'sale'
-    | 'win_back'
-    | 'birthday'
-    | 'loyalty_reward'
-    | 'abandoned_cart'
-    | 'product_restock';
+    | "welcome"
+    | "new_product"
+    | "sale"
+    | "win_back"
+    | "birthday"
+    | "loyalty_reward"
+    | "abandoned_cart"
+    | "product_restock";
   productData?: {
     name: string;
     description: string;
@@ -35,7 +35,7 @@ export interface EmailGenerationParams {
     cbd_percent?: number;
   };
   discountData?: {
-    type: 'percentage' | 'fixed_amount';
+    type: "percentage" | "fixed_amount";
     value: number;
   };
   customerSegment?: {
@@ -67,7 +67,9 @@ export class EmailGenerator {
   /**
    * Generate complete email campaign
    */
-  async generateCampaign(params: EmailGenerationParams): Promise<GeneratedEmail> {
+  async generateCampaign(
+    params: EmailGenerationParams,
+  ): Promise<GeneratedEmail> {
     // Generate content with AI
     const content = await this.generateContent(params);
 
@@ -84,8 +86,8 @@ export class EmailGenerator {
       plain_text: plainText,
       metadata: {
         tone: content.tone,
-        word_count: plainText.split(' ').length,
-        estimated_read_time: `${Math.ceil(plainText.split(' ').length / 200)} min`,
+        word_count: plainText.split(" ").length,
+        estimated_read_time: `${Math.ceil(plainText.split(" ").length / 200)} min`,
       },
     };
   }
@@ -97,10 +99,10 @@ export class EmailGenerator {
     const prompt = this.buildPrompt(params);
 
     const completion = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: "gpt-4",
       messages: [
         {
-          role: 'system',
+          role: "system",
           content: `You are an expert cannabis dispensary marketing copywriter.
 Create compelling, professional, and compliant email marketing content.
 
@@ -117,15 +119,15 @@ RULES:
 - Output valid JSON only`,
         },
         {
-          role: 'user',
+          role: "user",
           content: prompt,
         },
       ],
-      response_format: { type: 'json_object' },
+      response_format: { type: "json_object" },
       temperature: 0.8,
     });
 
-    const response = JSON.parse(completion.choices[0].message.content || '{}');
+    const response = JSON.parse(completion.choices[0].message.content || "{}");
     return response;
   }
 
@@ -147,8 +149,8 @@ Invite them to visit the store or shop online.`,
 Product: ${params.productData?.name}
 Description: ${params.productData?.description}
 Price: $${params.productData?.price}
-${params.productData?.thc_percent ? `THC: ${params.productData?.thc_percent}%` : ''}
-${params.productData?.cbd_percent ? `CBD: ${params.productData?.cbd_percent}%` : ''}
+${params.productData?.thc_percent ? `THC: ${params.productData?.thc_percent}%` : ""}
+${params.productData?.cbd_percent ? `CBD: ${params.productData?.cbd_percent}%` : ""}
 
 Announce this exciting new product.
 Highlight unique features and benefits.
@@ -157,8 +159,8 @@ Include a shop now call-to-action.`,
 
       sale: `Create a SALE/PROMOTION email for ${params.vendor.name}.
 
-Offer: ${params.discountData?.value}${params.discountData?.type === 'percentage' ? '%' : '$'} off ${params.customerSegment?.name || 'all products'}
-${params.additionalContext || 'Limited time offer'}
+Offer: ${params.discountData?.value}${params.discountData?.type === "percentage" ? "%" : "$"} off ${params.customerSegment?.name || "all products"}
+${params.additionalContext || "Limited time offer"}
 
 Create excitement about the sale.
 Emphasize value and savings.
@@ -187,7 +189,7 @@ Warm, celebratory tone.`,
 
       loyalty_reward: `Create a LOYALTY REWARD email for ${params.vendor.name}.
 
-Customer has earned: ${params.additionalContext || 'reward tier upgrade'}
+Customer has earned: ${params.additionalContext || "reward tier upgrade"}
 Benefit: ${params.discountData?.value}% discount
 
 Congratulate them on their loyalty.
@@ -221,9 +223,9 @@ Thank them for waiting.`,
     return `${basePrompt}
 
 Store Name: ${params.vendor.name}
-Brand Colors: Primary ${params.vendor.brand_colors?.primary || '#22c55e'}, Secondary ${params.vendor.brand_colors?.secondary || '#000000'}
+Brand Colors: Primary ${params.vendor.brand_colors?.primary || "#22c55e"}, Secondary ${params.vendor.brand_colors?.secondary || "#000000"}
 
-${params.additionalContext ? `Additional Context: ${params.additionalContext}` : ''}
+${params.additionalContext ? `Additional Context: ${params.additionalContext}` : ""}
 
 Generate a JSON response with this exact structure:
 {
@@ -242,8 +244,8 @@ Generate a JSON response with this exact structure:
    * Build branded HTML email
    */
   private buildHTML(params: EmailGenerationParams, content: any): string {
-    const primaryColor = params.vendor.brand_colors?.primary || '#22c55e';
-    const secondaryColor = params.vendor.brand_colors?.secondary || '#000000';
+    const primaryColor = params.vendor.brand_colors?.primary || "#22c55e";
+    const secondaryColor = params.vendor.brand_colors?.secondary || "#000000";
 
     return `
 <!DOCTYPE html>
@@ -387,16 +389,16 @@ Generate a JSON response with this exact structure:
         params.productData
           ? `
       <div class="product-card">
-        ${params.productData.image_url ? `<img src="${params.productData.image_url}" alt="${params.productData.name}" class="product-image">` : ''}
+        ${params.productData.image_url ? `<img src="${params.productData.image_url}" alt="${params.productData.name}" class="product-image">` : ""}
         <div class="product-info">
           <h3>${params.productData.name}</h3>
-          <p style="margin: 0; color: #666;">${params.productData.description || ''}</p>
-          ${params.productData.thc_percent ? `<p style="margin: 4px 0; font-size: 14px; color: #666;">THC: ${params.productData.thc_percent}% ${params.productData.cbd_percent ? `| CBD: ${params.productData.cbd_percent}%` : ''}</p>` : ''}
+          <p style="margin: 0; color: #666;">${params.productData.description || ""}</p>
+          ${params.productData.thc_percent ? `<p style="margin: 4px 0; font-size: 14px; color: #666;">THC: ${params.productData.thc_percent}% ${params.productData.cbd_percent ? `| CBD: ${params.productData.cbd_percent}%` : ""}</p>` : ""}
           <div class="product-price">$${params.productData.price?.toFixed(2)}</div>
         </div>
       </div>
       `
-          : ''
+          : ""
       }
 
       <center>
@@ -424,7 +426,7 @@ Generate a JSON response with this exact structure:
       </p>
       <p style="margin: 10px 0 0 0; font-size: 11px;">
         21+ only. Please consume cannabis responsibly.
-        ${params.additionalContext?.includes('medical') ? 'Valid medical card required.' : ''}
+        ${params.additionalContext?.includes("medical") ? "Valid medical card required." : ""}
       </p>
     </div>
   </div>
@@ -438,8 +440,8 @@ Generate a JSON response with this exact structure:
    */
   private stripHTML(html: string): string {
     return html
-      .replace(/<[^>]*>/g, '')
-      .replace(/\s+/g, ' ')
+      .replace(/<[^>]*>/g, "")
+      .replace(/\s+/g, " ")
       .trim();
   }
 
@@ -448,14 +450,14 @@ Generate a JSON response with this exact structure:
    */
   async generateVariants(
     params: EmailGenerationParams,
-    count: number = 3
+    count: number = 3,
   ): Promise<GeneratedEmail[]> {
     const variants: GeneratedEmail[] = [];
 
     for (let i = 0; i < count; i++) {
       const variant = await this.generateCampaign({
         ...params,
-        additionalContext: `${params.additionalContext || ''} Variant ${i + 1} - Try different approach/tone`,
+        additionalContext: `${params.additionalContext || ""} Variant ${i + 1} - Try different approach/tone`,
       });
       variants.push(variant);
     }
@@ -470,7 +472,7 @@ Generate a JSON response with this exact structure:
 export function createEmailGenerator(openAIKey?: string): EmailGenerator {
   const apiKey = openAIKey || process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error('OpenAI API key required');
+    throw new Error("OpenAI API key required");
   }
   return new EmailGenerator(apiKey);
 }

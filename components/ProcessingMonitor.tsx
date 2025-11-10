@@ -1,12 +1,19 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, Loader2, Zap, Image, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from "react";
+import {
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Zap,
+  Image,
+  TrendingUp,
+} from "lucide-react";
 
 interface ProcessingItem {
   id: string;
   name: string;
-  status: 'pending' | 'processing' | 'success' | 'error';
+  status: "pending" | "processing" | "success" | "error";
   progress?: number;
   error?: string;
   startTime?: number;
@@ -20,7 +27,12 @@ interface ProcessingMonitorProps {
   onClose: () => void;
 }
 
-export default function ProcessingMonitor({ isOpen, title, items, onClose }: ProcessingMonitorProps) {
+export default function ProcessingMonitor({
+  isOpen,
+  title,
+  items,
+  onClose,
+}: ProcessingMonitorProps) {
   const [animatedItems, setAnimatedItems] = useState<ProcessingItem[]>(items);
 
   useEffect(() => {
@@ -30,32 +42,44 @@ export default function ProcessingMonitor({ isOpen, title, items, onClose }: Pro
   if (!isOpen) return null;
 
   const totalItems = items.length;
-  const completed = items.filter(i => i.status === 'success' || i.status === 'error').length;
-  const successful = items.filter(i => i.status === 'success').length;
-  const failed = items.filter(i => i.status === 'error').length;
-  const processing = items.filter(i => i.status === 'processing').length;
+  const completed = items.filter(
+    (i) => i.status === "success" || i.status === "error",
+  ).length;
+  const successful = items.filter((i) => i.status === "success").length;
+  const failed = items.filter((i) => i.status === "error").length;
+  const processing = items.filter((i) => i.status === "processing").length;
   const progressPercentage = (completed / totalItems) * 100;
 
-  const avgTime = items
-    .filter(i => i.endTime && i.startTime)
-    .reduce((acc, i) => acc + ((i.endTime! - i.startTime!) / 1000), 0) / successful || 0;
+  const avgTime =
+    items
+      .filter((i) => i.endTime && i.startTime)
+      .reduce((acc, i) => acc + (i.endTime! - i.startTime!) / 1000, 0) /
+      successful || 0;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'success':
+      case "success":
         return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'error':
+      case "error":
         return <XCircle className="w-5 h-5 text-red-500" />;
-      case 'processing':
+      case "processing":
         return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />;
       default:
-        return <div className="w-5 h-5 rounded-full border-2 border-white/20" />;
+        return (
+          <div className="w-5 h-5 rounded-full border-2 border-white/20" />
+        );
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/90 backdrop-blur-md p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-      <div className="bg-[#0a0a0a] border border-white/10 w-full max-w-3xl max-h-[85vh] flex flex-col" style={{ margin: 'auto' }}>
+    <div
+      className="fixed inset-0 z-[300] flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
+      style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
+    >
+      <div
+        className="bg-[#0a0a0a] border border-white/10 w-full max-w-3xl max-h-[85vh] flex flex-col"
+        style={{ margin: "auto" }}
+      >
         {/* Header with Live Stats */}
         <div className="p-6 border-b border-white/10">
           <div className="flex items-center justify-between mb-4">
@@ -69,7 +93,9 @@ export default function ProcessingMonitor({ isOpen, title, items, onClose }: Pro
               {processing > 0 && (
                 <div className="flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 px-4 py-2">
                   <Zap className="w-4 h-4 text-blue-500 animate-pulse" />
-                  <span className="text-blue-500 text-sm font-medium">{processing} processing</span>
+                  <span className="text-blue-500 text-sm font-medium">
+                    {processing} processing
+                  </span>
                 </div>
               )}
             </div>
@@ -96,23 +122,33 @@ export default function ProcessingMonitor({ isOpen, title, items, onClose }: Pro
             <div className="bg-green-600/10 border border-green-500/20 p-3">
               <div className="flex items-center gap-2 mb-1">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-white/60 text-xs uppercase tracking-wider">Success</span>
+                <span className="text-white/60 text-xs uppercase tracking-wider">
+                  Success
+                </span>
               </div>
-              <div className="text-2xl font-light text-green-500">{successful}</div>
+              <div className="text-2xl font-light text-green-500">
+                {successful}
+              </div>
             </div>
             <div className="bg-red-600/10 border border-red-500/20 p-3">
               <div className="flex items-center gap-2 mb-1">
                 <XCircle className="w-4 h-4 text-red-500" />
-                <span className="text-white/60 text-xs uppercase tracking-wider">Failed</span>
+                <span className="text-white/60 text-xs uppercase tracking-wider">
+                  Failed
+                </span>
               </div>
               <div className="text-2xl font-light text-red-500">{failed}</div>
             </div>
             <div className="bg-blue-600/10 border border-blue-500/20 p-3">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="w-4 h-4 text-blue-500" />
-                <span className="text-white/60 text-xs uppercase tracking-wider">Total</span>
+                <span className="text-white/60 text-xs uppercase tracking-wider">
+                  Total
+                </span>
               </div>
-              <div className="text-2xl font-light text-blue-500">{totalItems}</div>
+              <div className="text-2xl font-light text-blue-500">
+                {totalItems}
+              </div>
             </div>
           </div>
         </div>
@@ -123,31 +159,35 @@ export default function ProcessingMonitor({ isOpen, title, items, onClose }: Pro
             <div
               key={item.id}
               className={`flex items-center gap-3 p-3 border transition-all duration-300 ${
-                item.status === 'success'
-                  ? 'bg-green-600/5 border-green-500/20'
-                  : item.status === 'error'
-                  ? 'bg-red-600/5 border-red-500/20'
-                  : item.status === 'processing'
-                  ? 'bg-blue-600/5 border-blue-500/20 animate-pulse'
-                  : 'bg-white/5 border-white/10'
+                item.status === "success"
+                  ? "bg-green-600/5 border-green-500/20"
+                  : item.status === "error"
+                    ? "bg-red-600/5 border-red-500/20"
+                    : item.status === "processing"
+                      ? "bg-blue-600/5 border-blue-500/20 animate-pulse"
+                      : "bg-white/5 border-white/10"
               }`}
               style={{
-                animation: `fadeInUp 0.3s ease-out ${index * 0.05}s both`
+                animation: `fadeInUp 0.3s ease-out ${index * 0.05}s both`,
               }}
             >
               {/* Status Icon */}
-              <div className="flex-shrink-0">
-                {getStatusIcon(item.status)}
-              </div>
+              <div className="flex-shrink-0">{getStatusIcon(item.status)}</div>
 
               {/* File Info */}
               <div className="flex-1 min-w-0">
-                <div className="text-white text-sm font-medium truncate">{item.name}</div>
+                <div className="text-white text-sm font-medium truncate">
+                  {item.name}
+                </div>
                 {item.error && (
-                  <div className="text-red-400 text-xs mt-1 truncate">{item.error}</div>
+                  <div className="text-red-400 text-xs mt-1 truncate">
+                    {item.error}
+                  </div>
                 )}
-                {item.status === 'processing' && (
-                  <div className="text-blue-400 text-xs mt-1">AI processing...</div>
+                {item.status === "processing" && (
+                  <div className="text-blue-400 text-xs mt-1">
+                    AI processing...
+                  </div>
                 )}
               </div>
 
@@ -200,4 +240,3 @@ export default function ProcessingMonitor({ isOpen, title, items, onClose }: Pro
     </div>
   );
 }
-

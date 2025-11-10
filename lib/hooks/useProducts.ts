@@ -1,23 +1,23 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vendorProductsAPI } from '@/lib/api/vendor-products';
-import { useAppAuth } from '@/context/AppAuthContext';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { vendorProductsAPI } from "@/lib/api/vendor-products";
+import { useAppAuth } from "@/context/AppAuthContext";
 import type {
   CreateProductRequest,
   UpdateProductRequest,
-} from '@/lib/validations/product';
-import type { Product } from '@/lib/api/vendor-products';
+} from "@/lib/validations/product";
+import type { Product } from "@/lib/api/vendor-products";
 
 /**
  * Query keys for product-related queries
  */
 export const productKeys = {
-  all: ['products'] as const,
-  lists: () => [...productKeys.all, 'list'] as const,
+  all: ["products"] as const,
+  lists: () => [...productKeys.all, "list"] as const,
   list: (filters: string) => [...productKeys.lists(), { filters }] as const,
-  details: () => [...productKeys.all, 'detail'] as const,
+  details: () => [...productKeys.all, "detail"] as const,
   detail: (id: string) => [...productKeys.details(), id] as const,
-  categories: () => [...productKeys.all, 'categories'] as const,
-  customFields: () => [...productKeys.all, 'customFields'] as const,
+  categories: () => [...productKeys.all, "categories"] as const,
+  customFields: () => [...productKeys.all, "customFields"] as const,
 };
 
 /**
@@ -36,11 +36,13 @@ export function useProducts(params?: {
   const { isLoading: isAuthLoading, isAuthenticated } = useAppAuth();
 
   const queryParams = new URLSearchParams();
-  if (params?.page) queryParams.set('page', String(params.page));
-  if (params?.limit) queryParams.set('limit', String(params.limit));
-  if (params?.search) queryParams.set('search', params.search);
-  if (params?.status && params.status !== 'all') queryParams.set('status', params.status);
-  if (params?.category && params.category !== 'all') queryParams.set('category', params.category);
+  if (params?.page) queryParams.set("page", String(params.page));
+  if (params?.limit) queryParams.set("limit", String(params.limit));
+  if (params?.search) queryParams.set("search", params.search);
+  if (params?.status && params.status !== "all")
+    queryParams.set("status", params.status);
+  if (params?.category && params.category !== "all")
+    queryParams.set("category", params.category);
 
   const filterKey = queryParams.toString();
 
@@ -55,7 +57,7 @@ export function useProducts(params?: {
 
       while (retries <= maxRetries) {
         const response = await fetch(url, {
-          credentials: 'include',
+          credentials: "include",
         });
 
         if (response.ok) {
@@ -64,20 +66,28 @@ export function useProducts(params?: {
 
         // If 401 and we have retries left, wait and retry
         if (response.status === 401 && retries < maxRetries) {
-          console.warn(`⚠️  401 on attempt ${retries + 1}, retrying...`);
+          if (process.env.NODE_ENV === "development") {
+            console.warn(`⚠️  401 on attempt ${retries + 1}, retrying...`);
+          }
           // Wait 300ms for cookie to propagate
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise((resolve) => setTimeout(resolve, 300));
           retries++;
           continue;
         }
 
         // Out of retries or different error
         const errorText = await response.text();
-        console.error('Failed to fetch products:', response.status, errorText);
+        if (process.env.NODE_ENV === "development") {
+          console.error(
+            "Failed to fetch products:",
+            response.status,
+            errorText,
+          );
+        }
         throw new Error(`Failed to fetch products: ${response.status}`);
       }
 
-      throw new Error('Failed to fetch products after retries');
+      throw new Error("Failed to fetch products after retries");
     },
     // Keep previous data while fetching new page
     placeholderData: (previousData) => previousData,
@@ -94,9 +104,9 @@ export function useProducts(params?: {
  */
 export function useProduct(productId: string | null) {
   return useQuery({
-    queryKey: productKeys.detail(productId || ''),
+    queryKey: productKeys.detail(productId || ""),
     queryFn: async () => {
-      if (!productId) throw new Error('Product ID is required');
+      if (!productId) throw new Error("Product ID is required");
       const response = await vendorProductsAPI.getProduct(productId);
       return response.product;
     },
@@ -167,12 +177,18 @@ export function useUpdateProduct() {
       productId: string;
       productData: UpdateProductRequest;
     }) => {
-      const response = await vendorProductsAPI.updateProduct(productId, productData);
+      const response = await vendorProductsAPI.updateProduct(
+        productId,
+        productData,
+      );
       return response.product;
     },
     onSuccess: (updatedProduct) => {
       // Update the product in the cache
-      queryClient.setQueryData(productKeys.detail(updatedProduct.id), updatedProduct);
+      queryClient.setQueryData(
+        productKeys.detail(updatedProduct.id),
+        updatedProduct,
+      );
 
       // Invalidate product lists to refetch
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
@@ -196,13 +212,15 @@ export function useDeleteProduct() {
       await queryClient.cancelQueries({ queryKey: productKeys.lists() });
 
       // Snapshot the previous value
-      const previousProducts = queryClient.getQueryData<Product[]>(productKeys.lists());
+      const previousProducts = queryClient.getQueryData<Product[]>(
+        productKeys.lists(),
+      );
 
       // Optimistically update the cache
       if (previousProducts) {
         queryClient.setQueryData<Product[]>(
           productKeys.lists(),
-          previousProducts.filter((p) => p.id !== productId)
+          previousProducts.filter((p) => p.id !== productId),
         );
       }
 
@@ -231,12 +249,12 @@ export function useBulkCreateProducts() {
     mutationFn: async (products: CreateProductRequest[]) => {
       // Create products one by one for now
       const results = await Promise.allSettled(
-        products.map(product => vendorProductsAPI.createProduct(product))
+        products.map((product) => vendorProductsAPI.createProduct(product)),
       );
       return {
-        success: results.every(r => r.status === 'fulfilled'),
-        results: results.map(r => {
-          if (r.status === 'fulfilled') {
+        success: results.every((r) => r.status === "fulfilled"),
+        results: results.map((r) => {
+          if (r.status === "fulfilled") {
             return { success: true, product: r.value.product };
           }
           return { success: false, error: r.reason.message };

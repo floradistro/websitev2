@@ -1,1 +1,8 @@
-var e={"core.view.loading":"Loading the Scandit SDK...","core.singleImageUploader.title":"Analyze an image from your device.","core.singleImageUploader.button":"Choose an Image","core.camera.recovery":"Tap/click to resume scanning","barcode.find.view.textForCollapseCardsButton":"Collapse Cards"};export{e as a};
+var e = {
+  "core.view.loading": "Loading the Scandit SDK...",
+  "core.singleImageUploader.title": "Analyze an image from your device.",
+  "core.singleImageUploader.button": "Choose an Image",
+  "core.camera.recovery": "Tap/click to resume scanning",
+  "barcode.find.view.textForCollapseCardsButton": "Collapse Cards",
+};
+export { e as a };

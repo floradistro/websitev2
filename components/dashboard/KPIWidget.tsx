@@ -1,7 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { GripVertical, MoreVertical, Trash2, RefreshCw, Maximize2, TrendingUp, TrendingDown } from 'lucide-react';
+import { useState } from "react";
+import {
+  GripVertical,
+  MoreVertical,
+  Trash2,
+  RefreshCw,
+  Maximize2,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 
 interface KPIWidgetProps {
   id: string;
@@ -10,7 +18,7 @@ interface KPIWidgetProps {
   change?: number;
   changeLabel?: string;
   subtitle?: string;
-  visualization?: 'number' | 'chart' | 'progress' | 'list';
+  visualization?: "number" | "chart" | "progress" | "list";
   data?: any;
   onDelete?: () => void;
   onRefresh?: () => void;
@@ -23,10 +31,10 @@ export function KPIWidget({
   change,
   changeLabel,
   subtitle,
-  visualization = 'number',
+  visualization = "number",
   data,
   onDelete,
-  onRefresh
+  onRefresh,
 }: KPIWidgetProps) {
   const [showMenu, setShowMenu] = useState(false);
 
@@ -83,35 +91,38 @@ export function KPIWidget({
         </div>
 
         <div className="flex items-end justify-between mb-2">
-          <div className="text-5xl font-black text-white" style={{ fontWeight: 900 }}>
+          <div
+            className="text-5xl font-black text-white"
+            style={{ fontWeight: 900 }}
+          >
             {value}
           </div>
 
           {change !== undefined && (
-            <div className={`flex items-center gap-1 text-sm font-medium ${change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {change >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+            <div
+              className={`flex items-center gap-1 text-sm font-medium ${change >= 0 ? "text-green-400" : "text-red-400"}`}
+            >
+              {change >= 0 ? (
+                <TrendingUp size={16} />
+              ) : (
+                <TrendingDown size={16} />
+              )}
               <span>{Math.abs(change)}%</span>
             </div>
           )}
         </div>
 
-        {subtitle && (
-          <div className="text-white/40 text-sm">
-            {subtitle}
-          </div>
-        )}
+        {subtitle && <div className="text-white/40 text-sm">{subtitle}</div>}
 
         {changeLabel && (
-          <div className="text-white/40 text-xs mt-1">
-            {changeLabel}
-          </div>
+          <div className="text-white/40 text-xs mt-1">{changeLabel}</div>
         )}
       </div>
 
       {/* Visualization Area */}
-      {visualization !== 'number' && data && (
+      {visualization !== "number" && data && (
         <div className="mt-4 pt-4 border-t border-white/10">
-          {visualization === 'progress' && (
+          {visualization === "progress" && (
             <div className="space-y-2">
               {data.map((item: any, idx: number) => (
                 <div key={idx}>
@@ -130,10 +141,13 @@ export function KPIWidget({
             </div>
           )}
 
-          {visualization === 'list' && (
+          {visualization === "list" && (
             <div className="space-y-2">
               {data.slice(0, 5).map((item: any, idx: number) => (
-                <div key={idx} className="flex justify-between items-center text-sm">
+                <div
+                  key={idx}
+                  className="flex justify-between items-center text-sm"
+                >
                   <span className="text-white/80">{item.label}</span>
                   <span className="text-white font-medium">{item.value}</span>
                 </div>

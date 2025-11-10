@@ -1,17 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
-import FormData from 'form-data';
-import axios from 'axios';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
+import FormData from "form-data";
+import axios from "axios";
 
-const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || '';
+const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || "";
 
 export async function POST(request: NextRequest) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+      });
     }
     const { vendorId } = authResult;
 
@@ -22,11 +24,13 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         const send = (data: any) => {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
+          );
         };
 
         try {
-          send({ type: 'start', total: files.length });
+          send({ type: "start", total: files.length });
 
           const chunks = [];
           for (let i = 0; i < files.length; i += concurrency) {
@@ -38,25 +42,29 @@ export async function POST(request: NextRequest) {
           for (const chunk of chunks) {
             const promises = chunk.map(async (file: any) => {
               const startTime = Date.now();
-              send({ type: 'processing', fileName: file.name, status: 'processing' });
+              send({
+                type: "processing",
+                fileName: file.name,
+                status: "processing",
+              });
 
               try {
                 const formData = new FormData();
-                formData.append('image_url', file.url);
-                formData.append('size', 'full');
-                formData.append('format', 'png');
-                formData.append('type', 'auto');
-                formData.append('crop', 'false');
-                formData.append('scale', 'original');
+                formData.append("image_url", file.url);
+                formData.append("size", "full");
+                formData.append("format", "png");
+                formData.append("type", "auto");
+                formData.append("crop", "false");
+                formData.append("scale", "original");
 
                 const removeBgResponse = await axios({
-                  method: 'post',
-                  url: 'https://api.remove.bg/v1.0/removebg',
+                  method: "post",
+                  url: "https://api.remove.bg/v1.0/removebg",
                   data: formData,
-                  responseType: 'arraybuffer',
+                  responseType: "arraybuffer",
                   headers: {
                     ...formData.getHeaders(),
-                    'X-Api-Key': REMOVE_BG_API_KEY,
+                    "X-Api-Key": REMOVE_BG_API_KEY,
                   },
                   timeout: 90000,
                 });
@@ -65,48 +73,49 @@ export async function POST(request: NextRequest) {
 
                 // Delete original
                 await supabase.storage
-                  .from('vendor-product-images')
+                  .from("vendor-product-images")
                   .remove([`${vendorId}/${file.name}`]);
 
                 // Upload with same name
-                const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+                const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
                 const newFileName = `${fileNameWithoutExt}.png`;
                 const filePath = `${vendorId}/${newFileName}`;
 
                 await supabase.storage
-                  .from('vendor-product-images')
+                  .from("vendor-product-images")
                   .upload(filePath, removeBgResponse.data, {
-                    contentType: 'image/png',
-                    cacheControl: '3600',
-                    upsert: true
+                    contentType: "image/png",
+                    cacheControl: "3600",
+                    upsert: true,
                   });
 
-                const { data: { publicUrl } } = supabase.storage
-                  .from('vendor-product-images')
+                const {
+                  data: { publicUrl },
+                } = supabase.storage
+                  .from("vendor-product-images")
                   .getPublicUrl(filePath);
 
                 const endTime = Date.now();
                 completedCount++;
 
                 send({
-                  type: 'success',
+                  type: "success",
                   fileName: file.name,
-                  status: 'success',
+                  status: "success",
                   url: publicUrl,
                   duration: endTime - startTime,
                   completed: completedCount,
-                  total: files.length
+                  total: files.length,
                 });
-
               } catch (error: any) {
                 completedCount++;
                 send({
-                  type: 'error',
+                  type: "error",
                   fileName: file.name,
-                  status: 'error',
+                  status: "error",
                   error: error.message,
                   completed: completedCount,
-                  total: files.length
+                  total: files.length,
                 });
               }
             });
@@ -115,15 +124,18 @@ export async function POST(request: NextRequest) {
 
             // Small delay between chunks
             if (chunks.indexOf(chunk) < chunks.length - 1) {
-              await new Promise(resolve => setTimeout(resolve, 250));
+              await new Promise((resolve) => setTimeout(resolve, 250));
             }
           }
 
-          send({ type: 'complete', completed: completedCount, total: files.length });
+          send({
+            type: "complete",
+            completed: completedCount,
+            total: files.length,
+          });
           controller.close();
-
         } catch (error: any) {
-          send({ type: 'error', error: error.message });
+          send({ type: "error", error: error.message });
           controller.close();
         }
       },
@@ -131,13 +143,14 @@ export async function POST(request: NextRequest) {
 
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
       },
     });
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+    });
   }
 }
-

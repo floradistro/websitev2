@@ -1,5 +1,5 @@
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { NextRequest, NextResponse } from 'next/server';
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/vendor/inventory/low-stock
@@ -15,21 +15,22 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
 
-    const vendorId = searchParams.get('vendor_id');
-    const locationId = searchParams.get('location_id');
-    const threshold = parseInt(searchParams.get('threshold') || '10', 10);
+    const vendorId = searchParams.get("vendor_id");
+    const locationId = searchParams.get("location_id");
+    const threshold = parseInt(searchParams.get("threshold") || "10", 10);
 
     if (!vendorId) {
       return NextResponse.json(
-        { success: false, error: 'vendor_id parameter is required' },
-        { status: 400 }
+        { success: false, error: "vendor_id parameter is required" },
+        { status: 400 },
       );
     }
 
     // Build query for low stock products
     let query = supabase
-      .from('inventory')
-      .select(`
+      .from("inventory")
+      .select(
+        `
         id,
         product_id,
         location_id,
@@ -58,12 +59,13 @@ export async function GET(request: NextRequest) {
           city,
           state
         )
-      `)
-      .eq('products.vendor_id', vendorId);
+      `,
+      )
+      .eq("products.vendor_id", vendorId);
 
     // Apply location filter if provided
     if (locationId) {
-      query = query.eq('location_id', locationId);
+      query = query.eq("location_id", locationId);
     }
 
     const { data: inventoryData, error: inventoryError } = await query;
@@ -73,32 +75,40 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter for low stock items
-    const lowStockItems = inventoryData?.filter(item => {
-      const reorderPoint = item.reorder_point || threshold;
-      return (
-        item.available_quantity <= reorderPoint &&
-        item.products &&
-        item.products.length > 0
-      );
-    }).map(item => ({
-      inventory_id: item.id,
-      product_id: item.product_id,
-      product: item.products[0],
-      location: item.locations,
-      quantity: item.quantity,
-      available_quantity: item.available_quantity,
-      reserved_quantity: item.reserved_quantity,
-      stock_status: item.stock_status,
-      reorder_point: item.reorder_point || threshold,
-      urgency: item.available_quantity <= 0
-        ? 'critical'
-        : item.available_quantity <= (item.reorder_point || threshold) / 2
-        ? 'high'
-        : 'medium'
-    })) || [];
+    const lowStockItems =
+      inventoryData
+        ?.filter((item) => {
+          const reorderPoint = item.reorder_point || threshold;
+          return (
+            item.available_quantity <= reorderPoint &&
+            item.products &&
+            item.products.length > 0
+          );
+        })
+        .map((item) => ({
+          inventory_id: item.id,
+          product_id: item.product_id,
+          product: item.products[0],
+          location: item.locations,
+          quantity: item.quantity,
+          available_quantity: item.available_quantity,
+          reserved_quantity: item.reserved_quantity,
+          stock_status: item.stock_status,
+          reorder_point: item.reorder_point || threshold,
+          urgency:
+            item.available_quantity <= 0
+              ? "critical"
+              : item.available_quantity <= (item.reorder_point || threshold) / 2
+                ? "high"
+                : "medium",
+        })) || [];
 
     // Sort by urgency and then by available quantity
-    const urgencyOrder: Record<string, number> = { critical: 0, high: 1, medium: 2 };
+    const urgencyOrder: Record<string, number> = {
+      critical: 0,
+      high: 1,
+      medium: 2,
+    };
     lowStockItems.sort((a, b) => {
       const urgencyDiff = urgencyOrder[a.urgency] - urgencyOrder[b.urgency];
       if (urgencyDiff !== 0) return urgencyDiff;
@@ -108,26 +118,30 @@ export async function GET(request: NextRequest) {
     // Calculate statistics
     const stats = {
       total_low_stock: lowStockItems.length,
-      critical: lowStockItems.filter(i => i.urgency === 'critical').length,
-      high: lowStockItems.filter(i => i.urgency === 'high').length,
-      medium: lowStockItems.filter(i => i.urgency === 'medium').length,
+      critical: lowStockItems.filter((i) => i.urgency === "critical").length,
+      high: lowStockItems.filter((i) => i.urgency === "high").length,
+      medium: lowStockItems.filter((i) => i.urgency === "medium").length,
       total_value_at_risk: lowStockItems.reduce((sum, item) => {
         return sum + (item.product.cost_price || 0) * item.available_quantity;
-      }, 0)
+      }, 0),
     };
 
     return NextResponse.json({
       success: true,
       low_stock_items: lowStockItems,
       stats,
-      threshold_used: threshold
+      threshold_used: threshold,
     });
-
   } catch (error: any) {
-    console.error('Error fetching low stock items:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error fetching low stock items:", error);
+    }
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to fetch low stock items' },
-      { status: 500 }
+      {
+        success: false,
+        error: error.message || "Failed to fetch low stock items",
+      },
+      { status: 500 },
     );
   }
 }
@@ -149,24 +163,28 @@ export async function PATCH(request: NextRequest) {
 
     if (!inventory_id) {
       return NextResponse.json(
-        { success: false, error: 'inventory_id is required' },
-        { status: 400 }
+        { success: false, error: "inventory_id is required" },
+        { status: 400 },
       );
     }
 
-    if (typeof reorder_point !== 'number' || reorder_point < 0) {
+    if (typeof reorder_point !== "number" || reorder_point < 0) {
       return NextResponse.json(
-        { success: false, error: 'reorder_point must be a non-negative number' },
-        { status: 400 }
+        {
+          success: false,
+          error: "reorder_point must be a non-negative number",
+        },
+        { status: 400 },
       );
     }
 
     // Update reorder point
     const { data, error } = await supabase
-      .from('inventory')
+      .from("inventory")
       .update({ reorder_point })
-      .eq('id', inventory_id)
-      .select(`
+      .eq("id", inventory_id)
+      .select(
+        `
         id,
         product_id,
         quantity,
@@ -176,7 +194,8 @@ export async function PATCH(request: NextRequest) {
           name,
           sku
         )
-      `)
+      `,
+      )
       .single();
 
     if (error) {
@@ -186,14 +205,18 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({
       success: true,
       inventory: data,
-      message: `Reorder point updated to ${reorder_point}`
+      message: `Reorder point updated to ${reorder_point}`,
     });
-
   } catch (error: any) {
-    console.error('Error updating reorder point:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error updating reorder point:", error);
+    }
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to update reorder point' },
-      { status: 500 }
+      {
+        success: false,
+        error: error.message || "Failed to update reorder point",
+      },
+      { status: 500 },
     );
   }
 }

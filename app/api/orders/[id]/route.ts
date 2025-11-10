@@ -8,33 +8,33 @@ const getBaseUrl = () => {
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
-  return 'http://localhost:3000';
+  return "http://localhost:3000";
 };
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
-    
+
     // Fetch order from Supabase
     const response = await fetch(`${getBaseUrl()}/api/supabase/orders/${id}`);
     const data = await response.json();
-    
+
     if (!data.success || !data.order) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
-    
+
     const order = data.order;
-    
+
     // Format order data
     const formattedOrder = {
       id: order.id,
       number: order.order_number,
       status: order.status,
       total: order.total_amount.toString(),
-      currency: order.currency || 'USD',
+      currency: order.currency || "USD",
       date_created: order.order_date,
       date_modified: order.updated_at,
       date_completed: order.completed_date,
@@ -48,23 +48,24 @@ export async function GET(
         price: item.unit_price,
         total: item.line_total,
         image: item.product_image ? { src: item.product_image } : null,
-        meta_data: item.meta_data || {}
+        meta_data: item.meta_data || {},
       })),
       shipping_lines: [],
       payment_method: order.payment_method,
       payment_method_title: order.payment_method_title,
       customer_note: order.customer_note,
       tracking_number: order.tracking_number,
-      shipping_carrier: order.shipping_carrier
+      shipping_carrier: order.shipping_carrier,
     };
-    
+
     return NextResponse.json({
       success: true,
-      order: formattedOrder
+      order: formattedOrder,
     });
-    
   } catch (error: any) {
-    console.error('Order detail error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Order detail error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

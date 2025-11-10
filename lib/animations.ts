@@ -4,7 +4,7 @@
  * Using Framer Motion + GSAP
  */
 
-import { Variants } from 'framer-motion';
+import { Variants } from "framer-motion";
 
 // ============================================================================
 // FRAMER MOTION VARIANTS
@@ -13,70 +13,70 @@ import { Variants } from 'framer-motion';
 // Fade In animations
 export const fadeIn: Variants = {
   hidden: { opacity: 0 },
-  visible: { 
+  visible: {
     opacity: 1,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
-  }
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+  },
 };
 
 export const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
-  }
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+  },
 };
 
 export const fadeInDown: Variants = {
   hidden: { opacity: 0, y: -40 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
-  }
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+  },
 };
 
 // Scale animations (luxury product reveals)
 export const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.8 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scale: 1,
-    transition: { duration: 1, ease: [0.22, 1, 0.36, 1] }
-  }
+    transition: { duration: 1, ease: [0.22, 1, 0.36, 1] },
+  },
 };
 
 export const scaleInSpring: Variants = {
   hidden: { opacity: 0, scale: 0.9 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scale: 1,
-    transition: { 
-      type: 'spring',
+    transition: {
+      type: "spring",
       stiffness: 100,
-      damping: 15
-    }
-  }
+      damping: 15,
+    },
+  },
 };
 
 // Slide animations
 export const slideInLeft: Variants = {
   hidden: { opacity: 0, x: -100 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
-  }
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+  },
 };
 
 export const slideInRight: Variants = {
   hidden: { opacity: 0, x: 100 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] }
-  }
+    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+  },
 };
 
 // Stagger children (for lists/grids)
@@ -86,18 +86,18 @@ export const staggerContainer: Variants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
+      delayChildren: 0.2,
+    },
+  },
 };
 
 export const staggerItem: Variants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.6 }
-  }
+    transition: { duration: 0.6 },
+  },
 };
 
 // Text reveal animations (character by character)
@@ -108,26 +108,26 @@ export const textReveal: Variants = {
     y: 0,
     transition: {
       duration: 0.5,
-      ease: [0.22, 1, 0.36, 1]
-    }
-  }
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
 };
 
 // Luxury hover animations
 export const hoverScale = {
   scale: 1.05,
-  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
+  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
 };
 
 export const hoverGlow = {
-  boxShadow: '0 0 40px rgba(255, 255, 255, 0.2)',
-  transition: { duration: 0.3 }
+  boxShadow: "0 0 40px rgba(255, 255, 255, 0.2)",
+  transition: { duration: 0.3 },
 };
 
 // Tap animations (mobile)
 export const tapScale = {
   scale: 0.95,
-  transition: { duration: 0.1 }
+  transition: { duration: 0.1 },
 };
 
 // ============================================================================
@@ -137,13 +137,13 @@ export const tapScale = {
 export const scrollRevealOptions = {
   triggerOnce: true,
   threshold: 0.1,
-  rootMargin: '-50px'
+  rootMargin: "-50px",
 };
 
 export const scrollRevealLarge = {
   triggerOnce: true,
   threshold: 0.05,
-  rootMargin: '-100px'
+  rootMargin: "-100px",
 };
 
 // ============================================================================
@@ -157,17 +157,17 @@ export const pageTransition: Variants = {
     y: 0,
     transition: {
       duration: 0.6,
-      ease: [0.22, 1, 0.36, 1]
-    }
+      ease: [0.22, 1, 0.36, 1],
+    },
   },
   exit: {
     opacity: 0,
     y: -20,
     transition: {
       duration: 0.4,
-      ease: [0.22, 1, 0.36, 1]
-    }
-  }
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
 };
 
 // ============================================================================
@@ -176,13 +176,13 @@ export const pageTransition: Variants = {
 
 export const productCardHover = {
   y: -8,
-  boxShadow: '0 20px 60px rgba(255, 255, 255, 0.1)',
-  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
+  boxShadow: "0 20px 60px rgba(255, 255, 255, 0.1)",
+  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
 };
 
 export const productImageZoom = {
   scale: 1.1,
-  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
+  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
 };
 
 // ============================================================================
@@ -197,9 +197,9 @@ export const pulseAnimation: Variants = {
     transition: {
       duration: 2,
       repeat: Infinity,
-      ease: 'easeInOut'
-    }
-  }
+      ease: "easeInOut",
+    },
+  },
 };
 
 export const spinAnimation: Variants = {
@@ -208,9 +208,9 @@ export const spinAnimation: Variants = {
     transition: {
       duration: 1,
       repeat: Infinity,
-      ease: 'linear'
-    }
-  }
+      ease: "linear",
+    },
+  },
 };
 
 // ============================================================================
@@ -224,9 +224,9 @@ export const heroLogoReveal: Variants = {
     scale: 1,
     transition: {
       duration: 1.2,
-      ease: [0.22, 1, 0.36, 1]
-    }
-  }
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
 };
 
 export const heroTextReveal: Variants = {
@@ -237,9 +237,9 @@ export const heroTextReveal: Variants = {
     transition: {
       duration: 0.8,
       delay: 0.3,
-      ease: [0.22, 1, 0.36, 1]
-    }
-  }
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
 };
 
 export const heroDivider: Variants = {
@@ -249,9 +249,9 @@ export const heroDivider: Variants = {
     transition: {
       duration: 0.8,
       delay: 0.6,
-      ease: [0.22, 1, 0.36, 1]
-    }
-  }
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
 };
 
 export const heroCTA: Variants = {
@@ -262,9 +262,9 @@ export const heroCTA: Variants = {
     transition: {
       duration: 0.8,
       delay: 0.9,
-      ease: [0.22, 1, 0.36, 1]
-    }
-  }
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
 };
 
 // ============================================================================
@@ -276,15 +276,15 @@ export const heroCTA: Variants = {
  * Usage: fadeInTimeline('.element', 0.2)
  */
 export const fadeInTimeline = (selector: string, delay: number = 0) => {
-  if (typeof window === 'undefined') return;
-  const gsap = require('gsap');
-  
+  if (typeof window === "undefined") return;
+  const gsap = require("gsap");
+
   return gsap.from(selector, {
     opacity: 0,
     y: 40,
     duration: 0.8,
     delay,
-    ease: 'power3.out'
+    ease: "power3.out",
   });
 };
 
@@ -293,15 +293,15 @@ export const fadeInTimeline = (selector: string, delay: number = 0) => {
  * Usage: staggerReveal('.grid-item')
  */
 export const staggerReveal = (selector: string) => {
-  if (typeof window === 'undefined') return;
-  const gsap = require('gsap');
-  
+  if (typeof window === "undefined") return;
+  const gsap = require("gsap");
+
   return gsap.from(selector, {
     opacity: 0,
     y: 30,
     stagger: 0.1,
     duration: 0.6,
-    ease: 'power3.out'
+    ease: "power3.out",
   });
 };
 
@@ -310,10 +310,10 @@ export const staggerReveal = (selector: string) => {
 // ============================================================================
 
 export const easings = {
-  luxury: [0.22, 1, 0.36, 1],        // Smooth luxury ease
-  snappy: [0.87, 0, 0.13, 1],        // Quick snap
+  luxury: [0.22, 1, 0.36, 1], // Smooth luxury ease
+  snappy: [0.87, 0, 0.13, 1], // Quick snap
   elastic: [0.68, -0.55, 0.265, 1.55], // Elastic bounce
-  smooth: [0.25, 0.46, 0.45, 0.94],  // Smooth ease
+  smooth: [0.25, 0.46, 0.45, 0.94], // Smooth ease
 };
 
 // ============================================================================
@@ -324,7 +324,6 @@ export const useInViewport = () => {
   return {
     once: true,
     amount: 0.2,
-    margin: '-50px'
+    margin: "-50px",
   };
 };
-

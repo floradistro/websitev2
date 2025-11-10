@@ -1,1 +1,1 @@
-export{a as UnsupportedBrowserError}from'../chunks/chunk-GPJEB376.js';
+export { a as UnsupportedBrowserError } from "../chunks/chunk-GPJEB376.js";

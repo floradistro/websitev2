@@ -29,31 +29,31 @@ export const ALPINE_APPROVED_TEMPLATES: Record<string, AlpineTemplate> = {
   // TODO: Replace these with YOUR actual approved templates from Alpine IQ dashboard
 
   EXAMPLE_FLASH_SALE: {
-    message: 'Special offer just for you! {link}',
-    description: 'Generic flash sale with landing page',
+    message: "Special offer just for you! {link}",
+    description: "Generic flash sale with landing page",
     requiresLandingPage: true,
-    placeholders: ['{link}'],
+    placeholders: ["{link}"],
   },
 
   EXAMPLE_NEW_PRODUCT: {
-    message: '{storeName} has new products! Check them out: {link}',
-    description: 'New product announcement',
+    message: "{storeName} has new products! Check them out: {link}",
+    description: "New product announcement",
     requiresLandingPage: true,
-    placeholders: ['{storeName}', '{link}'],
+    placeholders: ["{storeName}", "{link}"],
   },
 
   EXAMPLE_PERSONALIZED: {
-    message: 'Hi {firstName}, exclusive deal for our members! {link}',
-    description: 'Personalized member promotion',
+    message: "Hi {firstName}, exclusive deal for our members! {link}",
+    description: "Personalized member promotion",
     requiresLandingPage: true,
-    placeholders: ['{firstName}', '{link}'],
+    placeholders: ["{firstName}", "{link}"],
   },
 
   EXAMPLE_ORDER_READY: {
-    message: 'Your order is ready for pickup! Visit us at {storeName}.',
-    description: 'Order ready notification (no landing page)',
+    message: "Your order is ready for pickup! Visit us at {storeName}.",
+    description: "Order ready notification (no landing page)",
     requiresLandingPage: false,
-    placeholders: ['{storeName}'],
+    placeholders: ["{storeName}"],
   },
 
   // Add your actual approved templates below:
@@ -68,7 +68,10 @@ export const ALPINE_APPROVED_TEMPLATES: Record<string, AlpineTemplate> = {
 /**
  * Helper to validate template has required placeholders
  */
-export function validateTemplate(templateKey: string, landingHTML?: string): {
+export function validateTemplate(
+  templateKey: string,
+  landingHTML?: string,
+): {
   valid: boolean;
   error?: string;
 } {
@@ -87,10 +90,10 @@ export function validateTemplate(templateKey: string, landingHTML?: string): {
   }
 
   // If template has {link} placeholder but no landing page
-  if (template.message.includes('{link}') && !landingHTML) {
+  if (template.message.includes("{link}") && !landingHTML) {
     return {
       valid: false,
-      error: 'Template contains {link} placeholder but no landingHTML provided',
+      error: "Template contains {link} placeholder but no landingHTML provided",
     };
   }
 
@@ -103,7 +106,7 @@ export function validateTemplate(templateKey: string, landingHTML?: string): {
  */
 export function prepareTemplateMessage(
   templateKey: string,
-  replacements?: Record<string, string>
+  replacements?: Record<string, string>,
 ): string {
   const template = ALPINE_APPROVED_TEMPLATES[templateKey];
 
@@ -116,8 +119,8 @@ export function prepareTemplateMessage(
   // Replace placeholders (except {link} which Alpine IQ handles)
   if (replacements) {
     Object.entries(replacements).forEach(([key, value]) => {
-      if (key !== 'link') {
-        message = message.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+      if (key !== "link") {
+        message = message.replace(new RegExp(`\\{${key}\\}`, "g"), value);
       }
     });
   }

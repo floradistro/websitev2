@@ -170,7 +170,9 @@ export default function PricingPage() {
                 </div>
 
                 <Link
-                  href={tier.cta === "Contact Sales" ? "/contact" : "/vendor/login"}
+                  href={
+                    tier.cta === "Contact Sales" ? "/contact" : "/vendor/login"
+                  }
                   className={`block w-full text-center py-4 rounded-xl text-sm uppercase tracking-[0.1em] font-black transition-all mb-8 ${
                     tier.highlighted
                       ? "bg-white text-black hover:scale-[1.02] hover:shadow-lg"
@@ -187,7 +189,10 @@ export default function PricingPage() {
                   </p>
                   {tier.features.map((feature) => (
                     <div key={feature} className="flex items-start gap-3">
-                      <Check size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
+                      <Check
+                        size={16}
+                        className="text-green-400 flex-shrink-0 mt-0.5"
+                      />
                       <span className="text-sm text-white/80">{feature}</span>
                     </div>
                   ))}
@@ -200,8 +205,13 @@ export default function PricingPage() {
                       </div>
                       {tier.notIncluded.map((feature) => (
                         <div key={feature} className="flex items-start gap-3">
-                          <X size={16} className="text-white/20 flex-shrink-0 mt-0.5" />
-                          <span className="text-sm text-white/40">{feature}</span>
+                          <X
+                            size={16}
+                            className="text-white/20 flex-shrink-0 mt-0.5"
+                          />
+                          <span className="text-sm text-white/40">
+                            {feature}
+                          </span>
                         </div>
                       ))}
                     </>
@@ -235,7 +245,9 @@ export default function PricingPage() {
                 <h3 className="text-xl font-black mb-2 text-red-400 uppercase">
                   Your Current Stack
                 </h3>
-                <p className="text-sm text-white/60">Typical multi-location setup</p>
+                <p className="text-sm text-white/60">
+                  Typical multi-location setup
+                </p>
               </div>
               <div className="space-y-4 mb-6">
                 {[
@@ -244,7 +256,10 @@ export default function PricingPage() {
                   { name: "Shopify", cost: 600 },
                   { name: "Dutchie", cost: 500 },
                 ].map((item) => (
-                  <div key={item.name} className="flex justify-between items-center py-2 border-b border-white/5">
+                  <div
+                    key={item.name}
+                    className="flex justify-between items-center py-2 border-b border-white/5"
+                  >
                     <span className="text-sm text-white/80">{item.name}</span>
                     <span className="text-sm font-bold text-white/60">
                       ${item.cost}/mo
@@ -359,8 +374,14 @@ export default function PricingPage() {
                 a: "No setup fees. No hidden costs. Just your monthly subscription.",
               },
             ].map((faq) => (
-              <div key={faq.q} className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all">
-                <h3 className="text-lg font-black mb-2 text-white uppercase tracking-tight" style={{ fontWeight: 900 }}>
+              <div
+                key={faq.q}
+                className="bg-[#0a0a0a] border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all"
+              >
+                <h3
+                  className="text-lg font-black mb-2 text-white uppercase tracking-tight"
+                  style={{ fontWeight: 900 }}
+                >
                   {faq.q}
                 </h3>
                 <p className="text-white/60">{faq.a}</p>

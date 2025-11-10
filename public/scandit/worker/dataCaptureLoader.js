@@ -1,1 +1,1 @@
-export{a as DataCaptureLoader}from'../chunks/chunk-VGSPU525.js';
+export { a as DataCaptureLoader } from "../chunks/chunk-VGSPU525.js";

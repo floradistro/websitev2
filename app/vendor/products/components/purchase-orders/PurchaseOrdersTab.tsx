@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useMemo } from 'react';
-import { Package, Plus } from 'lucide-react';
-import { useAppAuth } from '@/context/AppAuthContext';
-import { ds, cn, Button } from '@/components/ds';
-import { POStats } from './POStats';
-import { POFilters } from './POFilters';
-import { POList } from './POList';
-import { ReceiveModal } from './ReceiveModal';
-import { CreatePOModal } from './CreatePOModal';
-import axios from 'axios';
-import type { PurchaseOrder } from './types';
+import { useEffect, useState, useMemo } from "react";
+import { Package, Plus } from "lucide-react";
+import { useAppAuth } from "@/context/AppAuthContext";
+import { ds, cn, Button } from "@/components/ds";
+import { POStats } from "./POStats";
+import { POFilters } from "./POFilters";
+import { POList } from "./POList";
+import { ReceiveModal } from "./ReceiveModal";
+import { CreatePOModal } from "./CreatePOModal";
+import axios from "axios";
+import type { PurchaseOrder } from "./types";
 
 /**
  * PurchaseOrdersTab - Inbound purchase orders only
@@ -21,9 +21,9 @@ export function PurchaseOrdersTab() {
   const { vendor, locations } = useAppAuth();
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [locationFilter, setLocationFilter] = useState('all');
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [locationFilter, setLocationFilter] = useState("all");
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -39,12 +39,14 @@ export function PurchaseOrdersTab() {
       const response = await axios.get(`/api/vendor/purchase-orders`, {
         params: {
           vendor_id: vendor.id,
-          po_type: 'inbound' // Only load inbound purchase orders
-        }
+          po_type: "inbound", // Only load inbound purchase orders
+        },
       });
       setOrders(response.data.data || []);
     } catch (error) {
-      console.error('Error loading POs:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading POs:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -56,19 +58,23 @@ export function PurchaseOrdersTab() {
 
   // Filter orders
   const filteredOrders = useMemo(() => {
-    return orders.filter(po => {
+    return orders.filter((po) => {
       // Status filter
-      if (statusFilter !== 'all' && po.status !== statusFilter) return false;
+      if (statusFilter !== "all" && po.status !== statusFilter) return false;
 
       // Location filter
-      if (locationFilter !== 'all' && (po as any).location_id !== locationFilter) return false;
+      if (
+        locationFilter !== "all" &&
+        (po as any).location_id !== locationFilter
+      )
+        return false;
 
       // Search filter
       if (search) {
         const searchLower = search.toLowerCase();
-        const poNumber = po.po_number?.toLowerCase() || '';
+        const poNumber = po.po_number?.toLowerCase() || "";
         // Only inbound orders, so only check supplier
-        const partner = po.supplier?.external_name?.toLowerCase() || '';
+        const partner = po.supplier?.external_name?.toLowerCase() || "";
         return poNumber.includes(searchLower) || partner.includes(searchLower);
       }
 
@@ -80,9 +86,14 @@ export function PurchaseOrdersTab() {
   const stats = useMemo(() => {
     const total = orders.length;
     const draft = 0; // No more draft status
-    const active = orders.filter(po => ['ordered', 'confirmed', 'shipped', 'receiving'].includes(po.status)).length;
-    const completed = orders.filter(po => po.status === 'received').length;
-    const totalValue = orders.reduce((sum, po) => sum + (parseFloat(po.total?.toString() || '0')), 0);
+    const active = orders.filter((po) =>
+      ["ordered", "confirmed", "shipped", "receiving"].includes(po.status),
+    ).length;
+    const completed = orders.filter((po) => po.status === "received").length;
+    const totalValue = orders.reduce(
+      (sum, po) => sum + parseFloat(po.total?.toString() || "0"),
+      0,
+    );
 
     return { total, draft, active, completed, totalValue };
   }, [orders]);
@@ -106,9 +117,19 @@ export function PurchaseOrdersTab() {
   return (
     <div>
       {/* Header Note with Create Button */}
-      <div className={cn("rounded-2xl border p-4 mb-6 flex items-start justify-between gap-3", ds.colors.bg.secondary, ds.colors.border.default)}>
+      <div
+        className={cn(
+          "rounded-2xl border p-4 mb-6 flex items-start justify-between gap-3",
+          ds.colors.bg.secondary,
+          ds.colors.border.default,
+        )}
+      >
         <div className="flex items-start gap-3">
-          <Package size={16} className={cn(ds.colors.text.quaternary, "mt-0.5")} strokeWidth={1} />
+          <Package
+            size={16}
+            className={cn(ds.colors.text.quaternary, "mt-0.5")}
+            strokeWidth={1}
+          />
           <div>
             <p className={cn(ds.typography.size.xs, "text-white/80 mb-1")}>
               Purchase orders for buying inventory from suppliers

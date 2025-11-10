@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 // Bundle analyzer (run with: ANALYZE=true npm run build)
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
 });
 
 const nextConfig: NextConfig = {
@@ -11,49 +11,55 @@ const nextConfig: NextConfig = {
     maxInactiveAge: 60 * 1000,
     pagesBufferLength: 5,
   },
-  
+
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'yachtclub.boats',
+        protocol: "https",
+        hostname: "yachtclub.boats",
       },
       {
-        protocol: 'https',
-        hostname: 'uaednwpxursknmwdeejn.supabase.co',
+        protocol: "https",
+        hostname: "uaednwpxursknmwdeejn.supabase.co",
       },
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
     ],
-    formats: ['image/avif', 'image/webp'],
+    formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     qualities: [75, 85, 90, 95, 100],
     minimumCacheTTL: 60,
   },
-  
+
   // Performance optimizations
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: process.env.NODE_ENV === "production",
   },
-  
+
   // Compress output
   compress: true,
-  
+
   // PoweredBy header removal
   poweredByHeader: false,
-  
+
   // Production optimizations
   productionBrowserSourceMaps: false,
 
   // Enable React strict mode for better error detection
   reactStrictMode: true,
-  
+
   // Optimize chunks
   experimental: {
-    optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts', '@supabase/supabase-js', 'react-window'],
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "recharts",
+      "@supabase/supabase-js",
+      "react-window",
+    ],
     optimizeCss: true,
     // Turbo disabled for stability - use webpack instead
     // turbo: {
@@ -65,7 +71,7 @@ const nextConfig: NextConfig = {
     //   },
     // },
   },
-  
+
   // Webpack optimization for production
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -73,22 +79,22 @@ const nextConfig: NextConfig = {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
-          chunks: 'all',
+          chunks: "all",
           cacheGroups: {
             default: false,
             vendors: false,
             // Vendor chunk for node_modules
             vendor: {
-              name: 'vendor',
-              chunks: 'all',
+              name: "vendor",
+              chunks: "all",
               test: /node_modules/,
               priority: 20,
             },
             // Common chunk for shared components
             common: {
-              name: 'common',
+              name: "common",
               minChunks: 2,
-              chunks: 'async',
+              chunks: "async",
               priority: 10,
               reuseExistingChunk: true,
               enforce: true,
@@ -96,27 +102,27 @@ const nextConfig: NextConfig = {
             // Heavy libraries get their own chunks
             react: {
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/,
-              name: 'react',
-              chunks: 'all',
+              name: "react",
+              chunks: "all",
               priority: 30,
             },
             three: {
               test: /[\\/]node_modules[\\/](@react-three|three)[\\/]/,
-              name: 'three',
-              chunks: 'async',
+              name: "three",
+              chunks: "async",
               priority: 25,
             },
             charts: {
               test: /[\\/]node_modules[\\/]recharts[\\/]/,
-              name: 'charts',
-              chunks: 'async',
+              name: "charts",
+              chunks: "async",
               priority: 25,
             },
             // Admin dashboard routes
             adminRoutes: {
               test: /[\\/]app[\\/]admin[\\/]/,
-              name: 'admin-dashboard',
-              chunks: 'async',
+              name: "admin-dashboard",
+              chunks: "async",
               priority: 15,
               minChunks: 2,
               reuseExistingChunk: true,
@@ -124,8 +130,8 @@ const nextConfig: NextConfig = {
             // Vendor dashboard routes
             vendorRoutes: {
               test: /[\\/]app[\\/]vendor[\\/]/,
-              name: 'vendor-dashboard',
-              chunks: 'async',
+              name: "vendor-dashboard",
+              chunks: "async",
               priority: 15,
               minChunks: 2,
               reuseExistingChunk: true,
@@ -133,8 +139,8 @@ const nextConfig: NextConfig = {
             // Storefront routes
             storefrontRoutes: {
               test: /[\\/]app[\\/]\(storefront\)[\\/]/,
-              name: 'storefront',
-              chunks: 'async',
+              name: "storefront",
+              chunks: "async",
               priority: 15,
               minChunks: 2,
               reuseExistingChunk: true,
@@ -142,8 +148,8 @@ const nextConfig: NextConfig = {
             // POS routes
             posRoutes: {
               test: /[\\/]app[\\/]pos[\\/]/,
-              name: 'pos',
-              chunks: 'async',
+              name: "pos",
+              chunks: "async",
               priority: 15,
               minChunks: 2,
               reuseExistingChunk: true,
@@ -154,70 +160,110 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  
-  // Headers for caching and performance
+
+  // Headers for security, caching and performance
   async headers() {
-    const isDev = process.env.NODE_ENV === 'development';
-    
+    const isDev = process.env.NODE_ENV === "development";
+
+    // Content Security Policy
+    const ContentSecurityPolicy = `
+      default-src 'self';
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: blob: https:;
+      font-src 'self' data:;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'self';
+      connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.openai.com wss://*.supabase.co;
+      worker-src 'self' blob:;
+      media-src 'self' blob: data:;
+    `
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
     return [
       {
-        source: '/:path*',
+        source: "/:path*",
         headers: [
           {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on'
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
           },
           {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN'
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
           },
           {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
-          ...(isDev ? [{
-            key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0'
-          }] : []),
-        ],
+          {
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
+          },
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(self), payment=(self)",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: isDev ? "" : ContentSecurityPolicy,
+          },
+          ...(isDev
+            ? [
+                {
+                  key: "Cache-Control",
+                  value:
+                    "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+                },
+              ]
+            : []),
+        ].filter((header) => header.value !== ""), // Remove empty CSP in dev
       },
       {
         // ALL API routes - NEVER cache (live data only)
-        source: '/api/:path*',
+        source: "/api/:path*",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, max-age=0',
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate, max-age=0",
           },
         ],
       },
       {
-        source: '/_next/static/:path*',
+        source: "/_next/static/:path*",
         headers: [
           {
-            key: 'Cache-Control',
+            key: "Cache-Control",
             value: isDev
-              ? 'no-store, must-revalidate, max-age=0'
-              : 'public, max-age=31536000, immutable',
+              ? "no-store, must-revalidate, max-age=0"
+              : "public, max-age=31536000, immutable",
           },
         ],
       },
       {
-        source: '/images/:path*',
+        source: "/images/:path*",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },
     ];
   },
-  
+
   // Webpack optimizations disabled for build stability
   // webpack: (config, { isServer }) => {
   //   return config;

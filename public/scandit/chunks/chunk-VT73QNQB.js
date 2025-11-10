@@ -1,4 +1,26 @@
-import {a as a$2}from'./chunk-3A4KLILV.js';import {a as a$3}from'./chunk-MU6SADSF.js';import {a}from'./chunk-EV4OEANA.js';import {a as a$1}from'./chunk-LSZZVJ6B.js';var l="scandit-arrows-up",t=class t extends a{constructor(){super();let a=this.attachShadow({mode:"open"});a.innerHTML=this.render(),a.prepend(t.createStyleElement().cloneNode(true));}static createStyleElement(){return a$1`${t.tag}{display:flex}${t.tag}[hidden]{display:none}.arrow{animation:blink 1.5s infinite;animation-duration:2s}.arrow-1{animation-delay:0s}.arrow-2{animation-delay:.5s}.arrow-3{animation-delay:1s}@keyframes blink{0%,to{opacity:0}50%{opacity:1}}`}static create(){return document.createElement(t.tag)}static register(){a$2({[t.tag]:t});}render(){return a$3`
+import { a as a$2 } from "./chunk-3A4KLILV.js";
+import { a as a$3 } from "./chunk-MU6SADSF.js";
+import { a } from "./chunk-EV4OEANA.js";
+import { a as a$1 } from "./chunk-LSZZVJ6B.js";
+var l = "scandit-arrows-up",
+  t = class t extends a {
+    constructor() {
+      super();
+      let a = this.attachShadow({ mode: "open" });
+      ((a.innerHTML = this.render()),
+        a.prepend(t.createStyleElement().cloneNode(true)));
+    }
+    static createStyleElement() {
+      return a$1`${t.tag}{display:flex}${t.tag}[hidden]{display:none}.arrow{animation:blink 1.5s infinite;animation-duration:2s}.arrow-1{animation-delay:0s}.arrow-2{animation-delay:.5s}.arrow-3{animation-delay:1s}@keyframes blink{0%,to{opacity:0}50%{opacity:1}}`;
+    }
+    static create() {
+      return document.createElement(t.tag);
+    }
+    static register() {
+      a$2({ [t.tag]: t });
+    }
+    render() {
+      return a$3`
       <svg width="120" height="45" viewBox="0 0 120 45" fill="none">
         <path
           class="arrow arrow-1"
@@ -19,4 +41,10 @@ import {a as a$2}from'./chunk-3A4KLILV.js';import {a as a$3}from'./chunk-MU6SADS
           fill="white"
         ></path>
       </svg>
-    `}};t.tag=l;var e=t;e.register();export{e as a};
+    `;
+    }
+  };
+t.tag = l;
+var e = t;
+e.register();
+export { e as a };

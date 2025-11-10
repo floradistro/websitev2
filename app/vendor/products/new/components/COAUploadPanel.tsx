@@ -1,8 +1,8 @@
 "use client";
 
-import { FileText, X, CheckCircle, Loader } from 'lucide-react';
-import SectionHeader from '@/components/ui/SectionHeader';
-import { ds, cn } from '@/components/ds';
+import { FileText, X, CheckCircle, Loader } from "lucide-react";
+import SectionHeader from "@/components/ui/SectionHeader";
+import { ds, cn } from "@/components/ds";
 
 interface COAUploadPanelProps {
   coaFile: File | null;
@@ -17,13 +17,16 @@ export default function COAUploadPanel({
   uploadedCoaUrl,
   uploadingCOA,
   onCOAUpload,
-  onRemoveCOA
+  onRemoveCOA,
 }: COAUploadPanelProps) {
   return (
     <div className={cn(ds.components.card, "rounded-2xl")}>
       <SectionHeader
         rightContent={
-          <span className="text-red-400 text-[9px] uppercase tracking-wider font-black bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-lg" style={{ fontWeight: 900 }}>
+          <span
+            className="text-red-400 text-[9px] uppercase tracking-wider font-black bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-lg"
+            style={{ fontWeight: 900 }}
+          >
             Required
           </span>
         }
@@ -32,28 +35,48 @@ export default function COAUploadPanel({
       </SectionHeader>
 
       {coaFile ? (
-        <div className={cn(ds.colors.bg.primary, "border border-white/10 rounded-xl p-4 flex items-center justify-between")}>
+        <div
+          className={cn(
+            ds.colors.bg.primary,
+            "border border-white/10 rounded-xl p-4 flex items-center justify-between",
+          )}
+        >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
               <FileText size={18} strokeWidth={1.5} className="text-white/60" />
             </div>
             <div>
-              <div className="text-white text-[10px] font-black uppercase tracking-tight flex items-center gap-2 mb-1" style={{ fontWeight: 900 }}>
+              <div
+                className="text-white text-[10px] font-black uppercase tracking-tight flex items-center gap-2 mb-1"
+                style={{ fontWeight: 900 }}
+              >
                 {coaFile.name}
                 {uploadedCoaUrl && (
-                  <span className="bg-green-500/20 border border-green-500/40 text-green-400 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-[0.15em] flex items-center gap-1" style={{ fontWeight: 900 }}>
+                  <span
+                    className="bg-green-500/20 border border-green-500/40 text-green-400 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-[0.15em] flex items-center gap-1"
+                    style={{ fontWeight: 900 }}
+                  >
                     <CheckCircle size={8} strokeWidth={1.5} />
                     Uploaded
                   </span>
                 )}
                 {uploadingCOA && (
-                  <span className="bg-blue-500/20 border border-blue-500/40 text-blue-400 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-[0.15em] flex items-center gap-1" style={{ fontWeight: 900 }}>
-                    <Loader size={8} strokeWidth={1.5} className="animate-spin" />
+                  <span
+                    className="bg-blue-500/20 border border-blue-500/40 text-blue-400 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-[0.15em] flex items-center gap-1"
+                    style={{ fontWeight: 900 }}
+                  >
+                    <Loader
+                      size={8}
+                      strokeWidth={1.5}
+                      className="animate-spin"
+                    />
                     Uploading
                   </span>
                 )}
               </div>
-              <div className="text-white/40 text-[9px]">{(coaFile.size / 1024).toFixed(1)} KB</div>
+              <div className="text-white/40 text-[9px]">
+                {(coaFile.size / 1024).toFixed(1)} KB
+              </div>
             </div>
           </div>
           <button
@@ -66,11 +89,23 @@ export default function COAUploadPanel({
         </div>
       ) : (
         <label className="block cursor-pointer">
-          <div className={cn(ds.colors.bg.primary, "border-2 border-dashed border-white/10 hover:border-white/20 rounded-2xl p-8 text-center transition-all group")}>
+          <div
+            className={cn(
+              ds.colors.bg.primary,
+              "border-2 border-dashed border-white/10 hover:border-white/20 rounded-2xl p-8 text-center transition-all group",
+            )}
+          >
             <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-white/20 transition-all">
-              <FileText size={20} strokeWidth={1.5} className="text-white/60 group-hover:text-white transition-colors" />
+              <FileText
+                size={20}
+                strokeWidth={1.5}
+                className="text-white/60 group-hover:text-white transition-colors"
+              />
             </div>
-            <div className="text-white text-[10px] uppercase tracking-[0.15em] font-black mb-1" style={{ fontWeight: 900 }}>
+            <div
+              className="text-white text-[10px] uppercase tracking-[0.15em] font-black mb-1"
+              style={{ fontWeight: 900 }}
+            >
               Upload Certificate of Analysis
             </div>
             <div className="text-white/40 text-[9px] uppercase tracking-wider">
@@ -88,9 +123,14 @@ export default function COAUploadPanel({
 
       <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
         <div className="flex gap-2">
-          <FileText size={14} strokeWidth={1.5} className="text-blue-400 flex-shrink-0 mt-0.5" />
+          <FileText
+            size={14}
+            strokeWidth={1.5}
+            className="text-blue-400 flex-shrink-0 mt-0.5"
+          />
           <div className="text-blue-300/90 text-[9px] leading-relaxed">
-            All products must include a Certificate of Analysis from an accredited laboratory. COAs must be less than 90 days old.
+            All products must include a Certificate of Analysis from an
+            accredited laboratory. COAs must be less than 90 days old.
           </div>
         </div>
       </div>

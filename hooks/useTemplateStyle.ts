@@ -3,7 +3,7 @@
  * Enables instant design updates without deployment
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface TemplateStyle {
   color_palette: {
@@ -53,46 +53,46 @@ interface TemplateStyle {
 // Default Wilson's template (fallback if DB fails)
 const DEFAULT_WILSONS_STYLE: TemplateStyle = {
   color_palette: {
-    background: '#000000',
-    card_bg: '#0a0a0a',
-    text_primary: '#ffffff',
-    text_secondary: 'rgba(255,255,255,0.6)',
-    border: 'rgba(255,255,255,0.05)',
-    border_hover: 'rgba(255,255,255,0.1)',
-    accent: '#ffffff',
+    background: "#000000",
+    card_bg: "#0a0a0a",
+    text_primary: "#ffffff",
+    text_secondary: "rgba(255,255,255,0.6)",
+    border: "rgba(255,255,255,0.05)",
+    border_hover: "rgba(255,255,255,0.1)",
+    accent: "#ffffff",
   },
   typography: {
-    product_card_name_mobile: '20px',
-    product_card_name_desktop: '12px',
+    product_card_name_mobile: "20px",
+    product_card_name_desktop: "12px",
     product_card_name_weight: 900,
-    product_card_name_tracking: '0.12em',
-    product_detail_name_mobile: '24px',
-    product_detail_name_desktop: '48px',
+    product_card_name_tracking: "0.12em",
+    product_detail_name_mobile: "24px",
+    product_detail_name_desktop: "48px",
     product_detail_name_weight: 900,
-    price_size: '14px',
+    price_size: "14px",
     price_weight: 500,
-    stock_size: '11px',
-    field_label_size: '10px',
-    field_value_size: '11px',
+    stock_size: "11px",
+    field_label_size: "10px",
+    field_value_size: "11px",
   },
   spacing_scale: {
-    card_padding_mobile: '12px',
-    card_padding_desktop: '16px',
-    section_padding_mobile: '12px',
-    section_padding_desktop: '48px',
-    gap_small: '8px',
-    gap_medium: '16px',
-    gap_large: '24px',
+    card_padding_mobile: "12px",
+    card_padding_desktop: "16px",
+    section_padding_mobile: "12px",
+    section_padding_desktop: "48px",
+    gap_small: "8px",
+    gap_medium: "16px",
+    gap_large: "24px",
   },
   border_radius: {
-    card: '16px',
-    button: '16px',
-    input: '12px',
+    card: "16px",
+    button: "16px",
+    input: "12px",
   },
   effects: {
-    shadow: '0 0 30px rgba(255,255,255,0.02)',
-    hover_lift: '-4px',
-    transition: '300ms',
+    shadow: "0 0 30px rgba(255,255,255,0.02)",
+    hover_lift: "-4px",
+    transition: "300ms",
   },
 };
 
@@ -121,7 +121,7 @@ export function useTemplateStyle(vendorId?: string): TemplateStyle {
         }
       } catch (error) {
         // Silently fail, use default
-        console.log('Using default template style');
+        console.log("Using default template style");
       }
     }
 
@@ -130,4 +130,3 @@ export function useTemplateStyle(vendorId?: string): TemplateStyle {
 
   return style;
 }
-

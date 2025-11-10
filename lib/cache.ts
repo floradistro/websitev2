@@ -99,9 +99,10 @@ export class LRUCache<T = any> {
       size: this.cache.size,
       maxSize: this.maxSize,
       totalHits: entries.reduce((sum, entry) => sum + entry.hits, 0),
-      avgHitsPerEntry: entries.length > 0
-        ? entries.reduce((sum, entry) => sum + entry.hits, 0) / entries.length
-        : 0,
+      avgHitsPerEntry:
+        entries.length > 0
+          ? entries.reduce((sum, entry) => sum + entry.hits, 0) / entries.length
+          : 0,
     };
   }
 }
@@ -113,7 +114,7 @@ export async function withCache<T>(
   cache: LRUCache<T>,
   key: string,
   fetchFn: () => Promise<T>,
-  ttl?: number
+  ttl?: number,
 ): Promise<T> {
   // Try cache first
   const cached = cache.get(key);
@@ -137,7 +138,8 @@ export const productCache = new LRUCache(2000, 120000); // 2000 entries, 2min TT
  */
 export const CacheKeys = {
   vendor: (vendorId: string) => `vendor:${vendorId}`,
-  vendorProducts: (vendorId: string, limit: number) => `vendor:${vendorId}:products:${limit}`,
+  vendorProducts: (vendorId: string, limit: number) =>
+    `vendor:${vendorId}:products:${limit}`,
   vendorLocations: (vendorId: string) => `vendor:${vendorId}:locations`,
   product: (productId: string) => `product:${productId}`,
   pricingConfig: (vendorId: string) => `pricing:${vendorId}`,
@@ -156,4 +158,3 @@ export const invalidateProduct = (productId: string, vendorId: string) => {
   productCache.delete(CacheKeys.product(productId));
   queryCache.invalidatePattern(vendorId); // Invalidate vendor products list
 };
-

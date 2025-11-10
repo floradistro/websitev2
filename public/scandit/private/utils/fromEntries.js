@@ -1,1 +1,1 @@
-export{a as fromEntries}from'../../chunks/chunk-RG272MAJ.js';
+export { a as fromEntries } from "../../chunks/chunk-RG272MAJ.js";

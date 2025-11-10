@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { motion, useAnimation } from 'framer-motion';
-import { useEffect } from 'react';
-import { useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { motion, useAnimation } from "framer-motion";
+import { useEffect } from "react";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
 
 export function ProductShowcase() {
   const ref = useRef(null);
@@ -14,42 +14,45 @@ export function ProductShowcase() {
       name: "POS System",
       description: "Complete point-of-sale",
       color: "from-blue-500/20 to-cyan-500/20",
-      delay: 0
+      delay: 0,
     },
     {
       name: "E-Commerce",
       description: "Online menu & ordering",
       color: "from-purple-500/20 to-pink-500/20",
-      delay: 0.1
+      delay: 0.1,
     },
     {
       name: "Inventory",
       description: "Multi-location tracking",
       color: "from-green-500/20 to-emerald-500/20",
-      delay: 0.2
+      delay: 0.2,
     },
     {
       name: "Wholesale",
       description: "B2B distribution",
       color: "from-orange-500/20 to-yellow-500/20",
-      delay: 0.3
+      delay: 0.3,
     },
     {
       name: "Compliance",
       description: "Lab results & COAs",
       color: "from-red-500/20 to-rose-500/20",
-      delay: 0.4
+      delay: 0.4,
     },
     {
       name: "Analytics",
       description: "Sales insights",
       color: "from-indigo-500/20 to-violet-500/20",
-      delay: 0.5
-    }
+      delay: 0.5,
+    },
   ];
 
   return (
-    <div ref={ref} className="relative py-20 sm:py-32 px-4 sm:px-6 overflow-hidden">
+    <div
+      ref={ref}
+      className="relative py-20 sm:py-32 px-4 sm:px-6 overflow-hidden"
+    >
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent pointer-events-none" />
 
@@ -61,7 +64,10 @@ export function ProductShowcase() {
           transition={{ duration: 0.8, ease: [0.21, 0.45, 0.27, 0.9] }}
           className="text-center mb-16 sm:mb-20"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight mb-4" style={{ fontWeight: 900 }}>
+          <h2
+            className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight mb-4"
+            style={{ fontWeight: 900 }}
+          >
             <span className="bg-gradient-to-b from-white to-white/80 bg-clip-text text-transparent">
               Complete Platform
             </span>
@@ -77,20 +83,24 @@ export function ProductShowcase() {
             <motion.div
               key={product.name}
               initial={{ opacity: 0, y: 40, rotateX: -10 }}
-              animate={isInView ? {
-                opacity: 1,
-                y: 0,
-                rotateX: 0,
-              } : { opacity: 0, y: 40, rotateX: -10 }}
+              animate={
+                isInView
+                  ? {
+                      opacity: 1,
+                      y: 0,
+                      rotateX: 0,
+                    }
+                  : { opacity: 0, y: 40, rotateX: -10 }
+              }
               transition={{
                 duration: 0.8,
                 delay: product.delay,
-                ease: [0.21, 0.45, 0.27, 0.9]
+                ease: [0.21, 0.45, 0.27, 0.9],
               }}
               whileHover={{
                 scale: 1.05,
                 rotateY: 5,
-                transition: { duration: 0.3 }
+                transition: { duration: 0.3 },
               }}
               className="group relative"
               style={{ perspective: "1000px" }}
@@ -106,7 +116,7 @@ export function ProductShowcase() {
                   transition={{
                     duration: 10,
                     repeat: Infinity,
-                    ease: "linear"
+                    ease: "linear",
                   }}
                 />
 
@@ -114,13 +124,13 @@ export function ProductShowcase() {
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
                   animate={{
-                    x: ['-100%', '100%'],
+                    x: ["-100%", "100%"],
                   }}
                   transition={{
                     duration: 2,
                     repeat: Infinity,
                     repeatDelay: 3,
-                    ease: "easeInOut"
+                    ease: "easeInOut",
                   }}
                 />
 
@@ -134,17 +144,20 @@ export function ProductShowcase() {
                     <div className="w-6 h-6 rounded-lg bg-white/10" />
                   </motion.div>
 
-                  <h3 className="text-xl font-black uppercase tracking-tight mb-2" style={{ fontWeight: 900 }}>
+                  <h3
+                    className="text-xl font-black uppercase tracking-tight mb-2"
+                    style={{ fontWeight: 900 }}
+                  >
                     {product.name}
                   </h3>
-                  <p className="text-sm text-white/60">
-                    {product.description}
-                  </p>
+                  <p className="text-sm text-white/60">{product.description}</p>
                 </div>
 
                 {/* Glow effect */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1/2 bg-gradient-to-b ${product.color} blur-2xl`} />
+                  <div
+                    className={`absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1/2 bg-gradient-to-b ${product.color} blur-2xl`}
+                  />
                 </div>
               </div>
             </motion.div>
@@ -154,8 +167,14 @@ export function ProductShowcase() {
         {/* Central Connection Animation */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
-          transition={{ duration: 1, delay: 0.6, ease: [0.21, 0.45, 0.27, 0.9] }}
+          animate={
+            isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }
+          }
+          transition={{
+            duration: 1,
+            delay: 0.6,
+            ease: [0.21, 0.45, 0.27, 0.9],
+          }}
           className="mt-16 sm:mt-20 text-center"
         >
           <div className="inline-flex items-center gap-3 bg-[#0a0a0a] border border-white/5 rounded-full px-6 py-3 group hover:border-white/10 transition-colors cursor-default">
@@ -168,10 +187,13 @@ export function ProductShowcase() {
               transition={{
                 duration: 2,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
               }}
             />
-            <span className="text-xs uppercase tracking-[0.12em] font-black text-white/60 group-hover:text-white/80 transition-colors" style={{ fontWeight: 900 }}>
+            <span
+              className="text-xs uppercase tracking-[0.12em] font-black text-white/60 group-hover:text-white/80 transition-colors"
+              style={{ fontWeight: 900 }}
+            >
               All Connected. Real-Time.
             </span>
           </div>

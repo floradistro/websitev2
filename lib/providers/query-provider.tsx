@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { useState } from 'react';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useState } from "react";
 
 /**
  * React Query Provider with optimized defaults
@@ -20,7 +20,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             // Retry failed requests 1 time
             retry: 1,
             // Don't refetch on window focus in development
-            refetchOnWindowFocus: process.env.NODE_ENV === 'production',
+            refetchOnWindowFocus: process.env.NODE_ENV === "production",
             // Refetch on reconnect
             refetchOnReconnect: true,
             // Show error boundary on error
@@ -33,13 +33,13 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
             throwOnError: false,
           },
         },
-      })
+      }),
   );
 
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {process.env.NODE_ENV === 'development' && (
+      {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools initialIsOpen={false} />
       )}
     </QueryClientProvider>

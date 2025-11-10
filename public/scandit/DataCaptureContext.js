@@ -1,1 +1,1 @@
-export{a as DataCaptureContext}from'./chunks/chunk-L3BBOGIY.js';
+export { a as DataCaptureContext } from "./chunks/chunk-L3BBOGIY.js";

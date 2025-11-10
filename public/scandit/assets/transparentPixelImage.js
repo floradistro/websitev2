@@ -1,1 +1,1 @@
-export{a as transparentPixelImage}from'../chunks/chunk-ZKROZLQ4.js';
+export { a as transparentPixelImage } from "../chunks/chunk-ZKROZLQ4.js";

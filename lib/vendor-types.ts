@@ -10,7 +10,7 @@ export interface VendorUser {
   email: string;
   store_tagline?: string;
   logo_url?: string;
-  vendor_type?: 'standard' | 'distributor' | 'both';
+  vendor_type?: "standard" | "distributor" | "both";
   wholesale_enabled?: boolean;
 }
 
@@ -22,7 +22,7 @@ export interface Product {
   price: number;
   cost_price?: number;
   description?: string;
-  status: 'approved' | 'pending' | 'rejected' | 'draft' | 'published';
+  status: "approved" | "pending" | "rejected" | "draft" | "published";
   total_stock: number;
   custom_fields?: any[];
   pricing_tiers?: any[];
@@ -64,7 +64,7 @@ export interface RecentProduct {
   id: string | number;
   name: string;
   image: string;
-  status: 'approved' | 'pending' | 'rejected';
+  status: "approved" | "pending" | "rejected";
   submittedDate: string;
 }
 
@@ -75,6 +75,10 @@ export interface LowStockItem {
   threshold: number;
 }
 
-export type ProductStatus = 'approved' | 'pending' | 'rejected' | 'draft' | 'published';
-export type StatusVariant = 'approved' | 'pending' | 'rejected' | 'draft';
-
+export type ProductStatus =
+  | "approved"
+  | "pending"
+  | "rejected"
+  | "draft"
+  | "published";
+export type StatusVariant = "approved" | "pending" | "rejected" | "draft";

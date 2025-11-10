@@ -1,1 +1,1 @@
-export{a as translations}from'./chunks/chunk-VJB527QZ.js';
+export { a as translations } from "./chunks/chunk-VJB527QZ.js";

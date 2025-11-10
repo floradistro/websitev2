@@ -4,7 +4,8 @@ export async function GET(request: NextRequest) {
   try {
     const clientKey = process.env.NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY;
     const apiLoginId = process.env.NEXT_PUBLIC_AUTHORIZENET_API_LOGIN_ID;
-    const environment = process.env.NEXT_PUBLIC_AUTHORIZENET_ENVIRONMENT || 'production';
+    const environment =
+      process.env.NEXT_PUBLIC_AUTHORIZENET_ENVIRONMENT || "production";
 
     if (!clientKey || !apiLoginId) {
       throw new Error("Authorize.net keys not configured");
@@ -15,14 +16,18 @@ export async function GET(request: NextRequest) {
       clientKey: clientKey,
       apiLoginId: apiLoginId,
       environment: environment,
-      useServerSide: false
+      useServerSide: false,
     });
   } catch (error: any) {
-    console.error("Error fetching Authorize.net keys:", error);
-    
-    return NextResponse.json({
-      success: false,
-      error: error.message
-    }, { status: 500 });
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error fetching Authorize.net keys:", error);
+    }
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 },
+    );
   }
 }

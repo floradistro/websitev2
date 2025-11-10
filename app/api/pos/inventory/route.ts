@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,19 +14,20 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
-    const locationId = searchParams.get('locationId');
+    const locationId = searchParams.get("locationId");
 
     if (!locationId) {
       return NextResponse.json(
-        { error: 'Missing locationId parameter' },
-        { status: 400 }
+        { error: "Missing locationId parameter" },
+        { status: 400 },
       );
     }
 
     // Fetch inventory with product details (simplified - no multi-table pricing joins)
     const { data: inventoryData, error: inventoryError } = await supabase
-      .from('inventory')
-      .select(`
+      .from("inventory")
+      .select(
+        `
         id,
         product_id,
         quantity,
@@ -54,17 +55,20 @@ export async function GET(request: NextRequest) {
             logo_url
           )
         )
-      `)
-      .eq('location_id', locationId)
-      .gt('quantity', 0);
+      `,
+      )
+      .eq("location_id", locationId)
+      .gt("quantity", 0);
 
     const inventoryResult = { data: inventoryData, error: inventoryError };
 
     if (inventoryResult.error) {
-      console.error('Error fetching inventory:', inventoryResult.error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching inventory:", inventoryResult.error);
+      }
       return NextResponse.json(
         { error: inventoryResult.error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -82,19 +86,19 @@ export async function GET(request: NextRequest) {
             price: parseFloat(tier.price),
             label: tier.label,
             break_id: tier.id,
-            sort_order: tier.sort_order || 0
+            sort_order: tier.sort_order || 0,
           }))
           .sort((a: any, b: any) => a.sort_order - b.sort_order);
 
         // If no tiers, fall back to single price
         if (pricingTiers.length === 0 && inv.products.price) {
           pricingTiers.push({
-            break_id: 'single',
-            label: 'Single Price',
+            break_id: "single",
+            label: "Single Price",
             qty: 1,
-            unit: '',
+            unit: "",
             price: parseFloat(inv.products.price),
-            sort_order: 1
+            sort_order: 1,
           });
         }
 
@@ -113,11 +117,13 @@ export async function GET(request: NextRequest) {
         // custom_fields is an object like { "strain_type": "Indica", "terpenes": "..." }
         // Convert to array of { label, value, type } objects
         const customFields = inv.products.custom_fields || {};
-        const productFields = Object.entries(customFields).map(([key, value]) => ({
-          label: key,
-          value: String(value || ''),
-          type: typeof value === 'number' ? 'number' : 'text'
-        }));
+        const productFields = Object.entries(customFields).map(
+          ([key, value]) => ({
+            label: key,
+            value: String(value || ""),
+            type: typeof value === "number" ? "number" : "text",
+          }),
+        );
 
         // Get vendor info
         const vendor = inv.products.vendors || null;
@@ -134,22 +140,25 @@ export async function GET(request: NextRequest) {
           inventory_quantity: inv.available_quantity,
           inventory_id: inv.id,
           pricing_tiers: pricingTiers,
-          vendor: vendor ? {
-            id: vendor.id,
-            store_name: vendor.store_name,
-            logo_url: vendor.logo_url
-          } : null,
+          vendor: vendor
+            ? {
+                id: vendor.id,
+                store_name: vendor.store_name,
+                logo_url: vendor.logo_url,
+              }
+            : null,
         };
       })
       .sort((a, b) => a.name.localeCompare(b.name));
 
     return NextResponse.json({ products });
   } catch (error: any) {
-    console.error('Error in inventory endpoint:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in inventory endpoint:", error);
+    }
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
+      { error: "Internal server error", details: error.message },
+      { status: 500 },
     );
   }
 }
-

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 /**
  * Submit wholesale application
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
     const body = await request.json();
-    
+
     const {
       customerId,
       businessName,
@@ -21,38 +21,44 @@ export async function POST(request: NextRequest) {
       resaleCertificateUrl,
       contactPerson,
       contactPhone,
-      contactEmail
+      contactEmail,
     } = body;
-    
+
     // Validate required fields
-    if (!customerId || !businessName || !licenseNumber || !licenseExpiry || !taxId) {
+    if (
+      !customerId ||
+      !businessName ||
+      !licenseNumber ||
+      !licenseExpiry ||
+      !taxId
+    ) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+        { error: "Missing required fields" },
+        { status: 400 },
       );
     }
-    
+
     // Check if customer already has an application
     const { data: existing, error: checkError } = await supabase
-      .from('wholesale_applications')
-      .select('id, status')
-      .eq('customer_id', customerId)
-      .in('status', ['pending', 'under_review', 'approved'])
+      .from("wholesale_applications")
+      .select("id, status")
+      .eq("customer_id", customerId)
+      .in("status", ["pending", "under_review", "approved"])
       .single();
-    
+
     if (existing) {
       return NextResponse.json(
-        { 
-          error: 'Application already exists', 
-          status: existing.status 
+        {
+          error: "Application already exists",
+          status: existing.status,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     // Create new application
     const { data: application, error: insertError } = await supabase
-      .from('wholesale_applications')
+      .from("wholesale_applications")
       .insert({
         customer_id: customerId,
         business_name: businessName,
@@ -66,35 +72,38 @@ export async function POST(request: NextRequest) {
         contact_person: contactPerson,
         contact_phone: contactPhone,
         contact_email: contactEmail,
-        status: 'pending'
+        status: "pending",
       })
       .select()
       .single();
-    
+
     if (insertError) {
-      console.error('Insert application error:', insertError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Insert application error:", insertError);
+      }
       return NextResponse.json(
-        { error: 'Failed to create application', details: insertError.message },
-        { status: 500 }
+        { error: "Failed to create application", details: insertError.message },
+        { status: 500 },
       );
     }
-    
+
     // Update customer application status
     await supabase
-      .from('customers')
-      .update({ wholesale_application_status: 'pending' })
-      .eq('id', customerId);
-    
+      .from("customers")
+      .update({ wholesale_application_status: "pending" })
+      .eq("id", customerId);
+
     return NextResponse.json({
       success: true,
-      application
+      application,
     });
-    
   } catch (error: any) {
-    console.error('Submit wholesale application error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Submit wholesale application error:", error);
+    }
     return NextResponse.json(
-      { error: 'Failed to submit application', details: error.message },
-      { status: 500 }
+      { error: "Failed to submit application", details: error.message },
+      { status: 500 },
     );
   }
 }
@@ -106,13 +115,14 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
-    
-    const status = searchParams.get('status');
-    const customerId = searchParams.get('customerId');
-    
+
+    const status = searchParams.get("status");
+    const customerId = searchParams.get("customerId");
+
     let query = supabase
-      .from('wholesale_applications')
-      .select(`
+      .from("wholesale_applications")
+      .select(
+        `
         *,
         customer:customers(
           id,
@@ -120,35 +130,38 @@ export async function GET(request: NextRequest) {
           first_name,
           last_name
         )
-      `)
-      .order('created_at', { ascending: false });
-    
+      `,
+      )
+      .order("created_at", { ascending: false });
+
     if (status) {
-      query = query.eq('status', status);
+      query = query.eq("status", status);
     }
-    
+
     if (customerId) {
-      query = query.eq('customer_id', customerId);
+      query = query.eq("customer_id", customerId);
     }
-    
+
     const { data: applications, error } = await query;
-    
+
     if (error) {
-      console.error('Get applications error:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Get applications error:", error);
+      }
       return NextResponse.json(
-        { error: 'Failed to get applications', details: error.message },
-        { status: 500 }
+        { error: "Failed to get applications", details: error.message },
+        { status: 500 },
       );
     }
-    
+
     return NextResponse.json({ applications });
-    
   } catch (error: any) {
-    console.error('Get wholesale applications error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Get wholesale applications error:", error);
+    }
     return NextResponse.json(
-      { error: 'Failed to get applications', details: error.message },
-      { status: 500 }
+      { error: "Failed to get applications", details: error.message },
+      { status: 500 },
     );
   }
 }
-

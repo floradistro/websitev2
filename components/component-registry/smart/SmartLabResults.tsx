@@ -5,17 +5,24 @@
  * Lab results page with COA bucket integration
  */
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { 
-  SmartComponentWrapper, 
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  SmartComponentWrapper,
   SmartComponentBaseProps,
   SmartTypography,
   SmartContainers,
-  useScrollAnimation
-} from '@/lib/smart-component-base';
-import { FlaskConical, Download, FileCheck, Calendar, CheckCircle, Shield } from 'lucide-react';
-import Image from 'next/image';
+  useScrollAnimation,
+} from "@/lib/smart-component-base";
+import {
+  FlaskConical,
+  Download,
+  FileCheck,
+  Calendar,
+  CheckCircle,
+  Shield,
+} from "lucide-react";
+import Image from "next/image";
 
 export interface SmartLabResultsProps extends SmartComponentBaseProps {
   headline?: string;
@@ -27,34 +34,34 @@ export interface SmartLabResultsProps extends SmartComponentBaseProps {
 const testingFeatures = [
   {
     icon: CheckCircle,
-    title: 'CANNABINOID PROFILE',
-    description: 'THC, CBD, and minor cannabinoid percentages'
+    title: "CANNABINOID PROFILE",
+    description: "THC, CBD, and minor cannabinoid percentages",
   },
   {
     icon: CheckCircle,
-    title: 'TERPENE ANALYSIS',
-    description: 'Complete terpene breakdown'
+    title: "TERPENE ANALYSIS",
+    description: "Complete terpene breakdown",
   },
   {
     icon: CheckCircle,
-    title: 'PESTICIDE SCREENING',
-    description: 'Zero pesticide contamination'
+    title: "PESTICIDE SCREENING",
+    description: "Zero pesticide contamination",
   },
   {
     icon: CheckCircle,
-    title: 'HEAVY METALS',
-    description: 'Lead, arsenic, mercury screening'
+    title: "HEAVY METALS",
+    description: "Lead, arsenic, mercury screening",
   },
   {
     icon: CheckCircle,
-    title: 'MICROBIAL TESTING',
-    description: 'Bacteria and mold analysis'
+    title: "MICROBIAL TESTING",
+    description: "Bacteria and mold analysis",
   },
   {
     icon: CheckCircle,
-    title: 'RESIDUAL SOLVENTS',
-    description: 'For concentrate products'
-  }
+    title: "RESIDUAL SOLVENTS",
+    description: "For concentrate products",
+  },
 ];
 
 export function SmartLabResults({
@@ -65,13 +72,13 @@ export function SmartLabResults({
   subheadline = "Third-party tested. Full transparency.",
   coaFiles = [],
   animate = true,
-  className = ''
+  className = "",
 }: SmartLabResultsProps) {
   const { ref, inView } = useScrollAnimation();
   const loading = false; // Data passed as props from server
 
   return (
-    <SmartComponentWrapper 
+    <SmartComponentWrapper
       animate={false}
       loading={loading}
       componentName="Lab Results"
@@ -91,21 +98,28 @@ export function SmartLabResults({
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.2,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="mb-12 flex justify-center"
               >
                 <div className="relative w-32 h-32 md:w-40 md:h-40">
-                  <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-blue-500/20 to-green-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '3s' }} />
-                  <Image 
-                    src={vendorLogo} 
-                    alt={vendorName || 'Vendor'}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-blue-500/20 to-green-500/20 rounded-full blur-3xl animate-pulse"
+                    style={{ animationDuration: "3s" }}
+                  />
+                  <Image
+                    src={vendorLogo}
+                    alt={vendorName || "Vendor"}
                     fill
                     className="relative object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-500"
                   />
                 </div>
               </motion.div>
             )}
-            
+
             <SmartTypography.Headline className="mb-6">
               {headline}
             </SmartTypography.Headline>
@@ -126,43 +140,50 @@ export function SmartLabResults({
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             >
               <SmartContainers.Card className="p-8 sm:p-12">
-                <h3 
+                <h3
                   className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white mb-6"
                   style={{ fontWeight: 900 }}
                 >
                   OUR TESTING COMMITMENT
                 </h3>
                 <p className="text-base sm:text-lg text-white/60 leading-relaxed mb-8">
-                  Every product sold by {vendorName} undergoes rigorous third-party laboratory testing. 
-                  We don't just meet industry standards—we exceed them.
+                  Every product sold by {vendorName} undergoes rigorous
+                  third-party laboratory testing. We don't just meet industry
+                  standards—we exceed them.
                 </p>
-                
+
                 <div className="h-[1px] bg-white/5 my-8" />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {testingFeatures.map((feature, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
                       animate={inView ? { opacity: 1, x: 0 } : {}}
-                      transition={{ 
-                        duration: 0.6, 
-                        delay: 0.1 + index * 0.05, 
-                        ease: [0.22, 1, 0.36, 1] 
+                      transition={{
+                        duration: 0.6,
+                        delay: 0.1 + index * 0.05,
+                        ease: [0.22, 1, 0.36, 1],
                       }}
                       className="flex items-start gap-3"
                     >
                       <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center mt-0.5">
-                        <feature.icon size={14} className="text-white" strokeWidth={3} />
+                        <feature.icon
+                          size={14}
+                          className="text-white"
+                          strokeWidth={3}
+                        />
                       </div>
                       <div>
-                        <h4 
+                        <h4
                           className="text-sm font-black uppercase tracking-tight text-white mb-1"
                           style={{ fontWeight: 900 }}
                         >
                           {feature.title}
                         </h4>
-                        <p className="text-xs text-white/60">{feature.description}</p>
+                        <p className="text-xs text-white/60">
+                          {feature.description}
+                        </p>
                       </div>
                     </motion.div>
                   ))}
@@ -189,20 +210,23 @@ export function SmartLabResults({
           {coaFiles && coaFiles.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {coaFiles.map((file: any, index: number) => {
-                const displayName = file.name
-                  ?.replace(/\.[^/.]+$/, '') 
-                  ?.replace(/_/g, ' ') 
-                  ?.replace(/^\d+[-_]/, '') || 'Lab Result';
-                
-                const fileDate = file.created_at 
-                  ? new Date(file.created_at).toLocaleDateString('en-US', { 
-                      year: 'numeric', 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })
-                  : 'N/A';
+                const displayName =
+                  file.name
+                    ?.replace(/\.[^/.]+$/, "")
+                    ?.replace(/_/g, " ")
+                    ?.replace(/^\d+[-_]/, "") || "Lab Result";
 
-                const fileUrl = file.url || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/vendor-coas/${vendorId}/${file.name}`;
+                const fileDate = file.created_at
+                  ? new Date(file.created_at).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : "N/A";
+
+                const fileUrl =
+                  file.url ||
+                  `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/vendor-coas/${vendorId}/${file.name}`;
 
                 return (
                   <motion.a
@@ -212,20 +236,24 @@ export function SmartLabResults({
                     rel="noopener noreferrer"
                     initial={{ opacity: 0, y: 20 }}
                     animate={inView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ 
-                      duration: 0.6, 
-                      delay: index * 0.05, 
-                      ease: [0.22, 1, 0.36, 1] 
+                    transition={{
+                      duration: 0.6,
+                      delay: index * 0.05,
+                      ease: [0.22, 1, 0.36, 1],
                     }}
                     className="group"
                   >
                     <SmartContainers.Card className="p-6 h-full hover:-translate-y-1 transition-all">
                       <div className="flex items-start gap-4 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 transition-all">
-                          <FileCheck size={20} className="text-white" strokeWidth={2.5} />
+                          <FileCheck
+                            size={20}
+                            className="text-white"
+                            strokeWidth={2.5}
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 
+                          <h4
                             className="text-sm font-black uppercase tracking-tight text-white mb-2 truncate group-hover:text-white/90 transition-colors"
                             style={{ fontWeight: 900 }}
                           >
@@ -240,7 +268,9 @@ export function SmartLabResults({
 
                       <div className="flex items-center gap-2 text-xs text-white/60 group-hover:text-white group-hover:gap-3 transition-all">
                         <Download size={14} strokeWidth={2.5} />
-                        <span className="font-black uppercase tracking-wide">DOWNLOAD PDF</span>
+                        <span className="font-black uppercase tracking-wide">
+                          DOWNLOAD PDF
+                        </span>
                       </div>
                     </SmartContainers.Card>
                   </motion.a>
@@ -254,15 +284,19 @@ export function SmartLabResults({
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             >
               <SmartContainers.Card className="p-12 text-center">
-                <FlaskConical className="w-16 h-16 text-white/40 mx-auto mb-6" strokeWidth={1.5} />
-                <h3 
+                <FlaskConical
+                  className="w-16 h-16 text-white/40 mx-auto mb-6"
+                  strokeWidth={1.5}
+                />
+                <h3
                   className="text-xl font-black uppercase tracking-tight text-white mb-3"
                   style={{ fontWeight: 900 }}
                 >
                   LAB RESULTS COMING SOON
                 </h3>
                 <p className="text-sm text-white/60">
-                  We're currently uploading our complete library of lab test results. Check back soon.
+                  We're currently uploading our complete library of lab test
+                  results. Check back soon.
                 </p>
               </SmartContainers.Card>
             </motion.div>
@@ -285,15 +319,16 @@ export function SmartLabResults({
                   <Shield size={24} className="text-white" strokeWidth={2.5} />
                 </div>
                 <div className="flex-1">
-                  <h3 
+                  <h3
                     className="text-xl font-black uppercase tracking-tight text-white mb-3"
                     style={{ fontWeight: 900 }}
                   >
                     100% COMPLIANT
                   </h3>
                   <p className="text-sm text-white/60 leading-relaxed mb-4">
-                    All products contain less than 0.3% Delta-9 THC and comply with the 2018 Farm Bill. 
-                    Lab results are updated regularly and available for every product we sell.
+                    All products contain less than 0.3% Delta-9 THC and comply
+                    with the 2018 Farm Bill. Lab results are updated regularly
+                    and available for every product we sell.
                   </p>
                   <p className="text-[10px] text-white/40 uppercase tracking-wider">
                     Testing performed by ISO-certified third-party laboratories
@@ -315,7 +350,7 @@ export function SmartLabResults({
             className="max-w-2xl mx-auto"
           >
             <SmartContainers.Card className="p-8 sm:p-12 text-center">
-              <h3 
+              <h3
                 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white mb-4"
                 style={{ fontWeight: 900 }}
               >
@@ -330,8 +365,18 @@ export function SmartLabResults({
                 style={{ fontWeight: 900 }}
               >
                 CONTACT US
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
                 </svg>
               </a>
             </SmartContainers.Card>
@@ -341,4 +386,3 @@ export function SmartLabResults({
     </SmartComponentWrapper>
   );
 }
-

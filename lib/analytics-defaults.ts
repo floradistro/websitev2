@@ -3,7 +3,11 @@
  * Provides safe default values to prevent undefined errors
  */
 
-import type { VendorAnalyticsData, MarketingAnalyticsData, TrendData } from '@/types/analytics';
+import type {
+  VendorAnalyticsData,
+  MarketingAnalyticsData,
+  TrendData,
+} from "@/types/analytics";
 
 /**
  * Create default trend data
@@ -13,7 +17,7 @@ export function createDefaultTrend(): TrendData {
     value: 0,
     change: 0,
     changePercent: 0,
-    direction: 'neutral',
+    direction: "neutral",
   };
 }
 
@@ -101,7 +105,7 @@ export function createDefaultMarketingAnalytics(): MarketingAnalyticsData {
  */
 export function mergeWithDefaults<T extends object>(
   data: Partial<T> | null | undefined,
-  defaults: T
+  defaults: T,
 ): T {
   if (!data) return defaults;
 

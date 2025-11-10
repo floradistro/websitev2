@@ -1,8 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Monitor, MapPin, Target, Sparkles, ChevronRight, ChevronLeft } from 'lucide-react';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  X,
+  Monitor,
+  MapPin,
+  Target,
+  Sparkles,
+  ChevronRight,
+  ChevronLeft,
+} from "lucide-react";
 
 interface DisplayConfigWizardProps {
   isOpen: boolean;
@@ -37,29 +45,45 @@ const SCREEN_SIZES = [
   { label: '55"', width: 47.9, height: 27 },
   { label: '65"', width: 56.7, height: 31.9 },
   { label: '75"', width: 65.4, height: 36.8 },
-  { label: 'Custom', width: 0, height: 0 },
+  { label: "Custom", width: 0, height: 0 },
 ];
 
 const RESOLUTIONS = [
-  { label: 'Full HD', width: 1920, height: 1080 },
-  { label: '4K UHD', width: 3840, height: 2160 },
+  { label: "Full HD", width: 1920, height: 1080 },
+  { label: "4K UHD", width: 3840, height: 2160 },
 ];
 
 const LOCATION_TYPES = [
-  { value: 'checkout', label: 'Checkout Counter', description: 'Quick glance while paying' },
-  { value: 'entrance', label: 'Store Entrance', description: 'First impression, quick scan' },
-  { value: 'waiting', label: 'Waiting Area', description: 'Longer viewing time' },
-  { value: 'wall_menu', label: 'Wall Menu', description: 'Main product browsing' },
-  { value: 'other', label: 'Other Location', description: 'Custom placement' },
+  {
+    value: "checkout",
+    label: "Checkout Counter",
+    description: "Quick glance while paying",
+  },
+  {
+    value: "entrance",
+    label: "Store Entrance",
+    description: "First impression, quick scan",
+  },
+  {
+    value: "waiting",
+    label: "Waiting Area",
+    description: "Longer viewing time",
+  },
+  {
+    value: "wall_menu",
+    label: "Wall Menu",
+    description: "Main product browsing",
+  },
+  { value: "other", label: "Other Location", description: "Custom placement" },
 ];
 
 const BUSINESS_GOALS = [
-  'Increase high-margin sales',
-  'Educate customers',
-  'Clear old inventory',
-  'Promote new products',
-  'Build brand awareness',
-  'Speed up checkout',
+  "Increase high-margin sales",
+  "Educate customers",
+  "Clear old inventory",
+  "Promote new products",
+  "Build brand awareness",
+  "Speed up checkout",
 ];
 
 export default function DisplayConfigWizard({
@@ -80,14 +104,14 @@ export default function DisplayConfigWizard({
     resolutionWidth: 1920,
     resolutionHeight: 1080,
     viewingDistanceFeet: 10,
-    locationType: 'wall_menu',
-    ambientLighting: 'medium',
+    locationType: "wall_menu",
+    ambientLighting: "medium",
     avgDwellTimeSeconds: 30,
-    customerBehavior: '',
-    adjacentTo: '',
-    storeType: 'dispensary',
-    brandVibe: 'casual',
-    targetAudience: '',
+    customerBehavior: "",
+    adjacentTo: "",
+    storeType: "dispensary",
+    brandVibe: "casual",
+    targetAudience: "",
     businessGoals: [],
   });
 
@@ -95,7 +119,7 @@ export default function DisplayConfigWizard({
     setProfile((prev) => ({ ...prev, ...updates }));
   };
 
-  const selectScreenSize = (size: typeof SCREEN_SIZES[0]) => {
+  const selectScreenSize = (size: (typeof SCREEN_SIZES)[0]) => {
     if (size.width > 0) {
       updateProfile({
         screenWidthInches: size.width,
@@ -118,9 +142,9 @@ export default function DisplayConfigWizard({
 
     try {
       // Save profile
-      const response = await fetch('/api/ai/display-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/ai/display-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           deviceId,
           vendorId,
@@ -131,21 +155,25 @@ export default function DisplayConfigWizard({
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to save profile');
+        throw new Error(data.error || "Failed to save profile");
       }
 
       onComplete(data.profileId);
     } catch (err: any) {
-      console.error('Error saving profile:', err);
-      setError(err.message || 'Failed to save profile');
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error saving profile:", err);
+      }
+      setError(err.message || "Failed to save profile");
     } finally {
       setSaving(false);
     }
   };
 
   const canProgress = () => {
-    if (step === 1) return profile.screenWidthInches > 0 && profile.screenHeightInches > 0;
-    if (step === 2) return profile.viewingDistanceFeet > 0 && profile.locationType;
+    if (step === 1)
+      return profile.screenWidthInches > 0 && profile.screenHeightInches > 0;
+    if (step === 2)
+      return profile.viewingDistanceFeet > 0 && profile.locationType;
     if (step === 3) return true;
     return true;
   };
@@ -171,7 +199,10 @@ export default function DisplayConfigWizard({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-black text-white" style={{ fontWeight: 900 }}>
+              <h2
+                className="text-2xl font-black text-white"
+                style={{ fontWeight: 900 }}
+              >
                 Configure Display
               </h2>
               <p className="text-white/40 text-sm mt-1">{deviceName}</p>
@@ -190,7 +221,7 @@ export default function DisplayConfigWizard({
               <div
                 key={s}
                 className={`flex-1 h-1 rounded-full transition-all ${
-                  s <= step ? 'bg-white' : 'bg-white/20'
+                  s <= step ? "bg-white" : "bg-white/20"
                 }`}
               />
             ))}
@@ -211,8 +242,12 @@ export default function DisplayConfigWizard({
                     <Monitor size={20} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">Physical Specs</h3>
-                    <p className="text-white/40 text-sm">Tell us about your display</p>
+                    <h3 className="text-lg font-bold text-white">
+                      Physical Specs
+                    </h3>
+                    <p className="text-white/40 text-sm">
+                      Tell us about your display
+                    </p>
                   </div>
                 </div>
 
@@ -229,8 +264,8 @@ export default function DisplayConfigWizard({
                         onClick={() => selectScreenSize(size)}
                         className={`p-3 rounded-xl border-2 transition-all text-sm font-bold ${
                           profile.screenWidthInches === size.width
-                            ? 'border-white bg-white/10 text-white'
-                            : 'border-white/10 text-white/60 hover:border-white/30'
+                            ? "border-white bg-white/10 text-white"
+                            : "border-white/10 text-white/60 hover:border-white/30"
                         }`}
                       >
                         {size.label}
@@ -243,23 +278,31 @@ export default function DisplayConfigWizard({
                 {profile.screenWidthInches === 0 && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-white/60 text-sm mb-2">Width (inches)</label>
+                      <label className="block text-white/60 text-sm mb-2">
+                        Width (inches)
+                      </label>
                       <input
                         type="number"
-                        value={profile.screenWidthInches || ''}
+                        value={profile.screenWidthInches || ""}
                         onChange={(e) =>
-                          updateProfile({ screenWidthInches: parseFloat(e.target.value) })
+                          updateProfile({
+                            screenWidthInches: parseFloat(e.target.value),
+                          })
                         }
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-white/60 text-sm mb-2">Height (inches)</label>
+                      <label className="block text-white/60 text-sm mb-2">
+                        Height (inches)
+                      </label>
                       <input
                         type="number"
-                        value={profile.screenHeightInches || ''}
+                        value={profile.screenHeightInches || ""}
                         onChange={(e) =>
-                          updateProfile({ screenHeightInches: parseFloat(e.target.value) })
+                          updateProfile({
+                            screenHeightInches: parseFloat(e.target.value),
+                          })
                         }
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
                       />
@@ -269,7 +312,9 @@ export default function DisplayConfigWizard({
 
                 {/* Resolution */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-3">Resolution</label>
+                  <label className="block text-white text-sm font-medium mb-3">
+                    Resolution
+                  </label>
                   <div className="grid grid-cols-2 gap-3">
                     {RESOLUTIONS.map((res) => (
                       <button
@@ -283,11 +328,13 @@ export default function DisplayConfigWizard({
                         }
                         className={`p-4 rounded-xl border-2 transition-all ${
                           profile.resolutionWidth === res.width
-                            ? 'border-white bg-white/10'
-                            : 'border-white/10 hover:border-white/30'
+                            ? "border-white bg-white/10"
+                            : "border-white/10 hover:border-white/30"
                         }`}
                       >
-                        <div className="text-white font-bold mb-1">{res.label}</div>
+                        <div className="text-white font-bold mb-1">
+                          {res.label}
+                        </div>
                         <div className="text-white/40 text-xs">
                           {res.width} × {res.height}
                         </div>
@@ -311,8 +358,12 @@ export default function DisplayConfigWizard({
                     <MapPin size={20} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">Context & Location</h3>
-                    <p className="text-white/40 text-sm">Where and how customers see it</p>
+                    <h3 className="text-lg font-bold text-white">
+                      Context & Location
+                    </h3>
+                    <p className="text-white/40 text-sm">
+                      Where and how customers see it
+                    </p>
                   </div>
                 </div>
 
@@ -327,7 +378,9 @@ export default function DisplayConfigWizard({
                     max="30"
                     value={profile.viewingDistanceFeet}
                     onChange={(e) =>
-                      updateProfile({ viewingDistanceFeet: parseFloat(e.target.value) })
+                      updateProfile({
+                        viewingDistanceFeet: parseFloat(e.target.value),
+                      })
                     }
                     className="w-full"
                   />
@@ -350,15 +403,21 @@ export default function DisplayConfigWizard({
                       <button
                         key={loc.value}
                         type="button"
-                        onClick={() => updateProfile({ locationType: loc.value })}
+                        onClick={() =>
+                          updateProfile({ locationType: loc.value })
+                        }
                         className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
                           profile.locationType === loc.value
-                            ? 'border-white bg-white/10'
-                            : 'border-white/10 hover:border-white/30'
+                            ? "border-white bg-white/10"
+                            : "border-white/10 hover:border-white/30"
                         }`}
                       >
-                        <div className="text-white font-bold mb-1">{loc.label}</div>
-                        <div className="text-white/40 text-xs">{loc.description}</div>
+                        <div className="text-white font-bold mb-1">
+                          {loc.label}
+                        </div>
+                        <div className="text-white/40 text-xs">
+                          {loc.description}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -370,15 +429,17 @@ export default function DisplayConfigWizard({
                     Ambient Lighting
                   </label>
                   <div className="grid grid-cols-3 gap-3">
-                    {['bright', 'medium', 'dim'].map((lighting) => (
+                    {["bright", "medium", "dim"].map((lighting) => (
                       <button
                         key={lighting}
                         type="button"
-                        onClick={() => updateProfile({ ambientLighting: lighting })}
+                        onClick={() =>
+                          updateProfile({ ambientLighting: lighting })
+                        }
                         className={`p-3 rounded-xl border-2 transition-all capitalize ${
                           profile.ambientLighting === lighting
-                            ? 'border-white bg-white/10 text-white'
-                            : 'border-white/10 text-white/60 hover:border-white/30'
+                            ? "border-white bg-white/10 text-white"
+                            : "border-white/10 text-white/60 hover:border-white/30"
                         }`}
                       >
                         {lighting}
@@ -398,7 +459,9 @@ export default function DisplayConfigWizard({
                     max="120"
                     value={profile.avgDwellTimeSeconds}
                     onChange={(e) =>
-                      updateProfile({ avgDwellTimeSeconds: parseFloat(e.target.value) })
+                      updateProfile({
+                        avgDwellTimeSeconds: parseFloat(e.target.value),
+                      })
                     }
                     className="w-full"
                   />
@@ -426,29 +489,37 @@ export default function DisplayConfigWizard({
                     <Target size={20} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">Business Goals</h3>
-                    <p className="text-white/40 text-sm">What do you want to achieve?</p>
+                    <h3 className="text-lg font-bold text-white">
+                      Business Goals
+                    </h3>
+                    <p className="text-white/40 text-sm">
+                      What do you want to achieve?
+                    </p>
                   </div>
                 </div>
 
                 {/* Brand Vibe */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-3">Brand Vibe</label>
+                  <label className="block text-white text-sm font-medium mb-3">
+                    Brand Vibe
+                  </label>
                   <div className="grid grid-cols-2 gap-3">
-                    {['premium', 'casual', 'medical', 'recreational'].map((vibe) => (
-                      <button
-                        key={vibe}
-                        type="button"
-                        onClick={() => updateProfile({ brandVibe: vibe })}
-                        className={`p-3 rounded-xl border-2 transition-all capitalize ${
-                          profile.brandVibe === vibe
-                            ? 'border-white bg-white/10 text-white'
-                            : 'border-white/10 text-white/60 hover:border-white/30'
-                        }`}
-                      >
-                        {vibe}
-                      </button>
-                    ))}
+                    {["premium", "casual", "medical", "recreational"].map(
+                      (vibe) => (
+                        <button
+                          key={vibe}
+                          type="button"
+                          onClick={() => updateProfile({ brandVibe: vibe })}
+                          className={`p-3 rounded-xl border-2 transition-all capitalize ${
+                            profile.brandVibe === vibe
+                              ? "border-white bg-white/10 text-white"
+                              : "border-white/10 text-white/60 hover:border-white/30"
+                          }`}
+                        >
+                          {vibe}
+                        </button>
+                      ),
+                    )}
                   </div>
                 </div>
 
@@ -460,7 +531,9 @@ export default function DisplayConfigWizard({
                   <input
                     type="text"
                     value={profile.targetAudience}
-                    onChange={(e) => updateProfile({ targetAudience: e.target.value })}
+                    onChange={(e) =>
+                      updateProfile({ targetAudience: e.target.value })
+                    }
                     placeholder="e.g., medical patients, young professionals"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30"
                   />
@@ -479,8 +552,8 @@ export default function DisplayConfigWizard({
                         onClick={() => toggleBusinessGoal(goal)}
                         className={`w-full p-3 rounded-xl border-2 transition-all text-left ${
                           profile.businessGoals.includes(goal)
-                            ? 'border-white bg-white/10 text-white'
-                            : 'border-white/10 text-white/60 hover:border-white/30'
+                            ? "border-white bg-white/10 text-white"
+                            : "border-white/10 text-white/60 hover:border-white/30"
                         }`}
                       >
                         {goal}
@@ -530,7 +603,7 @@ export default function DisplayConfigWizard({
                 className="flex items-center gap-2 px-6 py-3 bg-white hover:bg-white/90 text-black rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg shadow-white/10"
               >
                 {saving ? (
-                  'Saving...'
+                  "Saving..."
                 ) : (
                   <>
                     <Sparkles size={18} />

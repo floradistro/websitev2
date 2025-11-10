@@ -1,39 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { readFileSync } from "fs";
+import { join } from "path";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
     const { migrationName } = await request.json();
 
-    if (migrationName !== '001_enterprise_session_management') {
+    if (migrationName !== "001_enterprise_session_management") {
       return NextResponse.json(
-        { error: 'Invalid migration name' },
-        { status: 400 }
+        { error: "Invalid migration name" },
+        { status: 400 },
       );
     }
 
-    console.log('🚀 Running enterprise session management migration...');
-
     // Step 1: Create unique index
-    console.log('📌 Step 1: Creating unique constraint...');
-    const { error: indexError } = await supabase.rpc('exec_sql', {
+
+    const { error: indexError } = await supabase.rpc("exec_sql", {
       query: `
         CREATE UNIQUE INDEX IF NOT EXISTS idx_one_open_session_per_register
         ON pos_sessions (register_id)
         WHERE status = 'open';
-      `
+      `,
     });
 
     // If exec_sql doesn't exist, try direct execution via query
-    if (indexError && indexError.message?.includes('exec_sql')) {
-      console.log('   Using alternative method...');
-
+    if (indexError && indexError.message?.includes("exec_sql")) {
       // Create the function using raw SQL
       const createFunctionSQL = `
         CREATE OR REPLACE FUNCTION get_or_create_session(
@@ -127,7 +123,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         success: false,
-        message: 'Manual migration required',
+        message: "Manual migration required",
         instructions: `
           Please run this SQL in Supabase Dashboard → SQL Editor:
 
@@ -139,27 +135,26 @@ export async function POST(request: NextRequest) {
           -- Step 2: Atomic function
           ${createFunctionSQL}
         `,
-        sql: createFunctionSQL
+        sql: createFunctionSQL,
       });
     }
 
-    console.log('   ✅ Unique constraint created');
-
     return NextResponse.json({
       success: true,
-      message: 'Migration completed successfully',
+      message: "Migration completed successfully",
       steps: [
-        'Created unique constraint: idx_one_open_session_per_register',
-        'Created atomic function: get_or_create_session',
-        'Duplicate sessions now physically impossible'
-      ]
+        "Created unique constraint: idx_one_open_session_per_register",
+        "Created atomic function: get_or_create_session",
+        "Duplicate sessions now physically impossible",
+      ],
     });
-
   } catch (error: any) {
-    console.error('❌ Migration error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("❌ Migration error:", error);
+    }
     return NextResponse.json(
-      { error: 'Migration failed', details: error.message },
-      { status: 500 }
+      { error: "Migration failed", details: error.message },
+      { status: 500 },
     );
   }
 }

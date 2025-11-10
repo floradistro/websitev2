@@ -6,34 +6,34 @@
 
 "use client";
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { 
-  SmartComponentWrapper, 
-  SmartComponentBaseProps 
-} from '@/lib/smart-component-base';
-import { POSSessionHeader } from '../pos/POSSessionHeader';
-import { POSProductGrid } from '../pos/POSProductGrid';
-import { POSCart, CartItem } from '../pos/POSCart';
-import { POSPayment, PaymentData } from '../pos/POSPayment';
+import React, { useState, useCallback, useEffect } from "react";
+import {
+  SmartComponentWrapper,
+  SmartComponentBaseProps,
+} from "@/lib/smart-component-base";
+import { POSSessionHeader } from "../pos/POSSessionHeader";
+import { POSProductGrid } from "../pos/POSProductGrid";
+import { POSCart, CartItem } from "../pos/POSCart";
+import { POSPayment, PaymentData } from "../pos/POSPayment";
 
 export interface SmartPOSProps extends SmartComponentBaseProps {
   locationId: string;
   locationName: string;
   userName?: string;
-  defaultView?: 'register' | 'pickup';
+  defaultView?: "register" | "pickup";
 }
 
 export function SmartPOS({
-  vendorId = '',
-  vendorSlug = '',
-  vendorName = '',
-  vendorLogo = '',
+  vendorId = "",
+  vendorSlug = "",
+  vendorName = "",
+  vendorLogo = "",
   locationId,
   locationName,
-  userName = 'Staff',
-  defaultView = 'register',
+  userName = "Staff",
+  defaultView = "register",
   animate = false, // POS doesn't need animations for speed
-  className = '',
+  className = "",
 }: SmartPOSProps) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showPayment, setShowPayment] = useState(false);
@@ -48,7 +48,9 @@ export function SmartPOS({
 
   const loadActiveSession = async () => {
     try {
-      const response = await fetch(`/api/pos/sessions/active?locationId=${locationId}`);
+      const response = await fetch(
+        `/api/pos/sessions/active?locationId=${locationId}`,
+      );
       if (response.ok) {
         const data = await response.json();
         if (data.session) {
@@ -56,24 +58,26 @@ export function SmartPOS({
         }
       }
     } catch (error) {
-      console.error('Error loading session:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading session:", error);
+      }
     }
   };
 
   // Add product to cart
   const handleAddToCart = useCallback((product: any, quantity: number) => {
-    setCart(prevCart => {
-      const existing = prevCart.find(item => item.productId === product.id);
-      
+    setCart((prevCart) => {
+      const existing = prevCart.find((item) => item.productId === product.id);
+
       if (existing) {
-        return prevCart.map(item =>
+        return prevCart.map((item) =>
           item.productId === product.id
             ? {
                 ...item,
                 quantity: item.quantity + quantity,
                 lineTotal: (item.quantity + quantity) * item.unitPrice,
               }
-            : item
+            : item,
         );
       } else {
         return [
@@ -92,33 +96,38 @@ export function SmartPOS({
   }, []);
 
   // Update item quantity
-  const handleUpdateQuantity = useCallback((productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      handleRemoveItem(productId);
-      return;
-    }
+  const handleUpdateQuantity = useCallback(
+    (productId: string, quantity: number) => {
+      if (quantity <= 0) {
+        handleRemoveItem(productId);
+        return;
+      }
 
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.productId === productId
-          ? {
-              ...item,
-              quantity,
-              lineTotal: quantity * item.unitPrice,
-            }
-          : item
-      )
-    );
-  }, []);
+      setCart((prevCart) =>
+        prevCart.map((item) =>
+          item.productId === productId
+            ? {
+                ...item,
+                quantity,
+                lineTotal: quantity * item.unitPrice,
+              }
+            : item,
+        ),
+      );
+    },
+    [],
+  );
 
   // Remove item from cart
   const handleRemoveItem = useCallback((productId: string) => {
-    setCart(prevCart => prevCart.filter(item => item.productId !== productId));
+    setCart((prevCart) =>
+      prevCart.filter((item) => item.productId !== productId),
+    );
   }, []);
 
   // Clear cart
   const handleClearCart = useCallback(() => {
-    if (confirm('Clear entire cart?')) {
+    if (confirm("Clear entire cart?")) {
       setCart([]);
     }
   }, []);
@@ -138,9 +147,9 @@ export function SmartPOS({
       const taxAmount = subtotal * 0.08;
       const total = subtotal + taxAmount;
 
-      const response = await fetch('/api/pos/sales/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/pos/sales/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           locationId,
           vendorId,
@@ -153,24 +162,26 @@ export function SmartPOS({
           paymentMethod: paymentData.paymentMethod,
           cashTendered: paymentData.cashTendered,
           changeGiven: paymentData.changeGiven,
-          customerName: 'Walk-In',
+          customerName: "Walk-In",
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to complete sale');
+        throw new Error(errorData.error || "Failed to complete sale");
       }
 
       const result = await response.json();
 
       // Show receipt/success
-      alert(`✅ Sale completed!\n\nOrder: ${result.order.order_number}\nTotal: $${total.toFixed(2)}\n\nChange: $${paymentData.changeGiven?.toFixed(2) || '0.00'}`);
+      alert(
+        `✅ Sale completed!\n\nOrder: ${result.order.order_number}\nTotal: $${total.toFixed(2)}\n\nChange: $${paymentData.changeGiven?.toFixed(2) || "0.00"}`,
+      );
 
       // Clear cart and close payment
       setCart([]);
       setShowPayment(false);
-      
+
       // Reload session to update totals
       loadActiveSession();
     } catch (error: any) {
@@ -201,7 +212,10 @@ export function SmartPOS({
         <main className="flex-1 grid grid-cols-[1fr_420px] gap-0 overflow-hidden">
           {/* Left: Product Grid - Independently Scrollable */}
           <div className="flex flex-col border-r border-white/10 bg-[#0a0a0a] overflow-hidden">
-            <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ minHeight: 0 }}>
+            <div
+              className="flex-1 overflow-y-auto overflow-x-hidden"
+              style={{ minHeight: 0 }}
+            >
               <POSProductGrid
                 locationId={locationId}
                 onAddToCart={handleAddToCart}
@@ -238,4 +252,3 @@ export function SmartPOS({
     </SmartComponentWrapper>
   );
 }
-

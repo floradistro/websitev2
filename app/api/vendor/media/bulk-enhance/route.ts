@@ -1,102 +1,101 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireVendor } from '@/lib/auth/middleware';
-import FormData from 'form-data';
-import axios from 'axios';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireVendor } from "@/lib/auth/middleware";
+import FormData from "form-data";
+import axios from "axios";
 
-const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || '';
+const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || "";
 
 // Process a single image with enhancements
 async function enhanceImage(
-  file: { url: string; name: string }, 
+  file: { url: string; name: string },
   vendorId: string,
   options: any,
-  retries = 3
+  retries = 3,
 ) {
   let lastError;
-  
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       if (attempt > 1) {
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
-      
+
       const formData = new FormData();
-      formData.append('image_url', file.url);
-      formData.append('size', 'full');
-      formData.append('format', options.format || 'png');
-      
+      formData.append("image_url", file.url);
+      formData.append("size", "full");
+      formData.append("format", options.format || "png");
+
       // Add all enhancement options
       if (options.backgroundColor) {
-        formData.append('bg_color', options.backgroundColor);
+        formData.append("bg_color", options.backgroundColor);
       }
       if (options.crop) {
-        formData.append('crop', 'true');
+        formData.append("crop", "true");
         if (options.cropMargin) {
-          formData.append('crop_margin', options.cropMargin);
+          formData.append("crop_margin", options.cropMargin);
         }
       }
       if (options.addShadow) {
-        formData.append('add_shadow', 'true');
+        formData.append("add_shadow", "true");
       }
       if (options.type) {
-        formData.append('type', options.type);
+        formData.append("type", options.type);
       }
-      
+
       const removeBgResponse = await axios({
-        method: 'post',
-        url: 'https://api.remove.bg/v1.0/removebg',
+        method: "post",
+        url: "https://api.remove.bg/v1.0/removebg",
         data: formData,
-        responseType: 'arraybuffer',
+        responseType: "arraybuffer",
         headers: {
           ...formData.getHeaders(),
-          'X-Api-Key': REMOVE_BG_API_KEY,
+          "X-Api-Key": REMOVE_BG_API_KEY,
         },
         timeout: 90000,
       });
-      
+
       const supabase = getServiceSupabase();
-      
+
       // Generate new filename
-      const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
-      const suffix = options.suffix || '-enhanced';
-      const format = options.format || 'png';
+      const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+      const suffix = options.suffix || "-enhanced";
+      const format = options.format || "png";
       const newFileName = `${fileNameWithoutExt}${suffix}.${format}`;
       const filePath = `${vendorId}/${newFileName}`;
-      
+
       const { error: uploadError } = await supabase.storage
-        .from('vendor-product-images')
+        .from("vendor-product-images")
         .upload(filePath, removeBgResponse.data, {
           contentType: `image/${format}`,
-          cacheControl: '3600',
-          upsert: true
+          cacheControl: "3600",
+          upsert: true,
         });
-      
+
       if (uploadError) throw uploadError;
-      
-      const { data: { publicUrl } } = supabase.storage
-        .from('vendor-product-images')
-        .getPublicUrl(filePath);
-      
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("vendor-product-images").getPublicUrl(filePath);
+
       return {
         success: true,
         originalName: file.name,
         newName: newFileName,
-        url: publicUrl
+        url: publicUrl,
       };
-      
     } catch (error: any) {
       lastError = error;
-      
+
       if (error.response?.status === 429 && attempt < retries) {
         continue;
       }
-      
+
       throw new Error(`${file.name}: ${error.message}`);
     }
   }
-  
+
   throw lastError || new Error(`${file.name}: Unknown error`);
 }
 
@@ -112,12 +111,13 @@ export async function POST(request: NextRequest) {
     const { files, options = {}, concurrency = 10 } = body;
 
     if (!files || !Array.isArray(files) || files.length === 0) {
-      return NextResponse.json({
-        error: 'Files array required'
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Files array required",
+        },
+        { status: 400 },
+      );
     }
-
-    console.log(`🔵 Bulk enhancing ${files.length} images with options:`, options);
 
     const results: any[] = [];
     const errors: any[] = [];
@@ -129,37 +129,38 @@ export async function POST(request: NextRequest) {
     }
 
     for (const chunk of chunks) {
-      const promises = chunk.map(file => enhanceImage(file, vendorId, options, 3));
+      const promises = chunk.map((file) =>
+        enhanceImage(file, vendorId, options, 3),
+      );
       const settled = await Promise.allSettled(promises);
 
       settled.forEach((result, index) => {
-        if (result.status === 'fulfilled') {
+        if (result.status === "fulfilled") {
           results.push(result.value);
         } else {
           errors.push({
             fileName: chunk[index].name,
-            error: result.reason?.message || 'Unknown error'
+            error: result.reason?.message || "Unknown error",
           });
         }
       });
 
       if (chunks.indexOf(chunk) < chunks.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 250));
+        await new Promise((resolve) => setTimeout(resolve, 250));
       }
     }
-
-    console.log(`✅ Bulk enhancement complete: ${results.length} success, ${errors.length} failed`);
 
     return NextResponse.json({
       success: true,
       processed: results.length,
       failed: errors.length,
       results,
-      errors
+      errors,
     });
-
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -168,4 +169,3 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   return POST(request);
 }
-

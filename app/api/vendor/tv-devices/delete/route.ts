@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,8 +7,8 @@ export async function POST(request: NextRequest) {
 
     if (!deviceId) {
       return NextResponse.json(
-        { success: false, error: 'Device ID required' },
-        { status: 400 }
+        { success: false, error: "Device ID required" },
+        { status: 400 },
       );
     }
 
@@ -16,24 +16,28 @@ export async function POST(request: NextRequest) {
 
     // Delete the device
     const { error } = await supabase
-      .from('tv_devices')
+      .from("tv_devices")
       .delete()
-      .eq('id', deviceId);
+      .eq("id", deviceId);
 
     if (error) {
-      console.error('Error deleting device:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error deleting device:", error);
+      }
       return NextResponse.json(
         { success: false, error: error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Error in delete device API:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error in delete device API:", error);
+    }
     return NextResponse.json(
       { success: false, error: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

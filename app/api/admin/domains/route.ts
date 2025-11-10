@@ -1,24 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
 // GET - List all domains (admin)
 export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
-    
+
     const { data: domains, error } = await supabase
-      .from('vendor_domains')
-      .select(`
+      .from("vendor_domains")
+      .select(
+        `
         *,
         vendor:vendors(id, store_name, slug, email)
-      `)
-      .order('created_at', { ascending: false });
+      `,
+      )
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
 
     return NextResponse.json({ success: true, domains });
   } catch (error: any) {
-    console.error('Error fetching domains:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error fetching domains:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -27,25 +31,32 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const domainId = searchParams.get('id');
+    const domainId = searchParams.get("id");
 
     if (!domainId) {
-      return NextResponse.json({ error: 'Domain ID required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Domain ID required" },
+        { status: 400 },
+      );
     }
 
     const supabase = getServiceSupabase();
 
     const { error } = await supabase
-      .from('vendor_domains')
+      .from("vendor_domains")
       .delete()
-      .eq('id', domainId);
+      .eq("id", domainId);
 
     if (error) throw error;
 
-    return NextResponse.json({ success: true, message: 'Domain removed successfully' });
+    return NextResponse.json({
+      success: true,
+      message: "Domain removed successfully",
+    });
   } catch (error: any) {
-    console.error('Error deleting domain:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error deleting domain:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

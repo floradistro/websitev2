@@ -1,1 +1,1 @@
-export{a as WorkerMain}from'../chunks/chunk-KK47T3R2.js';
+export { a as WorkerMain } from "../chunks/chunk-KK47T3R2.js";

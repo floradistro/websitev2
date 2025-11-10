@@ -21,14 +21,18 @@ All findings are backed by code-based validation (grep search across entire code
 ## WHERE TO START
 
 ### For a 5-minute overview:
+
 → **SCHEMA_CLEANUP_SUMMARY.md**
+
 - Quick findings
 - Storage impact
 - Safety assessment
 - Next steps
 
 ### For complete technical details:
+
 → **DATABASE_AUDIT_REPORT.md**
+
 - Full analysis
 - Detailed tables (unused & archived)
 - Duplicate/redundant systems
@@ -36,7 +40,9 @@ All findings are backed by code-based validation (grep search across entire code
 - Complete SQL cleanup statements
 
 ### For table-by-table reference:
+
 → **AUDIT_TABLES_REFERENCE.md**
+
 - All 82 tables listed
 - Reference counts for each
 - Status badges (✅ ACTIVE, ❌ UNUSED, etc.)
@@ -44,14 +50,18 @@ All findings are backed by code-based validation (grep search across entire code
 - Cleanup checklist
 
 ### For document guide:
+
 → **AUDIT_DELIVERABLES.md**
+
 - What was delivered
 - How to use each document
 - Validation performed
 - Timeline recommendations
 
 ### To actually perform cleanup:
+
 → **supabase/migrations/20251109_cleanup_unused_schema.sql**
+
 - Phase 1: Drop 16 unused views (SAFE - uncommented)
 - Phase 2: Drop 11 unused tables (COMMENTED - requires approval)
 - Phase 3: Drop archived schema (30 days later)
@@ -60,16 +70,16 @@ All findings are backed by code-based validation (grep search across entire code
 
 ## KEY STATISTICS
 
-| Metric | Value |
-|--------|-------|
-| Total tables in database | 82 |
-| Active, heavily used | 52 (63%) |
-| Minimal usage | 11 (13%) |
-| Completely unused | 11 (13%) |
-| Archived in schema | 3 (4%) |
-| Unused views | 16 (89% of all views) |
-| Recoverable storage | 20-25 MB |
-| Risk of cleanup | LOW (zero code deps) |
+| Metric                   | Value                 |
+| ------------------------ | --------------------- |
+| Total tables in database | 82                    |
+| Active, heavily used     | 52 (63%)              |
+| Minimal usage            | 11 (13%)              |
+| Completely unused        | 11 (13%)              |
+| Archived in schema       | 3 (4%)                |
+| Unused views             | 16 (89% of all views) |
+| Recoverable storage      | 20-25 MB              |
+| Risk of cleanup          | LOW (zero code deps)  |
 
 ---
 
@@ -78,20 +88,24 @@ All findings are backed by code-based validation (grep search across entire code
 ### Completely Unused Tables
 
 **TV Menu System (3 tables):**
+
 - `tv_content` - Advertisement/content (UNUSED)
 - `tv_playlists` - Content rotation (UNUSED)
 - `tv_playlist_items` - Playlist items (UNUSED)
 - Note: `tv_menus`, `tv_devices` ARE used
 
 **Session & Audit (2 tables):**
+
 - `user_sessions` - No code to populate it
 - `audit_log` - Never written to
 
 **Pricing Variants (1 table):**
+
 - `vendor_cost_plus_configs` - Cost-plus pricing (UNUSED)
 - Note: Using `products.pricing_data` instead
 
 **Other (5 tables):**
+
 - `storefront_files` - Generated code files
 - `vendor_templates` - Template storage
 - `product_cost_history` - Historical tracking
@@ -101,6 +115,7 @@ All findings are backed by code-based validation (grep search across entire code
 ### Completely Unused Views (16 Total)
 
 All created for analytics/reporting but zero usage:
+
 - Billing views (2)
 - Pricing views (3)
 - POS views (3)
@@ -110,6 +125,7 @@ All created for analytics/reporting but zero usage:
 ### Archived Tables (Dec 5 deletion ready)
 
 Old pricing system moved to `archived_pricing_system` schema:
+
 - `product_pricing_assignments`
 - `pricing_tier_blueprints`
 - `vendor_pricing_configs`
@@ -121,6 +137,7 @@ Old pricing system moved to `archived_pricing_system` schema:
 ## RECOMMENDED ACTION PLAN
 
 ### Phase 1: Drop Views (IMMEDIATE - SAFE)
+
 - No code references
 - Drop 16 unused views
 - Time: < 1 hour
@@ -128,6 +145,7 @@ Old pricing system moved to `archived_pricing_system` schema:
 - Migration: Already included in cleanup script
 
 ### Phase 2: Drop Tables (AFTER APPROVAL)
+
 - Zero code references
 - Drop 11 unused tables
 - Time: 1-2 hours
@@ -135,6 +153,7 @@ Old pricing system moved to `archived_pricing_system` schema:
 - Migration: Already included (Phase 2 - commented)
 
 ### Phase 3: Archive Cleanup (DECEMBER 5)
+
 - Drop `archived_pricing_system` schema
 - Time: < 30 minutes
 - Risk: NONE (already isolated)
@@ -144,6 +163,7 @@ Old pricing system moved to `archived_pricing_system` schema:
 ## QUALITY ASSURANCE
 
 All findings verified through:
+
 - [x] Complete codebase grep search
 - [x] Table reference counting
 - [x] View dependency analysis
@@ -160,13 +180,13 @@ All findings verified through:
 
 ## DOCUMENT GUIDE
 
-| Document | Size | Purpose | Audience |
-|----------|------|---------|----------|
-| DATABASE_AUDIT_REPORT.md | 12KB / 300 lines | Complete analysis | Technical leads |
-| SCHEMA_CLEANUP_SUMMARY.md | 5.4KB / 200 lines | Executive summary | Managers, team leads |
-| AUDIT_TABLES_REFERENCE.md | 12KB / 246 lines | Table-by-table details | Developers, DBAs |
-| AUDIT_DELIVERABLES.md | 7.1KB / 269 lines | Document guide | Everyone |
-| 20251109_cleanup_unused_schema.sql | 3.6KB / 100 lines | Executable cleanup | DBAs |
+| Document                           | Size              | Purpose                | Audience             |
+| ---------------------------------- | ----------------- | ---------------------- | -------------------- |
+| DATABASE_AUDIT_REPORT.md           | 12KB / 300 lines  | Complete analysis      | Technical leads      |
+| SCHEMA_CLEANUP_SUMMARY.md          | 5.4KB / 200 lines | Executive summary      | Managers, team leads |
+| AUDIT_TABLES_REFERENCE.md          | 12KB / 246 lines  | Table-by-table details | Developers, DBAs     |
+| AUDIT_DELIVERABLES.md              | 7.1KB / 269 lines | Document guide         | Everyone             |
+| 20251109_cleanup_unused_schema.sql | 3.6KB / 100 lines | Executable cleanup     | DBAs                 |
 
 ---
 
@@ -183,12 +203,14 @@ All findings verified through:
    - Check if cost-plus pricing will be used
 
 3. **Create Backup**
+
    ```bash
    # Use Supabase dashboard or:
    pg_dump -h db.supabase.co -U postgres -d postgres > backup-20251109.sql
    ```
 
 4. **Execute Phase 1** (Anytime - completely safe)
+
    ```bash
    supabase db push
    ```
@@ -243,6 +265,7 @@ A: Quarterly is good. Or whenever significant schema changes happen.
 ## CONTACT & QUESTIONS
 
 For questions about:
+
 - **Audit findings:** See DATABASE_AUDIT_REPORT.md
 - **Cleanup strategy:** See SCHEMA_CLEANUP_SUMMARY.md
 - **Specific tables:** See AUDIT_TABLES_REFERENCE.md
@@ -289,4 +312,3 @@ Total documentation: ~1,200 lines across 5 files
 Code validation: 100% codebase searched
 
 ---
-

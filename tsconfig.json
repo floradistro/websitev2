@@ -23,5 +23,15 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "ai-agent/**/*", "scripts/**/*", "mcp-agent/**/*", "tests/**/*", "**/__tests__/**/*", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts"]
+  "exclude": [
+    "node_modules",
+    "ai-agent/**/*",
+    "scripts/**/*",
+    "mcp-agent/**/*",
+    "tests/**/*",
+    "**/__tests__/**/*",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts"
+  ]
 }

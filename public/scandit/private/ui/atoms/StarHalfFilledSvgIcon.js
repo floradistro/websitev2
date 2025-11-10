@@ -1,4 +1,15 @@
-import {a}from'../../../chunks/chunk-S24T6WS2.js';import {a as a$1}from'../../../chunks/chunk-3A4KLILV.js';import {a as a$2}from'../../../chunks/chunk-MU6SADSF.js';var t=class t extends a{static create(){return document.createElement(t.tag)}static register(){a$1({[t.tag]:t});}render(){return a$2`
+import { a } from "../../../chunks/chunk-S24T6WS2.js";
+import { a as a$1 } from "../../../chunks/chunk-3A4KLILV.js";
+import { a as a$2 } from "../../../chunks/chunk-MU6SADSF.js";
+var t = class t extends a {
+  static create() {
+    return document.createElement(t.tag);
+  }
+  static register() {
+    a$1({ [t.tag]: t });
+  }
+  render() {
+    return a$2`
       <style>
         ${t.tag} {
           display: flex;
@@ -6,7 +17,7 @@ import {a}from'../../../chunks/chunk-S24T6WS2.js';import {a as a$1}from'../../..
       </style>
       <svg
         width="${this.size}"
-        height="${this.heightForViewbox(24,24)}"
+        height="${this.heightForViewbox(24, 24)}"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -29,4 +40,9 @@ import {a}from'../../../chunks/chunk-S24T6WS2.js';import {a as a$1}from'../../..
           <rect x="1" y="1" width="11" height="22" fill="${this.fill}" />
         </g>
       </svg>
-    `}};t.tag="scandit-half-star-icon";var s=t;export{s as StarHalfFilledSvgIcon};
+    `;
+  }
+};
+t.tag = "scandit-half-star-icon";
+var s = t;
+export { s as StarHalfFilledSvgIcon };

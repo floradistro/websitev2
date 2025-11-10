@@ -1,1 +1,18 @@
-import {d}from'./chunk-VW3DMTE7.js';var i=class{constructor(){this.type="laserline";this.width=d.LaserlineViewfinder.width,this.enabledColor=d.LaserlineViewfinder.enabledColor,this.disabledColor=d.LaserlineViewfinder.disabledColor;}toJSONObject(){return {type:this.type,width:this.width.toJSONObject(),disabledColor:this.disabledColor.toJSON(),enabledColor:this.enabledColor.toJSON()}}};export{i as a};
+import { d } from "./chunk-VW3DMTE7.js";
+var i = class {
+  constructor() {
+    this.type = "laserline";
+    ((this.width = d.LaserlineViewfinder.width),
+      (this.enabledColor = d.LaserlineViewfinder.enabledColor),
+      (this.disabledColor = d.LaserlineViewfinder.disabledColor));
+  }
+  toJSONObject() {
+    return {
+      type: this.type,
+      width: this.width.toJSONObject(),
+      disabledColor: this.disabledColor.toJSON(),
+      enabledColor: this.enabledColor.toJSON(),
+    };
+  }
+};
+export { i as a };

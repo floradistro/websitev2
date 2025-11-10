@@ -1,1 +1,1 @@
-export{a as globalThisPolyfill}from'../../chunks/chunk-ACFJP5SR.js';
+export { a as globalThisPolyfill } from "../../chunks/chunk-ACFJP5SR.js";

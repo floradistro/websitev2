@@ -1,12 +1,12 @@
-import { InputHTMLAttributes, forwardRef, ReactNode } from 'react';
-import { LucideIcon } from 'lucide-react';
-import { ds, cn } from '@/lib/design-system';
+import { InputHTMLAttributes, forwardRef, ReactNode } from "react";
+import { LucideIcon } from "lucide-react";
+import { ds, cn } from "@/lib/design-system";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   icon?: LucideIcon;
-  iconPosition?: 'left' | 'right';
+  iconPosition?: "left" | "right";
   compact?: boolean;
 }
 
@@ -16,26 +16,43 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
  * Minimal padding, professional
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, icon: Icon, iconPosition = 'left', compact = true, className = '', ...props }, ref) => {
+  (
+    {
+      label,
+      error,
+      icon: Icon,
+      iconPosition = "left",
+      compact = true,
+      className = "",
+      ...props
+    },
+    ref,
+  ) => {
     return (
       <div className="w-full">
         {label && (
-          <label className={cn(
-            'block mb-1',
-            ds.typography.size.xs,
-            ds.typography.weight.light,
-            ds.colors.text.quaternary,
-            ds.typography.transform.uppercase,
-            ds.typography.tracking.wide
-          )}>
+          <label
+            className={cn(
+              "block mb-1",
+              ds.typography.size.xs,
+              ds.typography.weight.light,
+              ds.colors.text.quaternary,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+            )}
+          >
             {label}
           </label>
         )}
 
         <div className="relative">
-          {Icon && iconPosition === 'left' && (
+          {Icon && iconPosition === "left" && (
             <div className="absolute left-2.5 top-1/2 -translate-y-1/2">
-              <Icon size={14} className={ds.colors.text.quaternary} strokeWidth={1.5} />
+              <Icon
+                size={14}
+                className={ds.colors.text.quaternary}
+                strokeWidth={1.5}
+              />
             </div>
           )}
 
@@ -44,48 +61,54 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className={cn(
               ds.colors.bg.input,
               ds.colors.border.default,
-              'border',
+              "border",
               ds.effects.radius.md,
-              compact ? 'px-2.5 py-1.5' : 'px-3 py-2',
-              Icon && iconPosition === 'left' && 'pl-8',
-              Icon && iconPosition === 'right' && 'pr-8',
+              compact ? "px-2.5 py-1.5" : "px-3 py-2",
+              Icon && iconPosition === "left" && "pl-8",
+              Icon && iconPosition === "right" && "pr-8",
               ds.typography.size.sm,
               ds.typography.weight.normal,
               ds.colors.text.secondary,
-              'placeholder:' + ds.colors.text.quaternary,
-              'focus:' + ds.colors.border.strong,
-              'focus:' + ds.colors.bg.elevated,
-              'outline-none',
+              "placeholder:" + ds.colors.text.quaternary,
+              "focus:" + ds.colors.border.strong,
+              "focus:" + ds.colors.bg.elevated,
+              "outline-none",
               ds.effects.transition.normal,
-              'w-full',
-              error && 'border-red-500/30',
-              className
+              "w-full",
+              error && "border-red-500/30",
+              className,
             )}
             {...props}
           />
 
-          {Icon && iconPosition === 'right' && (
+          {Icon && iconPosition === "right" && (
             <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
-              <Icon size={14} className={ds.colors.text.quaternary} strokeWidth={1.5} />
+              <Icon
+                size={14}
+                className={ds.colors.text.quaternary}
+                strokeWidth={1.5}
+              />
             </div>
           )}
         </div>
 
         {error && (
-          <p className={cn(
-            'mt-1',
-            ds.typography.size.xs,
-            ds.colors.status.error
-          )}>
+          <p
+            className={cn(
+              "mt-1",
+              ds.typography.size.xs,
+              ds.colors.status.error,
+            )}
+          >
             {error}
           </p>
         )}
       </div>
     );
-  }
+  },
 );
 
-Input.displayName = 'Input';
+Input.displayName = "Input";
 
 /**
  * Textarea component
@@ -97,18 +120,20 @@ interface TextareaProps extends InputHTMLAttributes<HTMLTextAreaElement> {
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ label, error, rows = 3, className = '', ...props }, ref) => {
+  ({ label, error, rows = 3, className = "", ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (
-          <label className={cn(
-            'block mb-1',
-            ds.typography.size.xs,
-            ds.typography.weight.light,
-            ds.colors.text.quaternary,
-            ds.typography.transform.uppercase,
-            ds.typography.tracking.wide
-          )}>
+          <label
+            className={cn(
+              "block mb-1",
+              ds.typography.size.xs,
+              ds.typography.weight.light,
+              ds.colors.text.quaternary,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+            )}
+          >
             {label}
           </label>
         )}
@@ -119,39 +144,41 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           className={cn(
             ds.colors.bg.input,
             ds.colors.border.default,
-            'border',
+            "border",
             ds.effects.radius.md,
-            'px-2.5 py-1.5',
+            "px-2.5 py-1.5",
             ds.typography.size.sm,
             ds.typography.weight.normal,
             ds.colors.text.secondary,
-            'placeholder:' + ds.colors.text.quaternary,
-            'focus:' + ds.colors.border.strong,
-            'focus:' + ds.colors.bg.elevated,
-            'outline-none',
+            "placeholder:" + ds.colors.text.quaternary,
+            "focus:" + ds.colors.border.strong,
+            "focus:" + ds.colors.bg.elevated,
+            "outline-none",
             ds.effects.transition.normal,
-            'w-full resize-none',
-            error && 'border-red-500/30',
-            className
+            "w-full resize-none",
+            error && "border-red-500/30",
+            className,
           )}
           {...props}
         />
 
         {error && (
-          <p className={cn(
-            'mt-1',
-            ds.typography.size.xs,
-            ds.colors.status.error
-          )}>
+          <p
+            className={cn(
+              "mt-1",
+              ds.typography.size.xs,
+              ds.colors.status.error,
+            )}
+          >
             {error}
           </p>
         )}
       </div>
     );
-  }
+  },
 );
 
-Textarea.displayName = 'Textarea';
+Textarea.displayName = "Textarea";
 
 /**
  * Select component
@@ -163,18 +190,20 @@ interface SelectProps extends InputHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, className = '', ...props }, ref) => {
+  ({ label, error, options, className = "", ...props }, ref) => {
     return (
       <div className="w-full">
         {label && (
-          <label className={cn(
-            'block mb-1',
-            ds.typography.size.xs,
-            ds.typography.weight.light,
-            ds.colors.text.quaternary,
-            ds.typography.transform.uppercase,
-            ds.typography.tracking.wide
-          )}>
+          <label
+            className={cn(
+              "block mb-1",
+              ds.typography.size.xs,
+              ds.typography.weight.light,
+              ds.colors.text.quaternary,
+              ds.typography.transform.uppercase,
+              ds.typography.tracking.wide,
+            )}
+          >
             {label}
           </label>
         )}
@@ -184,19 +213,19 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           className={cn(
             ds.colors.bg.input,
             ds.colors.border.default,
-            'border',
+            "border",
             ds.effects.radius.md,
-            'px-2.5 py-1.5',
+            "px-2.5 py-1.5",
             ds.typography.size.sm,
             ds.typography.weight.normal,
             ds.colors.text.secondary,
-            'focus:' + ds.colors.border.strong,
-            'focus:' + ds.colors.bg.elevated,
-            'outline-none',
+            "focus:" + ds.colors.border.strong,
+            "focus:" + ds.colors.bg.elevated,
+            "outline-none",
             ds.effects.transition.normal,
-            'w-full',
-            error && 'border-red-500/30',
-            className
+            "w-full",
+            error && "border-red-500/30",
+            className,
           )}
           {...props}
         >
@@ -208,17 +237,19 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         </select>
 
         {error && (
-          <p className={cn(
-            'mt-1',
-            ds.typography.size.xs,
-            ds.colors.status.error
-          )}>
+          <p
+            className={cn(
+              "mt-1",
+              ds.typography.size.xs,
+              ds.colors.status.error,
+            )}
+          >
             {error}
           </p>
         )}
       </div>
     );
-  }
+  },
 );
 
-Select.displayName = 'Select';
+Select.displayName = "Select";

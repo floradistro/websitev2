@@ -10,15 +10,23 @@ interface LabResultsProps {
 export default function LabResults({ metaData, attributes }: LabResultsProps) {
   // Extract COA URL
   let coaUrl = "";
-  
+
   // Handle both array and object formats
-  const metaArray = Array.isArray(metaData) ? metaData : 
-    Object.entries(metaData || {}).map(([key, value]) => ({ key, value }));
-  
+  const metaArray = Array.isArray(metaData)
+    ? metaData
+    : Object.entries(metaData || {}).map(([key, value]) => ({ key, value }));
+
   metaArray.forEach((meta: any) => {
-    const key = (meta.key || '').toLowerCase();
-    if (key.includes("coa") || key.includes("certificate") || key.includes("lab_report")) {
-      if (meta.value && (meta.value.startsWith("http") || meta.value.startsWith("www"))) {
+    const key = (meta.key || "").toLowerCase();
+    if (
+      key.includes("coa") ||
+      key.includes("certificate") ||
+      key.includes("lab_report")
+    ) {
+      if (
+        meta.value &&
+        (meta.value.startsWith("http") || meta.value.startsWith("www"))
+      ) {
         coaUrl = meta.value;
       }
     }
@@ -50,4 +58,3 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
     </a>
   );
 }
-

@@ -1,17 +1,24 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Globe, Check, Clock, Copy, ExternalLink, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
-import { ds, cn } from '@/components/ds';
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import {
+  Globe,
+  Check,
+  Clock,
+  Copy,
+  ExternalLink,
+  AlertCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { ds, cn } from "@/components/ds";
+import axios from "axios";
 
 interface DomainSetupProps {
   onDomainVerified?: () => void;
 }
 
 export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
-  const [domain, setDomain] = useState('');
+  const [domain, setDomain] = useState("");
   const [settingUp, setSettingUp] = useState(false);
   const [setupComplete, setSetupComplete] = useState(false);
   const [dnsRecords, setDnsRecords] = useState<any>(null);
@@ -24,7 +31,6 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
     if (!dnsRecords || verified) return;
 
     const interval = setInterval(async () => {
-      console.log('🔄 Auto-verifying domain...');
       await checkDomainVerification(domain, true);
     }, 5000);
 
@@ -33,39 +39,53 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
 
   const handleSetupDomain = async () => {
     if (!domain) {
-      alert('Please enter your domain');
+      alert("Please enter your domain");
       return;
     }
 
     setSettingUp(true);
 
     try {
-      const { data } = await axios.post('/api/vendor/website/setup-domain', {
-        domain,
-      }, {
-        withCredentials: true,
-      });
+      const { data } = await axios.post(
+        "/api/vendor/website/setup-domain",
+        {
+          domain,
+        },
+        {
+          withCredentials: true,
+        },
+      );
 
       setDnsRecords(data);
       setSetupComplete(true);
     } catch (error: any) {
-      console.error('Error setting up domain:', error);
-      const errorMsg = error.response?.data?.error || error.message || 'Unknown error';
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error setting up domain:", error);
+      }
+      const errorMsg =
+        error.response?.data?.error || error.message || "Unknown error";
       alert(`Failed to setup domain: ${errorMsg}`);
     } finally {
       setSettingUp(false);
     }
   };
 
-  const checkDomainVerification = async (domainToCheck: string, silent = false) => {
+  const checkDomainVerification = async (
+    domainToCheck: string,
+    silent = false,
+  ) => {
     if (!silent) setVerifying(true);
 
     try {
-      const { data } = await axios.post('/api/vendor/website/verify-domain', {
-        domain: domainToCheck,
-      }, {
-        withCredentials: true,
-      });
+      const { data } = await axios.post(
+        "/api/vendor/website/verify-domain",
+        {
+          domain: domainToCheck,
+        },
+        {
+          withCredentials: true,
+        },
+      );
 
       if (data.verified) {
         setVerified(true);
@@ -82,14 +102,18 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
         setVerificationStatus(data);
 
         if (!silent) {
-          alert('DNS records not fully configured yet. Please wait 1-5 minutes after adding records.');
+          alert(
+            "DNS records not fully configured yet. Please wait 1-5 minutes after adding records.",
+          );
         }
       }
     } catch (error: any) {
-      console.error('Error verifying domain:', error);
-
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error verifying domain:", error);
+      }
       if (!silent) {
-        const errorMsg = error.response?.data?.error || error.message || 'Unknown error';
+        const errorMsg =
+          error.response?.data?.error || error.message || "Unknown error";
         alert(`Verification failed: ${errorMsg}`);
       }
     } finally {
@@ -99,15 +123,17 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+    alert("Copied to clipboard!");
   };
 
   if (verified) {
     return (
-      <div className={cn(
-        'rounded-xl border-2 border-green-500 p-8',
-        'bg-green-50 dark:bg-green-900/10'
-      )}>
+      <div
+        className={cn(
+          "rounded-xl border-2 border-green-500 p-8",
+          "bg-green-50 dark:bg-green-900/10",
+        )}
+      >
         <div className="flex items-center gap-3 mb-4">
           <Check className="w-8 h-8 text-green-600" />
           <div>
@@ -126,9 +152,9 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
-              'inline-flex items-center gap-2 px-4 py-2 rounded-lg',
-              'bg-green-600 text-white hover:bg-green-700',
-              'transition-colors'
+              "inline-flex items-center gap-2 px-4 py-2 rounded-lg",
+              "bg-green-600 text-white hover:bg-green-700",
+              "transition-colors",
             )}
           >
             Visit Your Site
@@ -141,16 +167,16 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
 
   if (!setupComplete) {
     return (
-      <div className={cn(
-        'rounded-xl border-2 border-gray-200 dark:border-gray-700 p-8',
-        'bg-white dark:bg-gray-800'
-      )}>
+      <div
+        className={cn(
+          "rounded-xl border-2 border-gray-200 dark:border-gray-700 p-8",
+          "bg-white dark:bg-gray-800",
+        )}
+      >
         <div className="flex items-center gap-3 mb-6">
           <Globe className="w-8 h-8 text-blue-600" />
           <div>
-            <h3 className="text-xl font-semibold">
-              Add Custom Domain
-            </h3>
+            <h3 className="text-xl font-semibold">Add Custom Domain</h3>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               Use your own domain for your storefront
             </p>
@@ -168,11 +194,11 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
               onChange={(e) => setDomain(e.target.value.toLowerCase().trim())}
               placeholder="floradistro.com"
               className={cn(
-                'w-full px-4 py-3 rounded-lg border-2',
-                'border-gray-200 dark:border-gray-700',
-                'bg-white dark:bg-gray-900',
-                'focus:border-blue-500 focus:outline-none',
-                'transition-colors'
+                "w-full px-4 py-3 rounded-lg border-2",
+                "border-gray-200 dark:border-gray-700",
+                "bg-white dark:bg-gray-900",
+                "focus:border-blue-500 focus:outline-none",
+                "transition-colors",
               )}
             />
             <p className="text-sm text-gray-500 mt-2">
@@ -185,7 +211,7 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
             disabled={!domain || settingUp}
             className="w-full"
           >
-            {settingUp ? 'Setting up...' : 'Continue'}
+            {settingUp ? "Setting up..." : "Continue"}
           </Button>
         </div>
       </div>
@@ -194,16 +220,16 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
 
   // Show DNS instructions
   return (
-    <div className={cn(
-      'rounded-xl border-2 border-blue-500 p-8',
-      'bg-blue-50 dark:bg-blue-900/10'
-    )}>
+    <div
+      className={cn(
+        "rounded-xl border-2 border-blue-500 p-8",
+        "bg-blue-50 dark:bg-blue-900/10",
+      )}
+    >
       <div className="flex items-center gap-3 mb-6">
         <Clock className="w-8 h-8 text-blue-600 animate-pulse" />
         <div>
-          <h3 className="text-xl font-semibold">
-            Add DNS Records
-          </h3>
+          <h3 className="text-xl font-semibold">Add DNS Records</h3>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
             We'll auto-verify every 5 seconds
           </p>
@@ -215,7 +241,9 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
         <h4 className="font-semibold mb-3">Quick Setup:</h4>
         <ol className="space-y-2 text-sm list-decimal list-inside">
           <li>Go to your domain registrar (GoDaddy, Namecheap, etc.)</li>
-          <li>Find DNS settings for <strong>{domain}</strong></li>
+          <li>
+            Find DNS settings for <strong>{domain}</strong>
+          </li>
           <li>Add the 3 records below</li>
           <li>Wait here - we'll verify automatically!</li>
         </ol>
@@ -273,12 +301,12 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                'px-3 py-1 rounded-full text-sm',
-                'bg-white dark:bg-gray-700',
-                'hover:bg-gray-50 dark:hover:bg-gray-600',
-                'border border-gray-200 dark:border-gray-600',
-                'capitalize transition-colors',
-                'inline-flex items-center gap-1'
+                "px-3 py-1 rounded-full text-sm",
+                "bg-white dark:bg-gray-700",
+                "hover:bg-gray-50 dark:hover:bg-gray-600",
+                "border border-gray-200 dark:border-gray-600",
+                "capitalize transition-colors",
+                "inline-flex items-center gap-1",
               )}
             >
               {name}
@@ -296,7 +324,7 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
           variant="secondary"
           className="w-full"
         >
-          {verifying ? 'Verifying...' : 'Verify Now'}
+          {verifying ? "Verifying..." : "Verify Now"}
         </Button>
         <p className="text-sm text-gray-500 mt-2 text-center">
           Or wait - we're checking automatically every 5 seconds
@@ -340,46 +368,66 @@ interface DNSRecordProps {
   status?: boolean;
 }
 
-function DNSRecord({ type, name, value, ttl, description, onCopy, status }: DNSRecordProps) {
+function DNSRecord({
+  type,
+  name,
+  value,
+  ttl,
+  description,
+  onCopy,
+  status,
+}: DNSRecordProps) {
   return (
-    <div className={cn(
-      'p-4 rounded-lg border-2',
-      status === true
-        ? 'border-green-500 bg-green-50 dark:bg-green-900/10'
-        : status === false
-        ? 'border-red-500 bg-red-50 dark:bg-red-900/10'
-        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
-    )}>
+    <div
+      className={cn(
+        "p-4 rounded-lg border-2",
+        status === true
+          ? "border-green-500 bg-green-50 dark:bg-green-900/10"
+          : status === false
+            ? "border-red-500 bg-red-50 dark:bg-red-900/10"
+            : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800",
+      )}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <span className={cn(
-              'px-2 py-0.5 rounded text-xs font-mono font-bold',
-              'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-            )}>
+            <span
+              className={cn(
+                "px-2 py-0.5 rounded text-xs font-mono font-bold",
+                "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
+              )}
+            >
               {type}
             </span>
             {status !== undefined && (
-              <span className={cn(
-                'text-xs font-semibold',
-                status ? 'text-green-600' : 'text-red-600'
-              )}>
-                {status ? '✓ Configured' : '✗ Not Found'}
+              <span
+                className={cn(
+                  "text-xs font-semibold",
+                  status ? "text-green-600" : "text-red-600",
+                )}
+              >
+                {status ? "✓ Configured" : "✗ Not Found"}
               </span>
             )}
           </div>
 
           <div className="space-y-1 text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400 w-16">Name:</span>
+              <span className="text-gray-500 dark:text-gray-400 w-16">
+                Name:
+              </span>
               <span className="font-mono font-semibold">{name}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400 w-16">Value:</span>
+              <span className="text-gray-500 dark:text-gray-400 w-16">
+                Value:
+              </span>
               <span className="font-mono text-xs break-all">{value}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400 w-16">TTL:</span>
+              <span className="text-gray-500 dark:text-gray-400 w-16">
+                TTL:
+              </span>
               <span className="font-mono">{ttl}</span>
             </div>
           </div>

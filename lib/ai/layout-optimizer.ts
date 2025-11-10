@@ -9,8 +9,8 @@ export interface DisplayProfile {
   resolutionWidth: number;
   resolutionHeight: number;
   viewingDistanceFeet: number;
-  locationType: 'checkout' | 'entrance' | 'waiting' | 'wall_menu';
-  ambientLighting: 'bright' | 'medium' | 'dim';
+  locationType: "checkout" | "entrance" | "waiting" | "wall_menu";
+  ambientLighting: "bright" | "medium" | "dim";
   dwellTimeSeconds: number;
 }
 
@@ -24,7 +24,7 @@ export interface ProductData {
 }
 
 export interface OptimalLayout {
-  displayMode: 'dense' | 'carousel';
+  displayMode: "dense" | "carousel";
   gridColumns: number;
   gridRows: number;
   productsPerPage: number;
@@ -62,45 +62,71 @@ export class LayoutOptimizer {
   /**
    * Main optimization function
    */
-  static optimize(display: DisplayProfile, products: ProductData): OptimalLayout {
+  static optimize(
+    display: DisplayProfile,
+    products: ProductData,
+  ): OptimalLayout {
     const reasoning: string[] = [];
 
     // Calculate optimal font size based on viewing distance
-    const minFontSize = this.calculateMinReadableFont(display.viewingDistanceFeet);
-    reasoning.push(`Minimum readable font: ${minFontSize}px (viewing distance: ${display.viewingDistanceFeet}ft)`);
+    const minFontSize = this.calculateMinReadableFont(
+      display.viewingDistanceFeet,
+    );
+    reasoning.push(
+      `Minimum readable font: ${minFontSize}px (viewing distance: ${display.viewingDistanceFeet}ft)`,
+    );
 
     // Calculate pixels per inch for this display
     const ppi = this.calculatePPI(display);
     reasoning.push(`Display PPI: ${ppi.toFixed(1)}`);
 
     // Determine if we can fit all products or need carousel
-    const maxComfortableProducts = this.calculateMaxProducts(display, products, minFontSize);
+    const maxComfortableProducts = this.calculateMaxProducts(
+      display,
+      products,
+      minFontSize,
+    );
     const needsCarousel = products.totalProducts > maxComfortableProducts;
 
     if (needsCarousel) {
-      reasoning.push(`${products.totalProducts} products exceed comfortable limit of ${maxComfortableProducts} - using carousel mode`);
+      reasoning.push(
+        `${products.totalProducts} products exceed comfortable limit of ${maxComfortableProducts} - using carousel mode`,
+      );
     } else {
-      reasoning.push(`${products.totalProducts} products fit comfortably - using dense mode`);
+      reasoning.push(
+        `${products.totalProducts} products fit comfortably - using dense mode`,
+      );
     }
 
     // Calculate optimal grid layout
     const grid = this.calculateOptimalGrid(
       display,
       needsCarousel ? maxComfortableProducts : products.totalProducts,
-      products
+      products,
     );
-    reasoning.push(`Optimal grid: ${grid.columns}x${grid.rows} (${grid.columns * grid.rows} products per page)`);
+    reasoning.push(
+      `Optimal grid: ${grid.columns}x${grid.rows} (${grid.columns * grid.rows} products per page)`,
+    );
 
     // Adjust typography based on display characteristics
-    const typography = this.calculateTypography(display, products, grid, minFontSize);
+    const typography = this.calculateTypography(
+      display,
+      products,
+      grid,
+      minFontSize,
+    );
 
     // Determine content strategy
-    const contentStrategy = this.determineContentStrategy(display, products, grid);
+    const contentStrategy = this.determineContentStrategy(
+      display,
+      products,
+      grid,
+    );
     if (!contentStrategy.showImages) {
-      reasoning.push('Hiding images to maximize product count and readability');
+      reasoning.push("Hiding images to maximize product count and readability");
     }
     if (contentStrategy.emphasizePromotions) {
-      reasoning.push('Emphasizing promotions due to active deals');
+      reasoning.push("Emphasizing promotions due to active deals");
     }
 
     // Calculate spacing for optimal readability
@@ -110,15 +136,22 @@ export class LayoutOptimizer {
     let carouselConfig;
     if (needsCarousel) {
       carouselConfig = this.calculateCarouselTiming(display, products);
-      reasoning.push(`Carousel: ${carouselConfig.rotationSpeed}s per page (${display.dwellTimeSeconds}s avg dwell time)`);
+      reasoning.push(
+        `Carousel: ${carouselConfig.rotationSpeed}s per page (${display.dwellTimeSeconds}s avg dwell time)`,
+      );
     }
 
     // Calculate confidence score
-    const confidence = this.calculateConfidence(display, products, grid, needsCarousel);
+    const confidence = this.calculateConfidence(
+      display,
+      products,
+      grid,
+      needsCarousel,
+    );
     reasoning.push(`Confidence: ${confidence}%`);
 
     return {
-      displayMode: needsCarousel ? 'carousel' : 'dense',
+      displayMode: needsCarousel ? "carousel" : "dense",
       gridColumns: grid.columns,
       gridRows: grid.rows,
       productsPerPage: grid.columns * grid.rows,
@@ -149,10 +182,10 @@ export class LayoutOptimizer {
    */
   private static calculatePPI(display: DisplayProfile): number {
     const diagonalInches = Math.sqrt(
-      display.screenWidthInches ** 2 + display.screenHeightInches ** 2
+      display.screenWidthInches ** 2 + display.screenHeightInches ** 2,
     );
     const diagonalPixels = Math.sqrt(
-      display.resolutionWidth ** 2 + display.resolutionHeight ** 2
+      display.resolutionWidth ** 2 + display.resolutionHeight ** 2,
     );
     return diagonalPixels / diagonalInches;
   }
@@ -163,7 +196,7 @@ export class LayoutOptimizer {
   private static calculateMaxProducts(
     display: DisplayProfile,
     products: ProductData,
-    minFontSize: number
+    minFontSize: number,
   ): number {
     // Estimate card height based on content
     const baseCardHeight = minFontSize * 12; // Rough estimate
@@ -187,7 +220,7 @@ export class LayoutOptimizer {
   private static calculateOptimalGrid(
     display: DisplayProfile,
     targetProducts: number,
-    products: ProductData
+    products: ProductData,
   ): { columns: number; rows: number } {
     const aspectRatio = display.resolutionWidth / display.resolutionHeight;
 
@@ -196,11 +229,11 @@ export class LayoutOptimizer {
     let rows = Math.ceil(targetProducts / columns);
 
     // Adjust based on location type
-    if (display.locationType === 'checkout') {
+    if (display.locationType === "checkout") {
       // Checkout: Wider, shorter (people are close)
       columns = Math.min(columns + 1, 8);
       rows = Math.ceil(targetProducts / columns);
-    } else if (display.locationType === 'entrance') {
+    } else if (display.locationType === "entrance") {
       // Entrance: Fewer items, bigger cards (quick glance)
       columns = Math.max(3, Math.floor(columns * 0.75));
       rows = Math.max(2, Math.floor(rows * 0.75));
@@ -220,7 +253,7 @@ export class LayoutOptimizer {
     display: DisplayProfile,
     products: ProductData,
     grid: { columns: number; rows: number },
-    minFontSize: number
+    minFontSize: number,
   ) {
     // More products = smaller fonts
     const densityFactor = (grid.columns * grid.rows) / 12;
@@ -240,7 +273,7 @@ export class LayoutOptimizer {
   private static determineContentStrategy(
     display: DisplayProfile,
     products: ProductData,
-    grid: { columns: number; rows: number }
+    grid: { columns: number; rows: number },
   ) {
     const density = grid.columns * grid.rows;
 
@@ -257,14 +290,14 @@ export class LayoutOptimizer {
    */
   private static calculateSpacing(
     display: DisplayProfile,
-    grid: { columns: number; rows: number }
+    grid: { columns: number; rows: number },
   ) {
     const density = grid.columns * grid.rows;
     const basePadding = 16;
 
     return {
       cardPadding: Math.round(basePadding / Math.sqrt(density / 12)),
-      gridGap: Math.round(basePadding * 1.5 / Math.sqrt(density / 12)),
+      gridGap: Math.round((basePadding * 1.5) / Math.sqrt(density / 12)),
       margins: Math.round(basePadding * 2),
     };
   }
@@ -274,10 +307,13 @@ export class LayoutOptimizer {
    */
   private static calculateCarouselTiming(
     display: DisplayProfile,
-    products: ProductData
+    products: ProductData,
   ) {
     // Rule: Give 50% of dwell time per page
-    const rotationSpeed = Math.max(10, Math.round(display.dwellTimeSeconds * 0.5));
+    const rotationSpeed = Math.max(
+      10,
+      Math.round(display.dwellTimeSeconds * 0.5),
+    );
 
     return {
       rotationSpeed,
@@ -292,7 +328,7 @@ export class LayoutOptimizer {
     display: DisplayProfile,
     products: ProductData,
     grid: { columns: number; rows: number },
-    needsCarousel: boolean
+    needsCarousel: boolean,
   ): number {
     let score = 100;
 

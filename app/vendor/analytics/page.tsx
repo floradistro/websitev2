@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { useAppAuth } from '@/context/AppAuthContext';
+import { useState } from "react";
+import { useAppAuth } from "@/context/AppAuthContext";
 import {
   TrendingUp,
   TrendingDown,
@@ -13,39 +13,51 @@ import {
   Minus,
   ArrowUpRight,
   ArrowDownRight,
-} from '@/lib/icons';
-import { useVendorAnalytics } from '@/hooks/useVendorData';
-import { StatCard } from '@/components/ui/StatCard';
-import { TimeSeriesChart } from '@/components/analytics/TimeSeriesChart';
-import { AnalyticsPageWrapper } from '@/components/analytics/AnalyticsPageWrapper';
-import type { VendorAnalyticsData, TimeRange, TrendData } from '@/types/analytics';
+} from "@/lib/icons";
+import { useVendorAnalytics } from "@/hooks/useVendorData";
+import { StatCard } from "@/components/ui/StatCard";
+import { TimeSeriesChart } from "@/components/analytics/TimeSeriesChart";
+import { AnalyticsPageWrapper } from "@/components/analytics/AnalyticsPageWrapper";
+import type {
+  VendorAnalyticsData,
+  TimeRange,
+  TrendData,
+} from "@/types/analytics";
 import {
   formatCurrency,
   formatPercentage,
   formatNumber,
-} from '@/lib/analytics-utils';
-import { createDefaultVendorAnalytics, mergeWithDefaults } from '@/lib/analytics-defaults';
+} from "@/lib/analytics-utils";
+import {
+  createDefaultVendorAnalytics,
+  mergeWithDefaults,
+} from "@/lib/analytics-defaults";
 
 function VendorAnalyticsContent() {
   const { vendor } = useAppAuth();
-  const [timeRange, setTimeRange] = useState<TimeRange>('30d');
-  const { data: analyticsResponse, loading, error, refetch } = useVendorAnalytics(timeRange);
+  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
+  const {
+    data: analyticsResponse,
+    loading,
+    error,
+    refetch,
+  } = useVendorAnalytics(timeRange);
 
   // Type-safe data extraction with defaults
   // API returns { success: true, analytics: {...} }
   const analytics: VendorAnalyticsData = mergeWithDefaults(
     (analyticsResponse as any)?.analytics || null,
-    createDefaultVendorAnalytics()
+    createDefaultVendorAnalytics(),
   );
 
   // Helper to normalize trend data (handle both old number format and new TrendData format)
   const normalizeTrend = (trend: number | TrendData): TrendData => {
-    if (typeof trend === 'number') {
+    if (typeof trend === "number") {
       return {
         value: 0,
         change: trend,
         changePercent: trend,
-        direction: trend > 0 ? 'up' : trend < 0 ? 'down' : 'neutral',
+        direction: trend > 0 ? "up" : trend < 0 ? "down" : "neutral",
       };
     }
     return trend;
@@ -55,7 +67,7 @@ function VendorAnalyticsContent() {
   const renderTrendIndicator = (trend: number | TrendData) => {
     const trendData = normalizeTrend(trend);
 
-    if (trendData.direction === 'neutral') {
+    if (trendData.direction === "neutral") {
       return (
         <div className="flex items-center gap-1 text-white/40 text-xs font-bold">
           <Minus className="w-3 h-3" />
@@ -64,14 +76,17 @@ function VendorAnalyticsContent() {
       );
     }
 
-    const isPositive = trendData.direction === 'up';
-    const color = isPositive ? 'text-green-400' : 'text-red-400';
+    const isPositive = trendData.direction === "up";
+    const color = isPositive ? "text-green-400" : "text-red-400";
     const Icon = isPositive ? ArrowUpRight : ArrowDownRight;
 
     return (
       <div className={`flex items-center gap-1 ${color} text-xs font-bold`}>
         <Icon className="w-3 h-3" />
-        {formatPercentage(Math.abs(trendData.changePercent), { decimals: 0, showSign: false })}
+        {formatPercentage(Math.abs(trendData.changePercent), {
+          decimals: 0,
+          showSign: false,
+        })}
       </div>
     );
   };
@@ -93,7 +108,9 @@ function VendorAnalyticsContent() {
     return (
       <div className="w-full px-4 lg:px-0 py-12">
         <div className="text-center">
-          <p className="text-red-400 mb-4">{error.message || 'Failed to load analytics'}</p>
+          <p className="text-red-400 mb-4">
+            {error.message || "Failed to load analytics"}
+          </p>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition"
@@ -113,7 +130,10 @@ function VendorAnalyticsContent() {
       {/* Header */}
       <div className="mb-8 pb-6 border-b border-white/5 flex items-center justify-between">
         <div>
-          <h1 className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1" style={{ fontWeight: 900 }}>
+          <h1
+            className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1"
+            style={{ fontWeight: 900 }}
+          >
             Advanced Analytics
           </h1>
           <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
@@ -123,19 +143,19 @@ function VendorAnalyticsContent() {
 
         {/* Time Range Selector */}
         <div className="flex gap-2">
-          {([
-            { label: '7D', value: '7d' as TimeRange },
-            { label: '30D', value: '30d' as TimeRange },
-            { label: '90D', value: '90d' as TimeRange },
-            { label: '1Y', value: '1y' as TimeRange },
-          ]).map((range) => (
+          {[
+            { label: "7D", value: "7d" as TimeRange },
+            { label: "30D", value: "30d" as TimeRange },
+            { label: "90D", value: "90d" as TimeRange },
+            { label: "1Y", value: "1y" as TimeRange },
+          ].map((range) => (
             <button
               key={range.value}
               onClick={() => setTimeRange(range.value)}
               className={`px-4 py-2 text-xs uppercase tracking-wider transition-all duration-300 border rounded-2xl ${
                 timeRange === range.value
-                  ? 'bg-gradient-to-r from-white/10 to-white/5 text-white border-white/20'
-                  : 'bg-black/20 text-white/50 border-white/10 hover:border-white/20 hover:text-white/70'
+                  ? "bg-gradient-to-r from-white/10 to-white/5 text-white border-white/20"
+                  : "bg-black/20 text-white/50 border-white/10 hover:border-white/20 hover:text-white/70"
               }`}
             >
               {range.label}
@@ -153,10 +173,16 @@ function VendorAnalyticsContent() {
           icon={DollarSign}
           delay="0s"
           trend={
-            normalizeTrend(analytics.revenue.trend).direction !== 'neutral'
+            normalizeTrend(analytics.revenue.trend).direction !== "neutral"
               ? {
-                  value: formatPercentage(Math.abs(normalizeTrend(analytics.revenue.trend).changePercent), { decimals: 0 }),
-                  direction: normalizeTrend(analytics.revenue.trend).direction as 'up' | 'down'
+                  value: formatPercentage(
+                    Math.abs(
+                      normalizeTrend(analytics.revenue.trend).changePercent,
+                    ),
+                    { decimals: 0 },
+                  ),
+                  direction: normalizeTrend(analytics.revenue.trend)
+                    .direction as "up" | "down",
                 }
               : undefined
           }
@@ -182,10 +208,16 @@ function VendorAnalyticsContent() {
           icon={ShoppingCart}
           delay="0.3s"
           trend={
-            normalizeTrend(analytics.orders.trend).direction !== 'neutral'
+            normalizeTrend(analytics.orders.trend).direction !== "neutral"
               ? {
-                  value: formatPercentage(Math.abs(normalizeTrend(analytics.orders.trend).changePercent), { decimals: 0 }),
-                  direction: normalizeTrend(analytics.orders.trend).direction as 'up' | 'down'
+                  value: formatPercentage(
+                    Math.abs(
+                      normalizeTrend(analytics.orders.trend).changePercent,
+                    ),
+                    { decimals: 0 },
+                  ),
+                  direction: normalizeTrend(analytics.orders.trend)
+                    .direction as "up" | "down",
                 }
               : undefined
           }
@@ -196,17 +228,21 @@ function VendorAnalyticsContent() {
       <div className="minimal-glass subtle-glow p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Revenue Trend</h3>
-            <p className="text-white/30 text-[10px] font-light">DAILY BREAKDOWN</p>
+            <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">
+              Revenue Trend
+            </h3>
+            <p className="text-white/30 text-[10px] font-light">
+              DAILY BREAKDOWN
+            </p>
           </div>
         </div>
         <TimeSeriesChart
-          data={analytics.revenue.data.map(d => ({
+          data={analytics.revenue.data.map((d) => ({
             date: d.date,
             sent: 0,
             opened: 0,
             clicked: 0,
-            revenue: d.amount
+            revenue: d.amount,
           }))}
           activeMetric="revenue"
           height={256}
@@ -218,14 +254,20 @@ function VendorAnalyticsContent() {
       <div className="minimal-glass subtle-glow p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Top Performers</h3>
-            <p className="text-white/30 text-[10px] font-light">HIGHEST MARGIN PRODUCTS</p>
+            <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">
+              Top Performers
+            </h3>
+            <p className="text-white/30 text-[10px] font-light">
+              HIGHEST MARGIN PRODUCTS
+            </p>
           </div>
         </div>
-        
+
         <div className="space-y-4">
           {analytics.products.topPerformers.length === 0 ? (
-            <div className="text-center text-white/40 py-8 text-xs">No product data available</div>
+            <div className="text-center text-white/40 py-8 text-xs">
+              No product data available
+            </div>
           ) : (
             analytics.products.topPerformers.map((product, index) => (
               <div
@@ -237,13 +279,21 @@ function VendorAnalyticsContent() {
                     #{index + 1}
                   </div>
                   <div>
-                    <div className="text-white text-sm font-light mb-1">{product.name}</div>
-                    <div className="text-white/40 text-xs">{formatNumber(product.units)} units sold</div>
+                    <div className="text-white text-sm font-light mb-1">
+                      {product.name}
+                    </div>
+                    <div className="text-white/40 text-xs">
+                      {formatNumber(product.units)} units sold
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-white font-light mb-1">{formatCurrency(product.revenue)}</div>
-                  <div className="text-green-500 text-xs">{formatPercentage(product.margin, { decimals: 1 })} margin</div>
+                  <div className="text-white font-light mb-1">
+                    {formatCurrency(product.revenue)}
+                  </div>
+                  <div className="text-green-500 text-xs">
+                    {formatPercentage(product.margin, { decimals: 1 })} margin
+                  </div>
                 </div>
               </div>
             ))
@@ -256,25 +306,42 @@ function VendorAnalyticsContent() {
         <div className="minimal-glass subtle-glow p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Cost Analysis</h3>
-              <p className="text-white/30 text-[10px] font-light">PROFITABILITY METRICS</p>
+              <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">
+                Cost Analysis
+              </h3>
+              <p className="text-white/30 text-[10px] font-light">
+                PROFITABILITY METRICS
+              </p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between py-3 border-b border-white/5">
-              <span className="text-white/60 text-xs font-light tracking-wide uppercase">Total COGS</span>
-              <span className="text-white font-light">{formatCurrency(analytics.costs.totalCost)}</span>
+              <span className="text-white/60 text-xs font-light tracking-wide uppercase">
+                Total COGS
+              </span>
+              <span className="text-white font-light">
+                {formatCurrency(analytics.costs.totalCost)}
+              </span>
             </div>
             <div className="flex items-center justify-between py-3 border-b border-white/5">
-              <span className="text-white/60 text-xs font-light tracking-wide uppercase">Gross Profit</span>
+              <span className="text-white/60 text-xs font-light tracking-wide uppercase">
+                Gross Profit
+              </span>
               <span className="text-white font-light">
-                {formatCurrency(analytics.costs.grossProfit ?? (analytics.revenue.total - analytics.costs.totalCost))}
+                {formatCurrency(
+                  analytics.costs.grossProfit ??
+                    analytics.revenue.total - analytics.costs.totalCost,
+                )}
               </span>
             </div>
             <div className="flex items-center justify-between py-3">
-              <span className="text-white/60 text-xs font-light tracking-wide uppercase">Profit Margin</span>
-              <span className="text-green-500 font-light">{formatPercentage(analytics.costs.avgMargin, { decimals: 1 })}</span>
+              <span className="text-white/60 text-xs font-light tracking-wide uppercase">
+                Profit Margin
+              </span>
+              <span className="text-green-500 font-light">
+                {formatPercentage(analytics.costs.avgMargin, { decimals: 1 })}
+              </span>
             </div>
           </div>
         </div>
@@ -282,22 +349,36 @@ function VendorAnalyticsContent() {
         <div className="minimal-glass subtle-glow p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">Inventory Health</h3>
-              <p className="text-white/30 text-[10px] font-light">STOCK METRICS</p>
+              <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">
+                Inventory Health
+              </h3>
+              <p className="text-white/30 text-[10px] font-light">
+                STOCK METRICS
+              </p>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between py-3 border-b border-white/5">
-              <span className="text-white/60 text-xs font-light tracking-wide uppercase">Stock Value</span>
-              <span className="text-white font-light">{formatCurrency(analytics.inventory.stockValue)}</span>
+              <span className="text-white/60 text-xs font-light tracking-wide uppercase">
+                Stock Value
+              </span>
+              <span className="text-white font-light">
+                {formatCurrency(analytics.inventory.stockValue)}
+              </span>
             </div>
             <div className="flex items-center justify-between py-3 border-b border-white/5">
-              <span className="text-white/60 text-xs font-light tracking-wide uppercase">Turnover Rate</span>
-              <span className="text-white font-light">{analytics.inventory.turnoverRate.toFixed(1)}x / year</span>
+              <span className="text-white/60 text-xs font-light tracking-wide uppercase">
+                Turnover Rate
+              </span>
+              <span className="text-white font-light">
+                {analytics.inventory.turnoverRate.toFixed(1)}x / year
+              </span>
             </div>
             <div className="flex items-center justify-between py-3">
-              <span className="text-white/60 text-xs font-light tracking-wide uppercase">Low Stock Items</span>
+              <span className="text-white/60 text-xs font-light tracking-wide uppercase">
+                Low Stock Items
+              </span>
               {analytics.inventory.lowStockCount > 0 ? (
                 <span className="text-yellow-500 font-light flex items-center gap-2">
                   <AlertCircle size={14} strokeWidth={1.5} />
@@ -313,7 +394,6 @@ function VendorAnalyticsContent() {
     </div>
   );
 }
-
 
 export default function VendorAnalytics() {
   return (

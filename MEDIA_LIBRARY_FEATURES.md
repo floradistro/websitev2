@@ -1,4 +1,5 @@
 # Media Powerhouse - Feature Documentation
+
 ## Steve Jobs Quality Level Implementation
 
 This document outlines all the magical features implemented in the WhaleTools Media Powerhouse, designed with iOS-level polish and attention to detail.
@@ -8,6 +9,7 @@ This document outlines all the magical features implemented in the WhaleTools Me
 ## 🎨 **Design Philosophy**
 
 **Core Principles:**
+
 - **Restraint**: Monochrome color palette with subtle opacity values
 - **Clarity**: Every element has a clear purpose
 - **Simplicity**: No unnecessary complexity
@@ -27,6 +29,7 @@ This document outlines all the magical features implemented in the WhaleTools Me
 Users land on a **command center** that shows media health at a glance:
 
 **Features:**
+
 - **Media Health Score** - 0-100% calculation based on:
   - Product image coverage (70% weight)
   - Linked images ratio (30% weight)
@@ -47,12 +50,14 @@ Users land on a **command center** that shows media health at a glance:
   - Link Center
 
 **Interaction:**
+
 - Dashboard is the default landing page (`/vendor/media`)
 - Quick Wins cards navigate to relevant workflows
 - Health score updates in real-time based on media/product stats
 - Responsive design (mobile → tablet → desktop)
 
 **Design:**
+
 - Monochrome cards with subtle borders
 - Large, readable metrics (text-2xl font)
 - iOS-style cards with hover states
@@ -62,18 +67,20 @@ Users land on a **command center** that shows media health at a glance:
 ---
 
 ### 1. **Keyboard Shortcuts (Like Photos.app)**
+
 Professional-grade keyboard navigation for power users:
 
-| Shortcut | Action |
-|----------|--------|
-| `Cmd/Ctrl + A` | Select all files |
-| `Escape` | Clear selection (or close Quick View) |
-| `Delete/Backspace` | Delete selected files |
-| `Space` | Open Quick View for selected file |
-| `←` (in Quick View) | Previous image |
-| `→` (in Quick View) | Next image |
+| Shortcut            | Action                                |
+| ------------------- | ------------------------------------- |
+| `Cmd/Ctrl + A`      | Select all files                      |
+| `Escape`            | Clear selection (or close Quick View) |
+| `Delete/Backspace`  | Delete selected files                 |
+| `Space`             | Open Quick View for selected file     |
+| `←` (in Quick View) | Previous image                        |
+| `→` (in Quick View) | Next image                            |
 
 **Implementation Details:**
+
 - Smart context detection (doesn't trigger when typing in inputs)
 - Separate handlers for Quick View vs main library
 - Smooth, instant response times
@@ -84,6 +91,7 @@ Professional-grade keyboard navigation for power users:
 ### 2. **Quick View Modal with Carousel Navigation**
 
 **Features:**
+
 - **Rebuilt from Scratch**: Native `<img>` tag for perfect aspect ratio handling
 - **Carousel Navigation**: Browse through all images without closing modal
 - **Navigation Arrows**: Appear on hover, circular iOS-style buttons
@@ -93,6 +101,7 @@ Professional-grade keyboard navigation for power users:
 - **Max Dimensions**: `max-w-6xl` and `max-h-[90vh]` for perfect viewport fit
 
 **Visual Elements:**
+
 - Circular close button (top right)
 - Backdrop blur (`backdrop-blur-2xl`)
 - Navigation arrows with `backdrop-blur-md`
@@ -107,16 +116,17 @@ Professional-grade keyboard navigation for power users:
 
 Intelligent, AI-powered collections that automatically organize media:
 
-| Album | Criteria | Description |
-|-------|----------|-------------|
-| **Unlinked** | No linked products | Images that need product association |
-| **Recent** | Created in last 7 days | Recently uploaded files |
-| **Popular** | Usage count > 10 | Most frequently used images |
-| **AI Created** | Filename contains 'dalle' or 'reimagined' | AI-generated images |
-| **Needs Work** | Quality score < 70 | Low quality images |
-| **Unused** | Never used & older than 30 days | Potentially deletable |
+| Album          | Criteria                                  | Description                          |
+| -------------- | ----------------------------------------- | ------------------------------------ |
+| **Unlinked**   | No linked products                        | Images that need product association |
+| **Recent**     | Created in last 7 days                    | Recently uploaded files              |
+| **Popular**    | Usage count > 10                          | Most frequently used images          |
+| **AI Created** | Filename contains 'dalle' or 'reimagined' | AI-generated images                  |
+| **Needs Work** | Quality score < 70                        | Low quality images                   |
+| **Unused**     | Never used & older than 30 days           | Potentially deletable                |
 
 **Interaction:**
+
 - Click to filter by album
 - Active state: `scale-105` with double border
 - "Show All" button appears when filtering
@@ -128,12 +138,14 @@ Intelligent, AI-powered collections that automatically organize media:
 ### 4. **Category Management System**
 
 **Monochrome, Subtle Badges:**
+
 - Small badges on every card (`text-[8px]`)
 - `bg-white/[0.04]`, `border-white/[0.06]`, `text-white/40`
 - Positioned bottom-right in file info (not covering names)
 - Click to open category menu
 
 **6 Categories:**
+
 1. Products
 2. Social
 3. Print
@@ -142,12 +154,14 @@ Intelligent, AI-powered collections that automatically organize media:
 6. Menus
 
 **Categorization Methods:**
+
 - **Per-Card**: Click badge on any card
 - **Bulk**: Select multiple → "Categorize" button
 - **Quick View**: Change category in modal header
 - **Smart Albums**: Filter by category, then bulk change
 
 **iOS Segmented Control:**
+
 - Always visible (no toggle needed)
 - All categories in one unified container
 - Active state with shadow
@@ -158,23 +172,27 @@ Intelligent, AI-powered collections that automatically organize media:
 ### 5. **Refined UI Components**
 
 **Toolbar:**
+
 - Clean search bar (always visible)
 - iOS segmented control for categories
 - View mode toggle (grid/list)
 - Action buttons (Auto-Match, Generate, Upload)
 
 **Selection Toolbar:**
+
 - Appears when files selected
 - Bulk Categorize button with dropdown
 - Delete button
 - Select All/Deselect toggle
 
 **AI Operations:**
+
 - Subtle buttons: `bg-white/[0.04]`
 - Remove BG, Enhance, Upscale, Re-imagine
 - Batch processing with progress tracking
 
 **Smart Collections:**
+
 - Horizontal scrollable row
 - Cards show count + description
 - Clickable to filter
@@ -185,18 +203,21 @@ Intelligent, AI-powered collections that automatically organize media:
 ### 6. **Advanced Batch Operations Panel**
 
 **iOS-Style Slide-in Panel:**
+
 - Slides in from right side when "Batch Edit" clicked
 - Backdrop blur with click-to-close
 - Shows selected file count in header
 - Close button in top-right (circular)
 
 **4 Organized Tabs:**
+
 1. **Metadata** - Bulk edit title, alt text, notes
 2. **AI Tools** - Remove BG, Enhance, Upscale, Re-imagine
 3. **Category** - Quick category change for all selected
 4. **Products** - Product linking (coming soon)
 
 **Features:**
+
 - iOS segmented control for tabs
 - Responsive width (full on mobile, 480px on desktop)
 - Sticky header with file count
@@ -205,6 +226,7 @@ Intelligent, AI-powered collections that automatically organize media:
 - Auto-closes after operation complete
 
 **Interaction:**
+
 - Select files → Click "Batch Edit" button
 - Choose tab → Make changes → Apply
 - Panel slides out on backdrop click or close button
@@ -215,6 +237,7 @@ Intelligent, AI-powered collections that automatically organize media:
 ## 🎯 **Design System**
 
 ### **Color Palette (Monochrome)**
+
 ```css
 /* Background levels */
 bg-[#0a0a0a]           /* Base background */
@@ -239,6 +262,7 @@ text-white/40          /* Subtle */
 ```
 
 ### **Typography**
+
 ```css
 font-medium            /* 500 weight - all text */
 text-[8px]             /* Tiny labels */
@@ -259,6 +283,7 @@ uppercase              /* Labels */
 ```
 
 ### **Spacing (8px Grid)**
+
 ```css
 gap-1    /* 4px */
 gap-2    /* 8px */
@@ -270,6 +295,7 @@ p-4      /* 16px padding */
 ```
 
 ### **Border Radius**
+
 ```css
 rounded-lg      /* 8px */
 rounded-xl      /* 12px */
@@ -279,6 +305,7 @@ rounded-full    /* Circular */
 ```
 
 ### **Transitions**
+
 ```css
 transition-all duration-200       /* Fast (cards) */
 transition-all duration-300       /* Normal (modals) */
@@ -292,6 +319,7 @@ hover:scale-[1.02]               /* Card hover */
 ## 🧪 **Testing**
 
 **Playwright Test Coverage:**
+
 - ✅ Basic UI elements render
 - ✅ Keyboard shortcuts work
 - ✅ Category filtering
@@ -331,11 +359,13 @@ hover:scale-[1.02]               /* Card hover */
 ## 🎬 **User Experience Flow**
 
 ### **Onboarding (Empty State)**
+
 1. Large icon with "No Media Yet" message
 2. Clear call-to-action: "Upload Images"
 3. Drag & drop zone always available
 
 ### **Daily Use**
+
 1. Land on page → See Smart Albums at top
 2. Click album (e.g., "Unlinked") → Filter to those files
 3. Select files → Click "Categorize" → Bulk change
@@ -344,6 +374,7 @@ hover:scale-[1.02]               /* Card hover */
 6. Press Escape → Back to library
 
 ### **Power User Flow**
+
 1. Cmd+A → Select all
 2. Categorize → Change to "Product"
 3. AI tools → Remove BG or Enhance
@@ -356,18 +387,21 @@ hover:scale-[1.02]               /* Card hover */
 ## 🔮 **Future Enhancements (Planned)**
 
 ### **High Priority**
+
 - [x] Drag & drop categorization
 - [x] Right-click context menu
 - [x] Advanced batch operations panel
 - [ ] Recently Deleted / Trash (30-day recovery)
 
 ### **Medium Priority**
+
 - [ ] Virtual scrolling (1000+ images)
 - [ ] Image version history
 - [ ] Advanced search (natural language, color, quality)
 - [ ] Duplicate detection
 
 ### **Nice to Have**
+
 - [ ] Compare before/after side-by-side
 - [ ] Batch metadata editing
 - [ ] Custom smart albums
@@ -378,35 +412,41 @@ hover:scale-[1.02]               /* Card hover */
 ## 🏆 **Steve Jobs Quality Checklist**
 
 ✅ **Simplicity**
+
 - No unnecessary buttons or options
 - Clear, obvious interactions
 - Minimal learning curve
 
 ✅ **Polish**
+
 - Smooth transitions everywhere
 - Proper spacing (8px grid)
 - Consistent border radius
 - Unified color system
 
 ✅ **Intelligence**
+
 - AI auto-categorization
 - Smart collections
 - Auto-match to products
 - Quality scoring
 
 ✅ **Delight**
+
 - Keyboard shortcuts feel instant
 - Carousel navigation is smooth
 - Hover states are subtle
 - Active states are clear
 
 ✅ **Consistency**
+
 - Same design patterns throughout
 - Monochrome palette everywhere
 - Font-medium (never font-black)
 - Uppercase tracking on labels
 
 ✅ **Attention to Detail**
+
 - Backdrop blur on overlays
 - Circular buttons with proper shadows
 - Category badges don't cover text
@@ -418,23 +458,27 @@ hover:scale-[1.02]               /* Card hover */
 ## 💡 **Key Technical Decisions**
 
 ### **Why Native `<img>` in Quick View?**
+
 - Next.js Image component had aspect ratio issues
 - Native img with `max-w-full max-h-full` works perfectly
 - Simpler = better
 
 ### **Why Monochrome?**
+
 - Reduces visual noise
 - Focuses attention on content (images)
 - More professional, less toy-like
 - Easier to maintain consistency
 
 ### **Why Client-Side Filtering?**
+
 - Instant results (no network delay)
 - Better UX for power users
 - Simpler code (no server sync issues)
 - Works offline
 
 ### **Why Smart Albums Instead of Folders?**
+
 - Automatic organization (no manual work)
 - Shows data insights
 - Highlights problems (unlinked, low quality)
@@ -445,18 +489,21 @@ hover:scale-[1.02]               /* Card hover */
 ## 🎯 **Success Metrics**
 
 **Performance:**
+
 - Page load: < 3 seconds
 - Keyboard response: < 100ms
 - Filter response: < 200ms
 - Quick View open: < 300ms
 
 **Usability:**
+
 - Zero training needed for basic use
 - Power users discover shortcuts naturally
 - No confusion about button purposes
 - Clear feedback for all actions
 
 **Quality:**
+
 - No visible bugs in common workflows
 - Smooth animations (60fps)
 - Proper keyboard accessibility
@@ -467,6 +514,7 @@ hover:scale-[1.02]               /* Card hover */
 ## 📝 **Development Notes**
 
 **File Structure:**
+
 ```
 app/vendor/media-library/
   └── MediaLibraryClient.tsx (2000+ lines)
@@ -492,6 +540,7 @@ Database:
 ```
 
 **Key Dependencies:**
+
 - Next.js 14 (App Router)
 - Tailwind CSS
 - Lucide Icons
@@ -513,5 +562,5 @@ Yes. This is simple, beautiful, and it just works.
 
 ---
 
-*Built with ❤️  by the WhaleTools team*
-*"Design is not just what it looks like and feels like. Design is how it works." - Steve Jobs*
+_Built with ❤️ by the WhaleTools team_
+_"Design is not just what it looks like and feels like. Design is how it works." - Steve Jobs_

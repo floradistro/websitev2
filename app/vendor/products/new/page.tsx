@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic';
-import { FormErrorBoundary } from '@/components/ErrorBoundary';
+import dynamic from "next/dynamic";
+import { FormErrorBoundary } from "@/components/ErrorBoundary";
 
 // Lazy load the heavy product creation form
-const NewProductClient = dynamic(() => import('./NewProductClient'), {
+const NewProductClient = dynamic(() => import("./NewProductClient"), {
   loading: () => (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="text-center">
         <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Loading Product Form...</p>
+        <p className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+          Loading Product Form...
+        </p>
       </div>
     </div>
   ),

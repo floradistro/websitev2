@@ -1,6 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
-import { StoreRequirements, StoreRequirementsSchema } from './schemas';
+import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
+import { StoreRequirements, StoreRequirementsSchema } from "./schemas";
 
 /**
  * NLP Processor - Converts natural language vendor requests into structured storefront specifications
@@ -9,12 +9,12 @@ import { StoreRequirements, StoreRequirementsSchema } from './schemas';
 export class NLPProcessor {
   private anthropic?: Anthropic;
   private openai?: OpenAI;
-  private provider: 'anthropic' | 'openai';
+  private provider: "anthropic" | "openai";
 
-  constructor(provider: 'anthropic' | 'openai' = 'anthropic') {
+  constructor(provider: "anthropic" | "openai" = "anthropic") {
     this.provider = provider;
-    
-    if (provider === 'anthropic') {
+
+    if (provider === "anthropic") {
       this.anthropic = new Anthropic({
         apiKey: process.env.ANTHROPIC_API_KEY,
       });
@@ -30,23 +30,32 @@ export class NLPProcessor {
    */
   async processVendorRequest(
     userMessage: string,
-    conversationHistory: Array<{ role: string; content: string }> = []
+    conversationHistory: Array<{ role: string; content: string }> = [],
   ): Promise<{
     requirements: StoreRequirements;
     response: string;
     confidence: number;
   }> {
     const systemPrompt = this.getSystemPrompt();
-    
+
     try {
-      if (this.provider === 'anthropic') {
-        return await this.processWithClaude(systemPrompt, userMessage, conversationHistory);
+      if (this.provider === "anthropic") {
+        return await this.processWithClaude(
+          systemPrompt,
+          userMessage,
+          conversationHistory,
+        );
       } else {
-        return await this.processWithGPT(systemPrompt, userMessage, conversationHistory);
+        return await this.processWithGPT(
+          systemPrompt,
+          userMessage,
+          conversationHistory,
+        );
       }
     } catch (error) {
-      console.error('❌ NLP processing error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error("❌ NLP processing error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       throw new Error(`Failed to process vendor request: ${errorMessage}`);
     }
   }
@@ -57,30 +66,34 @@ export class NLPProcessor {
   private async processWithClaude(
     systemPrompt: string,
     userMessage: string,
-    history: Array<{ role: string; content: string }>
-  ): Promise<{ requirements: StoreRequirements; response: string; confidence: number }> {
+    history: Array<{ role: string; content: string }>,
+  ): Promise<{
+    requirements: StoreRequirements;
+    response: string;
+    confidence: number;
+  }> {
     if (!this.anthropic) {
-      throw new Error('Anthropic client not initialized');
+      throw new Error("Anthropic client not initialized");
     }
     const response = await this.anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: "claude-sonnet-4-20250514",
       max_tokens: 8192,
       system: systemPrompt,
       messages: [
-        ...history.map(msg => ({
-          role: msg.role as 'user' | 'assistant',
+        ...history.map((msg) => ({
+          role: msg.role as "user" | "assistant",
           content: msg.content,
         })),
         {
-          role: 'user',
+          role: "user",
           content: userMessage,
         },
       ],
     });
 
     const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type from Claude');
+    if (content.type !== "text") {
+      throw new Error("Unexpected response type from Claude");
     }
 
     return this.parseAIResponse(content.text);
@@ -92,23 +105,27 @@ export class NLPProcessor {
   private async processWithGPT(
     systemPrompt: string,
     userMessage: string,
-    history: Array<{ role: string; content: string }>
-  ): Promise<{ requirements: StoreRequirements; response: string; confidence: number }> {
+    history: Array<{ role: string; content: string }>,
+  ): Promise<{
+    requirements: StoreRequirements;
+    response: string;
+    confidence: number;
+  }> {
     if (!this.openai) {
-      throw new Error('OpenAI client not initialized');
+      throw new Error("OpenAI client not initialized");
     }
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
+      model: "gpt-4-turbo-preview",
       messages: [
-        { role: 'system', content: systemPrompt },
-        ...history.map(msg => ({
-          role: msg.role as 'user' | 'assistant',
+        { role: "system", content: systemPrompt },
+        ...history.map((msg) => ({
+          role: msg.role as "user" | "assistant",
           content: msg.content,
         })),
-        { role: 'user', content: userMessage },
+        { role: "user", content: userMessage },
       ],
       temperature: 0.7,
-      response_format: { type: 'json_object' },
+      response_format: { type: "json_object" },
     });
 
     const content = response.choices[0].message.content!;
@@ -124,10 +141,11 @@ export class NLPProcessor {
     confidence: number;
   } {
     // Extract JSON from response (AI should return JSON in a code block)
-    const jsonMatch = text.match(/```json\n([\s\S]+?)\n```/) || text.match(/\{[\s\S]+\}/);
-    
+    const jsonMatch =
+      text.match(/```json\n([\s\S]+?)\n```/) || text.match(/\{[\s\S]+\}/);
+
     if (!jsonMatch) {
-      throw new Error('No JSON found in AI response');
+      throw new Error("No JSON found in AI response");
     }
 
     const jsonStr = jsonMatch[1] || jsonMatch[0];
@@ -138,7 +156,9 @@ export class NLPProcessor {
 
     return {
       requirements,
-      response: parsed.response || 'I\'ve analyzed your requirements and created a storefront specification.',
+      response:
+        parsed.response ||
+        "I've analyzed your requirements and created a storefront specification.",
       confidence: parsed.confidence || 0.9,
     };
   }
@@ -277,4 +297,3 @@ Output:
 }`;
   }
 }
-

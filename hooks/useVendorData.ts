@@ -3,9 +3,9 @@
  * Eliminates duplicate API calls across pages
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import axios from 'axios';
-import { useAppAuth } from '@/context/AppAuthContext';
+import { useState, useEffect, useCallback, useRef } from "react";
+import axios from "axios";
+import { useAppAuth } from "@/context/AppAuthContext";
 
 interface CacheEntry<T> {
   data: T;
@@ -58,12 +58,12 @@ function stopCacheCleanup() {
 }
 
 // Start cleanup when module loads
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   startCacheCleanup();
 
   // Cleanup on unmount (page unload)
-  if (typeof window !== 'undefined') {
-    window.addEventListener('beforeunload', () => {
+  if (typeof window !== "undefined") {
+    window.addEventListener("beforeunload", () => {
       stopCacheCleanup();
       cache.clear();
       pendingRequests.clear();
@@ -79,7 +79,7 @@ export function useVendorData<T>(
     cacheTime?: number;
     onSuccess?: (data: T) => void;
     onError?: (error: any) => void;
-  } = {}
+  } = {},
 ) {
   const {
     enabled = true,
@@ -95,100 +95,107 @@ export function useVendorData<T>(
   const [error, setError] = useState<Error | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchData = useCallback(async (forceRefresh = false) => {
-    const vendorId = vendor?.id;
+  const fetchData = useCallback(
+    async (forceRefresh = false) => {
+      const vendorId = vendor?.id;
 
-    if (!vendorId || !isAuthenticated) {
-      // Normal during initial load - skip silently
-      setLoading(false);
-      return;
-    }
-    
-    if (!enabled) {
-      setLoading(false);
-      return;
-    }
-
-    const cacheKey = `${endpoint}:${vendorId}`;
-
-    // Check cache first
-    if (!forceRefresh) {
-      const cached = cache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < cacheTime) {
-        setData(cached.data);
+      if (!vendorId || !isAuthenticated) {
+        // Normal during initial load - skip silently
         setLoading(false);
-        onSuccess?.(cached.data);
-        return cached.data;
-      }
-    }
-
-    // Check if request is already in flight
-    if (pendingRequests.has(cacheKey)) {
-      try {
-        const result = await pendingRequests.get(cacheKey);
-        setData(result);
-        setLoading(false);
-        return result;
-      } catch (err) {
-        setError(err as Error);
-        setLoading(false);
-        onError?.(err);
         return;
       }
-    }
 
-    // Make new request
-    setLoading(true);
-    setError(null);
-
-    const requestPromise = axios.get(endpoint, {
-      headers: { 'x-vendor-id': vendorId }
-    }).then(response => {
-      // Handle different response structures
-      let result;
-      if (response.data.success !== false) {
-        // Check if data is nested under data property
-        if (response.data.data !== undefined) {
-          result = response.data.data;
-        } else if (response.data.success === true && response.data.data) {
-          result = response.data.data;
-        } else {
-          result = response.data;
-        }
-        
-        // Evict old entries before adding new one
-        evictOldestCacheEntries();
-
-        // Cache the result
-        cache.set(cacheKey, {
-          data: result,
-          timestamp: Date.now()
-        });
-        
-        setData(result);
-        onSuccess?.(result);
-        return result;
-      } else {
-        throw new Error(response.data.error || 'Failed to fetch data');
+      if (!enabled) {
+        setLoading(false);
+        return;
       }
-    }).catch(err => {
-      console.error(`API Error fetching ${endpoint}:`, err);
-      setError(err);
-      onError?.(err);
-      throw err;
-    }).finally(() => {
-      setLoading(false);
-      pendingRequests.delete(cacheKey);
-    });
 
-    pendingRequests.set(cacheKey, requestPromise);
-    
-    try {
-      return await requestPromise;
-    } catch (err) {
-      // Error already handled above
-    }
-  }, [endpoint, enabled, cacheTime, onSuccess, onError, vendor, isAuthenticated]);
+      const cacheKey = `${endpoint}:${vendorId}`;
+
+      // Check cache first
+      if (!forceRefresh) {
+        const cached = cache.get(cacheKey);
+        if (cached && Date.now() - cached.timestamp < cacheTime) {
+          setData(cached.data);
+          setLoading(false);
+          onSuccess?.(cached.data);
+          return cached.data;
+        }
+      }
+
+      // Check if request is already in flight
+      if (pendingRequests.has(cacheKey)) {
+        try {
+          const result = await pendingRequests.get(cacheKey);
+          setData(result);
+          setLoading(false);
+          return result;
+        } catch (err) {
+          setError(err as Error);
+          setLoading(false);
+          onError?.(err);
+          return;
+        }
+      }
+
+      // Make new request
+      setLoading(true);
+      setError(null);
+
+      const requestPromise = axios
+        .get(endpoint, {
+          headers: { "x-vendor-id": vendorId },
+        })
+        .then((response) => {
+          // Handle different response structures
+          let result;
+          if (response.data.success !== false) {
+            // Check if data is nested under data property
+            if (response.data.data !== undefined) {
+              result = response.data.data;
+            } else if (response.data.success === true && response.data.data) {
+              result = response.data.data;
+            } else {
+              result = response.data;
+            }
+
+            // Evict old entries before adding new one
+            evictOldestCacheEntries();
+
+            // Cache the result
+            cache.set(cacheKey, {
+              data: result,
+              timestamp: Date.now(),
+            });
+
+            setData(result);
+            onSuccess?.(result);
+            return result;
+          } else {
+            throw new Error(response.data.error || "Failed to fetch data");
+          }
+        })
+        .catch((err) => {
+          console.error(`API Error fetching ${endpoint}:`, err);
+          setError(err);
+          onError?.(err);
+          throw err;
+        })
+        .finally(() => {
+          setLoading(false);
+          pendingRequests.delete(cacheKey);
+        });
+
+      pendingRequests.set(cacheKey, requestPromise);
+
+      try {
+        return await requestPromise;
+      } catch (err) {
+        // Error already handled above
+      }
+    },
+    [endpoint, enabled, cacheTime, onSuccess, onError, vendor, isAuthenticated],
+  );
 
   // Initial fetch
   useEffect(() => {
@@ -214,25 +221,28 @@ export function useVendorData<T>(
     return fetchData(true);
   }, [fetchData]);
 
-  const mutate = useCallback((updater: (prev: T | null) => T | null) => {
-    setData(prev => {
-      const updated = updater(prev);
-      
-      // Update cache
-      if (updated) {
-        const vendorId = localStorage.getItem('vendor_id');
-        if (vendorId) {
-          const cacheKey = `${endpoint}:${vendorId}`;
-          cache.set(cacheKey, {
-            data: updated,
-            timestamp: Date.now()
-          });
+  const mutate = useCallback(
+    (updater: (prev: T | null) => T | null) => {
+      setData((prev) => {
+        const updated = updater(prev);
+
+        // Update cache
+        if (updated) {
+          const vendorId = localStorage.getItem("vendor_id");
+          if (vendorId) {
+            const cacheKey = `${endpoint}:${vendorId}`;
+            cache.set(cacheKey, {
+              data: updated,
+              timestamp: Date.now(),
+            });
+          }
         }
-      }
-      
-      return updated;
-    });
-  }, [endpoint]);
+
+        return updated;
+      });
+    },
+    [endpoint],
+  );
 
   return {
     data,
@@ -245,24 +255,24 @@ export function useVendorData<T>(
 
 // Specific hooks for common vendor data
 export function useVendorDashboard() {
-  return useVendorData<any>('/api/page-data/vendor-dashboard', {
+  return useVendorData<any>("/api/page-data/vendor-dashboard", {
     cacheTime: 30 * 1000, // 30 seconds - matches server cache
   });
 }
 
 export function useVendorProducts() {
-  return useVendorData('/api/page-data/vendor-products', {
+  return useVendorData("/api/page-data/vendor-products", {
     cacheTime: 60 * 1000, // 60 seconds - matches server cache
   });
 }
 
 export function useVendorInventory() {
-  return useVendorData('/api/page-data/vendor-inventory', {
+  return useVendorData("/api/page-data/vendor-inventory", {
     cacheTime: 30 * 1000, // 30 seconds - matches server cache
   });
 }
 
-export function useVendorAnalytics(range: string = '30d') {
+export function useVendorAnalytics(range: string = "30d") {
   return useVendorData(`/api/vendor/analytics?range=${range}`, {
     cacheTime: 2 * 60 * 1000, // 2 minutes for analytics
   });
@@ -271,7 +281,7 @@ export function useVendorAnalytics(range: string = '30d') {
 // Utility to clear cache
 export function clearVendorCache(endpoint?: string) {
   if (endpoint) {
-    const vendorId = localStorage.getItem('vendor_id');
+    const vendorId = localStorage.getItem("vendor_id");
     if (vendorId) {
       cache.delete(`${endpoint}:${vendorId}`);
     }
@@ -282,11 +292,11 @@ export function clearVendorCache(endpoint?: string) {
 
 // Utility to prefetch data
 export async function prefetchVendorData(endpoint: string) {
-  const vendorId = localStorage.getItem('vendor_id');
+  const vendorId = localStorage.getItem("vendor_id");
   if (!vendorId) return;
 
   const cacheKey = `${endpoint}:${vendorId}`;
-  
+
   // Don't prefetch if already cached
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -295,18 +305,17 @@ export async function prefetchVendorData(endpoint: string) {
 
   try {
     const response = await axios.get(endpoint, {
-      headers: { 'x-vendor-id': vendorId }
+      headers: { "x-vendor-id": vendorId },
     });
-    
+
     if (response.data.success !== false) {
       const result = response.data.data || response.data;
       cache.set(cacheKey, {
         data: result,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
   } catch (err) {
-    console.error('Prefetch error:', err);
+    console.error("Prefetch error:", err);
   }
 }
-

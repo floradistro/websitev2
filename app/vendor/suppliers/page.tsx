@@ -1,13 +1,24 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useVendorAuth } from '@/context/AppAuthContext';
-import { Plus, Building2, Mail, Phone, MapPin, Search, Edit2, Trash2, Check, X } from 'lucide-react';
-import axios from 'axios';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { StatCard } from '@/components/ui/StatCard';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { useState, useEffect } from "react";
+import { useVendorAuth } from "@/context/AppAuthContext";
+import {
+  Plus,
+  Building2,
+  Mail,
+  Phone,
+  MapPin,
+  Search,
+  Edit2,
+  Trash2,
+  Check,
+  X,
+} from "lucide-react";
+import axios from "axios";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatCard } from "@/components/ui/StatCard";
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 interface Supplier {
   id: string;
@@ -34,25 +45,25 @@ export default function SuppliersPage() {
   const { vendor, isAuthenticated, isLoading: authLoading } = useVendorAuth();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
-    external_name: '',
-    external_company: '',
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-    address_line1: '',
-    address_line2: '',
-    city: '',
-    state: '',
-    zip: '',
-    country: 'US',
-    payment_terms: '',
-    notes: ''
+    external_name: "",
+    external_company: "",
+    contact_name: "",
+    contact_email: "",
+    contact_phone: "",
+    address_line1: "",
+    address_line2: "",
+    city: "",
+    state: "",
+    zip: "",
+    country: "US",
+    payment_terms: "",
+    notes: "",
   });
 
   useEffect(() => {
@@ -64,10 +75,14 @@ export default function SuppliersPage() {
   const loadSuppliers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/vendor/suppliers?vendor_id=${vendor!.id}`);
+      const response = await axios.get(
+        `/api/vendor/suppliers?vendor_id=${vendor!.id}`,
+      );
       setSuppliers(response.data.data || []);
     } catch (error) {
-      console.error('Error loading suppliers:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error loading suppliers:", error);
+      }
     } finally {
       setLoading(false);
     }
@@ -76,19 +91,19 @@ export default function SuppliersPage() {
   const openCreateModal = () => {
     setEditingSupplier(null);
     setFormData({
-      external_name: '',
-      external_company: '',
-      contact_name: '',
-      contact_email: '',
-      contact_phone: '',
-      address_line1: '',
-      address_line2: '',
-      city: '',
-      state: '',
-      zip: '',
-      country: 'US',
-      payment_terms: '',
-      notes: ''
+      external_name: "",
+      external_company: "",
+      contact_name: "",
+      contact_email: "",
+      contact_phone: "",
+      address_line1: "",
+      address_line2: "",
+      city: "",
+      state: "",
+      zip: "",
+      country: "US",
+      payment_terms: "",
+      notes: "",
     });
     setShowModal(true);
   };
@@ -96,62 +111,70 @@ export default function SuppliersPage() {
   const openEditModal = (supplier: Supplier) => {
     setEditingSupplier(supplier);
     setFormData({
-      external_name: supplier.external_name || '',
-      external_company: supplier.external_company || '',
-      contact_name: supplier.contact_name || '',
-      contact_email: supplier.contact_email || '',
-      contact_phone: supplier.contact_phone || '',
-      address_line1: supplier.address_line1 || '',
-      address_line2: '',
-      city: supplier.city || '',
-      state: supplier.state || '',
-      zip: supplier.zip || '',
-      country: 'US',
-      payment_terms: supplier.payment_terms || '',
-      notes: ''
+      external_name: supplier.external_name || "",
+      external_company: supplier.external_company || "",
+      contact_name: supplier.contact_name || "",
+      contact_email: supplier.contact_email || "",
+      contact_phone: supplier.contact_phone || "",
+      address_line1: supplier.address_line1 || "",
+      address_line2: "",
+      city: supplier.city || "",
+      state: supplier.state || "",
+      zip: supplier.zip || "",
+      country: "US",
+      payment_terms: supplier.payment_terms || "",
+      notes: "",
     });
     setShowModal(true);
   };
 
   const handleSubmit = async () => {
     try {
-      const action = editingSupplier ? 'update' : 'create';
+      const action = editingSupplier ? "update" : "create";
       const payload = {
         action,
         vendor_id: vendor!.id,
         ...formData,
-        ...(editingSupplier && { id: editingSupplier.id })
+        ...(editingSupplier && { id: editingSupplier.id }),
       };
 
-      await axios.post('/api/vendor/suppliers', payload);
+      await axios.post("/api/vendor/suppliers", payload);
       setShowModal(false);
       loadSuppliers();
     } catch (error) {
-      console.error('Error saving supplier:', error);
-      alert('Failed to save supplier');
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error saving supplier:", error);
+      }
+      alert("Failed to save supplier");
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to deactivate this supplier?')) return;
+    if (!confirm("Are you sure you want to deactivate this supplier?")) return;
 
     try {
-      await axios.post('/api/vendor/suppliers', {
-        action: 'delete',
+      await axios.post("/api/vendor/suppliers", {
+        action: "delete",
         vendor_id: vendor!.id,
-        id
+        id,
       });
       loadSuppliers();
     } catch (error) {
-      console.error('Error deleting supplier:', error);
-      alert('Failed to delete supplier');
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error deleting supplier:", error);
+      }
+      alert("Failed to delete supplier");
     }
   };
 
-  const filteredSuppliers = suppliers.filter(s => {
+  const filteredSuppliers = suppliers.filter((s) => {
     const searchLower = search.toLowerCase();
-    const name = (s.external_name || s.supplier_vendor?.store_name || '').toLowerCase();
-    const company = (s.external_company || '').toLowerCase();
+    const name = (
+      s.external_name ||
+      s.supplier_vendor?.store_name ||
+      ""
+    ).toLowerCase();
+    const company = (s.external_company || "").toLowerCase();
     return name.includes(searchLower) || company.includes(searchLower);
   });
 
@@ -192,7 +215,7 @@ export default function SuppliersPage() {
         />
         <StatCard
           label="Active"
-          value={suppliers.filter(s => s.is_active).length}
+          value={suppliers.filter((s) => s.is_active).length}
           sublabel="Currently Active"
           icon={Check}
           loading={loading}
@@ -200,7 +223,7 @@ export default function SuppliersPage() {
         />
         <StatCard
           label="Inactive"
-          value={suppliers.filter(s => !s.is_active).length}
+          value={suppliers.filter((s) => !s.is_active).length}
           sublabel="Deactivated"
           icon={X}
           loading={loading}
@@ -208,7 +231,7 @@ export default function SuppliersPage() {
         />
         <StatCard
           label="External"
-          value={suppliers.filter(s => !s.supplier_vendor_id).length}
+          value={suppliers.filter((s) => !s.supplier_vendor_id).length}
           sublabel="Non-B2B"
           icon={Building2}
           loading={loading}
@@ -219,7 +242,10 @@ export default function SuppliersPage() {
       {/* Search */}
       <Card className="mb-6" padding="sm">
         <div className="relative">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+          <Search
+            size={18}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
+          />
           <input
             type="text"
             placeholder="Search suppliers..."
@@ -235,7 +261,9 @@ export default function SuppliersPage() {
         <Card className="text-center" padding="lg">
           <Building2 size={48} className="text-white/20 mx-auto mb-4" />
           <div className="text-white/60 mb-2">No suppliers found</div>
-          <div className="text-white/40 text-sm mb-4">Add your first supplier to start purchasing</div>
+          <div className="text-white/40 text-sm mb-4">
+            Add your first supplier to start purchasing
+          </div>
           <button
             onClick={openCreateModal}
             className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 rounded-lg text-xs uppercase tracking-wider hover:bg-white/90 transition-all"
@@ -247,18 +275,18 @@ export default function SuppliersPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 spacing-grid">
           {filteredSuppliers.map((supplier) => (
-            <Card
-              key={supplier.id}
-              hover={true}
-              className="group"
-            >
+            <Card key={supplier.id} hover={true} className="group">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="text-white font-medium text-lg mb-1">
-                    {supplier.external_name || supplier.supplier_vendor?.store_name || 'Unnamed'}
+                    {supplier.external_name ||
+                      supplier.supplier_vendor?.store_name ||
+                      "Unnamed"}
                   </h3>
                   {supplier.external_company && (
-                    <p className="text-white/60 text-sm mb-2">{supplier.external_company}</p>
+                    <p className="text-white/60 text-sm mb-2">
+                      {supplier.external_company}
+                    </p>
                   )}
                   <div className="flex items-center gap-2">
                     {supplier.is_active ? (
@@ -273,9 +301,7 @@ export default function SuppliersPage() {
                       </Badge>
                     )}
                     {supplier.supplier_vendor_id && (
-                      <Badge variant="neutral">
-                        B2B Vendor
-                      </Badge>
+                      <Badge variant="neutral">B2B Vendor</Badge>
                     )}
                   </div>
                 </div>
@@ -291,7 +317,10 @@ export default function SuppliersPage() {
                     onClick={() => handleDelete(supplier.id)}
                     className="p-2 hover:bg-red-500/10 border border-white/10 hover:border-red-500 rounded-md transition-all"
                   >
-                    <Trash2 size={14} className="text-red-500/60 hover:text-red-500" />
+                    <Trash2
+                      size={14}
+                      className="text-red-500/60 hover:text-red-500"
+                    />
                   </button>
                 </div>
               </div>
@@ -315,7 +344,7 @@ export default function SuppliersPage() {
                     {supplier.contact_phone}
                   </div>
                 )}
-                {(supplier.city && supplier.state) && (
+                {supplier.city && supplier.state && (
                   <div className="flex items-center gap-2 text-white/60">
                     <MapPin size={14} className="text-white/40" />
                     {supplier.city}, {supplier.state}
@@ -323,7 +352,8 @@ export default function SuppliersPage() {
                 )}
                 {supplier.payment_terms && (
                   <div className="text-white/60">
-                    <span className="text-white/40">Terms:</span> {supplier.payment_terms}
+                    <span className="text-white/40">Terms:</span>{" "}
+                    {supplier.payment_terms}
                   </div>
                 )}
               </div>
@@ -338,7 +368,7 @@ export default function SuppliersPage() {
           <div className="minimal-glass subtle-glow border border-white/20 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-white/10">
               <h2 className="text-xl text-white/90 font-light tracking-tight">
-                {editingSupplier ? 'Edit Supplier' : 'Add Supplier'}
+                {editingSupplier ? "Edit Supplier" : "Add Supplier"}
               </h2>
             </div>
 
@@ -351,20 +381,28 @@ export default function SuppliersPage() {
                   <input
                     type="text"
                     value={formData.external_name}
-                    onChange={(e) => setFormData({...formData, external_name: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        external_name: e.target.value,
+                      })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-label mb-2">
-                    Company Name
-                  </label>
+                  <label className="block text-label mb-2">Company Name</label>
                   <input
                     type="text"
                     value={formData.external_company}
-                    onChange={(e) => setFormData({...formData, external_company: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        external_company: e.target.value,
+                      })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
@@ -372,50 +410,56 @@ export default function SuppliersPage() {
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-label mb-2">
-                    Contact Name
-                  </label>
+                  <label className="block text-label mb-2">Contact Name</label>
                   <input
                     type="text"
                     value={formData.contact_name}
-                    onChange={(e) => setFormData({...formData, contact_name: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, contact_name: e.target.value })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-label mb-2">
-                    Email
-                  </label>
+                  <label className="block text-label mb-2">Email</label>
                   <input
                     type="email"
                     value={formData.contact_email}
-                    onChange={(e) => setFormData({...formData, contact_email: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        contact_email: e.target.value,
+                      })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-label mb-2">
-                    Phone
-                  </label>
+                  <label className="block text-label mb-2">Phone</label>
                   <input
                     type="tel"
                     value={formData.contact_phone}
-                    onChange={(e) => setFormData({...formData, contact_phone: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        contact_phone: e.target.value,
+                      })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-label mb-2">
-                  Address
-                </label>
+                <label className="block text-label mb-2">Address</label>
                 <input
                   type="text"
                   value={formData.address_line1}
-                  onChange={(e) => setFormData({...formData, address_line1: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address_line1: e.target.value })
+                  }
                   className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   placeholder="Street address"
                 />
@@ -423,50 +467,50 @@ export default function SuppliersPage() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-label mb-2">
-                    City
-                  </label>
+                  <label className="block text-label mb-2">City</label>
                   <input
                     type="text"
                     value={formData.city}
-                    onChange={(e) => setFormData({...formData, city: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, city: e.target.value })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-label mb-2">
-                    State
-                  </label>
+                  <label className="block text-label mb-2">State</label>
                   <input
                     type="text"
                     value={formData.state}
-                    onChange={(e) => setFormData({...formData, state: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, state: e.target.value })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-label mb-2">
-                    ZIP
-                  </label>
+                  <label className="block text-label mb-2">ZIP</label>
                   <input
                     type="text"
                     value={formData.zip}
-                    onChange={(e) => setFormData({...formData, zip: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, zip: e.target.value })
+                    }
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-label mb-2">
-                  Payment Terms
-                </label>
+                <label className="block text-label mb-2">Payment Terms</label>
                 <input
                   type="text"
                   value={formData.payment_terms}
-                  onChange={(e) => setFormData({...formData, payment_terms: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, payment_terms: e.target.value })
+                  }
                   placeholder="e.g., Net 30, Net 60"
                   className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                 />
@@ -484,7 +528,7 @@ export default function SuppliersPage() {
                 onClick={handleSubmit}
                 className="px-6 py-3 rounded-lg text-xs uppercase tracking-wider bg-white text-black hover:bg-white/90 transition-all"
               >
-                {editingSupplier ? 'Update' : 'Create'} Supplier
+                {editingSupplier ? "Update" : "Create"} Supplier
               </button>
             </div>
           </div>

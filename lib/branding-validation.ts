@@ -4,36 +4,36 @@
  * Form validation and data sanitization for vendor branding
  */
 
-import type { BrandingFormState, BrandingValidation } from '@/types/branding';
+import type { BrandingFormState, BrandingValidation } from "@/types/branding";
 
 export function validateBrandingForm(
-  formData: Partial<BrandingFormState>
+  formData: Partial<BrandingFormState>,
 ): BrandingValidation {
   const errors: { [key: string]: string } = {};
 
   // Tagline validation
   if (formData.tagline && formData.tagline.length > 100) {
-    errors.tagline = 'Tagline must be 100 characters or less';
+    errors.tagline = "Tagline must be 100 characters or less";
   }
 
   // Description validation
   if (formData.about && formData.about.length > 500) {
-    errors.about = 'Description must be 500 characters or less';
+    errors.about = "Description must be 500 characters or less";
   }
 
   // Color validation
   const colorFields = [
-    'primaryColor',
-    'secondaryColor',
-    'accentColor',
-    'backgroundColor',
-    'textColor'
+    "primaryColor",
+    "secondaryColor",
+    "accentColor",
+    "backgroundColor",
+    "textColor",
   ] as const;
 
   colorFields.forEach((field) => {
     const color = formData[field];
     if (color && !isValidHexColor(color)) {
-      errors[field] = 'Invalid color format (use #RRGGBB)';
+      errors[field] = "Invalid color format (use #RRGGBB)";
     }
   });
 
@@ -41,45 +41,45 @@ export function validateBrandingForm(
   if (formData.primaryColor && formData.backgroundColor) {
     const contrast = getContrastRatio(
       formData.primaryColor,
-      formData.backgroundColor
+      formData.backgroundColor,
     );
     if (contrast < 3) {
       errors.colorContrast =
-        'Low contrast between primary color and background. Consider choosing colors with better contrast for readability.';
+        "Low contrast between primary color and background. Consider choosing colors with better contrast for readability.";
     }
   }
 
   // URL validation
   if (formData.website && !isValidUrl(formData.website)) {
-    errors.website = 'Invalid website URL';
+    errors.website = "Invalid website URL";
   }
 
   // Social media validation
   if (formData.instagram && formData.instagram.length > 50) {
-    errors.instagram = 'Instagram handle too long';
+    errors.instagram = "Instagram handle too long";
   }
 
   if (formData.facebook && formData.facebook.length > 50) {
-    errors.facebook = 'Facebook page name too long';
+    errors.facebook = "Facebook page name too long";
   }
 
   // Policy length validation
   if (formData.returnPolicy && formData.returnPolicy.length > 2000) {
-    errors.returnPolicy = 'Return policy must be 2000 characters or less';
+    errors.returnPolicy = "Return policy must be 2000 characters or less";
   }
 
   if (formData.shippingPolicy && formData.shippingPolicy.length > 2000) {
-    errors.shippingPolicy = 'Shipping policy must be 2000 characters or less';
+    errors.shippingPolicy = "Shipping policy must be 2000 characters or less";
   }
 
   // Custom CSS validation (basic safety check)
   if (formData.customCss && formData.customCss.length > 10000) {
-    errors.customCss = 'Custom CSS must be 10,000 characters or less';
+    errors.customCss = "Custom CSS must be 10,000 characters or less";
   }
 
   return {
     isValid: Object.keys(errors).length === 0,
-    errors
+    errors,
   };
 }
 
@@ -96,7 +96,7 @@ export function isValidHexColor(color: string): boolean {
 export function isValidUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
   } catch {
     return false;
   }
@@ -142,7 +142,7 @@ function hexToRgb(hex: string): [number, number, number] | null {
     ? [
         parseInt(result[1], 16),
         parseInt(result[2], 16),
-        parseInt(result[3], 16)
+        parseInt(result[3], 16),
       ]
     : null;
 }
@@ -151,14 +151,14 @@ function hexToRgb(hex: string): [number, number, number] | null {
  * Sanitize social media handle
  */
 export function sanitizeSocialHandle(handle: string): string {
-  return handle.replace(/^@/, '').trim();
+  return handle.replace(/^@/, "").trim();
 }
 
 /**
  * Format URL to ensure it has protocol
  */
 export function formatUrl(url: string): string {
-  if (!url) return '';
+  if (!url) return "";
   if (!/^https?:\/\//i.test(url)) {
     return `https://${url}`;
   }
@@ -170,12 +170,12 @@ export function formatUrl(url: string): string {
  */
 export function validateImageFile(
   file: File,
-  maxSizeMB: number = 10
+  maxSizeMB: number = 10,
 ): string | null {
-  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
   if (!validTypes.includes(file.type)) {
-    return 'Please upload a JPG, PNG, WEBP, or GIF image';
+    return "Please upload a JPG, PNG, WEBP, or GIF image";
   }
 
   const maxSize = maxSizeMB * 1024 * 1024;
@@ -190,23 +190,23 @@ export function validateImageFile(
  * Get contrast rating (AAA, AA, or Fail)
  */
 export function getContrastRating(contrast: number): {
-  rating: 'AAA' | 'AA' | 'Fail';
+  rating: "AAA" | "AA" | "Fail";
   description: string;
 } {
   if (contrast >= 7) {
     return {
-      rating: 'AAA',
-      description: 'Excellent contrast for all text sizes'
+      rating: "AAA",
+      description: "Excellent contrast for all text sizes",
     };
   }
   if (contrast >= 4.5) {
     return {
-      rating: 'AA',
-      description: 'Good contrast for normal text'
+      rating: "AA",
+      description: "Good contrast for normal text",
     };
   }
   return {
-    rating: 'Fail',
-    description: 'Insufficient contrast - may be hard to read'
+    rating: "Fail",
+    description: "Insufficient contrast - may be hard to read",
   };
 }

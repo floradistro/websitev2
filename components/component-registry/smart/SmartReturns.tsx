@@ -5,17 +5,17 @@
  * Return policy and process
  */
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { 
-  SmartComponentWrapper, 
+import React from "react";
+import { motion } from "framer-motion";
+import {
+  SmartComponentWrapper,
   SmartComponentBaseProps,
   SmartTypography,
   SmartContainers,
-  useScrollAnimation
-} from '@/lib/smart-component-base';
-import { RotateCcw, CheckCircle, Clock, Mail } from 'lucide-react';
-import Image from 'next/image';
+  useScrollAnimation,
+} from "@/lib/smart-component-base";
+import { RotateCcw, CheckCircle, Clock, Mail } from "lucide-react";
+import Image from "next/image";
 
 export interface SmartReturnsProps extends SmartComponentBaseProps {
   headline?: string;
@@ -26,58 +26,62 @@ export interface SmartReturnsProps extends SmartComponentBaseProps {
 const returnSteps = [
   {
     icon: Mail,
-    title: 'CONTACT US',
-    description: 'Reach out within 24 hours of delivery with your order number and reason for return.',
-    timeframe: 'Within 24 hours'
+    title: "CONTACT US",
+    description:
+      "Reach out within 24 hours of delivery with your order number and reason for return.",
+    timeframe: "Within 24 hours",
   },
   {
     icon: CheckCircle,
-    title: 'APPROVAL',
-    description: 'Our team will review your request and respond within 2 business hours.',
-    timeframe: '2 hours response'
+    title: "APPROVAL",
+    description:
+      "Our team will review your request and respond within 2 business hours.",
+    timeframe: "2 hours response",
   },
   {
     icon: RotateCcw,
-    title: 'RETURN OR REPLACE',
-    description: 'Choose between a full refund or product replacement based on availability.',
-    timeframe: 'Your choice'
+    title: "RETURN OR REPLACE",
+    description:
+      "Choose between a full refund or product replacement based on availability.",
+    timeframe: "Your choice",
   },
   {
     icon: Clock,
-    title: 'RESOLUTION',
-    description: 'Refunds processed within 3-5 business days. Replacements shipped same day.',
-    timeframe: '3-5 days'
-  }
+    title: "RESOLUTION",
+    description:
+      "Refunds processed within 3-5 business days. Replacements shipped same day.",
+    timeframe: "3-5 days",
+  },
 ];
 
 const policy = [
   {
-    title: 'ELIGIBLE ITEMS',
+    title: "ELIGIBLE ITEMS",
     points: [
-      'Unopened products in original packaging',
-      'Damaged or defective items',
-      'Incorrect items received',
-      'Products not meeting quality standards'
-    ]
+      "Unopened products in original packaging",
+      "Damaged or defective items",
+      "Incorrect items received",
+      "Products not meeting quality standards",
+    ],
   },
   {
-    title: 'NOT ELIGIBLE',
+    title: "NOT ELIGIBLE",
     points: [
-      'Opened or used products',
-      'Items without original packaging',
-      'Products purchased over 24 hours ago',
-      'Special orders or custom items'
-    ]
+      "Opened or used products",
+      "Items without original packaging",
+      "Products purchased over 24 hours ago",
+      "Special orders or custom items",
+    ],
   },
   {
-    title: 'OUR GUARANTEE',
+    title: "OUR GUARANTEE",
     points: [
-      '24-hour satisfaction guarantee',
-      'Full refund or free replacement',
-      'No questions asked policy',
-      'Premium customer service'
-    ]
-  }
+      "24-hour satisfaction guarantee",
+      "Full refund or free replacement",
+      "No questions asked policy",
+      "Premium customer service",
+    ],
+  },
 ];
 
 export function SmartReturns({
@@ -87,12 +91,12 @@ export function SmartReturns({
   headline = "RETURNS & REFUNDS",
   subheadline = "Your satisfaction is our priority",
   animate = true,
-  className = ''
+  className = "",
 }: SmartReturnsProps) {
   const { ref, inView } = useScrollAnimation();
 
   return (
-    <SmartComponentWrapper 
+    <SmartComponentWrapper
       animate={false}
       componentName="Returns"
       className={className}
@@ -111,21 +115,28 @@ export function SmartReturns({
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.2,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="mb-12 flex justify-center"
               >
                 <div className="relative w-24 h-24 md:w-32 md:h-32">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '3s' }} />
-                  <Image 
-                    src={vendorLogo} 
-                    alt={vendorName || 'Vendor'}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse"
+                    style={{ animationDuration: "3s" }}
+                  />
+                  <Image
+                    src={vendorLogo}
+                    alt={vendorName || "Vendor"}
                     fill
                     className="relative object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-500"
                   />
                 </div>
               </motion.div>
             )}
-            
+
             <SmartTypography.Headline className="mb-6">
               {headline}
             </SmartTypography.Headline>
@@ -148,27 +159,34 @@ export function SmartReturns({
           >
             HOW IT WORKS
           </motion.h3>
-          
-          <div ref={ref} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+
+          <div
+            ref={ref}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+          >
             {returnSteps.map((step, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ 
-                  duration: 0.6, 
-                  delay: index * 0.1, 
-                  ease: [0.22, 1, 0.36, 1] 
+                transition={{
+                  duration: 0.6,
+                  delay: index * 0.1,
+                  ease: [0.22, 1, 0.36, 1],
                 }}
               >
                 <SmartContainers.Card className="p-6 text-center h-full">
                   <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
-                    <step.icon size={20} className="text-white" strokeWidth={2.5} />
+                    <step.icon
+                      size={20}
+                      className="text-white"
+                      strokeWidth={2.5}
+                    />
                   </div>
                   <div className="text-xs text-white/40 uppercase tracking-[0.15em] mb-3">
                     Step {index + 1}
                   </div>
-                  <h4 
+                  <h4
                     className="text-sm font-black uppercase tracking-tight text-white mb-3"
                     style={{ fontWeight: 900 }}
                   >
@@ -196,14 +214,14 @@ export function SmartReturns({
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ 
-                  duration: 0.6, 
-                  delay: 0.5 + index * 0.1, 
-                  ease: [0.22, 1, 0.36, 1] 
+                transition={{
+                  duration: 0.6,
+                  delay: 0.5 + index * 0.1,
+                  ease: [0.22, 1, 0.36, 1],
                 }}
               >
                 <SmartContainers.Card className="p-8 h-full">
-                  <h4 
+                  <h4
                     className="text-base font-black uppercase tracking-tight text-white mb-6"
                     style={{ fontWeight: 900 }}
                   >
@@ -211,7 +229,7 @@ export function SmartReturns({
                   </h4>
                   <ul className="space-y-3">
                     {section.points.map((point, pIndex) => (
-                      <li 
+                      <li
                         key={pIndex}
                         className="text-xs text-white/60 flex items-start gap-2"
                       >
@@ -237,14 +255,15 @@ export function SmartReturns({
             className="max-w-2xl mx-auto"
           >
             <SmartContainers.Card className="p-8 sm:p-12 text-center">
-              <h3 
+              <h3
                 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white mb-4"
                 style={{ fontWeight: 900 }}
               >
                 NEED TO START A RETURN?
               </h3>
               <p className="text-sm sm:text-base text-white/60 mb-6">
-                Our support team is standing by to help process your return quickly and easily.
+                Our support team is standing by to help process your return
+                quickly and easily.
               </p>
               <a
                 href="/storefront/contact"
@@ -252,8 +271,18 @@ export function SmartReturns({
                 style={{ fontWeight: 900 }}
               >
                 CONTACT SUPPORT
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={3}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
                 </svg>
               </a>
             </SmartContainers.Card>
@@ -263,4 +292,3 @@ export function SmartReturns({
     </SmartComponentWrapper>
   );
 }
-

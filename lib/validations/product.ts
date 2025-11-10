@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Product validation schemas using Zod
@@ -6,16 +6,25 @@ import { z } from 'zod';
  */
 
 // Product visibility types
-export const productVisibilitySchema = z.enum(['internal', 'marketplace']);
+export const productVisibilitySchema = z.enum(["internal", "marketplace"]);
 
 // Product status types
-export const productStatusSchema = z.enum(['draft', 'pending', 'published', 'rejected']);
+export const productStatusSchema = z.enum([
+  "draft",
+  "pending",
+  "published",
+  "rejected",
+]);
 
 // Product type
-export const productTypeSchema = z.enum(['simple', 'variable']);
+export const productTypeSchema = z.enum(["simple", "variable"]);
 
 // Stock status
-export const stockStatusSchema = z.enum(['instock', 'outofstock', 'onbackorder']);
+export const stockStatusSchema = z.enum([
+  "instock",
+  "outofstock",
+  "onbackorder",
+]);
 
 // Pricing tier schema
 export const pricingTierSchema = z.object({
@@ -53,100 +62,109 @@ export const customFieldsSchema = z.record(z.string(), z.any());
 export const fieldVisibilitySchema = z.record(z.string(), z.boolean());
 
 // Create product request schema
-export const createProductSchema = z.object({
-  // Required fields
-  name: z.string().min(1, 'Product name is required').max(255),
+export const createProductSchema = z
+  .object({
+    // Required fields
+    name: z.string().min(1, "Product name is required").max(255),
 
-  // Category
-  category: z.string().optional(),
-  category_id: z.string().uuid().optional(),
+    // Category
+    category: z.string().optional(),
+    category_id: z.string().uuid().optional(),
 
-  // Basic info
-  description: z.string().max(5000).optional(),
-  slug: z.string().optional(),
-  sku: z.string().max(100).optional(),
+    // Basic info
+    description: z.string().max(5000).optional(),
+    slug: z.string().optional(),
+    sku: z.string().max(100).optional(),
 
-  // Pricing
-  price: z.union([z.string(), z.number()]).optional(),
-  regular_price: z.union([z.string(), z.number()]).optional(),
-  cost_price: z.union([z.string(), z.number()]).optional(),
+    // Pricing
+    price: z.union([z.string(), z.number()]).optional(),
+    regular_price: z.union([z.string(), z.number()]).optional(),
+    cost_price: z.union([z.string(), z.number()]).optional(),
 
-  // Stock
-  initial_quantity: z.union([z.string(), z.number()]).optional(),
-  stock_quantity: z.union([z.string(), z.number()]).optional(),
-  manage_stock: z.boolean().optional(),
-  stock_status: stockStatusSchema.optional(),
-  backorders_allowed: z.boolean().optional(),
-  low_stock_amount: z.number().optional(),
+    // Stock
+    initial_quantity: z.union([z.string(), z.number()]).optional(),
+    stock_quantity: z.union([z.string(), z.number()]).optional(),
+    manage_stock: z.boolean().optional(),
+    stock_status: stockStatusSchema.optional(),
+    backorders_allowed: z.boolean().optional(),
+    low_stock_amount: z.number().optional(),
 
-  // Product type and visibility
-  product_type: productTypeSchema.default('simple'),
-  product_visibility: productVisibilitySchema.default('internal'),
-  status: productStatusSchema.optional(),
+    // Product type and visibility
+    product_type: productTypeSchema.default("simple"),
+    product_visibility: productVisibilitySchema.default("internal"),
+    status: productStatusSchema.optional(),
 
-  // Media
-  image_urls: z.array(z.string().url()).optional(),
-  featured_image_storage: z.string().optional(),
-  image_gallery_storage: z.array(z.string()).optional(),
-  coa_url: z.string().url().optional(),
+    // Media
+    image_urls: z.array(z.string().url()).optional(),
+    featured_image_storage: z.string().optional(),
+    image_gallery_storage: z.array(z.string()).optional(),
+    coa_url: z.string().url().optional(),
 
-  // Variable product attributes
-  attributes: z.array(productAttributeSchema).optional(),
-  variants: z.array(productVariantSchema).optional(),
+    // Variable product attributes
+    attributes: z.array(productAttributeSchema).optional(),
+    variants: z.array(productVariantSchema).optional(),
 
-  // Pricing
-  pricing_mode: z.enum(['single', 'tiered']).default('single'),
-  pricing_tiers: z.array(pricingTierSchema).optional(),
-  pricing_blueprint_id: z.string().uuid().optional(),
-  pricing_template_id: z.string().uuid().optional(), // Alias for pricing_blueprint_id
+    // Pricing
+    pricing_mode: z.enum(["single", "tiered"]).default("single"),
+    pricing_tiers: z.array(pricingTierSchema).optional(),
+    pricing_blueprint_id: z.string().uuid().optional(),
+    pricing_template_id: z.string().uuid().optional(), // Alias for pricing_blueprint_id
 
-  // Custom fields (VENDOR AUTONOMY)
-  custom_fields: customFieldsSchema.optional(),
+    // Custom fields (VENDOR AUTONOMY)
+    custom_fields: customFieldsSchema.optional(),
 
-  // Field visibility
-  field_visibility: fieldVisibilitySchema.optional(),
+    // Field visibility
+    field_visibility: fieldVisibilitySchema.optional(),
 
-  // Meta data (deprecated fields for backwards compatibility)
-  thc_percentage: z.string().optional(),
-  cbd_percentage: z.string().optional(),
-  strain_type: z.string().optional(),
-  lineage: z.string().optional(),
-  terpenes: z.string().optional(),
-  effects: z.string().optional(),
-}).refine(
-  (data) => {
-    // If product_type is 'variable', attributes and variants are required
-    if (data.product_type === 'variable') {
-      return data.attributes && data.attributes.length > 0 && data.variants && data.variants.length > 0;
-    }
-    return true;
-  },
-  {
-    message: 'Variable products must have attributes and variants',
-    path: ['product_type'],
-  }
-).refine(
-  (data) => {
-    // If pricing_mode is 'tiered', pricing_tiers must be provided
-    if (data.pricing_mode === 'tiered') {
-      return data.pricing_tiers && data.pricing_tiers.length > 0;
-    }
-    return true;
-  },
-  {
-    message: 'Tiered pricing mode requires at least one pricing tier',
-    path: ['pricing_mode'],
-  }
-).refine(
-  (data) => {
-    // Either category or category_id must be provided
-    return data.category || data.category_id;
-  },
-  {
-    message: 'Either category name or category_id is required',
-    path: ['category'],
-  }
-);
+    // Meta data (deprecated fields for backwards compatibility)
+    thc_percentage: z.string().optional(),
+    cbd_percentage: z.string().optional(),
+    strain_type: z.string().optional(),
+    lineage: z.string().optional(),
+    terpenes: z.string().optional(),
+    effects: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      // If product_type is 'variable', attributes and variants are required
+      if (data.product_type === "variable") {
+        return (
+          data.attributes &&
+          data.attributes.length > 0 &&
+          data.variants &&
+          data.variants.length > 0
+        );
+      }
+      return true;
+    },
+    {
+      message: "Variable products must have attributes and variants",
+      path: ["product_type"],
+    },
+  )
+  .refine(
+    (data) => {
+      // If pricing_mode is 'tiered', pricing_tiers must be provided
+      if (data.pricing_mode === "tiered") {
+        return data.pricing_tiers && data.pricing_tiers.length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Tiered pricing mode requires at least one pricing tier",
+      path: ["pricing_mode"],
+    },
+  )
+  .refine(
+    (data) => {
+      // Either category or category_id must be provided
+      return data.category || data.category_id;
+    },
+    {
+      message: "Either category name or category_id is required",
+      path: ["category"],
+    },
+  );
 
 // Update product request schema (partial of create schema)
 export const updateProductSchema = z.object({
@@ -176,7 +194,7 @@ export const updateProductSchema = z.object({
   image_gallery_storage: z.array(z.string()).optional(),
 
   // Pricing
-  pricing_mode: z.enum(['single', 'tiered']).optional(),
+  pricing_mode: z.enum(["single", "tiered"]).optional(),
   pricing_tiers: z.array(pricingTierSchema).optional(),
   pricing_blueprint_id: z.string().uuid().optional(),
 
@@ -195,7 +213,7 @@ export const bulkProductSchema = z.object({
   name: z.string().min(1),
   price: z.union([z.string(), z.number()]).optional(),
   cost_price: z.union([z.string(), z.number()]).optional(),
-  pricing_mode: z.enum(['single', 'tiered']).default('single'),
+  pricing_mode: z.enum(["single", "tiered"]).default("single"),
   pricing_tiers: z.array(pricingTierSchema).optional(),
   custom_fields: customFieldsSchema.optional(),
   initial_quantity: z.union([z.string(), z.number()]).optional(),
@@ -205,19 +223,27 @@ export const bulkProductSchema = z.object({
 export const aiAutofillRequestSchema = z.object({
   product_name: z.string().min(1),
   category: z.string().optional(),
-  selectedFields: z.array(z.string()).min(1, 'At least one field must be selected'),
+  selectedFields: z
+    .array(z.string())
+    .min(1, "At least one field must be selected"),
   customPrompt: z.string().optional(),
 });
 
 // Bulk AI autofill request schema
 export const bulkAIAutofillRequestSchema = z.object({
-  products: z.array(z.object({
-    name: z.string().min(1),
-    price: z.union([z.string(), z.number()]).optional(),
-    cost: z.union([z.string(), z.number()]).optional(),
-  })).min(1, 'At least one product is required'),
+  products: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        price: z.union([z.string(), z.number()]).optional(),
+        cost: z.union([z.string(), z.number()]).optional(),
+      }),
+    )
+    .min(1, "At least one product is required"),
   category: z.string(),
-  selectedFields: z.array(z.string()).min(1, 'At least one field must be selected'),
+  selectedFields: z
+    .array(z.string())
+    .min(1, "At least one field must be selected"),
   customPrompt: z.string().optional(),
 });
 
@@ -239,7 +265,10 @@ export type BulkAIAutofillRequest = z.infer<typeof bulkAIAutofillRequestSchema>;
  * Helper function to validate and parse request data
  * Returns parsed data on success, throws ZodError on failure
  */
-export function validateProductData<T>(schema: z.ZodSchema<T>, data: unknown): T {
+export function validateProductData<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown,
+): T {
   return schema.parse(data);
 }
 
@@ -248,7 +277,7 @@ export function validateProductData<T>(schema: z.ZodSchema<T>, data: unknown): T
  */
 export function safeValidateProductData<T>(
   schema: z.ZodSchema<T>,
-  data: unknown
+  data: unknown,
 ): { success: true; data: T } | { success: false; errors: z.ZodError } {
   const result = schema.safeParse(data);
 

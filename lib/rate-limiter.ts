@@ -56,14 +56,17 @@ class InMemoryRateLimiter {
   }
 
   private startCleanup(): void {
-    this.cleanupInterval = setInterval(() => {
-      const now = Date.now();
-      for (const [key, entry] of this.requests.entries()) {
-        if (now > entry.resetAt) {
-          this.requests.delete(key);
+    this.cleanupInterval = setInterval(
+      () => {
+        const now = Date.now();
+        for (const [key, entry] of this.requests.entries()) {
+          if (now > entry.resetAt) {
+            this.requests.delete(key);
+          }
         }
-      }
-    }, 5 * 60 * 1000);
+      },
+      5 * 60 * 1000,
+    );
 
     if (this.cleanupInterval.unref) {
       this.cleanupInterval.unref();
@@ -90,14 +93,14 @@ export const RateLimitConfigs = {
 
 export function getIdentifier(request: Request): string {
   const headers = request.headers;
-  const forwardedFor = headers.get('x-forwarded-for');
-  if (forwardedFor) return forwardedFor.split(',')[0].trim();
-  
-  const realIp = headers.get('x-real-ip');
+  const forwardedFor = headers.get("x-forwarded-for");
+  if (forwardedFor) return forwardedFor.split(",")[0].trim();
+
+  const realIp = headers.get("x-real-ip");
   if (realIp) return realIp;
-  
-  const cfConnectingIp = headers.get('cf-connecting-ip');
+
+  const cfConnectingIp = headers.get("cf-connecting-ip");
   if (cfConnectingIp) return cfConnectingIp;
-  
-  return 'unknown';
+
+  return "unknown";
 }

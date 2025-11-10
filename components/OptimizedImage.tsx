@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 
 interface OptimizedImageProps {
   src: string;
@@ -22,7 +22,7 @@ export default function OptimizedImage({
   alt,
   width,
   height,
-  className = '',
+  className = "",
   priority = false,
   fill = false,
 }: OptimizedImageProps) {
@@ -44,8 +44,8 @@ export default function OptimizedImage({
         });
       },
       {
-        rootMargin: '50px',
-      }
+        rootMargin: "50px",
+      },
     );
 
     const currentRef = imgRef.current;
@@ -99,11 +99,11 @@ export default function OptimizedImage({
             height={fill ? undefined : height}
             fill={fill}
             className={`transition-opacity duration-300 ${
-              isLoaded ? 'opacity-100' : 'opacity-0'
+              isLoaded ? "opacity-100" : "opacity-0"
             }`}
             onLoad={() => setIsLoaded(true)}
             onError={() => setError(true)}
-            loading={priority ? 'eager' : 'lazy'}
+            loading={priority ? "eager" : "lazy"}
             priority={priority}
           />
         </>
@@ -111,4 +111,3 @@ export default function OptimizedImage({
     </div>
   );
 }
-

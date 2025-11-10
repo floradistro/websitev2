@@ -1,1 +1,1 @@
-export{a as SvgIcon}from'../../../chunks/chunk-S24T6WS2.js';
+export { a as SvgIcon } from "../../../chunks/chunk-S24T6WS2.js";

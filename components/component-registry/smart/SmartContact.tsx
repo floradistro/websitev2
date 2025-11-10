@@ -5,18 +5,18 @@
  * Luxury contact form with info cards
  */
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  SmartComponentWrapper, 
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  SmartComponentWrapper,
   SmartComponentBaseProps,
   SmartTypography,
   SmartContainers,
   SmartButton,
-  useScrollAnimation
-} from '@/lib/smart-component-base';
-import { Mail, MessageSquare, Clock, MapPin } from 'lucide-react';
-import Image from 'next/image';
+  useScrollAnimation,
+} from "@/lib/smart-component-base";
+import { Mail, MessageSquare, Clock, MapPin } from "lucide-react";
+import Image from "next/image";
 
 export interface SmartContactProps extends SmartComponentBaseProps {
   headline?: string;
@@ -39,34 +39,34 @@ export function SmartContact({
   hours = "Mon-Sun: 10am - 9pm",
   location = "San Francisco, CA",
   animate = true,
-  className = ''
+  className = "",
 }: SmartContactProps) {
   const { ref, inView } = useScrollAnimation();
   const [formState, setFormState] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
   });
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // TODO: Implement form submission
-    console.log('Form submitted:', formState);
+
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 3000);
   };
 
   const contactInfo = [
-    { icon: Mail, label: 'EMAIL', value: email },
-    { icon: MessageSquare, label: 'PHONE', value: phone },
-    { icon: Clock, label: 'HOURS', value: hours },
-    { icon: MapPin, label: 'LOCATION', value: location }
+    { icon: Mail, label: "EMAIL", value: email },
+    { icon: MessageSquare, label: "PHONE", value: phone },
+    { icon: Clock, label: "HOURS", value: hours },
+    { icon: MapPin, label: "LOCATION", value: location },
   ];
 
   return (
-    <SmartComponentWrapper 
+    <SmartComponentWrapper
       animate={false}
       componentName="Contact"
       className={className}
@@ -85,21 +85,28 @@ export function SmartContact({
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.2,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 className="mb-12 flex justify-center"
               >
                 <div className="relative w-24 h-24 md:w-32 md:h-32">
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse" style={{ animationDuration: '3s' }} />
-                  <Image 
-                    src={vendorLogo} 
-                    alt={vendorName || 'Vendor'}
+                  <div
+                    className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 rounded-full blur-2xl animate-pulse"
+                    style={{ animationDuration: "3s" }}
+                  />
+                  <Image
+                    src={vendorLogo}
+                    alt={vendorName || "Vendor"}
                     fill
                     className="relative object-contain drop-shadow-2xl hover:scale-110 transition-transform duration-500"
                   />
                 </div>
               </motion.div>
             )}
-            
+
             <SmartTypography.Headline className="mb-6">
               {headline}
             </SmartTypography.Headline>
@@ -113,21 +120,28 @@ export function SmartContact({
       {/* Contact Info Cards */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-black">
         <SmartContainers.MaxWidth>
-          <div ref={ref} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
+          <div
+            ref={ref}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16"
+          >
             {contactInfo.map((info, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={inView ? { opacity: 1, y: 0 } : {}}
-                transition={{ 
-                  duration: 0.6, 
-                  delay: index * 0.1, 
-                  ease: [0.22, 1, 0.36, 1] 
+                transition={{
+                  duration: 0.6,
+                  delay: index * 0.1,
+                  ease: [0.22, 1, 0.36, 1],
                 }}
               >
                 <SmartContainers.Card className="p-6 text-center">
                   <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
-                    <info.icon size={20} className="text-white" strokeWidth={2.5} />
+                    <info.icon
+                      size={20}
+                      className="text-white"
+                      strokeWidth={2.5}
+                    />
                   </div>
                   <SmartTypography.Label className="mb-2">
                     {info.label}
@@ -146,7 +160,7 @@ export function SmartContact({
             className="max-w-2xl mx-auto"
           >
             <SmartContainers.Card className="p-8 sm:p-12">
-              <h3 
+              <h3
                 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white mb-8"
                 style={{ fontWeight: 900 }}
               >
@@ -162,7 +176,9 @@ export function SmartContact({
                     type="text"
                     required
                     value={formState.name}
-                    onChange={(e) => setFormState({ ...formState, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormState({ ...formState, name: e.target.value })
+                    }
                     className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors"
                     placeholder="Your name"
                   />
@@ -176,7 +192,9 @@ export function SmartContact({
                     type="email"
                     required
                     value={formState.email}
-                    onChange={(e) => setFormState({ ...formState, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormState({ ...formState, email: e.target.value })
+                    }
                     className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors"
                     placeholder="your@email.com"
                   />
@@ -190,7 +208,9 @@ export function SmartContact({
                     type="text"
                     required
                     value={formState.subject}
-                    onChange={(e) => setFormState({ ...formState, subject: e.target.value })}
+                    onChange={(e) =>
+                      setFormState({ ...formState, subject: e.target.value })
+                    }
                     className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors"
                     placeholder="How can we help?"
                   />
@@ -204,18 +224,16 @@ export function SmartContact({
                     required
                     rows={6}
                     value={formState.message}
-                    onChange={(e) => setFormState({ ...formState, message: e.target.value })}
+                    onChange={(e) =>
+                      setFormState({ ...formState, message: e.target.value })
+                    }
                     className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors resize-none"
                     placeholder="Your message..."
                   />
                 </div>
 
-                <SmartButton 
-                  variant="primary" 
-                  className="w-full"
-                  type="submit"
-                >
-                  {submitted ? '✓ MESSAGE SENT' : 'SEND MESSAGE'}
+                <SmartButton variant="primary" className="w-full" type="submit">
+                  {submitted ? "✓ MESSAGE SENT" : "SEND MESSAGE"}
                 </SmartButton>
               </form>
             </SmartContainers.Card>
@@ -225,4 +243,3 @@ export function SmartContact({
     </SmartComponentWrapper>
   );
 }
-

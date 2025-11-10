@@ -10,12 +10,12 @@
 
 ### UNUSED OBJECTS IDENTIFIED
 
-| Category | Count | Impact | Priority |
-|----------|-------|--------|----------|
-| Completely Unused Tables | 11 | 15-20MB storage | High |
-| Completely Unused Views | 16 | 5MB storage | High |
-| Archived Tables (in schema) | 3 | Already isolated | Medium |
-| Tables with 1 reference | 1 | Verify needed | Review |
+| Category                    | Count | Impact           | Priority |
+| --------------------------- | ----- | ---------------- | -------- |
+| Completely Unused Tables    | 11    | 15-20MB storage  | High     |
+| Completely Unused Views     | 16    | 5MB storage      | High     |
+| Archived Tables (in schema) | 3     | Already isolated | Medium   |
+| Tables with 1 reference     | 1     | Verify needed    | Review   |
 
 ### STORAGE ESTIMATE
 
@@ -29,7 +29,9 @@
 ## TOP FINDINGS
 
 ### 1. ORPHANED TV MENU SYSTEM
+
 Tables created but never used in any route:
+
 - `tv_content` - Advertisement content (UNUSED)
 - `tv_playlists` - Content rotation (UNUSED)
 - `tv_playlist_items` - Playlist items (UNUSED)
@@ -37,16 +39,20 @@ Tables created but never used in any route:
 The `tv_menus` table IS used and should be kept.
 
 ### 2. UNUSED PRICING SYSTEM VARIANT
+
 - `vendor_cost_plus_configs` - Cost-plus pricing (UNUSED)
 - Already have: `products.pricing_data` (embedded)
 - Already archived: `product_pricing_assignments`, `pricing_tier_blueprints`
 
 ### 3. SESSION & AUDIT TRACKING (NOT IMPLEMENTED)
+
 - `user_sessions` - No code to populate
 - `audit_log` - No triggers to populate
 
 ### 4. UNUSED ANALYTICS VIEWS (16 TOTAL)
+
 All materialized views created for reporting but never queried:
+
 - Billing views
 - Pricing comparison views
 - POS session summaries
@@ -58,17 +64,20 @@ All materialized views created for reporting but never queried:
 ## SAFETY ASSESSMENT
 
 ### LOW RISK (Safe to delete immediately)
+
 ✓ All 16 unused views - **0 code references**
 ✓ `vendor_cost_plus_configs` - **0 code references**
 ✓ `storefront_files` - **0 code references**
 ✓ `vendor_templates` - **0 code references**
 
 ### MEDIUM RISK (Review before deleting)
+
 ⚠ `tv_content`, `tv_playlists`, `tv_playlist_items` - May be future feature
 ⚠ `user_sessions`, `audit_log` - Might be needed for compliance
 ⚠ `distributor_access_requests` - Part of larger system
 
 ### ALREADY HANDLED (Safe to delete after 30 days)
+
 ✓ `product_pricing_assignments` (archived)
 ✓ `pricing_tier_blueprints` (archived)
 ✓ `vendor_pricing_configs` (archived)
@@ -80,6 +89,7 @@ All materialized views created for reporting but never queried:
 ## CLEANUP RECOMMENDATIONS
 
 ### Stage 1: Remove Views (1 hour - SAFE)
+
 Drop all 16 unused views - zero code dependencies
 
 **Expected issues:** None
@@ -89,21 +99,27 @@ Drop all 16 unused views - zero code dependencies
 ```
 
 ### Stage 2: Remove Table Columns (2 hours - SAFER)
+
 If tables must be kept for schema history:
+
 ```sql
 ALTER TABLE tv_menus DROP COLUMN IF EXISTS legacy_playlists;
 ALTER TABLE tv_menus DROP COLUMN IF EXISTS legacy_content_id;
 ```
 
 ### Stage 3: Remove Tables (3 hours - REQUIRES REVIEW)
+
 After stakeholder approval:
+
 - 5 obvious unused: `tv_content`, `tv_playlists`, `tv_playlist_items`, `storefront_files`, `vendor_cost_plus_configs`
 - 6 uncertain: `vendor_templates`, `user_sessions`, `audit_log`, `product_cost_history`, `distributor_access_requests`, `role_permissions`
 
 **Script location:** `supabase/migrations/20251109_cleanup_unused_schema.sql` (Phase 2 - commented out)
 
 ### Stage 4: Archive Cleanup (4 hours - 30 DAYS LATER)
+
 On 2025-12-05:
+
 ```sql
 DROP SCHEMA archived_pricing_system CASCADE;
 ```
@@ -115,17 +131,20 @@ DROP SCHEMA archived_pricing_system CASCADE;
 ### For Immediate View Cleanup
 
 1. **Review & Confirm**
+
    ```bash
    # Verify no applications use these views
    grep -r "billable_locations\|vendor_billing_summary\|active_employees" app/
    ```
 
 2. **Backup Database**
+
    ```bash
    # Use Supabase dashboard or pg_dump
    ```
 
 3. **Deploy Migration**
+
    ```bash
    supabase db push
    # This runs Phase 1 (views only)
@@ -197,4 +216,3 @@ A: Already isolated in `archived_pricing_system` schema. Can be dropped Dec 5, 2
 
 **Q: Which tables should we keep?**  
 A: All active tables (products, inventory, orders, customers, etc.) are heavily used and should be kept.
-

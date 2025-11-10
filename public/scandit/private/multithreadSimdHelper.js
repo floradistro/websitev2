@@ -1,1 +1,7 @@
-export{e as checkFullMultithreadingSupport,c as hasSIMDSupport,b as hasSharedArrayBufferSupport,d as hasThreadsSupport,a as isCrossOriginIsolated}from'../chunks/chunk-42THCP2K.js';
+export {
+  e as checkFullMultithreadingSupport,
+  c as hasSIMDSupport,
+  b as hasSharedArrayBufferSupport,
+  d as hasThreadsSupport,
+  a as isCrossOriginIsolated,
+} from "../chunks/chunk-42THCP2K.js";

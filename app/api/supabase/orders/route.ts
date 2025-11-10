@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { requireCustomer } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { requireCustomer } from "@/lib/auth/middleware";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,22 +10,21 @@ export async function GET(request: NextRequest) {
     const { customerId } = authResult;
 
     const { searchParams } = new URL(request.url);
-    
+
     // Filters
-    const status = searchParams.get('status');
-    const paymentStatus = searchParams.get('payment_status');
-    const fulfillmentStatus = searchParams.get('fulfillment_status');
-    
+    const status = searchParams.get("status");
+    const paymentStatus = searchParams.get("payment_status");
+    const fulfillmentStatus = searchParams.get("fulfillment_status");
+
     // Pagination
-    const page = parseInt(searchParams.get('page') || '1');
-    const perPage = parseInt(searchParams.get('per_page') || '20');
+    const page = parseInt(searchParams.get("page") || "1");
+    const perPage = parseInt(searchParams.get("per_page") || "20");
     const offset = (page - 1) * perPage;
-    
+
     const supabase = getServiceSupabase();
-    
-    let query = supabase
-      .from('orders')
-      .select(`
+
+    let query = supabase.from("orders").select(
+      `
         *,
         customer:customers(id, email, first_name, last_name, phone),
         order_items(
@@ -34,35 +33,39 @@ export async function GET(request: NextRequest) {
           vendor:vendors(id, store_name)
         ),
         order_notes(*)
-      `, { count: 'exact' });
+      `,
+      { count: "exact" },
+    );
 
     // SECURITY: Always filter by authenticated customer (Phase 3)
     // customerId comes from verified JWT token, not from headers
-    query = query.eq('customer_id', customerId);
-    
+    query = query.eq("customer_id", customerId);
+
     // Status filters
     if (status) {
-      query = query.eq('status', status);
+      query = query.eq("status", status);
     }
     if (paymentStatus) {
-      query = query.eq('payment_status', paymentStatus);
+      query = query.eq("payment_status", paymentStatus);
     }
     if (fulfillmentStatus) {
-      query = query.eq('fulfillment_status', fulfillmentStatus);
+      query = query.eq("fulfillment_status", fulfillmentStatus);
     }
-    
+
     // Pagination & sorting
     query = query
-      .order('order_date', { ascending: false })
+      .order("order_date", { ascending: false })
       .range(offset, offset + perPage - 1);
-    
+
     const { data, error, count } = await query;
-    
+
     if (error) {
-      console.error('Error fetching orders:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching orders:", error);
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    
+
     return NextResponse.json({
       success: true,
       orders: data || [],
@@ -70,12 +73,13 @@ export async function GET(request: NextRequest) {
         page,
         per_page: perPage,
         total: count || 0,
-        total_pages: Math.ceil((count || 0) / perPage)
-      }
+        total_pages: Math.ceil((count || 0) / perPage),
+      },
     });
-    
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -91,43 +95,49 @@ export async function POST(request: NextRequest) {
 
     const {
       order_number,
-      status = 'pending',
-      payment_status = 'pending',
+      status = "pending",
+      payment_status = "pending",
       items = [],
       billing_address,
       shipping_address,
       payment_method,
       shipping_method,
       customer_note,
-      delivery_type
+      delivery_type,
     } = body;
 
     // SECURITY: Use authenticated customer_id, not from request body (Phase 3)
     if (!order_number || items.length === 0) {
-      return NextResponse.json({
-        error: 'Missing required fields: order_number, items'
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Missing required fields: order_number, items",
+        },
+        { status: 400 },
+      );
     }
-    
+
     const supabase = getServiceSupabase();
-    
+
     // Calculate totals
-    const subtotal = items.reduce((sum: number, item: any) => 
-      sum + (parseFloat(item.unit_price) * parseFloat(item.quantity)), 0
+    const subtotal = items.reduce(
+      (sum: number, item: any) =>
+        sum + parseFloat(item.unit_price) * parseFloat(item.quantity),
+      0,
     );
-    
-    const taxAmount = items.reduce((sum: number, item: any) => 
-      sum + parseFloat(item.tax_amount || 0), 0
+
+    const taxAmount = items.reduce(
+      (sum: number, item: any) => sum + parseFloat(item.tax_amount || 0),
+      0,
     );
-    
+
     const shippingAmount = parseFloat(body.shipping_amount || 0);
     const discountAmount = parseFloat(body.discount_amount || 0);
     const totalAmount = subtotal + taxAmount + shippingAmount - discountAmount;
-    
+
     // Create order
     // SECURITY: Use verified customerId from JWT token (Phase 3)
     const { data: order, error: orderError } = await supabase
-      .from('orders')
+      .from("orders")
       .insert({
         customer_id: customerId, // From authenticated session, not request body
         order_number,
@@ -148,16 +158,18 @@ export async function POST(request: NextRequest) {
         pickup_location_id: body.pickup_location_id,
         customer_note,
         transaction_id: body.transaction_id,
-        order_date: new Date().toISOString()
+        order_date: new Date().toISOString(),
       })
       .select()
       .single();
-    
+
     if (orderError) {
-      console.error('Error creating order:', orderError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error creating order:", orderError);
+      }
       return NextResponse.json({ error: orderError.message }, { status: 500 });
     }
-    
+
     // Create order items
     const orderItems = items.map((item: any) => ({
       order_id: order.id,
@@ -168,7 +180,9 @@ export async function POST(request: NextRequest) {
       unit_price: parseFloat(item.unit_price),
       quantity: parseFloat(item.quantity),
       line_subtotal: parseFloat(item.unit_price) * parseFloat(item.quantity),
-      line_total: parseFloat(item.line_total || item.unit_price * item.quantity),
+      line_total: parseFloat(
+        item.line_total || item.unit_price * item.quantity,
+      ),
       tax_amount: parseFloat(item.tax_amount || 0),
       vendor_id: item.vendor_id,
       order_type: item.order_type,
@@ -177,37 +191,37 @@ export async function POST(request: NextRequest) {
       tier_name: item.tier_name,
       tier_qty: item.tier_qty,
       tier_price: item.tier_price,
-      meta_data: item.meta_data || {}
+      meta_data: item.meta_data || {},
     }));
-    
+
     const { error: itemsError } = await supabase
-      .from('order_items')
+      .from("order_items")
       .insert(orderItems);
-    
+
     if (itemsError) {
-      console.error('Error creating order items:', itemsError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error creating order items:", itemsError);
+      }
       // Rollback order
-      await supabase.from('orders').delete().eq('id', order.id);
+      await supabase.from("orders").delete().eq("id", order.id);
       return NextResponse.json({ error: itemsError.message }, { status: 500 });
     }
-    
+
     // Create initial status history
-    await supabase
-      .from('order_status_history')
-      .insert({
-        order_id: order.id,
-        to_status: status,
-        note: 'Order created'
-      });
-    
+    await supabase.from("order_status_history").insert({
+      order_id: order.id,
+      to_status: status,
+      note: "Order created",
+    });
+
     return NextResponse.json({
       success: true,
-      order
+      order,
     });
-    
   } catch (error: any) {
-    console.error('Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Error:", error);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

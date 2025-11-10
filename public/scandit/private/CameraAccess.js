@@ -1,1 +1,6 @@
-export{c as AspectRatio,d as CameraAccess,a as CameraPosition,b as CameraResolutionConstraint}from'../chunks/chunk-OQ4XCKFQ.js';
+export {
+  c as AspectRatio,
+  d as CameraAccess,
+  a as CameraPosition,
+  b as CameraResolutionConstraint,
+} from "../chunks/chunk-OQ4XCKFQ.js";

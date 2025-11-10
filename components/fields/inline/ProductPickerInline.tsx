@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Check, ChevronDown, X, Search } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Check, ChevronDown, X, Search } from "lucide-react";
 
 interface Product {
   id: string;
@@ -10,11 +10,21 @@ interface Product {
   total_stock?: number;
 }
 
-export function ProductPickerFieldInline({ label, value = [], onChange, vendorId }: { label: string; value: string[]; onChange: (value: string[]) => void; vendorId: string }) {
+export function ProductPickerFieldInline({
+  label,
+  value = [],
+  onChange,
+  vendorId,
+}: {
+  label: string;
+  value: string[];
+  onChange: (value: string[]) => void;
+  vendorId: string;
+}) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     if (showPicker && products.length === 0) {
@@ -25,36 +35,45 @@ export function ProductPickerFieldInline({ label, value = [], onChange, vendorId
   async function loadProducts() {
     try {
       setLoading(true);
-      const response = await fetch('/api/page-data/products');
+      const response = await fetch("/api/page-data/products");
       if (response.ok) {
         const data = await response.json();
-        const vendorProducts = (data.data?.products || []).filter((p: any) => p.vendor_id === vendorId);
+        const vendorProducts = (data.data?.products || []).filter(
+          (p: any) => p.vendor_id === vendorId,
+        );
         setProducts(vendorProducts);
       }
     } catch (error) {
-      console.error('Error:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error:", error);
+      }
     } finally {
       setLoading(false);
     }
   }
 
-  const selectedProducts = products.filter(p => value.includes(p.id));
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase())
+  const selectedProducts = products.filter((p) => value.includes(p.id));
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
     <div className="mb-2">
       <label className="text-[#858585] text-[10px] block mb-1">{label}</label>
-      
+
       {/* Selected products */}
       {selectedProducts.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1">
-          {selectedProducts.map(product => (
-            <span key={product.id} className="inline-flex items-center gap-1 bg-[#007acc]/20 text-[#4fc1ff] px-2 py-0.5 rounded text-[10px] border border-[#007acc]/30">
+          {selectedProducts.map((product) => (
+            <span
+              key={product.id}
+              className="inline-flex items-center gap-1 bg-[#007acc]/20 text-[#4fc1ff] px-2 py-0.5 rounded text-[10px] border border-[#007acc]/30"
+            >
               {product.name}
               <button
-                onClick={() => onChange(value.filter(id => id !== product.id))}
+                onClick={() =>
+                  onChange(value.filter((id) => id !== product.id))
+                }
                 className="hover:text-purple-100"
               >
                 <X size={10} />
@@ -70,8 +89,15 @@ export function ProductPickerFieldInline({ label, value = [], onChange, vendorId
         onClick={() => setShowPicker(!showPicker)}
         className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-xs flex items-center justify-between hover:border-white/30 transition-colors"
       >
-        <span>{selectedProducts.length > 0 ? `${selectedProducts.length} products` : 'Select products'}</span>
-        <ChevronDown size={12} className={`transition-transform ${showPicker ? 'rotate-180' : ''}`} />
+        <span>
+          {selectedProducts.length > 0
+            ? `${selectedProducts.length} products`
+            : "Select products"}
+        </span>
+        <ChevronDown
+          size={12}
+          className={`transition-transform ${showPicker ? "rotate-180" : ""}`}
+        />
       </button>
 
       {/* Dropdown picker */}
@@ -79,7 +105,10 @@ export function ProductPickerFieldInline({ label, value = [], onChange, vendorId
         <div className="mt-1 bg-[#252526] border border-[#3e3e3e] rounded shadow-lg">
           <div className="p-2 border-b border-white/10">
             <div className="relative">
-              <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-white/40" />
+              <Search
+                size={12}
+                className="absolute left-2 top-1/2 -translate-y-1/2 text-white/40"
+              />
               <input
                 type="text"
                 value={search}
@@ -89,37 +118,53 @@ export function ProductPickerFieldInline({ label, value = [], onChange, vendorId
               />
             </div>
           </div>
-          
+
           <div className="max-h-48 overflow-y-auto">
             {loading ? (
-              <div className="p-3 text-center text-white/40 text-xs">Loading products...</div>
+              <div className="p-3 text-center text-white/40 text-xs">
+                Loading products...
+              </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="p-3 text-center text-white/40 text-xs">No products found</div>
+              <div className="p-3 text-center text-white/40 text-xs">
+                No products found
+              </div>
             ) : (
               <div className="p-1">
-                {filteredProducts.slice(0, 50).map(product => {
+                {filteredProducts.slice(0, 50).map((product) => {
                   const isSelected = value.includes(product.id);
                   return (
                     <div
                       key={product.id}
                       onClick={() => {
                         if (isSelected) {
-                          onChange(value.filter(id => id !== product.id));
+                          onChange(value.filter((id) => id !== product.id));
                         } else {
                           onChange([...value, product.id]);
                         }
                       }}
                       className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-xs ${
-                        isSelected ? 'bg-[#007acc]/20 text-[#4fc1ff]' : 'text-[#cccccc] hover:bg-[#2a2d2e]'
+                        isSelected
+                          ? "bg-[#007acc]/20 text-[#4fc1ff]"
+                          : "text-[#cccccc] hover:bg-[#2a2d2e]"
                       }`}
                     >
-                      <div className={`w-3 h-3 rounded border flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? 'bg-[#007acc] border-[#007acc]' : 'border-[#3e3e3e]'
-                      }`}>
-                        {isSelected && <Check size={8} className="text-white" />}
+                      <div
+                        className={`w-3 h-3 rounded border flex items-center justify-center flex-shrink-0 ${
+                          isSelected
+                            ? "bg-[#007acc] border-[#007acc]"
+                            : "border-[#3e3e3e]"
+                        }`}
+                      >
+                        {isSelected && (
+                          <Check size={8} className="text-white" />
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0 truncate">{product.name}</div>
-                      <div className="text-white/40 text-[10px]">${product.price}</div>
+                      <div className="flex-1 min-w-0 truncate">
+                        {product.name}
+                      </div>
+                      <div className="text-white/40 text-[10px]">
+                        ${product.price}
+                      </div>
                     </div>
                   );
                 })}
@@ -131,4 +176,3 @@ export function ProductPickerFieldInline({ label, value = [], onChange, vendorId
     </div>
   );
 }
-

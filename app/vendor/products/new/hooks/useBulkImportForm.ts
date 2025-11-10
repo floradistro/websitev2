@@ -8,10 +8,10 @@
  * @module useBulkImportForm
  */
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import axios, { AxiosError } from 'axios';
-import { showNotification } from '@/components/NotificationToast';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import axios, { AxiosError } from "axios";
+import { showNotification } from "@/components/NotificationToast";
 import type {
   BulkProduct,
   PricingTier,
@@ -19,8 +19,8 @@ import type {
   APIErrorResponse,
   ValidationErrorDetail,
   BulkAIResult,
-  PricingTemplate
-} from '@/lib/types/product';
+  PricingTemplate,
+} from "@/lib/types/product";
 
 /**
  * Interface for bulk image handling with file matching capability
@@ -149,7 +149,7 @@ interface UseBulkImportFormReturn {
  */
 export function useBulkImportForm({
   vendorId,
-  categories
+  categories,
 }: UseBulkImportFormParams): UseBulkImportFormReturn {
   const router = useRouter();
 
@@ -161,12 +161,12 @@ export function useBulkImportForm({
    * Raw CSV-style text input for bulk products
    * Format: "Name, Price, Cost\nName2, Price2, Cost2"
    */
-  const [bulkInput, setBulkInput] = useState('');
+  const [bulkInput, setBulkInput] = useState("");
 
   /**
    * Category ID applied to all bulk imported products
    */
-  const [bulkCategory, setBulkCategory] = useState('');
+  const [bulkCategory, setBulkCategory] = useState("");
 
   /**
    * Parsed and enriched product objects ready for submission
@@ -188,7 +188,9 @@ export function useBulkImportForm({
    * AI-generated product data indexed by product name
    * Example: { "Blue Dream": { strain_type: "Hybrid", lineage: "...", ... } }
    */
-  const [bulkEnrichedData, setBulkEnrichedData] = useState<Record<string, EnrichedData>>({});
+  const [bulkEnrichedData, setBulkEnrichedData] = useState<
+    Record<string, EnrichedData>
+  >({});
 
   /**
    * Loading state for AI enrichment process
@@ -207,7 +209,7 @@ export function useBulkImportForm({
   const [bulkProgress, setBulkProgress] = useState({
     current: 0,
     total: 0,
-    currentProduct: '',
+    currentProduct: "",
     successCount: 0,
     failCount: 0,
   });
@@ -220,12 +222,14 @@ export function useBulkImportForm({
   /**
    * Available pricing templates for vendor
    */
-  const [availableTemplates, setAvailableTemplates] = useState<PricingTemplate[]>([]);
+  const [availableTemplates, setAvailableTemplates] = useState<
+    PricingTemplate[]
+  >([]);
 
   /**
    * Selected pricing template ID for bulk products
    */
-  const [selectedBulkTemplateId, setSelectedBulkTemplateId] = useState('');
+  const [selectedBulkTemplateId, setSelectedBulkTemplateId] = useState("");
 
   // ==========================================
   // NOTE: PRICING TEMPLATES
@@ -247,11 +251,12 @@ export function useBulkImportForm({
    * Get the current product being reviewed
    * Returns null if no products or invalid index
    */
-  const currentProduct = bulkProducts.length > 0 &&
-                         currentReviewIndex >= 0 &&
-                         currentReviewIndex < bulkProducts.length
-    ? bulkProducts[currentReviewIndex]
-    : null;
+  const currentProduct =
+    bulkProducts.length > 0 &&
+    currentReviewIndex >= 0 &&
+    currentReviewIndex < bulkProducts.length
+      ? bulkProducts[currentReviewIndex]
+      : null;
 
   // ==========================================
   // NAVIGATION METHODS
@@ -262,8 +267,8 @@ export function useBulkImportForm({
    * Stays on last product if already at end
    */
   const goToNextProduct = () => {
-    setCurrentReviewIndex(prev =>
-      Math.min(bulkProducts.length - 1, prev + 1)
+    setCurrentReviewIndex((prev) =>
+      Math.min(bulkProducts.length - 1, prev + 1),
     );
   };
 
@@ -272,7 +277,7 @@ export function useBulkImportForm({
    * Stays on first product if already at beginning
    */
   const goToPreviousProduct = () => {
-    setCurrentReviewIndex(prev => Math.max(0, prev - 1));
+    setCurrentReviewIndex((prev) => Math.max(0, prev - 1));
   };
 
   // ==========================================
@@ -292,19 +297,21 @@ export function useBulkImportForm({
   const handleApplyBulkTemplate = () => {
     if (!selectedBulkTemplateId) {
       showNotification({
-        type: 'warning',
-        title: 'No Template Selected',
-        message: 'Please select a pricing template first'
+        type: "warning",
+        title: "No Template Selected",
+        message: "Please select a pricing template first",
       });
       return;
     }
 
-    const template = availableTemplates.find(t => t.id === selectedBulkTemplateId);
+    const template = availableTemplates.find(
+      (t) => t.id === selectedBulkTemplateId,
+    );
     if (!template) {
       showNotification({
-        type: 'error',
-        title: 'Template Not Found',
-        message: 'Selected template could not be found'
+        type: "error",
+        title: "Template Not Found",
+        message: "Selected template could not be found",
       });
       return;
     }
@@ -312,26 +319,26 @@ export function useBulkImportForm({
     // Convert price_breaks to pricing tiers
     const tiers: PricingTier[] = template.price_breaks
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map(priceBreak => ({
+      .map((priceBreak) => ({
         weight: priceBreak.label,
         qty: priceBreak.qty,
-        price: priceBreak.price?.toString() || ''
+        price: priceBreak.price?.toString() || "",
       }));
 
     // Apply to all bulk products
-    const updatedProducts = bulkProducts.map(product => ({
+    const updatedProducts = bulkProducts.map((product) => ({
       ...product,
-      pricing_mode: 'tiered' as const,
+      pricing_mode: "tiered" as const,
       pricing_tiers: tiers,
-      pricing_template_id: selectedBulkTemplateId
+      pricing_template_id: selectedBulkTemplateId,
     }));
 
     setBulkProducts(updatedProducts);
 
     showNotification({
-      type: 'success',
-      title: 'Template Applied',
-      message: `${template.name} applied to ${bulkProducts.length} products`
+      type: "success",
+      title: "Template Applied",
+      message: `${template.name} applied to ${bulkProducts.length} products`,
     });
   };
 
@@ -369,9 +376,9 @@ export function useBulkImportForm({
     // Validation: Check for input data
     if (!bulkInput.trim()) {
       showNotification({
-        type: 'warning',
-        title: 'No Data',
-        message: 'Enter product data first',
+        type: "warning",
+        title: "No Data",
+        message: "Enter product data first",
       });
       return;
     }
@@ -379,9 +386,9 @@ export function useBulkImportForm({
     // Validation: Check for category selection
     if (!bulkCategory) {
       showNotification({
-        type: 'warning',
-        title: 'Category Required',
-        message: 'Select a category for this bulk batch',
+        type: "warning",
+        title: "Category Required",
+        message: "Select a category for this bulk batch",
       });
       return;
     }
@@ -392,55 +399,72 @@ export function useBulkImportForm({
 
     try {
       // Parse CSV-style input
-      const lines = bulkInput.split('\n').filter(line => line.trim());
-      const productsToEnrich: Array<{name: string, price: string, cost: string}> = [];
+      const lines = bulkInput.split("\n").filter((line) => line.trim());
+      const productsToEnrich: Array<{
+        name: string;
+        price: string;
+        cost: string;
+      }> = [];
 
       // Parse each line: Name, Price, Cost (optional)
       for (const line of lines) {
-        const parts = line.split(',').map(p => p.trim());
+        const parts = line.split(",").map((p) => p.trim());
         if (parts.length < 1) continue;
 
         const [name, price, cost] = parts;
         productsToEnrich.push({
           name,
-          price: price || '',
-          cost: cost || price || ''
+          price: price || "",
+          cost: cost || price || "",
         });
 
         // Create initial product object
         parsedProducts.push({
           name,
-          price: price || '',
-          cost_price: cost || price || '',
-          pricing_mode: 'single',
+          price: price || "",
+          cost_price: cost || price || "",
+          pricing_mode: "single",
           pricing_tiers: [],
-          custom_fields: {}
+          custom_fields: {},
         });
       }
 
       // Call streaming AI API
-      const categoryName = categories.find(c => c.id === bulkCategory)?.name || '';
-      const response = await fetch('/api/ai/bulk-autofill-stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const categoryName =
+        categories.find((c) => c.id === bulkCategory)?.name || "";
+      const response = await fetch("/api/ai/bulk-autofill-stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           products: productsToEnrich,
           category: categoryName,
-          selectedFields: ['strain_type', 'lineage', 'nose', 'effects', 'terpene_profile', 'description'],
+          selectedFields: [
+            "strain_type",
+            "lineage",
+            "nose",
+            "effects",
+            "terpene_profile",
+            "description",
+          ],
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`AI enrichment failed (${response.status}): ${errorText || 'Server error'}`);
+        throw new Error(
+          `AI enrichment failed (${response.status}): ${errorText || "Server error"}`,
+        );
       }
 
       // Process streaming response
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-      if (!reader) throw new Error('Could not establish streaming connection. Please try again.');
+      if (!reader)
+        throw new Error(
+          "Could not establish streaming connection. Please try again.",
+        );
 
-      let buffer = '';
+      let buffer = "";
       let allResults: BulkAIResult[] = [];
 
       // Read stream chunks
@@ -449,14 +473,14 @@ export function useBulkImportForm({
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
 
         // Parse SSE messages
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          if (line.startsWith("data: ")) {
             const data = JSON.parse(line.slice(6));
-            if (data.type === 'complete') {
+            if (data.type === "complete") {
               allResults = data.results ? Object.values(data.results) : [];
             }
           }
@@ -465,7 +489,9 @@ export function useBulkImportForm({
 
       // Process AI results
       for (const result of allResults) {
-        const hasData = result.lineage || (result.terpene_profile && result.terpene_profile.length > 0);
+        const hasData =
+          result.lineage ||
+          (result.terpene_profile && result.terpene_profile.length > 0);
         if (hasData) {
           enrichedData[result.product_name] = {
             strain_type: result.strain_type,
@@ -473,7 +499,7 @@ export function useBulkImportForm({
             nose: result.nose,
             effects: result.effects,
             terpene_profile: result.terpene_profile,
-            description: result.description
+            description: result.description,
           };
         }
       }
@@ -483,11 +509,15 @@ export function useBulkImportForm({
         const aiData = enrichedData[product.name];
         if (aiData) {
           product.custom_fields = {
-            strain_type: aiData.strain_type || '',
-            lineage: aiData.lineage || '',
-            nose: Array.isArray(aiData.nose) ? aiData.nose.join(', ') : '',
-            effects: Array.isArray(aiData.effects) ? aiData.effects.join(', ') : '',
-            terpene_profile: Array.isArray(aiData.terpene_profile) ? aiData.terpene_profile.join(', ') : ''
+            strain_type: aiData.strain_type || "",
+            lineage: aiData.lineage || "",
+            nose: Array.isArray(aiData.nose) ? aiData.nose.join(", ") : "",
+            effects: Array.isArray(aiData.effects)
+              ? aiData.effects.join(", ")
+              : "",
+            terpene_profile: Array.isArray(aiData.terpene_profile)
+              ? aiData.terpene_profile.join(", ")
+              : "",
           };
         }
       }
@@ -502,29 +532,30 @@ export function useBulkImportForm({
 
       if (enrichedCount === 0) {
         showNotification({
-          type: 'warning',
-          title: '⚠️ No Data Enriched',
-          message: `Could not find AI data for any of the ${totalProducts} product${totalProducts > 1 ? 's' : ''}. Try checking product names or try again.`,
+          type: "warning",
+          title: "⚠️ No Data Enriched",
+          message: `Could not find AI data for any of the ${totalProducts} product${totalProducts > 1 ? "s" : ""}. Try checking product names or try again.`,
           duration: 6000,
         });
       } else if (enrichedCount < totalProducts) {
         showNotification({
-          type: 'success',
-          title: '✅ Enrichment Partially Complete',
-          message: `Enhanced ${enrichedCount} of ${totalProducts} product${totalProducts > 1 ? 's' : ''} with AI data.`,
+          type: "success",
+          title: "✅ Enrichment Partially Complete",
+          message: `Enhanced ${enrichedCount} of ${totalProducts} product${totalProducts > 1 ? "s" : ""} with AI data.`,
         });
       } else {
         showNotification({
-          type: 'success',
-          title: '✅ AI Enrichment Complete!',
-          message: `All ${enrichedCount} product${enrichedCount > 1 ? 's' : ''} enhanced with strain data, terpenes, and descriptions.`,
+          type: "success",
+          title: "✅ AI Enrichment Complete!",
+          message: `All ${enrichedCount} product${enrichedCount > 1 ? "s" : ""} enhanced with strain data, terpenes, and descriptions.`,
         });
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : "An unexpected error occurred";
       showNotification({
-        type: 'error',
-        title: '❌ AI Enrichment Failed',
+        type: "error",
+        title: "❌ AI Enrichment Failed",
         message: errorMessage,
         duration: 6000,
       });
@@ -574,9 +605,9 @@ export function useBulkImportForm({
     // Validation: Check for products
     if (bulkProducts.length === 0) {
       showNotification({
-        type: 'warning',
-        title: 'No Products',
-        message: 'Add products first',
+        type: "warning",
+        title: "No Products",
+        message: "Add products first",
       });
       return;
     }
@@ -587,7 +618,7 @@ export function useBulkImportForm({
     setBulkProgress({
       current: 0,
       total: bulkProducts.length,
-      currentProduct: '',
+      currentProduct: "",
       successCount: 0,
       failCount: 0,
     });
@@ -610,22 +641,24 @@ export function useBulkImportForm({
         });
         try {
           const enrichedData = bulkEnrichedData[product.name] || {};
-          const description = enrichedData.description || `Bulk imported product: ${product.name}`;
+          const description =
+            enrichedData.description ||
+            `Bulk imported product: ${product.name}`;
 
           // Build product data object
           const productData: ProductSubmissionData = {
             name: product.name,
             category_id: bulkCategory,
-            product_type: 'simple',
-            product_visibility: 'internal',
+            product_type: "simple",
+            product_visibility: "internal",
             pricing_mode: product.pricing_mode,
             custom_fields: product.custom_fields || {},
             description,
-            pricing_template_id: product.pricing_template_id || undefined
+            pricing_template_id: product.pricing_template_id || undefined,
           };
 
           // Add pricing fields based on mode
-          if (product.pricing_mode === 'single') {
+          if (product.pricing_mode === "single") {
             // Only add price fields if they have values
             if (product.price) {
               productData.price = parseFloat(product.price);
@@ -638,13 +671,17 @@ export function useBulkImportForm({
           }
 
           // Submit product to API
-          const response = await axios.post('/api/vendor/products', productData, {
-            headers: {
-              'x-vendor-id': vendorId || '',
-              'Content-Type': 'application/json'
+          const response = await axios.post(
+            "/api/vendor/products",
+            productData,
+            {
+              headers: {
+                "x-vendor-id": vendorId || "",
+                "Content-Type": "application/json",
+              },
+              withCredentials: true, // Send HTTP-only auth cookie
             },
-            withCredentials: true // Send HTTP-only auth cookie
-          });
+          );
 
           if (response.data.success) {
             successCount++;
@@ -658,13 +695,17 @@ export function useBulkImportForm({
           if (failCount === 1) {
             const axiosError = err as AxiosError<APIErrorResponse>;
             const errorData = axiosError.response?.data;
-            let errorMessage = 'Validation failed. Please check product data and try again.';
+            let errorMessage =
+              "Validation failed. Please check product data and try again.";
 
             if (errorData?.details && Array.isArray(errorData.details)) {
               // Format validation errors with better structure
-              const fieldErrors = errorData.details.map((d: ValidationErrorDetail) =>
-                `• ${d.field.replace(/_/g, ' ').toUpperCase()}: ${d.message}`
-              ).join('\n');
+              const fieldErrors = errorData.details
+                .map(
+                  (d: ValidationErrorDetail) =>
+                    `• ${d.field.replace(/_/g, " ").toUpperCase()}: ${d.message}`,
+                )
+                .join("\n");
               errorMessage = `Please fix the following issues:\n\n${fieldErrors}`;
             } else if (errorData?.error) {
               errorMessage = errorData.error;
@@ -673,7 +714,7 @@ export function useBulkImportForm({
             }
 
             showNotification({
-              type: 'error',
+              type: "error",
               title: `❌ Failed to create "${product.name}"`,
               message: errorMessage,
               duration: 8000, // Longer duration for detailed errors
@@ -688,37 +729,38 @@ export function useBulkImportForm({
       if (successCount === 0) {
         // All failed
         showNotification({
-          type: 'error',
-          title: '❌ Bulk Import Failed',
-          message: `All ${failCount} product${failCount > 1 ? 's' : ''} failed to import. Please check the error above and try again.`,
+          type: "error",
+          title: "❌ Bulk Import Failed",
+          message: `All ${failCount} product${failCount > 1 ? "s" : ""} failed to import. Please check the error above and try again.`,
           duration: 6000,
         });
       } else if (failCount === 0) {
         // All succeeded
         showNotification({
-          type: 'success',
-          title: '✅ Import Successful!',
-          message: `All ${successCount} product${successCount > 1 ? 's' : ''} created successfully.`,
+          type: "success",
+          title: "✅ Import Successful!",
+          message: `All ${successCount} product${successCount > 1 ? "s" : ""} created successfully.`,
         });
       } else {
         // Partial success
         showNotification({
-          type: 'warning',
-          title: '⚠️ Import Partially Complete',
-          message: `${successCount} product${successCount > 1 ? 's' : ''} created, ${failCount} failed. Check errors above.`,
+          type: "warning",
+          title: "⚠️ Import Partially Complete",
+          message: `${successCount} product${successCount > 1 ? "s" : ""} created, ${failCount} failed. Check errors above.`,
           duration: 6000,
         });
       }
 
       // Redirect on success
       if (successCount > 0) {
-        setTimeout(() => router.push('/vendor/products'), 2000);
+        setTimeout(() => router.push("/vendor/products"), 2000);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
       showNotification({
-        type: 'error',
-        title: '❌ Import Failed',
+        type: "error",
+        title: "❌ Import Failed",
         message: `Could not process bulk products: ${errorMessage}`,
         duration: 6000,
       });
@@ -736,8 +778,8 @@ export function useBulkImportForm({
    * Useful for clearing form after submission or cancellation
    */
   const resetBulkForm = () => {
-    setBulkInput('');
-    setBulkCategory('');
+    setBulkInput("");
+    setBulkCategory("");
     setBulkProducts([]);
     setCurrentReviewIndex(0);
     setBulkImages([]);

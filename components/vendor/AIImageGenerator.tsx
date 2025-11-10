@@ -1,8 +1,16 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { X, Sparkles, Search, Wand2, Loader2, CheckCircle, Image as ImageIcon } from 'lucide-react';
-import Image from 'next/image';
+import { useState, useEffect } from "react";
+import {
+  X,
+  Sparkles,
+  Search,
+  Wand2,
+  Loader2,
+  CheckCircle,
+  Image as ImageIcon,
+} from "lucide-react";
+import Image from "next/image";
 
 interface AIImageGeneratorProps {
   vendorId: string;
@@ -17,11 +25,17 @@ interface InspirationResult {
   score: number;
 }
 
-export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }: AIImageGeneratorProps) {
-  const [prompt, setPrompt] = useState('');
-  const [size, setSize] = useState<'1024x1024' | '1024x1792' | '1792x1024'>('1024x1024');
-  const [quality, setQuality] = useState<'standard' | 'hd'>('standard');
-  const [style, setStyle] = useState<'vivid' | 'natural'>('vivid');
+export default function AIImageGenerator({
+  vendorId,
+  onClose,
+  onImageGenerated,
+}: AIImageGeneratorProps) {
+  const [prompt, setPrompt] = useState("");
+  const [size, setSize] = useState<"1024x1024" | "1024x1792" | "1792x1024">(
+    "1024x1024",
+  );
+  const [quality, setQuality] = useState<"standard" | "hd">("standard");
+  const [style, setStyle] = useState<"vivid" | "natural">("vivid");
   const [generating, setGenerating] = useState(false);
   const [searching, setSearching] = useState(false);
   const [inspiration, setInspiration] = useState<InspirationResult[]>([]);
@@ -33,13 +47,13 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
   // Handle ESC key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !generating) {
+      if (e.key === "Escape" && !generating) {
         onClose();
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose, generating]);
 
   const handleSearchInspiration = async () => {
@@ -49,11 +63,11 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
       setSearching(true);
       setError(null);
 
-      const response = await fetch('/api/vendor/media/search-inspiration', {
-        method: 'POST',
+      const response = await fetch("/api/vendor/media/search-inspiration", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-vendor-id': vendorId,
+          "Content-Type": "application/json",
+          "x-vendor-id": vendorId,
         },
         body: JSON.stringify({
           query: prompt,
@@ -64,13 +78,15 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to search');
+        throw new Error(data.error || "Failed to search");
       }
 
       setInspiration(data.results || []);
       setShowInspiration(true);
     } catch (err: any) {
-      console.error('Search error:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Search error:", err);
+      }
       setError(err.message);
     } finally {
       setSearching(false);
@@ -79,7 +95,7 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      setError('Please enter a prompt');
+      setError("Please enter a prompt");
       return;
     }
 
@@ -88,11 +104,11 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
       setError(null);
       setGeneratedImage(null);
 
-      const response = await fetch('/api/vendor/media/generate', {
-        method: 'POST',
+      const response = await fetch("/api/vendor/media/generate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-vendor-id': vendorId,
+          "Content-Type": "application/json",
+          "x-vendor-id": vendorId,
         },
         body: JSON.stringify({
           prompt,
@@ -105,17 +121,18 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate image');
+        throw new Error(data.error || "Failed to generate image");
       }
 
-      console.log('✅ Image generated:', data.file);
       setGeneratedImage(data.file.url);
       setRevisedPrompt(data.file.revised_prompt);
 
       // DON'T auto-close - let user review and close manually
       // onImageGenerated(); is now called when user clicks "Done" button
     } catch (err: any) {
-      console.error('Generation error:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Generation error:", err);
+      }
       setError(err.message);
     } finally {
       setGenerating(false);
@@ -146,10 +163,15 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-white font-black uppercase tracking-tight text-lg" style={{ fontWeight: 900 }}>
+              <h2
+                className="text-white font-black uppercase tracking-tight text-lg"
+                style={{ fontWeight: 900 }}
+              >
                 Generate with AI
               </h2>
-              <p className="text-white/40 text-xs">DALL-E 3 • Powered by OpenAI</p>
+              <p className="text-white/40 text-xs">
+                DALL-E 3 • Powered by OpenAI
+              </p>
             </div>
           </div>
           {!generating && (
@@ -179,11 +201,15 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
               <div className="p-4 border-t border-white/10 space-y-3">
                 <div className="flex items-center gap-2 text-green-500">
                   <CheckCircle className="w-4 h-4" />
-                  <span className="text-xs uppercase tracking-[0.15em] font-bold">Saved to Media Library</span>
+                  <span className="text-xs uppercase tracking-[0.15em] font-bold">
+                    Saved to Media Library
+                  </span>
                 </div>
                 {revisedPrompt && (
                   <p className="text-white/40 text-xs">
-                    <span className="text-white/60 font-medium">AI Enhanced: </span>
+                    <span className="text-white/60 font-medium">
+                      AI Enhanced:{" "}
+                    </span>
                     {revisedPrompt}
                   </p>
                 )}
@@ -267,7 +293,9 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
                     >
                       {item.title}
                     </a>
-                    <p className="text-white/40 text-xs line-clamp-2">{item.snippet}</p>
+                    <p className="text-white/40 text-xs line-clamp-2">
+                      {item.snippet}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -287,9 +315,15 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
                 disabled={generating}
                 className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all disabled:opacity-50"
               >
-                <option value="1024x1024" className="bg-black">Square</option>
-                <option value="1024x1792" className="bg-black">Portrait</option>
-                <option value="1792x1024" className="bg-black">Landscape</option>
+                <option value="1024x1024" className="bg-black">
+                  Square
+                </option>
+                <option value="1024x1792" className="bg-black">
+                  Portrait
+                </option>
+                <option value="1792x1024" className="bg-black">
+                  Landscape
+                </option>
               </select>
             </div>
 
@@ -304,8 +338,12 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
                 disabled={generating}
                 className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all disabled:opacity-50"
               >
-                <option value="standard" className="bg-black">Standard</option>
-                <option value="hd" className="bg-black">HD</option>
+                <option value="standard" className="bg-black">
+                  Standard
+                </option>
+                <option value="hd" className="bg-black">
+                  HD
+                </option>
               </select>
             </div>
 
@@ -320,8 +358,12 @@ export default function AIImageGenerator({ vendorId, onClose, onImageGenerated }
                 disabled={generating}
                 className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all disabled:opacity-50"
               >
-                <option value="vivid" className="bg-black">Vivid</option>
-                <option value="natural" className="bg-black">Natural</option>
+                <option value="vivid" className="bg-black">
+                  Vivid
+                </option>
+                <option value="natural" className="bg-black">
+                  Natural
+                </option>
               </select>
             </div>
           </div>

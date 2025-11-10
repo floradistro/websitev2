@@ -3,18 +3,18 @@
  * Update or delete automation rules
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { requireVendor } from '@/lib/auth/middleware';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { requireVendor } from "@/lib/auth/middleware";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
@@ -35,18 +35,23 @@ export async function PATCH(
 
     // Update rule
     const { data: rule, error: updateError } = await supabase
-      .from('marketing_automation_rules')
+      .from("marketing_automation_rules")
       .update(updates)
-      .eq('id', id)
-      .eq('vendor_id', vendorId)
+      .eq("id", id)
+      .eq("vendor_id", vendorId)
       .select()
       .single();
 
     if (updateError) {
-      console.error('Automation rule update error:', updateError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Automation rule update error:", updateError);
+      }
       return NextResponse.json(
-        { error: 'Failed to update automation rule', message: updateError.message },
-        { status: 500 }
+        {
+          error: "Failed to update automation rule",
+          message: updateError.message,
+        },
+        { status: 500 },
       );
     }
 
@@ -55,17 +60,19 @@ export async function PATCH(
       rule,
     });
   } catch (error: any) {
-    console.error('Automation rule update error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Automation rule update error:", error);
+    }
     return NextResponse.json(
-      { error: 'Failed to update automation rule', message: error.message },
-      { status: 500 }
+      { error: "Failed to update automation rule", message: error.message },
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
@@ -77,28 +84,35 @@ export async function DELETE(
 
     // Delete rule
     const { error: deleteError } = await supabase
-      .from('marketing_automation_rules')
+      .from("marketing_automation_rules")
       .delete()
-      .eq('id', id)
-      .eq('vendor_id', vendorId);
+      .eq("id", id)
+      .eq("vendor_id", vendorId);
 
     if (deleteError) {
-      console.error('Automation rule deletion error:', deleteError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Automation rule deletion error:", deleteError);
+      }
       return NextResponse.json(
-        { error: 'Failed to delete automation rule', message: deleteError.message },
-        { status: 500 }
+        {
+          error: "Failed to delete automation rule",
+          message: deleteError.message,
+        },
+        { status: 500 },
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Automation rule deleted',
+      message: "Automation rule deleted",
     });
   } catch (error: any) {
-    console.error('Automation rule deletion error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Automation rule deletion error:", error);
+    }
     return NextResponse.json(
-      { error: 'Failed to delete automation rule', message: error.message },
-      { status: 500 }
+      { error: "Failed to delete automation rule", message: error.message },
+      { status: 500 },
     );
   }
 }

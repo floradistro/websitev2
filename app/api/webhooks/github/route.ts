@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createHmac } from 'crypto';
-import { getServiceSupabase } from '@/lib/supabase/client';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import path from 'path';
-import fs from 'fs/promises';
+import { NextRequest, NextResponse } from "next/server";
+import { createHmac } from "crypto";
+import { getServiceSupabase } from "@/lib/supabase/client";
+import { exec } from "child_process";
+import { promisify } from "util";
+import path from "path";
+import fs from "fs/promises";
 
 const execAsync = promisify(exec);
 
@@ -28,14 +28,11 @@ const execAsync = promisify(exec);
  */
 export async function POST(request: NextRequest) {
   try {
-    const signature = request.headers.get('x-hub-signature-256');
-    const event = request.headers.get('x-github-event');
+    const signature = request.headers.get("x-hub-signature-256");
+    const event = request.headers.get("x-github-event");
 
-    if (!signature || event !== 'push') {
-      return NextResponse.json(
-        { error: 'Invalid webhook' },
-        { status: 400 }
-      );
+    if (!signature || event !== "push") {
+      return NextResponse.json({ error: "Invalid webhook" }, { status: 400 });
     }
 
     const payload = await request.text();
@@ -43,31 +40,32 @@ export async function POST(request: NextRequest) {
     // Verify webhook signature
     const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
     if (!webhookSecret) {
-      console.error('GITHUB_WEBHOOK_SECRET not configured');
+      if (process.env.NODE_ENV === "development") {
+        console.error("GITHUB_WEBHOOK_SECRET not configured");
+      }
       return NextResponse.json(
-        { error: 'Webhook not configured' },
-        { status: 500 }
+        { error: "Webhook not configured" },
+        { status: 500 },
       );
     }
 
-    const expectedSignature = 'sha256=' + createHmac('sha256', webhookSecret)
-      .update(payload)
-      .digest('hex');
+    const expectedSignature =
+      "sha256=" +
+      createHmac("sha256", webhookSecret).update(payload).digest("hex");
 
     if (signature !== expectedSignature) {
-      console.error('Invalid webhook signature');
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
-      );
+      if (process.env.NODE_ENV === "development") {
+        console.error("Invalid webhook signature");
+      }
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     // Parse the payload
     const data = JSON.parse(payload);
 
     // Only process pushes to main/master branch
-    const branch = data.ref?.replace('refs/heads/', '');
-    if (branch !== 'main' && branch !== 'master') {
+    const branch = data.ref?.replace("refs/heads/", "");
+    if (branch !== "main" && branch !== "master") {
       return NextResponse.json({
         message: `Ignoring push to ${branch} branch`,
       });
@@ -75,45 +73,52 @@ export async function POST(request: NextRequest) {
 
     // Extract commit info
     const commitSha = data.after;
-    const commitMessage = data.head_commit?.message || 'No commit message';
-    const commitAuthor = data.head_commit?.author?.name || 'Unknown';
+    const commitMessage = data.head_commit?.message || "No commit message";
+    const commitAuthor = data.head_commit?.author?.name || "Unknown";
     const repoFullName = data.repository?.full_name; // e.g., "floradistro/flora-distro-storefront"
 
     if (!repoFullName) {
       return NextResponse.json(
-        { error: 'Repository info missing' },
-        { status: 400 }
+        { error: "Repository info missing" },
+        { status: 400 },
       );
     }
 
     const supabase = getServiceSupabase();
 
     // Find vendor by repository name
-    const [githubUsername, githubRepoName] = repoFullName.split('/');
+    const [githubUsername, githubRepoName] = repoFullName.split("/");
 
     const { data: vendor, error: vendorError } = await supabase
-      .from('vendors')
-      .select('id, slug, store_name')
-      .eq('github_username', githubUsername)
-      .eq('github_repo_name', githubRepoName)
+      .from("vendors")
+      .select("id, slug, store_name")
+      .eq("github_username", githubUsername)
+      .eq("github_repo_name", githubRepoName)
       .single();
 
     if (vendorError || !vendor) {
-      console.error('Vendor not found for repo:', repoFullName);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Vendor not found for repo:", repoFullName);
+      }
       return NextResponse.json(
-        { error: 'Vendor not found for this repository' },
-        { status: 404 }
+        { error: "Vendor not found for this repository" },
+        { status: 404 },
       );
     }
 
-    console.log(`Syncing ${vendor.slug} storefront from GitHub`);
-    console.log(`   Commit: ${commitSha.substring(0, 7)} - ${commitMessage}`);
-    console.log(`   Author: ${commitAuthor}`);
-
     // Pull vendor's repo into our monorepo
     const projectRoot = process.cwd();
-    const vendorTemplatePath = path.join(projectRoot, 'components', 'storefront', 'templates', vendor.slug);
-    const tempClonePath = path.join('/tmp', `vendor-${vendor.slug}-${Date.now()}`);
+    const vendorTemplatePath = path.join(
+      projectRoot,
+      "components",
+      "storefront",
+      "templates",
+      vendor.slug,
+    );
+    const tempClonePath = path.join(
+      "/tmp",
+      `vendor-${vendor.slug}-${Date.now()}`,
+    );
 
     try {
       // Clone vendor's repo to temp directory
@@ -122,7 +127,9 @@ export async function POST(request: NextRequest) {
         ? `https://${githubToken}@github.com/${repoFullName}.git`
         : `https://github.com/${repoFullName}.git`;
 
-      await execAsync(`git clone --depth 1 --branch ${branch} ${cloneUrl} ${tempClonePath}`);
+      await execAsync(
+        `git clone --depth 1 --branch ${branch} ${cloneUrl} ${tempClonePath}`,
+      );
 
       // Create vendor template directory if it doesn't exist
       await fs.mkdir(vendorTemplatePath, { recursive: true });
@@ -130,7 +137,7 @@ export async function POST(request: NextRequest) {
       // Copy files from vendor repo to our template folder
       // Exclude .git, node_modules, .next, etc.
       await execAsync(
-        `rsync -av --delete --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='.env*' ${tempClonePath}/ ${vendorTemplatePath}/`
+        `rsync -av --delete --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='.env*' ${tempClonePath}/ ${vendorTemplatePath}/`,
       );
 
       // Commit changes to main repo
@@ -138,28 +145,28 @@ export async function POST(request: NextRequest) {
 
       const commitMsg = `chore: sync ${vendor.slug} storefront\n\n${commitMessage}\n\nCommit: ${commitSha.substring(0, 7)}\nAuthor: ${commitAuthor}`;
 
-      await execAsync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, { cwd: projectRoot });
-      await execAsync('git push origin main', { cwd: projectRoot });
+      await execAsync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, {
+        cwd: projectRoot,
+      });
+      await execAsync("git push origin main", { cwd: projectRoot });
 
       // Clean up temp directory
       await fs.rm(tempClonePath, { recursive: true, force: true });
 
-      console.log(`✅ Synced ${vendor.slug} storefront successfully`);
-
       // Update vendor status - mark as ready since we successfully pushed
       await supabase
-        .from('vendors')
+        .from("vendors")
         .update({
-          deployment_status: 'ready',
+          deployment_status: "ready",
           last_deployment_at: new Date().toISOString(),
           deployment_error: null,
         })
-        .eq('id', vendor.id);
+        .eq("id", vendor.id);
 
       // Create deployment record - mark as completed since git push succeeded
-      await supabase.from('vendor_deployments').insert({
+      await supabase.from("vendor_deployments").insert({
         vendor_id: vendor.id,
-        status: 'ready',
+        status: "ready",
         commit_sha: commitSha,
         commit_message: commitMessage,
         started_at: new Date().toISOString(),
@@ -173,8 +180,9 @@ export async function POST(request: NextRequest) {
         commit: commitSha.substring(0, 7),
       });
     } catch (syncError: any) {
-      console.error('Error syncing vendor repo:', syncError);
-
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error syncing vendor repo:", syncError);
+      }
       // Clean up temp directory on error
       try {
         await fs.rm(tempClonePath, { recursive: true, force: true });
@@ -183,14 +191,15 @@ export async function POST(request: NextRequest) {
       throw new Error(`Failed to sync vendor repo: ${syncError.message}`);
     }
   } catch (error: any) {
-    console.error('GitHub webhook error:', error);
-
+    if (process.env.NODE_ENV === "development") {
+      console.error("GitHub webhook error:", error);
+    }
     return NextResponse.json(
       {
-        error: error.message || 'Webhook processing failed',
+        error: error.message || "Webhook processing failed",
         details: error.toString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

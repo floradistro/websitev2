@@ -1,13 +1,15 @@
-import useSWR from 'swr';
-import axios from 'axios';
+import useSWR from "swr";
+import axios from "axios";
 
 // Fetcher function
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 // Products hook with caching and revalidation
 export function useProducts(searchParams?: Record<string, any>) {
-  const queryString = searchParams ? `?${new URLSearchParams(searchParams).toString()}` : '?per_page=200';
-  
+  const queryString = searchParams
+    ? `?${new URLSearchParams(searchParams).toString()}`
+    : "?per_page=200";
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/supabase/products${queryString}`,
     fetcher,
@@ -15,7 +17,7 @@ export function useProducts(searchParams?: Record<string, any>) {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       dedupingInterval: 2000, // Dedupe requests within 2s
-    }
+    },
   );
 
   return {
@@ -30,13 +32,13 @@ export function useProducts(searchParams?: Record<string, any>) {
 // Vendors hook
 export function useVendors() {
   const { data, error, isLoading, mutate } = useSWR(
-    '/api/admin/vendors',
+    "/api/admin/vendors",
     fetcher,
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       dedupingInterval: 2000,
-    }
+    },
   );
 
   return {
@@ -50,13 +52,13 @@ export function useVendors() {
 // Users hook
 export function useUsers() {
   const { data, error, isLoading, mutate } = useSWR(
-    '/api/admin/users',
+    "/api/admin/users",
     fetcher,
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       dedupingInterval: 2000,
-    }
+    },
   );
 
   return {
@@ -69,9 +71,9 @@ export function useUsers() {
 
 // Orders hook
 export function useOrders(page: number = 1, filters?: Record<string, string>) {
-  const params = { page: page.toString(), per_page: '20', ...filters };
+  const params = { page: page.toString(), per_page: "20", ...filters };
   const queryString = new URLSearchParams(params).toString();
-  
+
   const { data, error, isLoading, mutate } = useSWR(
     `/api/supabase/orders?${queryString}`,
     fetcher,
@@ -79,7 +81,7 @@ export function useOrders(page: number = 1, filters?: Record<string, string>) {
       revalidateOnFocus: false,
       revalidateOnReconnect: true,
       dedupingInterval: 2000,
-    }
+    },
   );
 
   return {
@@ -94,13 +96,13 @@ export function useOrders(page: number = 1, filters?: Record<string, string>) {
 // Dashboard stats hook
 export function useDashboardStats() {
   const { data, error, isLoading } = useSWR(
-    '/api/admin/dashboard-stats',
+    "/api/admin/dashboard-stats",
     fetcher,
     {
       refreshInterval: 30000, // Refresh every 30s
       revalidateOnFocus: true,
       dedupingInterval: 5000,
-    }
+    },
   );
 
   return {
@@ -109,6 +111,3 @@ export function useDashboardStats() {
     isError: error,
   };
 }
-
-
-

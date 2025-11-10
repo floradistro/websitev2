@@ -1,7 +1,7 @@
-import { getTheme, tw } from '@/lib/dashboard-theme';
-import { ReactNode } from 'react';
+import { getTheme, tw } from "@/lib/dashboard-theme";
+import { ReactNode } from "react";
 
-const vendorTheme = getTheme('vendor');
+const vendorTheme = getTheme("vendor");
 
 interface CardProps {
   children: ReactNode;
@@ -15,7 +15,7 @@ export function VendorCard({ children, className, hover = true }: CardProps) {
       className={tw(
         vendorTheme.components.card,
         hover && vendorTheme.components.cardHover,
-        className
+        className,
       )}
     >
       {children}
@@ -29,9 +29,19 @@ interface CardHeaderProps {
   action?: ReactNode;
 }
 
-export function VendorCardHeader({ children, className, action }: CardHeaderProps) {
+export function VendorCardHeader({
+  children,
+  className,
+  action,
+}: CardHeaderProps) {
   return (
-    <div className={tw(vendorTheme.components.cardHeader, 'flex justify-between items-center', className)}>
+    <div
+      className={tw(
+        vendorTheme.components.cardHeader,
+        "flex justify-between items-center",
+        className,
+      )}
+    >
       <div>{children}</div>
       {action && <div>{action}</div>}
     </div>
@@ -53,9 +63,6 @@ interface CardTitleProps {
 
 export function VendorCardTitle({ children, className }: CardTitleProps) {
   return (
-    <h2 className={tw(vendorTheme.typography.label, className)}>
-      {children}
-    </h2>
+    <h2 className={tw(vendorTheme.typography.label, className)}>{children}</h2>
   );
 }
-

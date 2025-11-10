@@ -7,8 +7,10 @@
  * @param entries An iterable object that contains key-value pairs
  * @returns A new object whose properties are given by the entries
  */
-declare function fromEntries<T = any>(entries: Iterable<readonly [PropertyKey, T]>): {
-    [k: string]: T;
+declare function fromEntries<T = any>(
+  entries: Iterable<readonly [PropertyKey, T]>,
+): {
+  [k: string]: T;
 };
 
 export { fromEntries };

@@ -1,1 +1,1 @@
-export{a as BrowserHelper}from'./chunks/chunk-UCD6YLP3.js';
+export { a as BrowserHelper } from "./chunks/chunk-UCD6YLP3.js";

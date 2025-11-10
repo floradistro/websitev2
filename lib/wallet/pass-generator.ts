@@ -1,15 +1,15 @@
 // Apple Wallet Pass Generator
 // Generates .pkpass files for customers
 
-import { PKPass } from 'passkit-generator';
-import fs from 'fs';
-import path from 'path';
-import { WALLET_CONFIG, getVendorWalletBranding } from './config';
-import { createClient } from '@supabase/supabase-js';
+import { PKPass } from "passkit-generator";
+import fs from "fs";
+import path from "path";
+import { WALLET_CONFIG, getVendorWalletBranding } from "./config";
+import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 // Type definitions
@@ -78,7 +78,7 @@ export class WalletPassGenerator {
   async generatePass(
     customer: Customer,
     vendor: Vendor,
-    passRecord: WalletPass
+    passRecord: WalletPass,
   ): Promise<Buffer> {
     try {
       // Get vendor wallet settings or use defaults
@@ -106,11 +106,13 @@ export class WalletPassGenerator {
       const buffer = pass.getAsBuffer();
 
       // Log event
-      await this.logPassEvent(passRecord.id, customer.id, 'generated');
+      await this.logPassEvent(passRecord.id, customer.id, "generated");
 
       return buffer;
     } catch (error) {
-      console.error('Failed to generate wallet pass:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to generate wallet pass:", error);
+      }
       throw new Error(`Pass generation failed: ${error}`);
     }
   }
@@ -142,8 +144,8 @@ export class WalletPassGenerator {
 
     // Check if we have separate cert and key files
     const certDir = path.dirname(this.certPath);
-    const certPemPath = path.join(certDir, 'cert.pem');
-    const keyPemPath = path.join(certDir, 'key.pem');
+    const certPemPath = path.join(certDir, "cert.pem");
+    const keyPemPath = path.join(certDir, "key.pem");
 
     let signerCert, signerKey;
 
@@ -158,7 +160,10 @@ export class WalletPassGenerator {
     }
 
     // Template folder path
-    const templatePath = path.join(process.cwd(), 'lib/wallet/pass-template.pass');
+    const templatePath = path.join(
+      process.cwd(),
+      "lib/wallet/pass-template.pass",
+    );
 
     // Create pass instance from template folder with overrides
     const pass = await PKPass.from(
@@ -177,31 +182,35 @@ export class WalletPassGenerator {
         authenticationToken: passRecord.authentication_token,
 
         // Branding
-        organizationName: vendorSettings?.organization_name || branding.organizationName,
-        description: vendorSettings?.description || `${vendor.store_name} Loyalty Card`,
+        organizationName:
+          vendorSettings?.organization_name || branding.organizationName,
+        description:
+          vendorSettings?.description || `${vendor.store_name} Loyalty Card`,
         logoText: vendorSettings?.logo_text || branding.logoText,
-        foregroundColor: vendorSettings?.foreground_color || branding.foregroundColor,
-        backgroundColor: vendorSettings?.background_color || branding.backgroundColor,
+        foregroundColor:
+          vendorSettings?.foreground_color || branding.foregroundColor,
+        backgroundColor:
+          vendorSettings?.background_color || branding.backgroundColor,
 
         // Web service for updates
         webServiceURL: `${WALLET_CONFIG.webServiceURL}/api/wallet/v1`,
-      }
+      },
     );
 
     // Update barcodes after creation
     pass.setBarcodes({
       message: passRecord.pass_data.barcode_message,
-      format: 'PKBarcodeFormatQR',
-      messageEncoding: 'iso-8859-1',
+      format: "PKBarcodeFormatQR",
+      messageEncoding: "iso-8859-1",
     });
 
     // Update store card fields
     pass.primaryFields.pop(); // Remove template placeholder
     pass.primaryFields.push({
-      key: 'points',
-      label: 'Points',
+      key: "points",
+      label: "Points",
       value: passRecord.pass_data.points,
-      changeMessage: 'Your points balance is now %@',
+      changeMessage: "Your points balance is now %@",
     });
 
     // Clear and update secondary fields
@@ -210,26 +219,26 @@ export class WalletPassGenerator {
     }
     pass.secondaryFields.push(
       {
-        key: 'tier',
-        label: 'Tier',
+        key: "tier",
+        label: "Tier",
         value: passRecord.pass_data.tier.toUpperCase(),
       },
       {
-        key: 'member',
-        label: 'Member',
+        key: "member",
+        label: "Member",
         value: passRecord.pass_data.member_name,
-      }
+      },
     );
 
     // Add logo and icon images
     if (logoBuffer) {
-      pass.addBuffer('logo.png', logoBuffer);
-      pass.addBuffer('logo@2x.png', logoBuffer);
+      pass.addBuffer("logo.png", logoBuffer);
+      pass.addBuffer("logo@2x.png", logoBuffer);
     }
 
     if (iconBuffer) {
-      pass.addBuffer('icon.png', iconBuffer);
-      pass.addBuffer('icon@2x.png', iconBuffer);
+      pass.addBuffer("icon.png", iconBuffer);
+      pass.addBuffer("icon@2x.png", iconBuffer);
     }
 
     return pass;
@@ -250,7 +259,8 @@ export class WalletPassGenerator {
     const model = {
       formatVersion: 1,
       passTypeIdentifier:
-        vendorSettings?.pass_type_identifier || WALLET_CONFIG.passTypeIdentifier,
+        vendorSettings?.pass_type_identifier ||
+        WALLET_CONFIG.passTypeIdentifier,
       teamIdentifier:
         vendorSettings?.team_identifier || WALLET_CONFIG.teamIdentifier,
       serialNumber: passRecord.serial_number,
@@ -259,7 +269,8 @@ export class WalletPassGenerator {
       // Branding
       organizationName:
         vendorSettings?.organization_name || branding.organizationName,
-      description: vendorSettings?.description || `${vendor.store_name} Loyalty Card`,
+      description:
+        vendorSettings?.description || `${vendor.store_name} Loyalty Card`,
       logoText: vendorSettings?.logo_text || branding.logoText,
 
       // Colors
@@ -277,23 +288,23 @@ export class WalletPassGenerator {
         // Primary field - Points
         primaryFields: [
           {
-            key: 'points',
-            label: 'Points',
+            key: "points",
+            label: "Points",
             value: passRecord.pass_data.points.toString(),
-            changeMessage: 'Your points balance is now %@',
+            changeMessage: "Your points balance is now %@",
           },
         ],
 
         // Secondary fields
         secondaryFields: [
           {
-            key: 'tier',
-            label: 'Tier',
+            key: "tier",
+            label: "Tier",
             value: passRecord.pass_data.tier.toUpperCase(),
           },
           {
-            key: 'member',
-            label: 'Member',
+            key: "member",
+            label: "Member",
             value: passRecord.pass_data.member_name,
           },
         ],
@@ -301,11 +312,11 @@ export class WalletPassGenerator {
         // Auxiliary fields
         auxiliaryFields: [
           {
-            key: 'member_since',
-            label: 'Member Since',
-            value: new Date(customer.created_at).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
+            key: "member_since",
+            label: "Member Since",
+            value: new Date(customer.created_at).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "short",
             }),
           },
         ],
@@ -313,18 +324,18 @@ export class WalletPassGenerator {
         // Back fields
         backFields: [
           {
-            key: 'email',
-            label: 'Email',
+            key: "email",
+            label: "Email",
             value: customer.email,
           },
           {
-            key: 'store',
-            label: 'Store',
+            key: "store",
+            label: "Store",
             value: vendor.store_name,
           },
           {
-            key: 'terms',
-            label: 'Terms & Conditions',
+            key: "terms",
+            label: "Terms & Conditions",
             value: `Visit ${vendor.slug}.com for full terms and conditions.`,
           },
         ],
@@ -332,17 +343,17 @@ export class WalletPassGenerator {
 
       // Barcode
       barcode: {
-        format: 'PKBarcodeFormatQR',
+        format: "PKBarcodeFormatQR",
         message: passRecord.pass_data.barcode_message,
-        messageEncoding: 'iso-8859-1',
+        messageEncoding: "iso-8859-1",
       },
 
       // Also support newer barcodes array for iOS 9+
       barcodes: [
         {
-          format: 'PKBarcodeFormatQR',
+          format: "PKBarcodeFormatQR",
           message: passRecord.pass_data.barcode_message,
-          messageEncoding: 'iso-8859-1',
+          messageEncoding: "iso-8859-1",
         },
       ],
     };
@@ -354,23 +365,24 @@ export class WalletPassGenerator {
    * Get vendor wallet settings from database
    */
   private async getVendorWalletSettings(
-    vendorId: string
+    vendorId: string,
   ): Promise<VendorWalletSettings | null> {
     try {
       const { data, error } = await supabase
-        .from('vendor_wallet_settings')
-        .select('*')
-        .eq('vendor_id', vendorId)
+        .from("vendor_wallet_settings")
+        .select("*")
+        .eq("vendor_id", vendorId)
         .single();
 
       if (error) {
-        console.log('No vendor wallet settings found, using defaults');
         return null;
       }
 
       return data as VendorWalletSettings;
     } catch (error) {
-      console.error('Error fetching vendor wallet settings:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error fetching vendor wallet settings:", error);
+      }
       return null;
     }
   }
@@ -388,7 +400,9 @@ export class WalletPassGenerator {
       const arrayBuffer = await response.arrayBuffer();
       return Buffer.from(arrayBuffer);
     } catch (error) {
-      console.error('Failed to download image:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to download image:", error);
+      }
       return null;
     }
   }
@@ -399,16 +413,18 @@ export class WalletPassGenerator {
   private async logPassEvent(
     passId: string,
     customerId: string,
-    eventType: string
+    eventType: string,
   ) {
     try {
-      await supabase.from('wallet_pass_events').insert({
+      await supabase.from("wallet_pass_events").insert({
         pass_id: passId,
         customer_id: customerId,
         event_type: eventType,
       });
     } catch (error) {
-      console.error('Failed to log pass event:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to log pass event:", error);
+      }
     }
   }
 
@@ -416,29 +432,29 @@ export class WalletPassGenerator {
    * Update existing pass (generates new .pkpass with updated data)
    */
   async updatePass(
-    passId: string
+    passId: string,
   ): Promise<{ success: boolean; buffer?: Buffer; error?: string }> {
     try {
       // Get pass record
       const { data: passRecord, error: passError } = await supabase
-        .from('wallet_passes')
-        .select('*, customers(*), vendors(*)')
-        .eq('id', passId)
+        .from("wallet_passes")
+        .select("*, customers(*), vendors(*)")
+        .eq("id", passId)
         .single();
 
       if (passError || !passRecord) {
-        return { success: false, error: 'Pass not found' };
+        return { success: false, error: "Pass not found" };
       }
 
       // Get latest customer data
       const { data: customer } = await supabase
-        .from('customers')
-        .select('*')
-        .eq('id', passRecord.customer_id)
+        .from("customers")
+        .select("*")
+        .eq("id", passRecord.customer_id)
         .single();
 
       if (!customer) {
-        return { success: false, error: 'Customer not found' };
+        return { success: false, error: "Customer not found" };
       }
 
       // Update pass data
@@ -452,26 +468,27 @@ export class WalletPassGenerator {
 
       // Update database
       await supabase
-        .from('wallet_passes')
+        .from("wallet_passes")
         .update({
           pass_data: updatedPassData,
           last_updated_at: new Date().toISOString(),
         })
-        .eq('id', passId);
+        .eq("id", passId);
 
       // Generate new pass
-      const buffer = await this.generatePass(
-        customer,
-        passRecord.vendors,
-        { ...passRecord, pass_data: updatedPassData }
-      );
+      const buffer = await this.generatePass(customer, passRecord.vendors, {
+        ...passRecord,
+        pass_data: updatedPassData,
+      });
 
       // Log event
-      await this.logPassEvent(passId, customer.id, 'updated');
+      await this.logPassEvent(passId, customer.id, "updated");
 
       return { success: true, buffer };
     } catch (error) {
-      console.error('Failed to update pass:', error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Failed to update pass:", error);
+      }
       return { success: false, error: String(error) };
     }
   }

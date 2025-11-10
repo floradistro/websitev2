@@ -1,9 +1,9 @@
-import { NextRequest } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-import Exa from 'exa-js';
+import { NextRequest } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
+import Exa from "exa-js";
 
 export const maxDuration = 300; // 5 minutes
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // ============================================================================
 // TYPES
@@ -36,7 +36,10 @@ const CONFIG = {
 // VALIDATION
 // ============================================================================
 
-function validateStrainData(strain: StrainInfo, requestedFields: string[]): {
+function validateStrainData(
+  strain: StrainInfo,
+  requestedFields: string[],
+): {
   valid: boolean;
   missing: string[];
   score: number;
@@ -45,50 +48,50 @@ function validateStrainData(strain: StrainInfo, requestedFields: string[]): {
   let score = 0;
 
   // Check each requested field
-  if (requestedFields.includes('lineage')) {
+  if (requestedFields.includes("lineage")) {
     if (strain.lineage) {
       score += 4;
     } else {
-      missing.push('lineage');
+      missing.push("lineage");
     }
   }
 
-  if (requestedFields.includes('terpene_profile')) {
+  if (requestedFields.includes("terpene_profile")) {
     if (strain.terpene_profile.length > 0) {
       score += 2;
     } else {
-      missing.push('terpene_profile');
+      missing.push("terpene_profile");
     }
   }
 
-  if (requestedFields.includes('effects')) {
+  if (requestedFields.includes("effects")) {
     if (strain.effects.length > 0) {
       score += 2;
     } else {
-      missing.push('effects');
+      missing.push("effects");
     }
   }
 
-  if (requestedFields.includes('nose')) {
+  if (requestedFields.includes("nose")) {
     if (strain.nose.length > 0) {
       score += 1;
     } else {
-      missing.push('nose');
+      missing.push("nose");
     }
   }
 
-  if (requestedFields.includes('description')) {
+  if (requestedFields.includes("description")) {
     if (strain.description) {
       score += 1;
     } else {
-      missing.push('description');
+      missing.push("description");
     }
   }
 
   return {
     valid: missing.length === 0,
     missing,
-    score
+    score,
   };
 }
 
@@ -96,55 +99,61 @@ function validateStrainData(strain: StrainInfo, requestedFields: string[]): {
 // SEARCH
 // ============================================================================
 
-async function searchStrain(name: string, category: string, exa: Exa, attempt: number = 1) {
+async function searchStrain(
+  name: string,
+  category: string,
+  exa: Exa,
+  attempt: number = 1,
+) {
   // Build variations
   const variations = [name];
 
-  if (name.includes('Soufflé') || name.includes('Souffle')) {
-    variations.push(name.replace(/Soufflé|Souffle/gi, 'Soufflé'));
-    variations.push(name.replace(/Soufflé|Souffle/gi, 'Souffle'));
+  if (name.includes("Soufflé") || name.includes("Souffle")) {
+    variations.push(name.replace(/Soufflé|Souffle/gi, "Soufflé"));
+    variations.push(name.replace(/Soufflé|Souffle/gi, "Souffle"));
   }
 
   if (/Pop(?!s)/i.test(name)) {
-    variations.push(name.replace(/Pop/i, 'Pops'));
+    variations.push(name.replace(/Pop/i, "Pops"));
   }
 
   // Special handling for Runtz variants
-  if (name.includes('Runtz')) {
-    variations.push(name.replace(/Runtz/i, 'Runts')); // Common misspelling
-    variations.push(name + ' strain'); // Add explicit "strain"
+  if (name.includes("Runtz")) {
+    variations.push(name.replace(/Runtz/i, "Runts")); // Common misspelling
+    variations.push(name + " strain"); // Add explicit "strain"
   }
 
   if (attempt > 1) {
-    variations.push(name.replace(/\s+/g, ''));
-    variations.push(name.replace(/\s+/g, '-'));
-    variations.push(name + ' weed');
-    variations.push(name + ' cannabis');
+    variations.push(name.replace(/\s+/g, ""));
+    variations.push(name.replace(/\s+/g, "-"));
+    variations.push(name + " weed");
+    variations.push(name + " cannabis");
   }
 
   if (attempt > 2) {
     // Even more aggressive on attempt 3+
-    variations.push(name + ' genetics');
-    variations.push(name + ' lineage');
-    variations.push(name + ' bred by');
+    variations.push(name + " genetics");
+    variations.push(name + " lineage");
+    variations.push(name + " bred by");
   }
 
-  const query = variations.map(v => `"${v}"`).join(' OR ') +
+  const query =
+    variations.map((v) => `"${v}"`).join(" OR ") +
     ` ${category} strain genetics lineage parent strains bred from terpenes effects`;
-
-  console.log(`🔍 [${name}] Search (try ${attempt}): ${query.substring(0, 120)}`);
 
   try {
     const response = await exa.searchAndContents(query, {
-      type: 'auto',
+      type: "auto",
       useAutoprompt: true,
       numResults: CONFIG.SEARCH_RESULTS,
-      text: { maxCharacters: CONFIG.MAX_CHARS }
+      text: { maxCharacters: CONFIG.MAX_CHARS },
     });
 
     return response.results || [];
   } catch (error: any) {
-    console.error(`❌ [${name}] Search error:`, error.message);
+    if (process.env.NODE_ENV === "development") {
+      console.error(`❌ [${name}] Search error:`, error.message);
+    }
     return [];
   }
 }
@@ -154,21 +163,24 @@ async function searchStrain(name: string, category: string, exa: Exa, attempt: n
 // ============================================================================
 
 const TOOL = {
-  name: 'extract_strain',
-  description: 'Extract verified cannabis strain data',
+  name: "extract_strain",
+  description: "Extract verified cannabis strain data",
   input_schema: {
-    type: 'object' as const,
+    type: "object" as const,
     properties: {
-      product_name: { type: 'string' },
-      strain_type: { type: 'string', enum: ['Sativa', 'Indica', 'Hybrid'] },
-      lineage: { type: 'string', description: 'Parent genetics (e.g., "OG Kush x Durban")' },
-      terpene_profile: { type: 'array', items: { type: 'string' } },
-      effects: { type: 'array', items: { type: 'string' } },
-      nose: { type: 'array', items: { type: 'string' } },
-      description: { type: 'string' }
+      product_name: { type: "string" },
+      strain_type: { type: "string", enum: ["Sativa", "Indica", "Hybrid"] },
+      lineage: {
+        type: "string",
+        description: 'Parent genetics (e.g., "OG Kush x Durban")',
+      },
+      terpene_profile: { type: "array", items: { type: "string" } },
+      effects: { type: "array", items: { type: "string" } },
+      nose: { type: "array", items: { type: "string" } },
+      description: { type: "string" },
     },
-    required: ['product_name']
-  }
+    required: ["product_name"],
+  },
 };
 
 async function extractData(
@@ -176,17 +188,20 @@ async function extractData(
   sources: any[],
   requestedFields: string[],
   anthropic: Anthropic,
-  attempt: number
+  attempt: number,
 ): Promise<StrainInfo | null> {
   if (sources.length === 0) return null;
 
   const context = sources
     .map((s, i) => `SOURCE ${i + 1}: ${s.title}\n${s.text}`)
-    .join('\n\n---\n\n')
+    .join("\n\n---\n\n")
     .substring(0, 35000);
 
-  const fieldList = requestedFields.join(', ');
-  const urgency = attempt > 1 ? `\n\n🚨🚨🚨 CRITICAL RETRY ${attempt}/${CONFIG.MAX_RETRIES}: LINEAGE IS ABSOLUTELY MANDATORY! 🚨🚨🚨\nThis is attempt ${attempt} - we MUST find lineage data or the system will fail!\nSearch EVERY source THOROUGHLY for parent strains, genetics, breeding information!` : '';
+  const fieldList = requestedFields.join(", ");
+  const urgency =
+    attempt > 1
+      ? `\n\n🚨🚨🚨 CRITICAL RETRY ${attempt}/${CONFIG.MAX_RETRIES}: LINEAGE IS ABSOLUTELY MANDATORY! 🚨🚨🚨\nThis is attempt ${attempt} - we MUST find lineage data or the system will fail!\nSearch EVERY source THOROUGHLY for parent strains, genetics, breeding information!`
+      : "";
 
   const prompt = `Extract cannabis strain data for "${name}".
 
@@ -221,15 +236,15 @@ Use extract_strain tool with ALL available data.`;
 
   try {
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
+      model: "claude-sonnet-4-5-20250929",
       max_tokens: CONFIG.AI_TOKENS,
       temperature: 0,
       tools: [TOOL],
-      messages: [{ role: 'user', content: prompt }]
+      messages: [{ role: "user", content: prompt }],
     });
 
-    const tool = response.content.find(c => c.type === 'tool_use');
-    if (!tool || tool.type !== 'tool_use') return null;
+    const tool = response.content.find((c) => c.type === "tool_use");
+    if (!tool || tool.type !== "tool_use") return null;
 
     const data = tool.input as any;
 
@@ -237,13 +252,17 @@ Use extract_strain tool with ALL available data.`;
       product_name: name,
       strain_type: data.strain_type || null,
       lineage: data.lineage || null,
-      terpene_profile: Array.isArray(data.terpene_profile) ? data.terpene_profile : [],
+      terpene_profile: Array.isArray(data.terpene_profile)
+        ? data.terpene_profile
+        : [],
       effects: Array.isArray(data.effects) ? data.effects : [],
       nose: Array.isArray(data.nose) ? data.nose : [],
-      description: data.description || null
+      description: data.description || null,
     };
   } catch (error: any) {
-    console.error(`❌ [${name}] AI error:`, error.message);
+    if (process.env.NODE_ENV === "development") {
+      console.error(`❌ [${name}] AI error:`, error.message);
+    }
     return null;
   }
 }
@@ -257,25 +276,26 @@ async function processProduct(
   category: string,
   requestedFields: string[],
   exa: Exa,
-  anthropic: Anthropic
+  anthropic: Anthropic,
 ): Promise<StrainInfo> {
-  console.log(`\n${'='.repeat(70)}`);
-  console.log(`📋 Required fields: ${requestedFields.join(', ')}`);
-  console.log(`${'='.repeat(70)}`);
-
   let bestResult: StrainInfo | null = null;
   let bestScore = 0;
 
   for (let attempt = 1; attempt <= CONFIG.MAX_RETRIES; attempt++) {
     const sources = await searchStrain(name, category, exa, attempt);
-    const extracted = await extractData(name, sources, requestedFields, anthropic, attempt);
+    const extracted = await extractData(
+      name,
+      sources,
+      requestedFields,
+      anthropic,
+      attempt,
+    );
 
     if (!extracted) {
       continue;
     }
 
     const validation = validateStrainData(extracted, requestedFields);
-    console.log(`📊 [${name}] Attempt ${attempt} - Score: ${validation.score}/10, Missing: ${validation.missing.join(', ') || 'none'}`);
 
     if (validation.score > bestScore) {
       bestResult = extracted;
@@ -287,21 +307,21 @@ async function processProduct(
     }
 
     if (attempt < CONFIG.MAX_RETRIES) {
-      console.log(`⚠️ [${name}] Retrying to fill: ${validation.missing.join(', ')}`);
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 1000));
     }
   }
 
-  console.log(`⚠️ [${name}] Returning best result (score: ${bestScore}/10)`);
-  return bestResult || {
-    product_name: name,
-    strain_type: null,
-    lineage: null,
-    terpene_profile: [],
-    effects: [],
-    nose: [],
-    description: null
-  };
+  return (
+    bestResult || {
+      product_name: name,
+      strain_type: null,
+      lineage: null,
+      terpene_profile: [],
+      effects: [],
+      nose: [],
+      description: null,
+    }
+  );
 }
 
 // ============================================================================
@@ -318,9 +338,13 @@ export async function POST(request: NextRequest) {
       const send = (data: any) => {
         if (isClosed) return; // Don't try to send if already closed
         try {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
+          );
         } catch (err) {
-          console.error('Stream error:', err);
+          if (process.env.NODE_ENV === "development") {
+            console.error("Stream error:", err);
+          }
           isClosed = true; // Mark as closed if error
         }
       };
@@ -331,66 +355,66 @@ export async function POST(request: NextRequest) {
           controller.close();
           isClosed = true;
         } catch (err) {
-          console.error('Error closing stream:', err);
+          if (process.env.NODE_ENV === "development") {
+            console.error("Error closing stream:", err);
+          }
         }
       };
 
       try {
         if (!process.env.ANTHROPIC_API_KEY || !process.env.EXASEARCH_API_KEY) {
-          send({ type: 'error', message: 'AI services not configured' });
+          send({ type: "error", message: "AI services not configured" });
           closeStream();
           return;
         }
 
-        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+        const anthropic = new Anthropic({
+          apiKey: process.env.ANTHROPIC_API_KEY,
+        });
         const exa = new Exa(process.env.EXASEARCH_API_KEY);
 
         const { products, category, requestedFields } = await request.json();
 
         if (!Array.isArray(products) || products.length === 0) {
-          send({ type: 'error', message: 'Products array required' });
+          send({ type: "error", message: "Products array required" });
           closeStream();
           return;
         }
 
-        const fields = requestedFields || ['lineage', 'terpene_profile', 'effects', 'nose', 'description'];
-
-        console.log(`\n${'='.repeat(80)}`);
-        console.log(`📋 Requested fields: ${fields.join(', ')}`);
-        console.log(`${'='.repeat(80)}`);
+        const fields = requestedFields || [
+          "lineage",
+          "terpene_profile",
+          "effects",
+          "nose",
+          "description",
+        ];
 
         send({
-          type: 'start',
+          type: "start",
           total: products.length,
-          message: `Processing ${products.length} products with field verification...`
+          message: `Processing ${products.length} products with field verification...`,
         });
 
         const results: { [key: string]: StrainInfo } = {};
         const batches: string[][] = [];
 
         // Split into batches
-        const names = products.map(p => p.name);
+        const names = products.map((p) => p.name);
         for (let i = 0; i < names.length; i += CONFIG.BATCH_SIZE) {
           batches.push(names.slice(i, i + CONFIG.BATCH_SIZE));
         }
-
-        console.log(`📦 Split into ${batches.length} batch(es) of ${CONFIG.BATCH_SIZE}`);
 
         // Process each batch
         for (let batchIdx = 0; batchIdx < batches.length; batchIdx++) {
           const batch = batches[batchIdx];
           const batchNum = batchIdx + 1;
 
-          console.log(`\n${'='.repeat(80)}`);
-          console.log(`📦 BATCH ${batchNum}/${batches.length}: ${batch.join(', ')}`);
-          console.log(`${'='.repeat(80)}`);
-
           send({
-            type: 'batch_start',
+            type: "batch_start",
             batch: batchNum,
             total_batches: batches.length,
             products: batch,
-            message: `\n🔄 Batch ${batchNum}/${batches.length}: Processing ${batch.length} products...`
+            message: `\n🔄 Batch ${batchNum}/${batches.length}: Processing ${batch.length} products...`,
           });
 
           // Process all products in batch
@@ -399,92 +423,100 @@ export async function POST(request: NextRequest) {
             const overall = batchIdx * CONFIG.BATCH_SIZE + i + 1;
 
             send({
-              type: 'progress',
+              type: "progress",
               current: overall,
               total: names.length,
-              message: `[Batch ${batchNum}] Processing ${name}... (${i + 1}/${batch.length})`
+              message: `[Batch ${batchNum}] Processing ${name}... (${i + 1}/${batch.length})`,
             });
 
-            const data = await processProduct(name, category, fields, exa, anthropic);
+            const data = await processProduct(
+              name,
+              category,
+              fields,
+              exa,
+              anthropic,
+            );
             results[name] = data;
 
             send({
-              type: 'product_complete',
+              type: "product_complete",
               product: name,
               current: overall,
               total: names.length,
-              data: data
+              data: data,
             });
 
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise((r) => setTimeout(r, 500));
           }
 
           // Validate batch
-          const batchResults = batch.map(name => results[name]);
-          const validations = batchResults.map(r => validateStrainData(r, fields));
-          const allValid = validations.every(v => v.valid);
-          const validCount = validations.filter(v => v.valid).length;
+          const batchResults = batch.map((name) => results[name]);
+          const validations = batchResults.map((r) =>
+            validateStrainData(r, fields),
+          );
+          const allValid = validations.every((v) => v.valid);
+          const validCount = validations.filter((v) => v.valid).length;
 
           batch.forEach((name, idx) => {
             const val = validations[idx];
-            const status = val.valid ? '✅' : '⚠️';
-            console.log(`  ${status} ${name}: ${val.score}/10 ${val.missing.length > 0 ? `(missing: ${val.missing.join(', ')})` : ''}`);
+            const status = val.valid ? "✅" : "⚠️";
           });
 
           send({
-            type: 'batch_complete',
+            type: "batch_complete",
             batch: batchNum,
             total_batches: batches.length,
             valid: validCount,
             total: batch.length,
             all_valid: allValid,
-            results: batch.map(name => ({
+            results: batch.map((name) => ({
               name,
               data: results[name],
-              validation: validateStrainData(results[name], fields)
+              validation: validateStrainData(results[name], fields),
             })),
-            message: `✅ Batch ${batchNum} complete: ${validCount}/${batch.length} products have all requested fields`
+            message: `✅ Batch ${batchNum} complete: ${validCount}/${batch.length} products have all requested fields`,
           });
-
         }
 
         // Final summary
         const allResults = Object.values(results);
-        const allValidations = allResults.map(r => validateStrainData(r, fields));
-        const completeCount = allValidations.filter(v => v.valid).length;
+        const allValidations = allResults.map((r) =>
+          validateStrainData(r, fields),
+        );
+        const completeCount = allValidations.filter((v) => v.valid).length;
 
-        console.log(`\n${'='.repeat(80)}`);
-        console.log(`${'='.repeat(80)}`);
-
-        names.forEach(name => {
+        names.forEach((name) => {
           const val = validateStrainData(results[name], fields);
         });
 
         send({
-          type: 'complete',
+          type: "complete",
           total: names.length,
-          successful: allResults.filter(r => r.lineage || r.terpene_profile.length > 0).length,
+          successful: allResults.filter(
+            (r) => r.lineage || r.terpene_profile.length > 0,
+          ).length,
           complete: completeCount,
-          withLineage: allResults.filter(r => r.lineage).length,
+          withLineage: allResults.filter((r) => r.lineage).length,
           results: results,
-          message: `Complete: ${completeCount}/${names.length} products have all requested fields`
+          message: `Complete: ${completeCount}/${names.length} products have all requested fields`,
         });
 
         closeStream();
-
       } catch (error: any) {
-        console.error('❌ Error:', error);
-        send({ type: 'error', message: error.message || 'Processing failed' });
+        if (process.env.NODE_ENV === "development") {
+          console.error("❌ Error:", error);
+        }
+        send({ type: "error", message: error.message || "Processing failed" });
         closeStream();
       }
-    }
+    },
   });
 
   return new Response(stream, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive'
-    }
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    },
   });
 }

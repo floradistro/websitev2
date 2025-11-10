@@ -1,1 +1,5 @@
-export{c as CameraFOVSwitchControl,b as CameraSwitchControl,a as TorchSwitchControl}from'./chunks/chunk-FS52JIW4.js';
+export {
+  c as CameraFOVSwitchControl,
+  b as CameraSwitchControl,
+  a as TorchSwitchControl,
+} from "./chunks/chunk-FS52JIW4.js";

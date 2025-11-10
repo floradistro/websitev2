@@ -1,1 +1,1 @@
-export{a as importWasmScript}from'../chunks/chunk-G2BRTVN7.js';
+export { a as importWasmScript } from "../chunks/chunk-G2BRTVN7.js";

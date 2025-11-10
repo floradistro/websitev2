@@ -36,23 +36,23 @@ GITHUB_TOKEN=your_github_token
 ### Usage
 
 ```typescript
-import { AIStorefrontAgent } from './src/index';
+import { AIStorefrontAgent } from "./src/index";
 
 const agent = new AIStorefrontAgent();
 
 // Generate storefront
 const result = await agent.generate({
-  vendorId: 'vendor-uuid',
-  vendorSlug: 'luxury-cannabis-co',
-  userMessage: 'I want a luxury boutique with gold accents',
+  vendorId: "vendor-uuid",
+  vendorSlug: "luxury-cannabis-co",
+  userMessage: "I want a luxury boutique with gold accents",
 });
 
 // Deploy to Vercel
 const deployment = await agent.deploy({
-  vendorId: 'vendor-uuid',
-  vendorSlug: 'luxury-cannabis-co',
+  vendorId: "vendor-uuid",
+  vendorSlug: "luxury-cannabis-co",
   requirements: result.requirements!,
-  domain: 'luxurycannabisco.com', // optional
+  domain: "luxurycannabisco.com", // optional
 });
 ```
 
@@ -82,17 +82,20 @@ ai-agent/
 ## Architecture
 
 ### 1. NLP Processor
+
 - Converts vendor descriptions to structured specs
 - Uses Claude 3.5 Sonnet or GPT-4
 - Validates output with Zod schemas
 
 ### 2. Code Generator
+
 - Selects base template (minimalist/luxury/modern)
 - Applies customizations (colors, fonts, layout)
 - Generates Next.js app with TypeScript
 - Integrates Supabase for vendor data
 
 ### 3. Deployment Pipeline
+
 - Deploys to Vercel
 - Configures custom domains
 - Sets up SSL automatically
@@ -103,17 +106,17 @@ Add to your WhaleTools platform:
 
 ```typescript
 // app/api/ai-agent/generate/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { AIStorefrontAgent } from '@/ai-agent/src/index';
+import { NextRequest, NextResponse } from "next/server";
+import { AIStorefrontAgent } from "@/ai-agent/src/index";
 
 export async function POST(request: NextRequest) {
-  const vendorId = request.headers.get('x-vendor-id');
+  const vendorId = request.headers.get("x-vendor-id");
   const { message, history } = await request.json();
 
   const agent = new AIStorefrontAgent();
   const result = await agent.generate({
     vendorId: vendorId!,
-    vendorSlug: 'vendor-slug', // Get from DB
+    vendorSlug: "vendor-slug", // Get from DB
     userMessage: message,
     conversationHistory: history,
   });
@@ -144,18 +147,21 @@ npm start
 ## Templates
 
 ### Minimalist
+
 - Clean, spacious design
 - Black & white color scheme
 - Inter font family
 - 3-column product grid
 
 ### Luxury
+
 - Sophisticated, high-end feel
 - Gold accents on black
 - Playfair Display + Lato fonts
 - Large hero images
 
 ### Modern
+
 - Bold, geometric layouts
 - Vibrant accent colors
 - Poppins font family
@@ -171,4 +177,3 @@ npm start
 ## License
 
 Proprietary - WhaleTools Internal Use Only
-

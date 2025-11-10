@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useRef } from 'react';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
-import { ds, cn } from '@/lib/design-system';
+import { useState, useRef } from "react";
+import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { ds, cn } from "@/lib/design-system";
 
 interface ImageUploaderProps {
   label: string;
   preview: string;
   onFileChange: (file: File | null) => void;
   onPreviewChange: (preview: string) => void;
-  aspectRatio?: 'square' | 'banner';
+  aspectRatio?: "square" | "banner";
   recommendedSize?: string;
   maxSizeMB?: number;
 }
@@ -24,24 +24,24 @@ export function ImageUploader({
   preview,
   onFileChange,
   onPreviewChange,
-  aspectRatio = 'square',
-  recommendedSize = '300x300px',
-  maxSizeMB = 10
+  aspectRatio = "square",
+  recommendedSize = "300x300px",
+  maxSizeMB = 10,
 }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const aspectClasses = {
-    square: 'aspect-square',
-    banner: 'aspect-[16/5]'
+    square: "aspect-square",
+    banner: "aspect-[16/5]",
   };
 
   const validateFile = (file: File): string | null => {
     // Check file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!validTypes.includes(file.type)) {
-      return 'Please upload a JPG, PNG, WEBP, or GIF image';
+      return "Please upload a JPG, PNG, WEBP, or GIF image";
     }
 
     // Check file size
@@ -54,7 +54,7 @@ export function ImageUploader({
   };
 
   const handleFile = (file: File) => {
-    setError('');
+    setError("");
 
     const validationError = validateFile(file);
     if (validationError) {
@@ -97,10 +97,10 @@ export function ImageUploader({
 
   const handleRemove = () => {
     onFileChange(null);
-    onPreviewChange('');
-    setError('');
+    onPreviewChange("");
+    setError("");
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -112,20 +112,21 @@ export function ImageUploader({
     <div className="space-y-3">
       {/* Label */}
       <div className="flex items-center justify-between">
-        <label className={cn(
-          ds.typography.size.xs,
-          ds.typography.weight.medium,
-          ds.typography.transform.uppercase,
-          ds.typography.tracking.wide,
-          ds.colors.text.tertiary
-        )}>
+        <label
+          className={cn(
+            ds.typography.size.xs,
+            ds.typography.weight.medium,
+            ds.typography.transform.uppercase,
+            ds.typography.tracking.wide,
+            ds.colors.text.tertiary,
+          )}
+        >
           {label}
         </label>
         {recommendedSize && (
-          <span className={cn(
-            ds.typography.size.micro,
-            ds.colors.text.quaternary
-          )}>
+          <span
+            className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}
+          >
             {recommendedSize} recommended
           </span>
         )}
@@ -134,20 +135,24 @@ export function ImageUploader({
       {/* Preview */}
       {preview && (
         <div className="relative group">
-          <div className={cn(
-            'relative overflow-hidden',
-            ds.effects.radius.lg,
-            ds.colors.bg.elevated,
-            ds.colors.border.default,
-            'border',
-            aspectClasses[aspectRatio]
-          )}>
+          <div
+            className={cn(
+              "relative overflow-hidden",
+              ds.effects.radius.lg,
+              ds.colors.bg.elevated,
+              ds.colors.border.default,
+              "border",
+              aspectClasses[aspectRatio],
+            )}
+          >
             <img
               src={preview}
               alt="Preview"
               className={cn(
-                'w-full h-full',
-                aspectRatio === 'square' ? 'object-contain p-4' : 'object-cover'
+                "w-full h-full",
+                aspectRatio === "square"
+                  ? "object-contain p-4"
+                  : "object-cover",
               )}
             />
 
@@ -156,12 +161,12 @@ export function ImageUploader({
               type="button"
               onClick={handleRemove}
               className={cn(
-                'absolute top-2 right-2',
-                'p-1.5 rounded-full',
-                'bg-red-500/90 hover:bg-red-500',
-                'text-white',
+                "absolute top-2 right-2",
+                "p-1.5 rounded-full",
+                "bg-red-500/90 hover:bg-red-500",
+                "text-white",
                 ds.effects.transition.fast,
-                'opacity-0 group-hover:opacity-100'
+                "opacity-0 group-hover:opacity-100",
               )}
             >
               <X size={14} strokeWidth={2} />
@@ -177,14 +182,19 @@ export function ImageUploader({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          'relative cursor-pointer',
-          'border-2 border-dashed',
+          "relative cursor-pointer",
+          "border-2 border-dashed",
           ds.effects.radius.lg,
           ds.effects.transition.normal,
-          'p-8 text-center',
+          "p-8 text-center",
           isDragging
-            ? 'border-white/30 bg-white/5'
-            : cn(ds.colors.border.default, 'hover:border-white/20', ds.colors.bg.elevated, 'hover:bg-white/[0.06]')
+            ? "border-white/30 bg-white/5"
+            : cn(
+                ds.colors.border.default,
+                "hover:border-white/20",
+                ds.colors.bg.elevated,
+                "hover:bg-white/[0.06]",
+              ),
         )}
       >
         <input
@@ -203,18 +213,24 @@ export function ImageUploader({
           )}
 
           <div>
-            <div className={cn(
-              ds.typography.size.sm,
-              ds.colors.text.tertiary,
-              ds.typography.weight.medium
-            )}>
-              {isDragging ? 'Drop image here' : 'Click to upload or drag & drop'}
+            <div
+              className={cn(
+                ds.typography.size.sm,
+                ds.colors.text.tertiary,
+                ds.typography.weight.medium,
+              )}
+            >
+              {isDragging
+                ? "Drop image here"
+                : "Click to upload or drag & drop"}
             </div>
-            <div className={cn(
-              ds.typography.size.micro,
-              ds.colors.text.quaternary,
-              'mt-1'
-            )}>
+            <div
+              className={cn(
+                ds.typography.size.micro,
+                ds.colors.text.quaternary,
+                "mt-1",
+              )}
+            >
               PNG, JPG, WEBP, GIF • Max {maxSizeMB}MB
             </div>
           </div>
@@ -223,16 +239,18 @@ export function ImageUploader({
 
       {/* Error message */}
       {error && (
-        <div className={cn(
-          'flex items-center gap-2',
-          ds.typography.size.xs,
-          ds.colors.status.error,
-          'bg-red-500/10',
-          ds.colors.border.default,
-          'border border-red-500/20',
-          ds.effects.radius.md,
-          'px-3 py-2'
-        )}>
+        <div
+          className={cn(
+            "flex items-center gap-2",
+            ds.typography.size.xs,
+            ds.colors.status.error,
+            "bg-red-500/10",
+            ds.colors.border.default,
+            "border border-red-500/20",
+            ds.effects.radius.md,
+            "px-3 py-2",
+          )}
+        >
           <X size={12} />
           {error}
         </div>

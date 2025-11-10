@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { X, Sparkles, Wand2, Loader2, CheckCircle } from 'lucide-react';
-import Image from 'next/image';
+import { useState, useEffect } from "react";
+import { X, Sparkles, Wand2, Loader2, CheckCircle } from "lucide-react";
+import Image from "next/image";
 
 interface AIReimaginModalProps {
   vendorId: string;
@@ -11,26 +11,33 @@ interface AIReimaginModalProps {
   onComplete: () => void;
 }
 
-export default function AIReimaginModal({ vendorId, files, onClose, onComplete }: AIReimaginModalProps) {
-  const [instructions, setInstructions] = useState('');
-  const [size, setSize] = useState<'1024x1024' | '1024x1792' | '1792x1024'>('1024x1024');
-  const [quality, setQuality] = useState<'standard' | 'hd'>('standard');
-  const [style, setStyle] = useState<'vivid' | 'natural'>('vivid');
+export default function AIReimaginModal({
+  vendorId,
+  files,
+  onClose,
+  onComplete,
+}: AIReimaginModalProps) {
+  const [instructions, setInstructions] = useState("");
+  const [size, setSize] = useState<"1024x1024" | "1024x1792" | "1792x1024">(
+    "1024x1024",
+  );
+  const [quality, setQuality] = useState<"standard" | "hd">("standard");
+  const [style, setStyle] = useState<"vivid" | "natural">("vivid");
   const [processing, setProcessing] = useState(false);
-  const [progress, setProgress] = useState('');
+  const [progress, setProgress] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   // Handle ESC key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !processing) {
+      if (e.key === "Escape" && !processing) {
         onClose();
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose, processing]);
 
   const handleReimagine = async () => {
@@ -41,16 +48,20 @@ export default function AIReimaginModal({ vendorId, files, onClose, onComplete }
       setProgress(`Re-imagining ${files.length} image(s)...`);
 
       // Dispatch AI start event for monitor
-      window.dispatchEvent(new CustomEvent('ai-autofill-start'));
-      window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
-        detail: { message: `# RE-IMAGINE\n\nProcessing ${files.length} file(s)...\n${instructions ? `\nInstructions: ${instructions}` : ''}` }
-      }));
+      window.dispatchEvent(new CustomEvent("ai-autofill-start"));
+      window.dispatchEvent(
+        new CustomEvent("ai-autofill-progress", {
+          detail: {
+            message: `# RE-IMAGINE\n\nProcessing ${files.length} file(s)...\n${instructions ? `\nInstructions: ${instructions}` : ""}`,
+          },
+        }),
+      );
 
-      const response = await fetch('/api/vendor/media/reimagine', {
-        method: 'PUT',
+      const response = await fetch("/api/vendor/media/reimagine", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'x-vendor-id': vendorId,
+          "Content-Type": "application/json",
+          "x-vendor-id": vendorId,
         },
         body: JSON.stringify({
           files,
@@ -64,31 +75,39 @@ export default function AIReimaginModal({ vendorId, files, onClose, onComplete }
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to reimagine images');
+        throw new Error(data.error || "Failed to reimagine images");
       }
 
       setResults(data.results || []);
-      setProgress(`✅ Complete: ${data.processed} processed, ${data.failed} failed`);
+      setProgress(
+        `✅ Complete: ${data.processed} processed, ${data.failed} failed`,
+      );
 
-      window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
-        detail: {
-          message: `\n## ✅ Complete\n\n- Processed: ${data.processed || 0}\n- Failed: ${data.failed || 0}`
-        }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("ai-autofill-progress", {
+          detail: {
+            message: `\n## ✅ Complete\n\n- Processed: ${data.processed || 0}\n- Failed: ${data.failed || 0}`,
+          },
+        }),
+      );
 
       // Close modal and reload after 2 seconds
       setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('ai-autofill-complete'));
+        window.dispatchEvent(new CustomEvent("ai-autofill-complete"));
         onComplete();
         onClose();
       }, 2000);
     } catch (err: any) {
-      console.error('Re-imagine error:', err);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Re-imagine error:", err);
+      }
       setError(err.message);
-      window.dispatchEvent(new CustomEvent('ai-autofill-progress', {
-        detail: { message: `\n## ❌ Error\n\n${err.message}` }
-      }));
-      window.dispatchEvent(new CustomEvent('ai-autofill-complete'));
+      window.dispatchEvent(
+        new CustomEvent("ai-autofill-progress", {
+          detail: { message: `\n## ❌ Error\n\n${err.message}` },
+        }),
+      );
+      window.dispatchEvent(new CustomEvent("ai-autofill-complete"));
     } finally {
       setProcessing(false);
     }
@@ -113,11 +132,15 @@ export default function AIReimaginModal({ vendorId, files, onClose, onComplete }
               <Sparkles className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-white font-black uppercase tracking-tight text-lg" style={{ fontWeight: 900 }}>
+              <h2
+                className="text-white font-black uppercase tracking-tight text-lg"
+                style={{ fontWeight: 900 }}
+              >
                 Re-imagine with AI
               </h2>
               <p className="text-white/40 text-xs">
-                {files.length} image{files.length !== 1 ? 's' : ''} • GPT-4 Vision + DALL-E 3
+                {files.length} image{files.length !== 1 ? "s" : ""} • GPT-4
+                Vision + DALL-E 3
               </p>
             </div>
           </div>
@@ -140,7 +163,10 @@ export default function AIReimaginModal({ vendorId, files, onClose, onComplete }
             </label>
             <div className="grid grid-cols-4 gap-3">
               {files.slice(0, 8).map((file, idx) => (
-                <div key={idx} className="relative aspect-square bg-black border border-white/10 rounded-xl overflow-hidden">
+                <div
+                  key={idx}
+                  className="relative aspect-square bg-black border border-white/10 rounded-xl overflow-hidden"
+                >
                   <Image
                     src={file.url}
                     alt={file.name}
@@ -152,7 +178,9 @@ export default function AIReimaginModal({ vendorId, files, onClose, onComplete }
               ))}
               {files.length > 8 && (
                 <div className="aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
-                  <span className="text-white/60 text-xs font-bold">+{files.length - 8} more</span>
+                  <span className="text-white/60 text-xs font-bold">
+                    +{files.length - 8} more
+                  </span>
                 </div>
               )}
             </div>
@@ -171,7 +199,8 @@ export default function AIReimaginModal({ vendorId, files, onClose, onComplete }
               <div className="flex items-center gap-2 text-green-500 mb-2">
                 <CheckCircle className="w-4 h-4" />
                 <span className="text-xs uppercase tracking-[0.15em] font-bold">
-                  {results.length} image{results.length !== 1 ? 's' : ''} reimagined
+                  {results.length} image{results.length !== 1 ? "s" : ""}{" "}
+                  reimagined
                 </span>
               </div>
             </div>
@@ -211,9 +240,15 @@ Leave blank to recreate as-is with DALL-E style..."
                 disabled={processing}
                 className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all disabled:opacity-50"
               >
-                <option value="1024x1024" className="bg-black">Square</option>
-                <option value="1024x1792" className="bg-black">Portrait</option>
-                <option value="1792x1024" className="bg-black">Landscape</option>
+                <option value="1024x1024" className="bg-black">
+                  Square
+                </option>
+                <option value="1024x1792" className="bg-black">
+                  Portrait
+                </option>
+                <option value="1792x1024" className="bg-black">
+                  Landscape
+                </option>
               </select>
             </div>
 
@@ -228,8 +263,12 @@ Leave blank to recreate as-is with DALL-E style..."
                 disabled={processing}
                 className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all disabled:opacity-50"
               >
-                <option value="standard" className="bg-black">Standard</option>
-                <option value="hd" className="bg-black">HD</option>
+                <option value="standard" className="bg-black">
+                  Standard
+                </option>
+                <option value="hd" className="bg-black">
+                  HD
+                </option>
               </select>
             </div>
 
@@ -244,8 +283,12 @@ Leave blank to recreate as-is with DALL-E style..."
                 disabled={processing}
                 className="w-full bg-white/5 border border-white/10 text-white px-3 py-2 rounded-xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all disabled:opacity-50"
               >
-                <option value="vivid" className="bg-black">Vivid</option>
-                <option value="natural" className="bg-black">Natural</option>
+                <option value="vivid" className="bg-black">
+                  Vivid
+                </option>
+                <option value="natural" className="bg-black">
+                  Natural
+                </option>
               </select>
             </div>
           </div>
@@ -277,7 +320,7 @@ Leave blank to recreate as-is with DALL-E style..."
             ) : (
               <>
                 <Wand2 className="w-5 h-5" />
-                Re-imagine {files.length} Image{files.length !== 1 ? 's' : ''}
+                Re-imagine {files.length} Image{files.length !== 1 ? "s" : ""}
               </>
             )}
           </button>

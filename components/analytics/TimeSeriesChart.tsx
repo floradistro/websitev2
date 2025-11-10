@@ -3,9 +3,9 @@
  * Beautiful, performant chart for analytics data visualization
  */
 
-'use client';
+"use client";
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 import {
   AreaChart,
   Area,
@@ -15,13 +15,17 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts';
-import { formatCurrency, formatNumber, formatDate } from '@/lib/analytics-utils';
-import type { TimeSeriesDataPoint } from '@/types/analytics';
+} from "recharts";
+import {
+  formatCurrency,
+  formatNumber,
+  formatDate,
+} from "@/lib/analytics-utils";
+import type { TimeSeriesDataPoint } from "@/types/analytics";
 
 interface TimeSeriesChartProps {
   data: TimeSeriesDataPoint[];
-  activeMetric?: 'sent' | 'opened' | 'clicked' | 'revenue';
+  activeMetric?: "sent" | "opened" | "clicked" | "revenue";
   height?: number;
   showLegend?: boolean;
   className?: string;
@@ -29,39 +33,39 @@ interface TimeSeriesChartProps {
 
 const metricConfig = {
   sent: {
-    label: 'Sent',
-    color: '#60a5fa', // blue-400
+    label: "Sent",
+    color: "#60a5fa", // blue-400
     fillOpacity: 0.1,
   },
   opened: {
-    label: 'Opened',
-    color: '#34d399', // green-400
+    label: "Opened",
+    color: "#34d399", // green-400
     fillOpacity: 0.1,
   },
   clicked: {
-    label: 'Clicked',
-    color: '#a78bfa', // purple-400
+    label: "Clicked",
+    color: "#a78bfa", // purple-400
     fillOpacity: 0.1,
   },
   revenue: {
-    label: 'Revenue',
-    color: '#fbbf24', // yellow-400
+    label: "Revenue",
+    color: "#fbbf24", // yellow-400
     fillOpacity: 0.1,
   },
 };
 
 export function TimeSeriesChart({
   data,
-  activeMetric = 'revenue',
+  activeMetric = "revenue",
   height = 300,
   showLegend = false,
-  className = '',
+  className = "",
 }: TimeSeriesChartProps) {
   // Format data for display
   const chartData = useMemo(() => {
     return data.map((d) => ({
       ...d,
-      displayDate: formatDate(d.date, 'short'),
+      displayDate: formatDate(d.date, "short"),
     }));
   }, [data]);
 
@@ -78,7 +82,7 @@ export function TimeSeriesChart({
         <p className="text-white/60 text-xs mb-2">{label}</p>
         <div className="flex items-baseline gap-2">
           <span className="text-white font-bold text-lg">
-            {activeMetric === 'revenue'
+            {activeMetric === "revenue"
               ? formatCurrency(value, { decimals: 0 })
               : formatNumber(value)}
           </span>
@@ -125,7 +129,13 @@ export function TimeSeriesChart({
           margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
         >
           <defs>
-            <linearGradient id={`gradient-${activeMetric}`} x1="0" y1="0" x2="0" y2="1">
+            <linearGradient
+              id={`gradient-${activeMetric}`}
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="1"
+            >
               <stop offset="0%" stopColor={config.color} stopOpacity={0.2} />
               <stop offset="95%" stopColor={config.color} stopOpacity={0} />
             </linearGradient>
@@ -141,9 +151,9 @@ export function TimeSeriesChart({
             dataKey="displayDate"
             stroke="rgba(255, 255, 255, 0.2)"
             style={{
-              fontSize: '11px',
-              fontFamily: 'inherit',
-              fill: 'rgba(255, 255, 255, 0.4)',
+              fontSize: "11px",
+              fontFamily: "inherit",
+              fill: "rgba(255, 255, 255, 0.4)",
             }}
             tickLine={false}
             axisLine={false}
@@ -152,26 +162,29 @@ export function TimeSeriesChart({
           <YAxis
             stroke="rgba(255, 255, 255, 0.2)"
             style={{
-              fontSize: '11px',
-              fontFamily: 'inherit',
-              fill: 'rgba(255, 255, 255, 0.4)',
+              fontSize: "11px",
+              fontFamily: "inherit",
+              fill: "rgba(255, 255, 255, 0.4)",
             }}
             tickLine={false}
             axisLine={false}
             tickFormatter={(value) =>
-              activeMetric === 'revenue'
+              activeMetric === "revenue"
                 ? formatCurrency(value, { decimals: 0, compact: true })
                 : formatNumber(value, { compact: true })
             }
           />
 
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: config.color, strokeWidth: 1 }} />
+          <Tooltip
+            content={<CustomTooltip />}
+            cursor={{ stroke: config.color, strokeWidth: 1 }}
+          />
 
           {showLegend && (
             <Legend
               wrapperStyle={{
-                fontSize: '12px',
-                color: 'rgba(255, 255, 255, 0.6)',
+                fontSize: "12px",
+                color: "rgba(255, 255, 255, 0.6)",
               }}
             />
           )}
@@ -197,21 +210,21 @@ export function TimeSeriesChart({
  */
 interface MultiMetricChartProps {
   data: TimeSeriesDataPoint[];
-  metrics: Array<'sent' | 'opened' | 'clicked' | 'revenue'>;
+  metrics: Array<"sent" | "opened" | "clicked" | "revenue">;
   height?: number;
   className?: string;
 }
 
 export function MultiMetricChart({
   data,
-  metrics = ['sent', 'opened', 'clicked'],
+  metrics = ["sent", "opened", "clicked"],
   height = 300,
-  className = '',
+  className = "",
 }: MultiMetricChartProps) {
   const chartData = useMemo(() => {
     return data.map((d) => ({
       ...d,
-      displayDate: formatDate(d.date, 'short'),
+      displayDate: formatDate(d.date, "short"),
     }));
   }, [data]);
 
@@ -227,7 +240,10 @@ export function MultiMetricChart({
             const config = metricConfig[metric];
 
             return (
-              <div key={index} className="flex items-center justify-between gap-4">
+              <div
+                key={index}
+                className="flex items-center justify-between gap-4"
+              >
                 <div className="flex items-center gap-2">
                   <div
                     className="w-2 h-2 rounded-full"
@@ -236,7 +252,7 @@ export function MultiMetricChart({
                   <span className="text-white/60 text-xs">{config.label}</span>
                 </div>
                 <span className="text-white font-bold text-sm">
-                  {metric === 'revenue'
+                  {metric === "revenue"
                     ? formatCurrency(entry.value, { decimals: 0 })
                     : formatNumber(entry.value)}
                 </span>
@@ -270,8 +286,19 @@ export function MultiMetricChart({
             {metrics.map((metric) => {
               const config = metricConfig[metric];
               return (
-                <linearGradient key={metric} id={`gradient-${metric}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={config.color} stopOpacity={0.2} />
+                <linearGradient
+                  key={metric}
+                  id={`gradient-${metric}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor={config.color}
+                    stopOpacity={0.2}
+                  />
                   <stop offset="95%" stopColor={config.color} stopOpacity={0} />
                 </linearGradient>
               );
@@ -288,9 +315,9 @@ export function MultiMetricChart({
             dataKey="displayDate"
             stroke="rgba(255, 255, 255, 0.2)"
             style={{
-              fontSize: '11px',
-              fontFamily: 'inherit',
-              fill: 'rgba(255, 255, 255, 0.4)',
+              fontSize: "11px",
+              fontFamily: "inherit",
+              fill: "rgba(255, 255, 255, 0.4)",
             }}
             tickLine={false}
             axisLine={false}
@@ -299,9 +326,9 @@ export function MultiMetricChart({
           <YAxis
             stroke="rgba(255, 255, 255, 0.2)"
             style={{
-              fontSize: '11px',
-              fontFamily: 'inherit',
-              fill: 'rgba(255, 255, 255, 0.4)',
+              fontSize: "11px",
+              fontFamily: "inherit",
+              fill: "rgba(255, 255, 255, 0.4)",
             }}
             tickLine={false}
             axisLine={false}
@@ -312,9 +339,9 @@ export function MultiMetricChart({
 
           <Legend
             wrapperStyle={{
-              fontSize: '12px',
-              color: 'rgba(255, 255, 255, 0.6)',
-              paddingTop: '20px',
+              fontSize: "12px",
+              color: "rgba(255, 255, 255, 0.6)",
+              paddingTop: "20px",
             }}
           />
 

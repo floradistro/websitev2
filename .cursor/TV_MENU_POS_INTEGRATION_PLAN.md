@@ -11,6 +11,7 @@
 This document outlines how to integrate your **TV Menu Digital Signage System** with the **POS** and **Inventory Management** systems to create a unified, real-time product display that automatically updates based on inventory levels, sales data, and vendor promotions.
 
 ### Key Benefits:
+
 - **Real-time Inventory Sync:** TV menus show only in-stock products
 - **Auto-Hide Out-of-Stock:** Products auto-remove from displays when sold out
 - **Dynamic Pricing:** TV menus reflect current prices, sales, and discounts
@@ -23,6 +24,7 @@ This document outlines how to integrate your **TV Menu Digital Signage System** 
 ## 🏗️ Current System Architecture
 
 ### TV Menu System (Existing):
+
 ```
 ┌─────────────────────────────────────────────┐
 │         TV MENU SYSTEM (Current)            │
@@ -40,6 +42,7 @@ This document outlines how to integrate your **TV Menu Digital Signage System** 
 ```
 
 ### POS/Inventory System (Existing):
+
 ```
 ┌─────────────────────────────────────────────┐
 │      POS/INVENTORY SYSTEM (Current)         │
@@ -60,6 +63,7 @@ This document outlines how to integrate your **TV Menu Digital Signage System** 
 ## 🔄 Proposed Integration Architecture
 
 ### Unified System:
+
 ```
 ┌──────────────────────────────────────────────────────────┐
 │                  VENDOR DASHBOARD                         │
@@ -77,6 +81,7 @@ This document outlines how to integrate your **TV Menu Digital Signage System** 
 ```
 
 ### Data Flow:
+
 ```
 1. INVENTORY UPDATE:
    POS Sale → Inventory Decremented → TV Menu Refreshed → TV Display Updated
@@ -101,6 +106,7 @@ This document outlines how to integrate your **TV Menu Digital Signage System** 
 ### Phase 1: Database Schema Enhancements
 
 #### 1.1 Add Inventory Sync Fields to tv_menus
+
 ```sql
 ALTER TABLE public.tv_menus
 ADD COLUMN IF NOT EXISTS sync_with_inventory BOOLEAN DEFAULT false,
@@ -113,6 +119,7 @@ ADD COLUMN IF NOT EXISTS auto_refresh_interval INTEGER DEFAULT 60; -- seconds
 ```
 
 #### 1.2 Create Product Display Rules Table
+
 ```sql
 CREATE TABLE IF NOT EXISTS public.tv_menu_product_rules (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -150,6 +157,7 @@ CREATE INDEX idx_tv_menu_product_rules_menu ON public.tv_menu_product_rules(tv_m
 ```
 
 #### 1.3 Create Real-time Inventory Snapshot Table
+
 ```sql
 CREATE TABLE IF NOT EXISTS public.tv_menu_inventory_cache (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -190,6 +198,7 @@ CREATE INDEX idx_tv_menu_cache_expires ON public.tv_menu_inventory_cache(cache_e
 ### Phase 2: Backend API Enhancements
 
 #### 2.1 TV Menu Data API (Enhanced)
+
 **File:** `/app/api/tv-menu/data/route.ts`
 
 ```typescript
@@ -198,20 +207,21 @@ CREATE INDEX idx_tv_menu_cache_expires ON public.tv_menu_inventory_cache(cache_e
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const menuId = searchParams.get('menu_id');
-  const locationId = searchParams.get('location_id');
+  const menuId = searchParams.get("menu_id");
+  const locationId = searchParams.get("location_id");
 
   // 1. Get menu configuration
   const { data: menu } = await supabase
-    .from('tv_menus')
-    .select('*, tv_menu_product_rules(*)')
-    .eq('id', menuId)
+    .from("tv_menus")
+    .select("*, tv_menu_product_rules(*)")
+    .eq("id", menuId)
     .single();
 
   // 2. Get products with inventory
   let query = supabase
-    .from('products')
-    .select(`
+    .from("products")
+    .select(
+      `
       *,
       inventory!inner (
         available_quantity,
@@ -220,34 +230,40 @@ export async function GET(request: NextRequest) {
       ),
       categories (name),
       pricing_blueprints (*)
-    `)
-    .eq('vendor_id', menu.vendor_id)
-    .eq('status', 'published');
+    `,
+    )
+    .eq("vendor_id", menu.vendor_id)
+    .eq("status", "published");
 
   // Apply location filter
   if (locationId) {
-    query = query.eq('inventory.location_id', locationId);
+    query = query.eq("inventory.location_id", locationId);
   }
 
   // 3. Apply menu rules
   if (menu.hide_out_of_stock) {
-    query = query.gt('inventory.available_quantity', 0);
+    query = query.gt("inventory.available_quantity", 0);
   }
 
   const { data: products } = await query;
 
   // 4. Enhance products with display metadata
-  const enhancedProducts = products.map(product => ({
+  const enhancedProducts = products.map((product) => ({
     ...product,
     display_badges: {
       isNew: isProductNew(product.created_at, menu.show_new_badge_days),
-      isLowStock: product.inventory.available_quantity <= menu.low_stock_threshold,
+      isLowStock:
+        product.inventory.available_quantity <= menu.low_stock_threshold,
       isOnSale: product.on_sale,
-      stockCount: menu.show_stock_count ? product.inventory.available_quantity : null
+      stockCount: menu.show_stock_count
+        ? product.inventory.available_quantity
+        : null,
     },
     display_price: menu.sync_pricing
-      ? (product.on_sale ? product.sale_price : product.regular_price)
-      : product.config_data?.display_price || product.regular_price
+      ? product.on_sale
+        ? product.sale_price
+        : product.regular_price
+      : product.config_data?.display_price || product.regular_price,
   }));
 
   // 5. Sort and limit
@@ -263,19 +279,21 @@ export async function GET(request: NextRequest) {
       id: menu.id,
       name: menu.name,
       config: menu.config_data,
-      last_sync: new Date().toISOString()
+      last_sync: new Date().toISOString(),
     },
     products: limited,
     stats: {
       total_products: limited.length,
-      low_stock_count: limited.filter(p => p.display_badges.isLowStock).length,
-      on_sale_count: limited.filter(p => p.display_badges.isOnSale).length
-    }
+      low_stock_count: limited.filter((p) => p.display_badges.isLowStock)
+        .length,
+      on_sale_count: limited.filter((p) => p.display_badges.isOnSale).length,
+    },
   });
 }
 ```
 
 #### 2.2 Real-time Inventory Sync Webhook
+
 **File:** `/app/api/tv-menu/sync-inventory/route.ts`
 
 ```typescript
@@ -288,9 +306,9 @@ export async function POST(request: NextRequest) {
 
   // 1. Find all TV menus showing this product
   const { data: affectedMenus } = await supabase
-    .from('tv_menus')
-    .select('id, vendor_id, location_id')
-    .eq('sync_with_inventory', true)
+    .from("tv_menus")
+    .select("id, vendor_id, location_id")
+    .eq("sync_with_inventory", true)
     .or(`location_id.eq.${location_id},location_id.is.null`);
 
   // 2. Update cache for each menu
@@ -300,23 +318,30 @@ export async function POST(request: NextRequest) {
 
   // 3. Send refresh command to TV devices
   const { data: devices } = await supabase
-    .from('tv_devices')
-    .select('id')
-    .in('active_menu_id', affectedMenus.map(m => m.id));
+    .from("tv_devices")
+    .select("id")
+    .in(
+      "active_menu_id",
+      affectedMenus.map((m) => m.id),
+    );
 
   for (const device of devices) {
-    await supabase.from('tv_commands').insert({
+    await supabase.from("tv_commands").insert({
       tv_device_id: device.id,
-      command_type: 'refresh',
-      payload: { reason: 'inventory_update', product_id }
+      command_type: "refresh",
+      payload: { reason: "inventory_update", product_id },
     });
   }
 
-  return NextResponse.json({ success: true, menus_updated: affectedMenus.length });
+  return NextResponse.json({
+    success: true,
+    menus_updated: affectedMenus.length,
+  });
 }
 ```
 
 #### 2.3 Low Stock Alert Integration
+
 **File:** `/app/api/tv-menu/low-stock-products/route.ts`
 
 ```typescript
@@ -325,18 +350,19 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const menuId = searchParams.get('menu_id');
+  const menuId = searchParams.get("menu_id");
 
   const { data: menu } = await supabase
-    .from('tv_menus')
-    .select('*, vendor_id, location_id, low_stock_threshold')
-    .eq('id', menuId)
+    .from("tv_menus")
+    .select("*, vendor_id, location_id, low_stock_threshold")
+    .eq("id", menuId)
     .single();
 
   // Get low stock products
   const { data: lowStockProducts } = await supabase
-    .from('tv_menu_inventory_cache')
-    .select(`
+    .from("tv_menu_inventory_cache")
+    .select(
+      `
       *,
       products (
         id,
@@ -347,16 +373,17 @@ export async function GET(request: NextRequest) {
         sale_price,
         on_sale
       )
-    `)
-    .eq('tv_menu_id', menuId)
-    .eq('is_low_stock', true)
-    .order('available_quantity', { ascending: true })
+    `,
+    )
+    .eq("tv_menu_id", menuId)
+    .eq("is_low_stock", true)
+    .order("available_quantity", { ascending: true })
     .limit(10);
 
   return NextResponse.json({
     success: true,
     low_stock_products: lowStockProducts,
-    threshold: menu.low_stock_threshold
+    threshold: menu.low_stock_threshold,
   });
 }
 ```
@@ -366,6 +393,7 @@ export async function GET(request: NextRequest) {
 ### Phase 3: Frontend Components
 
 #### 3.1 Enhanced TV Display Component
+
 **File:** `/app/tv-display/[menuId]/page.tsx`
 
 ```typescript
@@ -424,6 +452,7 @@ export default function TVDisplay({ params }) {
 ```
 
 #### 3.2 Vendor Dashboard - TV Menu Manager
+
 **File:** `/app/vendor/tv-menus/[menuId]/settings/page.tsx`
 
 ```typescript
@@ -526,6 +555,7 @@ export default function TVMenuSettings({ params }) {
 ### Phase 4: POS Integration Triggers
 
 #### 4.1 POS Sale Trigger
+
 **Location:** `/app/api/pos/sales/create/route.ts`
 
 ```typescript
@@ -534,18 +564,19 @@ export default function TVMenuSettings({ params }) {
 // Existing POS sale creation code...
 
 // NEW: Trigger TV menu inventory sync
-await fetch('/api/tv-menu/sync-inventory', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+await fetch("/api/tv-menu/sync-inventory", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    product_ids: items.map(i => i.productId),
+    product_ids: items.map((i) => i.productId),
     location_id: locationId,
-    inventory_change: 'decrease'
-  })
+    inventory_change: "decrease",
+  }),
 });
 ```
 
 #### 4.2 Inventory Receiving Trigger
+
 **Location:** `/app/api/vendor/purchase-orders/receive/route.ts`
 
 ```typescript
@@ -554,18 +585,19 @@ await fetch('/api/tv-menu/sync-inventory', {
 // Existing receiving logic...
 
 // NEW: Trigger TV menu update
-await fetch('/api/tv-menu/sync-inventory', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+await fetch("/api/tv-menu/sync-inventory", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    product_ids: receivedProducts.map(p => p.product_id),
+    product_ids: receivedProducts.map((p) => p.product_id),
     location_id: locationId,
-    inventory_change: 'increase'
-  })
+    inventory_change: "increase",
+  }),
 });
 ```
 
 #### 4.3 Price Update Trigger
+
 **Location:** `/app/api/vendor/products/[productId]/route.ts`
 
 ```typescript
@@ -574,12 +606,12 @@ await fetch('/api/tv-menu/sync-inventory', {
 // Existing price update logic...
 
 // NEW: Trigger TV menu price sync
-await fetch('/api/tv-menu/sync-inventory', {
-  method: 'POST',
+await fetch("/api/tv-menu/sync-inventory", {
+  method: "POST",
   body: JSON.stringify({
     product_id: productId,
-    inventory_change: 'price_update'
-  })
+    inventory_change: "price_update",
+  }),
 });
 ```
 
@@ -588,9 +620,11 @@ await fetch('/api/tv-menu/sync-inventory', {
 ## 📊 Use Cases & Benefits
 
 ### Use Case 1: Automatic Out-of-Stock Hiding
+
 **Scenario:** Customer buys last unit of "Blue Dream" flower at POS
 
 **Flow:**
+
 1. POS records sale → Inventory = 0
 2. Inventory sync API triggered
 3. TV menu cache updated (is_out_of_stock = true)
@@ -603,9 +637,11 @@ await fetch('/api/tv-menu/sync-inventory', {
 ---
 
 ### Use Case 2: Dynamic Pricing Display
+
 **Scenario:** Manager puts "Lemon Haze" on sale (30% off)
 
 **Flow:**
+
 1. Manager updates price in vendor dashboard
 2. Product price updated in database
 3. TV menu sync triggered
@@ -618,9 +654,11 @@ await fetch('/api/tv-menu/sync-inventory', {
 ---
 
 ### Use Case 3: Low Stock Urgency
+
 **Scenario:** Only 3 units of "Gelato" left
 
 **Flow:**
+
 1. Inventory drops below threshold (10 units)
 2. TV menu cache marks as low_stock
 3. TV display shows "Limited Stock" badge
@@ -632,9 +670,11 @@ await fetch('/api/tv-menu/sync-inventory', {
 ---
 
 ### Use Case 4: New Product Launch
+
 **Scenario:** Vendor receives shipment of new product "Purple Punch"
 
 **Flow:**
+
 1. Inbound PO received → Inventory created
 2. Product status set to "published"
 3. TV menu sync triggered
@@ -647,9 +687,11 @@ await fetch('/api/tv-menu/sync-inventory', {
 ---
 
 ### Use Case 5: Popular Products Auto-Feature
+
 **Scenario:** "Wedding Cake" sells 50 units in a day
 
 **Flow:**
+
 1. Sales analytics track product popularity
 2. TV menu rules set to sort by "popularity"
 3. High-selling products move to top
@@ -663,18 +705,21 @@ await fetch('/api/tv-menu/sync-inventory', {
 ## 🚀 Implementation Timeline
 
 ### Week 1: Database & Backend
+
 - [x] Day 1-2: Create database schema enhancements
 - [x] Day 3-4: Build TV menu data API
 - [x] Day 5: Build inventory sync webhook API
 - [x] Day 6-7: Build low stock products API
 
 ### Week 2: Frontend Components
+
 - [x] Day 1-2: Enhance TV display component with real-time updates
 - [x] Day 3-4: Build vendor TV menu settings UI
 - [x] Day 5: Build product display badges/indicators
 - [x] Day 6-7: Testing & bug fixes
 
 ### Week 3: Integration & Testing
+
 - [x] Day 1-2: Add triggers to POS sale endpoints
 - [x] Day 3: Add triggers to inventory receiving
 - [x] Day 4: Add triggers to price updates
@@ -682,6 +727,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 - [x] Day 7: Documentation & training
 
 ### Week 4: Polish & Deploy
+
 - [x] Day 1-2: Performance optimization
 - [x] Day 3: Analytics dashboard
 - [x] Day 4-5: User acceptance testing
@@ -693,6 +739,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 ## 🧪 Testing Strategy
 
 ### Test Scenario 1: Stock Depletion
+
 1. Set product to 1 unit in stock
 2. Verify TV shows product
 3. Complete POS sale for that product
@@ -704,6 +751,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 ---
 
 ### Test Scenario 2: Price Change
+
 1. Display product on TV at $20
 2. Update price to $15 in vendor dashboard
 3. Wait for sync
@@ -715,6 +763,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 ---
 
 ### Test Scenario 3: Low Stock Alert
+
 1. Set product to 8 units (below threshold of 10)
 2. Verify "Limited Stock" badge appears
 3. Sell 3 units via POS
@@ -727,6 +776,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 ---
 
 ### Test Scenario 4: New Product
+
 1. Receive inbound PO with new product
 2. Publish product
 3. Verify appears on TV menu
@@ -739,6 +789,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 ---
 
 ### Test Scenario 5: Multi-Location
+
 1. Set TV menu to specific location
 2. Update inventory at that location
 3. Verify TV at that location updates
@@ -751,6 +802,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 ## 📈 Performance Considerations
 
 ### Caching Strategy:
+
 ```
 ┌─────────────────────────────────────────┐
 │      CACHING LAYERS                     │
@@ -764,6 +816,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 ```
 
 ### Optimization:
+
 - **Debounce Syncs:** Wait 5 seconds after inventory change before syncing (batch multiple rapid changes)
 - **Incremental Updates:** Only sync affected products, not entire menu
 - **CDN Caching:** Cache product images at edge
@@ -775,12 +828,14 @@ await fetch('/api/tv-menu/sync-inventory', {
 ## 🔐 Security Considerations
 
 ### RLS Policies:
+
 - Vendors can only sync their own menus
 - TV devices can read menu data (public access)
 - Inventory data filtered by vendor_id
 - Price updates require vendor authentication
 
 ### Rate Limiting:
+
 - Max 1 sync per product per 5 seconds
 - Max 100 TV refresh commands per minute per vendor
 - API endpoints throttled to prevent abuse
@@ -790,6 +845,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 ## 📊 Analytics & Insights
 
 ### New Metrics to Track:
+
 1. **Product Display Time:** How long each product shown on TV
 2. **Conversion Rate:** Products displayed → Products sold
 3. **Low Stock Effectiveness:** Sales increase when "Limited Stock" shown
@@ -798,6 +854,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 6. **Price Change Impact:** Sales before/after price changes
 
 ### Dashboard Widgets:
+
 ```typescript
 <TVMenuAnalytics vendorId={vendorId}>
   <MetricCard title="Products Displayed Today" value={125} />
@@ -812,6 +869,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 ## 🎨 UI/UX Enhancements
 
 ### TV Display Badges:
+
 ```css
 /* Low Stock Badge */
 .badge-low-stock {
@@ -833,6 +891,7 @@ await fetch('/api/tv-menu/sync-inventory', {
 ```
 
 ### Product Card Enhancements:
+
 - **Stock Count:** "Only 3 left!" for low stock items
 - **Real-time Price:** Live price updates without page refresh
 - **Sale Countdown:** "Sale ends in 2 hours"
@@ -843,28 +902,30 @@ await fetch('/api/tv-menu/sync-inventory', {
 ## 🔧 Maintenance & Monitoring
 
 ### Health Checks:
+
 - Monitor inventory cache freshness (alert if > 2 min old)
 - Track TV device connection status
 - Alert when sync fails for >3 consecutive attempts
 - Monitor API response times (target < 500ms)
 
 ### Automated Tasks:
+
 ```typescript
 // Cron Job: Clean expired cache (run every hour)
 async function cleanExpiredCache() {
   await supabase
-    .from('tv_menu_inventory_cache')
+    .from("tv_menu_inventory_cache")
     .delete()
-    .lt('cache_expires_at', new Date().toISOString());
+    .lt("cache_expires_at", new Date().toISOString());
 }
 
 // Cron Job: Sync all menus (run every 5 minutes as backup)
 async function syncAllMenus() {
   const { data: menus } = await supabase
-    .from('tv_menus')
-    .select('id')
-    .eq('sync_with_inventory', true)
-    .eq('is_active', true);
+    .from("tv_menus")
+    .select("id")
+    .eq("sync_with_inventory", true)
+    .eq("is_active", true);
 
   for (const menu of menus) {
     await syncMenuInventory(menu.id);
@@ -877,6 +938,7 @@ async function syncAllMenus() {
 ## 📞 Implementation Checklist
 
 ### Database:
+
 - [ ] Create `tv_menu_product_rules` table
 - [ ] Create `tv_menu_inventory_cache` table
 - [ ] Add sync fields to `tv_menus` table
@@ -884,6 +946,7 @@ async function syncAllMenus() {
 - [ ] Test RLS policies
 
 ### Backend APIs:
+
 - [ ] Build `/api/tv-menu/data` endpoint
 - [ ] Build `/api/tv-menu/sync-inventory` webhook
 - [ ] Build `/api/tv-menu/low-stock-products` endpoint
@@ -892,6 +955,7 @@ async function syncAllMenus() {
 - [ ] Add triggers to price update API
 
 ### Frontend:
+
 - [ ] Enhance TV display component with real-time updates
 - [ ] Build vendor settings UI for TV menus
 - [ ] Create product display badges (Low Stock, Sale, New)
@@ -899,6 +963,7 @@ async function syncAllMenus() {
 - [ ] Add WebSocket/real-time subscriptions
 
 ### Testing:
+
 - [ ] Test stock depletion scenario
 - [ ] Test price change propagation
 - [ ] Test low stock alerts
@@ -908,6 +973,7 @@ async function syncAllMenus() {
 - [ ] Load testing (10+ concurrent TVs)
 
 ### Documentation:
+
 - [ ] API documentation
 - [ ] Vendor user guide
 - [ ] Setup instructions for TV devices
@@ -918,12 +984,14 @@ async function syncAllMenus() {
 ## 🎯 Success Metrics
 
 ### Technical:
+
 - Sync latency < 5 seconds
 - API response time < 500ms
 - 99.9% uptime for TV displays
 - Zero inventory sync errors
 
 ### Business:
+
 - 30% reduction in customer inquiries about unavailable products
 - 20% increase in sales of low-stock items (urgency effect)
 - 95%+ inventory accuracy on displays
@@ -934,6 +1002,7 @@ async function syncAllMenus() {
 ## 🚀 Quick Start Guide
 
 ### For Vendors:
+
 1. Go to `/vendor/tv-menus`
 2. Click on a menu → "Settings" tab
 3. Enable "Sync with Real-time Inventory"
@@ -942,6 +1011,7 @@ async function syncAllMenus() {
 6. TV displays will automatically update
 
 ### For Developers:
+
 ```bash
 # 1. Run database migrations
 npm run db:migrate
@@ -969,6 +1039,6 @@ open "http://localhost:3000/tv-display/MENU_ID"
 
 ---
 
-*Generated: October 28, 2025*
-*Version: 1.0.0*
-*Status: Planning Document - Ready for Implementation*
+_Generated: October 28, 2025_
+_Version: 1.0.0_
+_Status: Planning Document - Ready for Implementation_

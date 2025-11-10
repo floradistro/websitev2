@@ -1,1 +1,16 @@
-import {d}from'./chunk-VW3DMTE7.js';var r=class{constructor(){this.frameColor=d.AimerViewfinder.frameColor;this.dotColor=d.AimerViewfinder.dotColor;this.type="aimer";}toJSONObject(){return {type:this.type,frameColor:this.frameColor.toJSON(),dotColor:this.dotColor.toJSON()}}};export{r as a};
+import { d } from "./chunk-VW3DMTE7.js";
+var r = class {
+  constructor() {
+    this.frameColor = d.AimerViewfinder.frameColor;
+    this.dotColor = d.AimerViewfinder.dotColor;
+    this.type = "aimer";
+  }
+  toJSONObject() {
+    return {
+      type: this.type,
+      frameColor: this.frameColor.toJSON(),
+      dotColor: this.dotColor.toJSON(),
+    };
+  }
+};
+export { r as a };

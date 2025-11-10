@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useState, memo, useCallback } from "react";
-import { X, Trash2, ArrowRight, Store, Truck, Plus, Minus, Edit3 } from "lucide-react";
+import {
+  X,
+  Trash2,
+  ArrowRight,
+  Store,
+  Truck,
+  Plus,
+  Minus,
+  Edit3,
+} from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 import Image from "next/image";
@@ -16,18 +25,25 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [editingItem, setEditingItem] = useState<number | null>(null);
 
   // Memoize callbacks
-  const handleRemove = useCallback((productId: number) => {
-    removeFromCart(productId);
-  }, [removeFromCart]);
+  const handleRemove = useCallback(
+    (productId: number) => {
+      removeFromCart(productId);
+    },
+    [removeFromCart],
+  );
 
-  const handleUpdateQuantity = useCallback((productId: number, quantity: number) => {
-    updateQuantity(productId, quantity);
-  }, [updateQuantity]);
+  const handleUpdateQuantity = useCallback(
+    (productId: number, quantity: number) => {
+      updateQuantity(productId, quantity);
+    },
+    [updateQuantity],
+  );
 
   useEffect(() => {
     if (isOpen) {
       // Lock body scroll completely for PWA mode
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
       document.body.style.position = "fixed";
       document.body.style.top = "0";
@@ -36,7 +52,7 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       document.body.style.bottom = "0";
       document.body.style.width = "100%";
       document.body.style.paddingRight = `${scrollbarWidth}px`;
-      
+
       // Prevent iOS overscroll
       document.documentElement.style.overflow = "hidden";
       document.documentElement.style.position = "fixed";
@@ -52,13 +68,13 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       document.body.style.bottom = "";
       document.body.style.width = "";
       document.body.style.paddingRight = "";
-      
+
       document.documentElement.style.overflow = "";
       document.documentElement.style.position = "";
       document.documentElement.style.width = "";
       document.documentElement.style.height = "";
     }
-    
+
     return () => {
       document.body.style.overflow = "";
       document.body.style.position = "";
@@ -68,7 +84,7 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       document.body.style.bottom = "";
       document.body.style.width = "";
       document.body.style.paddingRight = "";
-      
+
       document.documentElement.style.overflow = "";
       document.documentElement.style.position = "";
       document.documentElement.style.width = "";
@@ -79,63 +95,63 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-[9999]"
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden'
+        width: "100vw",
+        height: "100vh",
+        overflow: "hidden",
       }}
     >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-md"
         onClick={onClose}
-        style={{ 
-          WebkitTapHighlightColor: 'transparent',
-          position: 'absolute',
+        style={{
+          WebkitTapHighlightColor: "transparent",
+          position: "absolute",
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          width: '100%',
-          height: '100%',
-          touchAction: 'none'
+          width: "100%",
+          height: "100%",
+          touchAction: "none",
         }}
       />
 
       {/* Drawer - With Safe Area Support */}
-      <div 
+      <div
         className="absolute right-0 w-full sm:w-[500px] bg-[#2a2a2a] shadow-2xl flex flex-col border-l border-white/10 animate-slideInRight"
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           bottom: 0,
-          height: '100%',
-          maxHeight: '100vh',
-          overflowY: 'hidden'
+          height: "100%",
+          maxHeight: "100vh",
+          overflowY: "hidden",
         }}
       >
         {/* Safe Area Top Fill - extends into iOS notch area */}
-        <div 
+        <div
           className="absolute top-0 left-0 right-0 bg-[#2a2a2a] pointer-events-none"
-          style={{ 
-            height: 'env(safe-area-inset-top, 0px)', 
-            marginTop: 'calc(-1 * env(safe-area-inset-top, 0px))'
+          style={{
+            height: "env(safe-area-inset-top, 0px)",
+            marginTop: "calc(-1 * env(safe-area-inset-top, 0px))",
           }}
         />
-        
+
         {/* Header - Fixed with safe area */}
-        <div 
+        <div
           className="px-5 border-b border-white/10 bg-[#2a2a2a] flex-shrink-0 relative z-10"
-          style={{ 
-            paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)',
-            paddingBottom: '1rem'
+          style={{
+            paddingTop: "calc(env(safe-area-inset-top, 0px) + 1rem)",
+            paddingBottom: "1rem",
           }}
         >
           <div className="flex items-center justify-between">
@@ -148,20 +164,23 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               type="button"
               aria-label="Close cart"
             >
-              <X size={20} className="text-white/70 group-hover:text-white transition-colors" />
+              <X
+                size={20}
+                className="text-white/70 group-hover:text-white transition-colors"
+              />
             </button>
           </div>
         </div>
 
         {/* Items - Scrollable with momentum */}
-        <div 
+        <div
           className="flex-1 overflow-y-auto overflow-x-hidden bg-[#2a2a2a] relative z-10"
           style={{
-            WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: "touch",
+            overscrollBehavior: "contain",
             minHeight: 0,
-            flex: '1 1 0',
-            touchAction: 'pan-y'
+            flex: "1 1 0",
+            touchAction: "pan-y",
           }}
         >
           {items.length === 0 ? (
@@ -184,8 +203,8 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           ) : (
             <div className="divide-y divide-white/5">
               {items.map((item) => (
-                <div 
-                  key={`${item.productId}-${item.tierName}`} 
+                <div
+                  key={`${item.productId}-${item.tierName}`}
                   className="p-5 hover:bg-[#333333]/50 active:bg-[#333333] transition-colors group"
                 >
                   <div className="flex gap-4">
@@ -223,18 +242,25 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           type="button"
                           aria-label="Remove item"
                         >
-                          <Trash2 size={16} className="text-white/40 hover:text-red-400 transition-colors" />
+                          <Trash2
+                            size={16}
+                            className="text-white/40 hover:text-red-400 transition-colors"
+                          />
                         </button>
                       </div>
-                      
-                      <p className="text-[11px] text-white/40 mb-3 uppercase tracking-wider">{item.tierName}</p>
-                      
+
+                      <p className="text-[11px] text-white/40 mb-3 uppercase tracking-wider">
+                        {item.tierName}
+                      </p>
+
                       {item.orderType && (
                         <div className="flex items-center gap-1.5 text-xs text-white/50 mb-3">
                           {item.orderType === "pickup" ? (
                             <>
                               <Store size={12} />
-                              <span className="truncate">{item.locationName}</span>
+                              <span className="truncate">
+                                {item.locationName}
+                              </span>
                             </>
                           ) : (
                             <>
@@ -249,7 +275,12 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                       <div className="flex items-center justify-between mt-auto">
                         <div className="flex items-center gap-2 bg-[#1a1a1a] rounded-full p-1">
                           <button
-                            onClick={() => handleUpdateQuantity(item.productId, Math.max(1, item.quantity - 1))}
+                            onClick={() =>
+                              handleUpdateQuantity(
+                                item.productId,
+                                Math.max(1, item.quantity - 1),
+                              )
+                            }
                             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/20 transition-colors"
                             type="button"
                             aria-label="Decrease quantity"
@@ -257,9 +288,16 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           >
                             <Minus size={14} className="text-white" />
                           </button>
-                          <span className="text-sm font-medium text-white min-w-[24px] text-center">{item.quantity}</span>
+                          <span className="text-sm font-medium text-white min-w-[24px] text-center">
+                            {item.quantity}
+                          </span>
                           <button
-                            onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
+                            onClick={() =>
+                              handleUpdateQuantity(
+                                item.productId,
+                                item.quantity + 1,
+                              )
+                            }
                             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/20 transition-colors"
                             type="button"
                             aria-label="Increase quantity"
@@ -267,7 +305,9 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             <Plus size={14} className="text-white" />
                           </button>
                         </div>
-                        <p className="text-base font-semibold text-white">${(item.price * item.quantity).toFixed(0)}</p>
+                        <p className="text-base font-semibold text-white">
+                          ${(item.price * item.quantity).toFixed(0)}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -279,11 +319,11 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Footer - Fixed with safe area */}
         {items.length > 0 && (
-          <div 
-            className="px-5 border-t border-white/10 bg-[#1a1a1a] flex-shrink-0 relative z-10" 
-            style={{ 
-              paddingTop: '1.25rem',
-              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.25rem)'
+          <div
+            className="px-5 border-t border-white/10 bg-[#1a1a1a] flex-shrink-0 relative z-10"
+            style={{
+              paddingTop: "1.25rem",
+              paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.25rem)",
             }}
           >
             <div className="space-y-4">
@@ -291,20 +331,20 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 <span>Subtotal</span>
                 <span>${total.toFixed(0)}</span>
               </div>
-              
+
               <p className="text-[11px] text-white/40 text-center">
                 Shipping & taxes calculated at checkout
               </p>
-              
+
               <Link
                 href="/checkout"
                 onClick={onClose}
                 className="interactive-button group block w-full bg-white text-black text-center px-8 py-4 text-xs uppercase tracking-[0.25em] hover:bg-white/90 active:scale-[0.98] font-semibold rounded-xl transition-all"
-                style={{ minHeight: '56px' }}
+                style={{ minHeight: "56px" }}
               >
                 <span className="relative z-10">Checkout</span>
               </Link>
-              
+
               <button
                 onClick={onClose}
                 type="button"

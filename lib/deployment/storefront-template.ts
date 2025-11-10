@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 export interface VendorBranding {
   storeName: string;
@@ -14,7 +14,11 @@ export interface VendorBranding {
 /**
  * Recursively walk a directory and collect all files
  */
-function walkDirectory(dir: string, baseDir: string, files: Array<{ path: string; content: string }> = []): void {
+function walkDirectory(
+  dir: string,
+  baseDir: string,
+  files: Array<{ path: string; content: string }> = [],
+): void {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
 
   for (const entry of entries) {
@@ -23,20 +27,26 @@ function walkDirectory(dir: string, baseDir: string, files: Array<{ path: string
 
     if (entry.isDirectory()) {
       // Skip node_modules and test directories
-      if (entry.name !== 'node_modules' && !entry.name.includes('.test') && !entry.name.includes('.spec')) {
+      if (
+        entry.name !== "node_modules" &&
+        !entry.name.includes(".test") &&
+        !entry.name.includes(".spec")
+      ) {
         walkDirectory(fullPath, baseDir, files);
       }
     } else if (entry.isFile()) {
       // Skip test files
-      if (!entry.name.includes('.test.') && !entry.name.includes('.spec.')) {
+      if (!entry.name.includes(".test.") && !entry.name.includes(".spec.")) {
         try {
-          const content = fs.readFileSync(fullPath, 'utf-8');
+          const content = fs.readFileSync(fullPath, "utf-8");
           files.push({
             path: relativePath,
             content,
           });
         } catch (error) {
-          console.error(`Error reading file ${relativePath}:`, error);
+          if (process.env.NODE_ENV === "development") {
+            console.error(`Error reading file ${relativePath}:`, error);
+          }
         }
       }
     }
@@ -46,15 +56,17 @@ function walkDirectory(dir: string, baseDir: string, files: Array<{ path: string
 /**
  * Get all storefront template files that should be pushed to vendor repos
  */
-export async function getStorefrontTemplateFiles(): Promise<Array<{ path: string; content: string }>> {
+export async function getStorefrontTemplateFiles(): Promise<
+  Array<{ path: string; content: string }>
+> {
   const files: Array<{ path: string; content: string }> = [];
   const projectRoot = process.cwd();
 
   // Directories to include in the template
   const directories = [
-    'app/(storefront)',
-    'components/storefront',
-    'lib/storefront', // If exists
+    "app/(storefront)",
+    "components/storefront",
+    "lib/storefront", // If exists
   ];
 
   for (const dir of directories) {
@@ -62,15 +74,11 @@ export async function getStorefrontTemplateFiles(): Promise<Array<{ path: string
 
     // Check if directory exists before walking
     if (fs.existsSync(fullDirPath)) {
-      console.log(`📁 Walking directory: ${dir}`);
       walkDirectory(fullDirPath, projectRoot, files);
-      console.log(`✅ Found ${files.length} files so far`);
     } else {
-      console.log(`⚠️  Directory not found: ${dir}`);
     }
   }
 
-  console.log(`📦 Total template files collected: ${files.length}`);
   return files;
 }
 
@@ -79,7 +87,7 @@ export async function getStorefrontTemplateFiles(): Promise<Array<{ path: string
  */
 export function rebrandStorefrontFiles(
   files: Array<{ path: string; content: string }>,
-  branding: VendorBranding
+  branding: VendorBranding,
 ): Array<{ path: string; content: string }> {
   return files.map((file) => {
     let content = file.content;
@@ -87,14 +95,11 @@ export function rebrandStorefrontFiles(
     // Replace Flora Distro with vendor's store name
     content = content.replace(/Flora Distro/g, branding.storeName);
     content = content.replace(/flora-distro/g, branding.slug);
-    content = content.replace(/floradistro/g, branding.slug.replace(/-/g, ''));
+    content = content.replace(/floradistro/g, branding.slug.replace(/-/g, ""));
 
     // Replace logo URLs if vendor has one
     if (branding.logoUrl) {
-      content = content.replace(
-        /\/yacht-club-logo\.png/g,
-        branding.logoUrl
-      );
+      content = content.replace(/\/yacht-club-logo\.png/g, branding.logoUrl);
     }
 
     // Replace colors if vendor has brand colors
@@ -103,7 +108,7 @@ export function rebrandStorefrontFiles(
       if (branding.brandColors.primary) {
         content = content.replace(
           /#10b981/gi, // Flora Distro's green
-          branding.brandColors.primary
+          branding.brandColors.primary,
         );
       }
     }
@@ -112,7 +117,7 @@ export function rebrandStorefrontFiles(
     if (branding.description) {
       content = content.replace(
         /Premium cannabis products/g,
-        branding.description
+        branding.description,
       );
     }
 
@@ -126,12 +131,15 @@ export function rebrandStorefrontFiles(
 /**
  * Create essential config files for the vendor's repo
  */
-export function createVendorConfigFiles(branding: VendorBranding, vendorId: string): Array<{ path: string; content: string }> {
+export function createVendorConfigFiles(
+  branding: VendorBranding,
+  vendorId: string,
+): Array<{ path: string; content: string }> {
   const files: Array<{ path: string; content: string }> = [];
 
   // Create .env.local.example
   files.push({
-    path: '.env.local.example',
+    path: ".env.local.example",
     content: `# WhaleTools API Configuration
 NEXT_PUBLIC_WHALETOOLS_VENDOR_ID=${vendorId}
 NEXT_PUBLIC_WHALETOOLS_API_URL=https://whaletools.dev/api
@@ -146,7 +154,7 @@ NEXT_PUBLIC_SITE_URL=https://${branding.slug}.com
 
   // Create README.md
   files.push({
-    path: 'README.md',
+    path: "README.md",
     content: `# ${branding.storeName} Storefront
 
 This is your custom cannabis storefront powered by WhaleTools.
@@ -190,43 +198,43 @@ Visit [WhaleTools Documentation](https://docs.whaletools.vip) or contact support
 
   // Create package.json
   files.push({
-    path: 'package.json',
+    path: "package.json",
     content: JSON.stringify(
       {
         name: `${branding.slug}-storefront`,
-        version: '1.0.0',
+        version: "1.0.0",
         description: `${branding.storeName} - Cannabis Storefront`,
         scripts: {
-          dev: 'next dev',
-          build: 'next build',
-          start: 'next start',
-          lint: 'next lint',
+          dev: "next dev",
+          build: "next build",
+          start: "next start",
+          lint: "next lint",
         },
         dependencies: {
-          next: '^15.0.0',
-          react: '^18.3.0',
-          'react-dom': '^18.3.0',
-          axios: '^1.6.0',
-          'lucide-react': '^0.400.0',
-          'framer-motion': '^11.0.0',
+          next: "^15.0.0",
+          react: "^18.3.0",
+          "react-dom": "^18.3.0",
+          axios: "^1.6.0",
+          "lucide-react": "^0.400.0",
+          "framer-motion": "^11.0.0",
         },
         devDependencies: {
-          '@types/node': '^20',
-          '@types/react': '^18',
-          '@types/react-dom': '^18',
-          typescript: '^5',
-          postcss: '^8',
-          tailwindcss: '^3.4.0',
+          "@types/node": "^20",
+          "@types/react": "^18",
+          "@types/react-dom": "^18",
+          typescript: "^5",
+          postcss: "^8",
+          tailwindcss: "^3.4.0",
         },
       },
       null,
-      2
+      2,
     ),
   });
 
   // Create next.config.js
   files.push({
-    path: 'next.config.js',
+    path: "next.config.js",
     content: `/** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -240,43 +248,48 @@ module.exports = nextConfig;
 
   // Create tsconfig.json
   files.push({
-    path: 'tsconfig.json',
+    path: "tsconfig.json",
     content: JSON.stringify(
       {
         compilerOptions: {
-          target: 'ES2020',
-          lib: ['dom', 'dom.iterable', 'esnext'],
+          target: "ES2020",
+          lib: ["dom", "dom.iterable", "esnext"],
           allowJs: true,
           skipLibCheck: true,
           strict: true,
           noEmit: true,
           esModuleInterop: true,
-          module: 'esnext',
-          moduleResolution: 'bundler',
+          module: "esnext",
+          moduleResolution: "bundler",
           resolveJsonModule: true,
           isolatedModules: true,
-          jsx: 'preserve',
+          jsx: "preserve",
           incremental: true,
           plugins: [
             {
-              name: 'next',
+              name: "next",
             },
           ],
           paths: {
-            '@/*': ['./*'],
+            "@/*": ["./*"],
           },
         },
-        include: ['next-env.d.ts', '**/*.ts', '**/*.tsx', '.next/types/**/*.ts'],
-        exclude: ['node_modules'],
+        include: [
+          "next-env.d.ts",
+          "**/*.ts",
+          "**/*.tsx",
+          ".next/types/**/*.ts",
+        ],
+        exclude: ["node_modules"],
       },
       null,
-      2
+      2,
     ),
   });
 
   // Create tailwind.config.ts
   files.push({
-    path: 'tailwind.config.ts',
+    path: "tailwind.config.ts",
     content: `import type { Config } from 'tailwindcss';
 
 const config: Config = {
@@ -288,8 +301,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: '${branding.primaryColor || '#10b981'}',
-        secondary: '${branding.secondaryColor || '#3b82f6'}',
+        primary: '${branding.primaryColor || "#10b981"}',
+        secondary: '${branding.secondaryColor || "#3b82f6"}',
       },
     },
   },
@@ -302,7 +315,7 @@ export default config;
 
   // Create .gitignore
   files.push({
-    path: '.gitignore',
+    path: ".gitignore",
     content: `# Dependencies
 node_modules
 /.pnp

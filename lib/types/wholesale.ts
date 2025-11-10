@@ -1,8 +1,12 @@
 // Wholesale/Distributor Types
 
-export type VendorType = 'standard' | 'distributor' | 'both';
+export type VendorType = "standard" | "distributor" | "both";
 
-export type WholesaleApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected';
+export type WholesaleApplicationStatus =
+  | "none"
+  | "pending"
+  | "approved"
+  | "rejected";
 
 export interface WholesaleCustomer {
   id: string;
@@ -73,7 +77,7 @@ export interface WholesaleApplication {
   contact_person?: string;
   contact_phone?: string;
   contact_email?: string;
-  status: 'pending' | 'under_review' | 'approved' | 'rejected';
+  status: "pending" | "under_review" | "approved" | "rejected";
   reviewed_at?: string;
   reviewed_by?: string;
   review_notes?: string;
@@ -88,7 +92,7 @@ export interface VendorWithWholesale extends WholesaleVendor {
   email: string;
   store_name: string;
   slug: string;
-  status: 'active' | 'suspended' | 'pending';
+  status: "active" | "suspended" | "pending";
   phone?: string;
   address?: string;
   city?: string;
@@ -110,7 +114,6 @@ export interface ProductWithWholesale extends WholesaleProduct {
   on_sale: boolean;
   featured_image?: string;
   vendor_id?: string;
-  stock_status: 'instock' | 'outofstock' | 'onbackorder';
-  status: 'draft' | 'pending' | 'published' | 'archived';
+  stock_status: "instock" | "outofstock" | "onbackorder";
+  status: "draft" | "pending" | "published" | "archived";
 }
-

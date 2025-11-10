@@ -1,5 +1,5 @@
-import { Search, MapPin } from 'lucide-react';
-import { ds, cn, Input } from '@/components/ds';
+import { Search, MapPin } from "lucide-react";
+import { ds, cn, Input } from "@/components/ds";
 
 interface Location {
   id: string;
@@ -23,14 +23,26 @@ export function POFilters({
   locations,
   onSearchChange,
   onStatusFilterChange,
-  onLocationFilterChange
+  onLocationFilterChange,
 }: POFiltersProps) {
   return (
-    <div className={cn("rounded-2xl border p-4 mb-6", ds.colors.bg.secondary, ds.colors.border.default)}>
+    <div
+      className={cn(
+        "rounded-2xl border p-4 mb-6",
+        ds.colors.bg.secondary,
+        ds.colors.border.default,
+      )}
+    >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Search */}
         <div className="relative">
-          <Search size={14} className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.colors.text.quaternary)} />
+          <Search
+            size={14}
+            className={cn(
+              "absolute left-3 top-1/2 -translate-y-1/2",
+              ds.colors.text.quaternary,
+            )}
+          />
           <Input
             type="text"
             placeholder="Search PO number, customer..."
@@ -50,7 +62,7 @@ export function POFilters({
             ds.colors.border.default,
             ds.colors.text.primary,
             ds.typography.size.xs,
-            "hover:border-white/20 focus:border-white/20 focus:outline-none"
+            "hover:border-white/20 focus:border-white/20 focus:outline-none",
           )}
         >
           <option value="all">All Locations</option>
@@ -71,7 +83,7 @@ export function POFilters({
             ds.colors.border.default,
             ds.colors.text.primary,
             ds.typography.size.xs,
-            "hover:border-white/20 focus:border-white/20 focus:outline-none"
+            "hover:border-white/20 focus:border-white/20 focus:outline-none",
           )}
         >
           <option value="all">All Status</option>

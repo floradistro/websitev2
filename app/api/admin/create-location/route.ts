@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServiceSupabase } from '@/lib/supabase/client';
+import { NextRequest, NextResponse } from "next/server";
+import { getServiceSupabase } from "@/lib/supabase/client";
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 /**
  * Emergency endpoint to create a default location for a vendor
@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
 
     if (!vendorEmail) {
       return NextResponse.json(
-        { error: 'vendorEmail is required' },
-        { status: 400 }
+        { error: "vendorEmail is required" },
+        { status: 400 },
       );
     }
 
@@ -23,69 +23,69 @@ export async function POST(request: NextRequest) {
 
     // Get vendor
     const { data: vendor, error: vendorError } = await supabase
-      .from('vendors')
-      .select('*')
-      .eq('email', vendorEmail)
+      .from("vendors")
+      .select("*")
+      .eq("email", vendorEmail)
       .single();
 
     if (vendorError || !vendor) {
-      return NextResponse.json(
-        { error: 'Vendor not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
     }
 
     // Check if location already exists
     const { data: existingLocations } = await supabase
-      .from('locations')
-      .select('*')
-      .eq('vendor_id', vendor.id);
+      .from("locations")
+      .select("*")
+      .eq("vendor_id", vendor.id);
 
     if (existingLocations && existingLocations.length > 0) {
       return NextResponse.json({
         success: true,
-        message: 'Location already exists',
-        locations: existingLocations
+        message: "Location already exists",
+        locations: existingLocations,
       });
     }
 
     // Create default location
     const { data: location, error: locationError } = await supabase
-      .from('locations')
+      .from("locations")
       .insert({
         vendor_id: vendor.id,
-        name: 'Main Location',
-        address: '123 Main St',
-        city: 'Charlotte',
-        state: 'NC',
-        zip_code: '28201',
-        phone: '(704) 555-0100',
+        name: "Main Location",
+        address: "123 Main St",
+        city: "Charlotte",
+        state: "NC",
+        zip_code: "28201",
+        phone: "(704) 555-0100",
         is_active: true,
-        pos_enabled: true
+        pos_enabled: true,
       })
       .select()
       .single();
 
     if (locationError) {
-      console.error('Error creating location:', locationError);
+      if (process.env.NODE_ENV === "development") {
+        console.error("Error creating location:", locationError);
+      }
       return NextResponse.json(
-        { error: 'Failed to create location', details: locationError.message },
-        { status: 500 }
+        { error: "Failed to create location", details: locationError.message },
+        { status: 500 },
       );
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Location created successfully',
+      message: "Location created successfully",
       location,
-      note: 'Please log out and log back in to see the location'
+      note: "Please log out and log back in to see the location",
     });
-
   } catch (error: any) {
-    console.error('Create location error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Create location error:", error);
+    }
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
-      { status: 500 }
+      { error: "Internal server error", details: error.message },
+      { status: 500 },
     );
   }
 }

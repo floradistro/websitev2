@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useMemo } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+  useMemo,
+} from "react";
 import axios from "axios";
 
 interface User {
@@ -19,7 +27,12 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
@@ -62,13 +75,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // SECURITY FIX: Session token now stored in HTTP-only cookie (XSS protection)
       // No longer storing session in localStorage
-      const response = await axios.post('/api/auth/login', {
+      const response = await axios.post("/api/auth/login", {
         email,
-        password
+        password,
       });
 
       if (response.data.success && response.data.user) {
-        console.log('✅ Setting user in context:', response.data.user);
+        console.log("✅ Setting user in context:", response.data.user);
         setUser(response.data.user);
         // Save user data to localStorage (but NOT the session token)
         localStorage.setItem("flora-user", JSON.stringify(response.data.user));
@@ -79,35 +92,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      throw new Error(error.response?.data?.error || error.message || "Login failed. Please check your credentials.");
+      throw new Error(
+        error.response?.data?.error ||
+          error.message ||
+          "Login failed. Please check your credentials.",
+      );
     }
   }, []);
 
-  const register = useCallback(async (email: string, password: string, firstName: string, lastName: string) => {
-    try {
-      // Create customer via Supabase API
-      const response = await axios.post('/api/auth/register', {
-        email,
-        password,
-        firstName,
-        lastName
-      });
+  const register = useCallback(
+    async (
+      email: string,
+      password: string,
+      firstName: string,
+      lastName: string,
+    ) => {
+      try {
+        // Create customer via Supabase API
+        const response = await axios.post("/api/auth/register", {
+          email,
+          password,
+          firstName,
+          lastName,
+        });
 
-      if (response.data.success && response.data.user) {
-        setUser(response.data.user);
-      } else {
-        throw new Error(response.data.error || "Registration failed");
+        if (response.data.success && response.data.user) {
+          setUser(response.data.user);
+        } else {
+          throw new Error(response.data.error || "Registration failed");
+        }
+      } catch (error: any) {
+        console.error("Registration error:", error);
+        throw new Error(
+          error.response?.data?.error ||
+            error.message ||
+            "Registration failed. Please try again.",
+        );
       }
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      throw new Error(error.response?.data?.error || error.message || "Registration failed. Please try again.");
-    }
-  }, []);
+    },
+    [],
+  );
 
   const logout = useCallback(async () => {
     try {
       // Call logout API to clear HTTP-only cookie
-      await axios.post('/api/auth/logout').catch(() => {
+      await axios.post("/api/auth/logout").catch(() => {
         // Ignore errors - logout locally anyway
       });
     } finally {
@@ -118,29 +147,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const updateUser = useCallback(async (userData: Partial<User>) => {
-    if (!user) return;
+  const updateUser = useCallback(
+    async (userData: Partial<User>) => {
+      if (!user) return;
 
-    try {
-      // Update customer via Supabase API
-      const response = await axios.put(
-        `/api/auth/update-profile`,
-        {
+      try {
+        // Update customer via Supabase API
+        const response = await axios.put(`/api/auth/update-profile`, {
           userId: user.id,
-          ...userData
-        }
-      );
+          ...userData,
+        });
 
-      if (response.data.success && response.data.user) {
-        setUser(response.data.user);
-      } else {
-        throw new Error(response.data.error || "Failed to update profile");
+        if (response.data.success && response.data.user) {
+          setUser(response.data.user);
+        } else {
+          throw new Error(response.data.error || "Failed to update profile");
+        }
+      } catch (error: any) {
+        console.error("Update user error:", error);
+        throw new Error(
+          error.response?.data?.error ||
+            error.message ||
+            "Failed to update profile.",
+        );
       }
-    } catch (error: any) {
-      console.error("Update user error:", error);
-      throw new Error(error.response?.data?.error || error.message || "Failed to update profile.");
-    }
-  }, [user]);
+    },
+    [user],
+  );
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(
@@ -153,13 +186,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       updateUser,
       isAuthenticated: !!user,
     }),
-    [user, loading, login, register, logout, updateUser]
+    [user, loading, login, register, logout, updateUser],
   );
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 
@@ -170,4 +201,3 @@ export function useAuth() {
   }
   return context;
 }
-
