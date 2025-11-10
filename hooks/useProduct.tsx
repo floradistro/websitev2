@@ -1,8 +1,22 @@
 "use client";
 
 import useSWR from "swr";
+import { logger } from "@/lib/logger";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+  try {
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    logger.error("Fetch failed in useProduct", error, { url });
+    throw error; // Re-throw for SWR to handle
+  }
+};
 
 export function useProduct(productId: string | number) {
   const { data, error, isLoading } = useSWR(`/api/product/${productId}`, fetcher, {
@@ -28,5 +42,15 @@ export function useProduct(productId: string | number) {
 // Prefetch product data
 export function prefetchProduct(productId: string | number) {
   // This will prime the SWR cache
-  fetch(`/api/product/${productId}`);
+  fetch(`/api/product/${productId}`)
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(`Prefetch failed: HTTP ${res.status}`);
+      }
+      return res.json();
+    })
+    .catch((error) => {
+      // Non-critical: Prefetch failure doesn't affect functionality
+      logger.debug("Product prefetch failed", { productId, error });
+    });
 }
