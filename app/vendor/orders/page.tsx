@@ -664,8 +664,11 @@ function OrderDetailModal({
       onClick={handleBackdropClick}
     >
       <div
-        className="bg-black/95 backdrop-blur-xl border border-white/10 rounded-[20px] max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 animate-fadeIn"
+        className="bg-black/95 backdrop-blur-xl border border-white/10 rounded-[20px] max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6"
         onClick={handleContentClick}
+        style={{
+          transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
+        }}
       >
         {/* Header */}
         <div className="flex justify-between items-start mb-6 pb-6 border-b border-white/10">

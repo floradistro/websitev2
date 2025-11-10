@@ -61,7 +61,11 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     // Get unique user IDs to fetch user names
-    const userIds = [...new Set(sessions?.map((s: any) => s.user_id).filter(Boolean))];
+    const userIdsSet = new Set<string>();
+    sessions?.forEach((s: any) => {
+      if (s.user_id) userIdsSet.add(s.user_id);
+    });
+    const userIds = Array.from(userIdsSet);
     let userMap = new Map();
 
     if (userIds.length > 0) {

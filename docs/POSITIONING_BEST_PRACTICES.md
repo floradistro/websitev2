@@ -95,8 +95,9 @@ import { FullScreenContainer } from "@/components/ui/FullScreenContainer";
 
 1. **NEVER** wrap fixed/absolute elements in divs with `overflow-hidden`
 2. **NEVER** use Tailwind `animate-in` classes (they hide after animation)
-3. **NEVER** nest multiple layers of positioning wrappers
-4. **NEVER** use `h-full` on wrappers around fixed/absolute elements
+3. **NEVER** use CSS animation classes that start with `opacity: 0` (like `animate-fadeIn` in globals.css)
+4. **NEVER** nest multiple layers of positioning wrappers
+5. **NEVER** use `h-full` on wrappers around fixed/absolute elements
 
 ## Debugging Checklist
 
@@ -104,9 +105,11 @@ If content is disappearing:
 
 1. Check for parent divs with `overflow-hidden` or `h-full`
 2. Remove Tailwind `animate-in` classes
-3. Verify positioning: `fixed` for overlays, `absolute` for replacements
-4. Ensure parent has `position: relative` if using `absolute`
-5. Check browser devtools to see if element has 0px height
+3. Remove CSS animation classes that start with `opacity: 0` (like `animate-fadeIn`)
+4. Verify positioning: `fixed` for overlays, `absolute` for replacements
+5. Ensure parent has `position: relative` if using `absolute`
+6. Check browser devtools to see if element has 0px height or is invisible
+7. Replace animations with standard CSS `transition` properties
 
 ## Examples from Codebase
 
@@ -130,6 +133,36 @@ If content is disappearing:
 </div>
 ```
 
+### ✅ FIXED: OrderDetailModal (Orders Page)
+
+**Before (broken):**
+```tsx
+<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div className="bg-black/95 ... animate-fadeIn">  {/* animate-fadeIn starts with opacity: 0 */}
+    <ModalContent />
+  </div>
+</div>
+```
+
+**After (working):**
+```tsx
+<div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div
+    className="bg-black/95 ..."
+    style={{
+      transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
+    }}
+  >
+    <ModalContent />
+  </div>
+</div>
+```
+
+**Why it works now:**
+- Removed `animate-fadeIn` which starts with `opacity: 0`
+- Using standard CSS `transition` instead
+- No classes that could hide element
+
 ### ✅ CORRECT: POSQuickView Modal
 
 This modal is implemented correctly:
@@ -145,15 +178,20 @@ This modal is implemented correctly:
 **Why it works:**
 - `fixed inset-0` is NOT wrapped in overflow-hidden
 - Only the content div has overflow-hidden (which is fine)
-- No animate-in classes
+- No animate-in or animate-fadeIn classes
 
 ## Historical Context
 
 This bug affected:
-- **ProductGallery** (vendor/media-library): Fixed by removing wrapper divs with overflow-hidden and h-full
+- **ProductGallery** (vendor/media-library): Fixed by removing wrapper divs with overflow-hidden and h-full, and removing animate-in classes
+- **OrderDetailModal** (vendor/orders): Fixed by removing animate-fadeIn class which starts with opacity: 0
 - **Order expand view**: Verified correct implementation
 
-Total debugging time: ~4 hours (January 2025)
+Total debugging time: ~5 hours (January 2025)
+
+### Affected Components
+1. ProductGallery - Fixed by changing to `absolute inset-0` with `relative flex-1` parent
+2. OrderDetailModal - Fixed by removing `animate-fadeIn` class
 
 ## Additional Resources
 

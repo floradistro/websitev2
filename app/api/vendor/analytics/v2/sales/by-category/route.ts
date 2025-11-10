@@ -67,7 +67,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Get unique product IDs
-    const productIds = [...new Set(orderItems.map((item: any) => item.product_id).filter(Boolean))];
+    const productIdsSet = new Set<string>();
+    orderItems.forEach((item: any) => {
+      if (item.product_id) productIdsSet.add(item.product_id);
+    });
+    const productIds = Array.from(productIdsSet);
 
     // Get products with categories
     const { data: products, error: productsError } = await supabase
