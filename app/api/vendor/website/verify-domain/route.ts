@@ -232,13 +232,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const err = toError(error);
-    if (process.env.NODE_ENV === "development") {
-      logger.error("Error verifying domain:", err);
-    }
+    // Log full error details server-side only
+    logger.error("Domain verification failed", err, {
+      domain: domain || 'unknown',
+      vendorId: vendor_id,
+      operation: 'verify-domain'
+    });
+
+    // Return generic error to client (no internal details)
     return NextResponse.json(
       {
-        error: err.message || "Failed to verify domain",
-        details: String(error),
+        error: "Domain verification failed. Please check your DNS settings and try again.",
+        success: false
       },
       { status: 500 },
     );

@@ -227,14 +227,17 @@ export async function GET(request: NextRequest) {
     if (process.env.NODE_ENV === "development") {
       logger.error("❌ FATAL ERROR in products API:", err);
     }
-    if (process.env.NODE_ENV === "development") {
-      logger.error("Stack:", err.stack);
-    }
+    // Log full error details server-side
+    logger.error("Products fetch failed", err, {
+      stack: err.stack,
+      endpoint: '/api/supabase/products'
+    });
+
+    // Return generic error to client (no internal details)
     return NextResponse.json(
       {
-        error: err.message,
-        details: String(error),
-        stack: err.stack,
+        error: "Failed to fetch products. Please try again.",
+        ...(process.env.NODE_ENV === "development" && { message: err.message })
       },
       { status: 500 },
     );
