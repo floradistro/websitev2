@@ -148,7 +148,7 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         error: "Internal server error",
-        message: error?.message || "Unknown error",
+        message: err.message || "Unknown error",
       },
       { status: 500 },
     );

@@ -117,9 +117,9 @@ export async function POST(request: NextRequest) {
         logger.error("Payment processing error:", err);
       }
       // Check if it's a Dejavoo-specific error
-      const isDeclined = error.isDeclined?.() || error.statusCode !== "0000";
-      const isTerminalError = error.isTerminalError?.();
-      const isTimeout = error.isTimeout?.();
+      const isDeclined = (error as any).isDeclined?.() || (error as any).statusCode !== "0000";
+      const isTerminalError = (error as any).isTerminalError?.();
+      const isTimeout = (error as any).isTimeout?.();
 
       return NextResponse.json(
         {
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
           isDeclined,
           isTerminalError,
           isTimeout,
-          details: error.statusCode ? `Status: ${error.statusCode}` : undefined,
+          details: (error as any).statusCode ? `Status: ${(error as any).statusCode}` : undefined,
         },
         { status: isTerminalError ? 503 : 400 },
       );

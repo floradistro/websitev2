@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error saving profile:", result.error);
       }
-      return NextResponse.json({ success: false, error: result.err.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: result.error.message }, { status: 500 });
     }
 
     return NextResponse.json({

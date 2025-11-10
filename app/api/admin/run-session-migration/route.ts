@@ -87,7 +87,7 @@ COMMENT ON FUNCTION increment_session_counter IS
       {
         success: false,
         error: err.message,
-        details: error.toString(),
+        details: String(error),
       },
       { status: 500 },
     );

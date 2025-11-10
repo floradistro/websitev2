@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         message: err.message || "Failed to create vendor",
-        error: error.toString(),
+        error: String(error),
       },
       { status: 500 },
     );

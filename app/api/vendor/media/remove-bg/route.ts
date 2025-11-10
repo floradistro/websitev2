@@ -105,10 +105,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const err = toError(error);
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Remove.bg error:", error.response?.data || err.message);
+      logger.error("❌ Remove.bg error:", (error as any).response?.data || err.message);
     }
     // Handle remove.bg specific errors
-    if (error.response?.status === 402) {
+    if ((error as any).response?.status === 402) {
       return NextResponse.json(
         {
           error: "API credits exhausted. Please contact support.",
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (error.response?.status === 403) {
+    if ((error as any).response?.status === 403) {
       return NextResponse.json(
         {
           error: "Invalid API key. Please contact support.",
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        error: error.response?.data?.errors?.[0]?.title || err.message,
+        error: (error as any).response?.data?.errors?.[0]?.title || err.message,
       },
       { status: 500 },
     );
@@ -231,8 +231,8 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
       let errorMessage = err.message || "Unknown error";
       let shouldRetry = false;
 
-      if (error.response) {
-        const status = error.response.status;
+      if ((error as any).response) {
+        const status = (error as any).response.status;
 
         // Rate limit error - retry with backoff
         if (status === 429) {
@@ -247,13 +247,13 @@ async function processImage(file: { url: string; name: string }, vendorId: strin
         // Client errors - don't retry
         else {
           errorMessage =
-            error.response?.data?.errors?.[0]?.title ||
-            error.response?.data?.message ||
+            (error as any).response?.data?.errors?.[0]?.title ||
+            (error as any).response?.data?.message ||
             `API Error: ${status}`;
         }
 
         if (process.env.NODE_ENV === "development") {
-          logger.error(`API Response:`, error.response.data);
+          logger.error(`API Response:`, (error as any).response.data);
         }
       } else if ((error as any).code) {
         // Network errors - retry
@@ -370,6 +370,6 @@ export async function PUT(request: NextRequest) {
     if (process.env.NODE_ENV === "development") {
       logger.error("Error:", err);
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: (error as any).message }, { status: 500 });
   }
 }

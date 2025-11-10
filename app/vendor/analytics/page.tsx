@@ -983,7 +983,7 @@ function ProductsTable({ data }: { data: any[] }) {
 // =====================================================
 
 export default function AnalyticsPage() {
-  const { vendorId } = useAppAuth();
+  const { user } = useAppAuth();
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   const [activeTab, setActiveTab] = useState<ReportTab>("sales");
   const [exportModal, setExportModal] = useState<{ isOpen: boolean; reportType: string }>({

@@ -59,6 +59,25 @@ export default function ProductGallery({
     setCurrentIndex(0); // Reset to first image when product changes
   }, [product.id]);
 
+  // Track state changes for debugging
+  useEffect(() => {
+    logger.debug("📊 STATE CHANGE - images:", {
+      imageCount: images.length,
+      imageIds: images.map(img => img.id),
+      imageFiles: images.map(img => img.file_name),
+      timestamp: new Date().toISOString()
+    });
+  }, [images]);
+
+  useEffect(() => {
+    logger.debug("📊 STATE CHANGE - currentIndex:", {
+      currentIndex,
+      totalImages: images.length,
+      currentImage: images[currentIndex]?.file_name || "undefined",
+      timestamp: new Date().toISOString()
+    });
+  }, [currentIndex, images]);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -254,13 +273,27 @@ export default function ProductGallery({
           </div>
         ) : (
           <>
+            {logger.debug("🖼️ RENDERING IMAGE:", {
+              currentImage: currentImage?.file_name,
+              file_url: currentImage?.file_url,
+              id: currentImage?.id,
+              timestamp: new Date().toISOString()
+            })}
             <img
               key={currentImage.id}
               src={currentImage.file_url}
               alt={currentImage.alt_text || currentImage.file_name}
-              className="max-w-full max-h-full object-contain animate-in fade-in zoom-in-95 duration-300"
-              style={{ imageRendering: "-webkit-optimize-contrast" }}
-              onLoad={() => logger.debug("✅ Image loaded successfully")}
+              className="max-w-full max-h-full object-contain"
+              style={{
+                imageRendering: "-webkit-optimize-contrast",
+                display: "block",
+                position: "relative",
+                zIndex: 1
+              }}
+              onLoad={() => logger.debug("✅ Image loaded successfully", {
+                src: currentImage.file_url,
+                timestamp: new Date().toISOString()
+              })}
               onError={(e) => logger.error("❌ Image failed to load:", e)}
             />
 

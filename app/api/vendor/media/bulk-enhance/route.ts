@@ -91,7 +91,7 @@ async function enhanceImage(
       const err = toError(error);
       lastError = error;
 
-      if (error.response?.status === 429 && attempt < retries) {
+      if ((error as any).response?.status === 429 && attempt < retries) {
         continue;
       }
 

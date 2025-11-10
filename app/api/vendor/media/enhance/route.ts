@@ -115,11 +115,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const err = toError(error);
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Enhance error:", error.response?.data || err.message);
+      logger.error("❌ Enhance error:", (error as any).response?.data || err.message);
     }
     return NextResponse.json(
       {
-        error: error.response?.data?.errors?.[0]?.title || err.message,
+        error: (error as any).response?.data?.errors?.[0]?.title || err.message,
       },
       { status: 500 },
     );

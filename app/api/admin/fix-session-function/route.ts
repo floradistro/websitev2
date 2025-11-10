@@ -151,7 +151,7 @@ $function$;
       {
         success: false,
         error: err.message,
-        details: error.toString(),
+        details: String(error),
       },
       { status: 500 },
     );

@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: err.message || "Failed to deploy",
-        details: error.toString(),
+        details: String(error),
       },
       { status: 500 },
     );

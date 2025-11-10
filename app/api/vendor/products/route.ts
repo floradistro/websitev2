@@ -352,7 +352,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     return NextResponse.json(
       {
         error: err.message || "Failed to create product",
-        details: error.toString(),
+        details: String(error),
       },
       { status: 500 },
     );

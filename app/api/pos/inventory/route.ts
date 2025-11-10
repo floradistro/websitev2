@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error fetching inventory:", inventoryResult.error);
       }
-      return NextResponse.json({ error: inventoryResult.err.message }, { status: 500 });
+      return NextResponse.json({ error: inventoryResult.error.message }, { status: 500 });
     }
 
     // Transform data - simplified pricing from embedded pricing_data

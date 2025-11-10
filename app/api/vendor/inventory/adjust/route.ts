@@ -275,7 +275,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: err.message || "Failed to adjust inventory",
-        details: error.toString(),
+        details: String(error),
       },
       { status: 500 },
     );

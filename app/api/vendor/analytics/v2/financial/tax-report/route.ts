@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
 
     orders?.forEach((order) => {
       const locId = order.pickup_location_id || "no-location";
-      const locName = order.locations?.name || "No Location";
+      const locName = (order.locations as any)?.[0]?.name || "No Location";
 
       if (!locationData[locId]) {
         locationData[locId] = {
@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
 
     posTransactions?.forEach((tx) => {
       const locId = tx.location_id || "no-location";
-      const locName = tx.locations?.name || "No Location";
+      const locName = (tx.locations as any)?.[0]?.name || "No Location";
 
       if (!locationData[locId]) {
         locationData[locId] = {

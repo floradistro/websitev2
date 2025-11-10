@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: err.message,
-        details: error.toString(),
+        details: String(error),
       },
       { status: 500 },
     );

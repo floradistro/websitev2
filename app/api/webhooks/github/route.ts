@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: err.message || "Webhook processing failed",
-        details: error.toString(),
+        details: String(error),
       },
       { status: 500 },
     );

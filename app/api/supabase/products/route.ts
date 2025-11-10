@@ -233,7 +233,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: err.message,
-        details: error.toString(),
+        details: String(error),
         stack: err.stack,
       },
       { status: 500 },

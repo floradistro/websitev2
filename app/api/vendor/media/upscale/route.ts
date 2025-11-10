@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const err = toError(error);
     if (process.env.NODE_ENV === "development") {
-      logger.error("❌ Upscale error:", error.response?.data || err.message);
+      logger.error("❌ Upscale error:", (error as any).response?.data || err.message);
     }
     return NextResponse.json(
       {

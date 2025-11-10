@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
         logger.error("Error details:", {
           message: err.message,
           stack: err.stack,
-          response: error.response?.data,
+          response: (error as any).response?.data,
         });
       }
     }
