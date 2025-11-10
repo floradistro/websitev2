@@ -6,11 +6,24 @@ import { logger } from "@/lib/logger";
 import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
 import { toError } from "@/lib/errors";
 
-// Get CORS headers with proper origin (not wildcard when using credentials)
+// Allowed origins for CORS (explicit whitelist for security)
+const ALLOWED_ORIGINS = [
+  'https://yachtclub.vip',
+  'https://www.yachtclub.vip',
+  'http://localhost:3000',
+  'https://localhost:3443',
+];
+
+// Get CORS headers with proper origin validation (no wildcard)
 function getCorsHeaders(request: NextRequest) {
-  const origin = request.headers.get("origin") || "*";
+  const requestOrigin = request.headers.get("origin");
+  // Only allow whitelisted origins, default to first allowed origin if not found
+  const allowedOrigin = requestOrigin && ALLOWED_ORIGINS.includes(requestOrigin)
+    ? requestOrigin
+    : ALLOWED_ORIGINS[0];
+
   return {
-    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Allow-Credentials": "true",
