@@ -331,7 +331,8 @@ export default function ImageEditor({ image, vendorId, onClose, onSave }: ImageE
       }
     } catch (error) {
       console.error("Error removing color:", error);
-      alert("Failed to remove color. This feature requires server-side implementation.");
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      alert(`Failed to remove color: ${errorMessage}\n\nCheck console for details.`);
     } finally {
       setIsProcessing(false);
     }

@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // Get vendor branding
     const { data: vendor, error: vendorError } = await supabase
       .from("vendors")
-      .select("business_name, logo_url, brand_colors, contact_email, contact_phone, address")
+      .select("store_name, logo_url, brand_colors, email, phone, address, contact_name")
       .eq("id", vendorId)
       .single();
 
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     logger.info("Export vendor data:", {
       vendorId,
-      businessName: vendor?.business_name,
+      storeName: vendor?.store_name,
       hasLogo: !!vendor?.logo_url,
       logoUrl: vendor?.logo_url
     });
@@ -367,10 +367,10 @@ function generateCSV(data: any[], title: string): string {
 function generateBrandedPDFHTML(data: any[], title: string, vendor: any, startDate: Date, endDate: Date, locationNames: string[] = []): string {
   const brandColor = vendor?.brand_colors?.primary || "#1a1a1a";
   const logoUrl = vendor?.logo_url || "";
-  const businessName = vendor?.business_name || "Business";
+  const businessName = vendor?.store_name || "Business";
   const address = vendor?.address || "";
-  const email = vendor?.contact_email || "";
-  const phone = vendor?.contact_phone || "";
+  const email = vendor?.email || "";
+  const phone = vendor?.phone || "";
 
   const formatDate = (date: Date) => date.toLocaleDateString("en-US", {
     year: "numeric",

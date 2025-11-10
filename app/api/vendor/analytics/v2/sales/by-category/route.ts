@@ -38,17 +38,28 @@ export async function GET(request: NextRequest) {
           order_date,
           status,
           discount_amount,
-          pickup_location_id
+          pickup_location_id,
+          payment_method
         )
       `,
       )
       .eq("vendor_id", vendorId)
       .gte("orders.order_date", dateRange.start_date)
-      .lte("orders.order_date", dateRange.end_date)
-      .in("orders.status", ["completed", "processing"]);
+      .lte("orders.order_date", dateRange.end_date);
+
+    // Apply refund filter
+    if (filters.include_refunds) {
+      query = query.in("orders.status", ["completed", "processing", "refunded"]);
+    } else {
+      query = query.in("orders.status", ["completed", "processing"]);
+    }
 
     if (filters.location_ids && filters.location_ids.length > 0) {
       query = query.in("orders.pickup_location_id", filters.location_ids);
+    }
+
+    if (filters.payment_methods && filters.payment_methods.length > 0) {
+      query = query.in("orders.payment_method", filters.payment_methods);
     }
 
     const { data: orderItems, error: itemsError } = await query;
@@ -95,10 +106,24 @@ export async function GET(request: NextRequest) {
 
     // Group by category
     const categoryData = orderItems.reduce((acc: any, item: any) => {
+      const orderDiscount = parseFloat(item.orders?.discount_amount || "0");
+
+      // Skip items from orders with discounts if exclude_discounts is true
+      if (!filters.include_discounts && orderDiscount > 0) {
+        return acc;
+      }
+
       const product = productMap.get(item.product_id);
       const category = product?.categories;
       const categoryId = category?.id || "uncategorized";
       const categoryName = category?.name || "Uncategorized";
+
+      // Apply category filter
+      if (filters.category_ids && filters.category_ids.length > 0) {
+        if (!filters.category_ids.includes(categoryId)) {
+          return acc;
+        }
+      }
 
       if (!acc[categoryId]) {
         acc[categoryId] = {

@@ -24,6 +24,9 @@ export interface AnalyticsFilters {
   employee_ids?: string[];
   category_ids?: string[];
   product_ids?: string[];
+  payment_methods?: string[];
+  include_refunds?: boolean;
+  include_discounts?: boolean;
 }
 
 export interface QueryOptions {
@@ -143,6 +146,17 @@ export function parseFilters(params: URLSearchParams): AnalyticsFilters {
   if (product_ids) {
     filters.product_ids = product_ids.split(",");
   }
+
+  const payment_methods = params.get("payment_methods");
+  if (payment_methods) {
+    filters.payment_methods = payment_methods.split(",");
+  }
+
+  const include_refunds = params.get("include_refunds");
+  filters.include_refunds = include_refunds !== "false"; // Default to true
+
+  const include_discounts = params.get("include_discounts");
+  filters.include_discounts = include_discounts !== "false"; // Default to true
 
   return filters;
 }

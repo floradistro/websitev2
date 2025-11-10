@@ -38,14 +38,21 @@ export async function GET(request: NextRequest) {
         discount_amount,
         cost_of_goods,
         pickup_location_id,
+        status,
         pos_transactions!inner(user_id, payment_method)
       `,
       )
       .eq("vendor_id", vendorId)
       .gte("order_date", dateRange.start_date)
       .lte("order_date", dateRange.end_date)
-      .in("status", ["completed", "processing"])
       .not("pos_transactions.user_id", "is", null);
+
+    // Apply refund filter
+    if (filters.include_refunds) {
+      ordersQuery = ordersQuery.in("status", ["completed", "processing", "refunded"]);
+    } else {
+      ordersQuery = ordersQuery.in("status", ["completed", "processing"]);
+    }
 
     if (filters.location_ids && filters.location_ids.length > 0) {
       ordersQuery = ordersQuery.in("pickup_location_id", filters.location_ids);
@@ -53,6 +60,10 @@ export async function GET(request: NextRequest) {
 
     if (filters.employee_ids && filters.employee_ids.length > 0) {
       ordersQuery = ordersQuery.in("pos_transactions.user_id", filters.employee_ids);
+    }
+
+    if (filters.payment_methods && filters.payment_methods.length > 0) {
+      ordersQuery = ordersQuery.in("pos_transactions.payment_method", filters.payment_methods);
     }
 
     const { data: orders, error: ordersError } = await ordersQuery;
@@ -69,15 +80,22 @@ export async function GET(request: NextRequest) {
         discount_amount,
         tip_amount,
         cost_of_goods,
-        payment_method
+        payment_method,
+        payment_status
       `,
       )
       .eq("vendor_id", vendorId)
       .gte("transaction_date", dateRange.start_date)
       .lte("transaction_date", dateRange.end_date)
-      .eq("payment_status", "completed")
       .not("user_id", "is", null)
       .is("order_id", null); // Only standalone POS transactions
+
+    // Apply refund filter
+    if (filters.include_refunds) {
+      posQuery = posQuery.in("payment_status", ["completed", "refunded"]);
+    } else {
+      posQuery = posQuery.eq("payment_status", "completed");
+    }
 
     if (filters.location_ids && filters.location_ids.length > 0) {
       posQuery = posQuery.in("location_id", filters.location_ids);
@@ -85,6 +103,10 @@ export async function GET(request: NextRequest) {
 
     if (filters.employee_ids && filters.employee_ids.length > 0) {
       posQuery = posQuery.in("user_id", filters.employee_ids);
+    }
+
+    if (filters.payment_methods && filters.payment_methods.length > 0) {
+      posQuery = posQuery.in("payment_method", filters.payment_methods);
     }
 
     const { data: posTransactions, error: posError } = await posQuery;
@@ -147,7 +169,13 @@ export async function GET(request: NextRequest) {
       })),
     ];
 
-    const data = allData.filter((d) => d.user_id); // Remove any without user_id
+    // Apply discount filter
+    const data = allData
+      .filter((d) => d.user_id) // Remove any without user_id
+      .filter((d) => {
+        const discount = parseFloat(d.discount_amount || "0");
+        return filters.include_discounts || discount === 0;
+      });
 
     if (!data || data.length === 0) {
       return NextResponse.json({

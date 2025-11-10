@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     const filePath = `${vendorId}/media/${newFileName}`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("vendor_media")
+      .from("vendor-product-images")
       .upload(filePath, processedImage, {
         contentType: "image/png",
         upsert: false,
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     // Get public URL
     const {
       data: { publicUrl },
-    } = supabase.storage.from("vendor_media").getPublicUrl(filePath);
+    } = supabase.storage.from("vendor-product-images").getPublicUrl(filePath);
 
     logger.info("Successfully applied mask to image", {
       originalUrl: imageUrl,

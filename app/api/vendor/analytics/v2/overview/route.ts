@@ -26,14 +26,24 @@ export async function GET(request: NextRequest) {
     // Get orders data
     let ordersQuery = supabase
       .from("orders")
-      .select("id, order_date, total_amount, subtotal, tax_amount, discount_amount, status")
+      .select("id, order_date, total_amount, subtotal, tax_amount, discount_amount, status, payment_method")
       .eq("vendor_id", vendorId)
       .gte("order_date", dateRange.start_date)
-      .lte("order_date", dateRange.end_date)
-      .in("status", ["completed", "processing"]);
+      .lte("order_date", dateRange.end_date);
+
+    // Apply status filter (exclude refunded if specified)
+    if (filters.include_refunds) {
+      ordersQuery = ordersQuery.in("status", ["completed", "processing", "refunded"]);
+    } else {
+      ordersQuery = ordersQuery.in("status", ["completed", "processing"]);
+    }
 
     if (filters.location_ids && filters.location_ids.length > 0) {
       ordersQuery = ordersQuery.in("pickup_location_id", filters.location_ids);
+    }
+
+    if (filters.payment_methods && filters.payment_methods.length > 0) {
+      ordersQuery = ordersQuery.in("payment_method", filters.payment_methods);
     }
 
     const { data: orders, error: ordersError } = await ordersQuery;
@@ -42,32 +52,70 @@ export async function GET(request: NextRequest) {
     // Get POS transactions data (exclude those already counted in orders)
     let posQuery = supabase
       .from("pos_transactions")
-      .select("id, transaction_date, total_amount, subtotal, tax_amount, payment_status")
+      .select("id, transaction_date, total_amount, subtotal, tax_amount, payment_status, payment_method, discount_amount")
       .eq("vendor_id", vendorId)
       .gte("transaction_date", dateRange.start_date)
       .lte("transaction_date", dateRange.end_date)
-      .eq("payment_status", "completed")
       .is("order_id", null); // Exclude POS transactions linked to orders
+
+    // Apply refund filter
+    if (filters.include_refunds) {
+      posQuery = posQuery.in("payment_status", ["completed", "refunded"]);
+    } else {
+      posQuery = posQuery.eq("payment_status", "completed");
+    }
 
     if (filters.location_ids && filters.location_ids.length > 0) {
       posQuery = posQuery.in("location_id", filters.location_ids);
     }
 
+    if (filters.payment_methods && filters.payment_methods.length > 0) {
+      posQuery = posQuery.in("payment_method", filters.payment_methods);
+    }
+
     const { data: posTransactions, error: posError } = await posQuery;
     if (posError) throw posError;
 
-    // Calculate totals
-    const orderSales = orders?.reduce((sum, o) => sum + parseFloat(o.total_amount || "0"), 0) || 0;
-    const posSales = posTransactions?.reduce((sum, t) => sum + parseFloat(t.total_amount || "0"), 0) || 0;
+    // Calculate totals (apply discount filter)
+    let orderSales = 0;
+    let orderSubtotal = 0;
+    let orderDiscounts = 0;
+
+    orders?.forEach(o => {
+      const amount = parseFloat(o.total_amount || "0");
+      const subtotal = parseFloat(o.subtotal || "0");
+      const discount = parseFloat(o.discount_amount || "0");
+
+      if (filters.include_discounts || discount === 0) {
+        orderSales += amount;
+        orderSubtotal += subtotal;
+        orderDiscounts += discount;
+      }
+    });
+
+    let posSales = 0;
+    let posSubtotal = 0;
+    let posDiscounts = 0;
+
+    posTransactions?.forEach(t => {
+      const amount = parseFloat(t.total_amount || "0");
+      const subtotal = parseFloat(t.subtotal || "0");
+      const discount = parseFloat(t.discount_amount || "0");
+
+      if (filters.include_discounts || discount === 0) {
+        posSales += amount;
+        posSubtotal += subtotal;
+        posDiscounts += discount;
+      }
+    });
+
     const totalSales = orderSales + posSales;
+    const totalSubtotal = orderSubtotal + posSubtotal;
+    const totalDiscounts = orderDiscounts + posDiscounts;
 
     const orderCount = orders?.length || 0;
     const posCount = posTransactions?.length || 0;
     const transactionCount = orderCount + posCount;
-
-    const orderSubtotal = orders?.reduce((sum, o) => sum + parseFloat(o.subtotal || "0"), 0) || 0;
-    const posSubtotal = posTransactions?.reduce((sum, t) => sum + parseFloat(t.subtotal || "0"), 0) || 0;
-    const totalSubtotal = orderSubtotal + posSubtotal;
 
     const avgTransaction = transactionCount > 0 ? totalSales / transactionCount : 0;
 
