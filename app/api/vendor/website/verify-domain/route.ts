@@ -73,7 +73,10 @@ export async function POST(request: NextRequest) {
       if (flatRecords.includes(domainRecord.verification_token)) {
         verificationResults.txtRecord = true;
       }
-    } catch (error) {}
+    } catch (error) {
+      // DNS lookup failure is expected if record not set yet
+      logger.debug("TXT record verification failed", { domain, error });
+    }
 
     // Check A record (points to Vercel)
     try {
@@ -83,7 +86,10 @@ export async function POST(request: NextRequest) {
       if (aRecords.includes("76.76.21.21")) {
         verificationResults.aRecord = true;
       }
-    } catch (error) {}
+    } catch (error) {
+      // DNS lookup failure is expected if record not set yet
+      logger.debug("A record verification failed", { domain, error });
+    }
 
     // Check CNAME record for www subdomain (optional but recommended)
     try {
