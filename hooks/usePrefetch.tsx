@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 // Prefetch route and data on hover
 export function usePrefetch() {
@@ -32,20 +32,35 @@ export function usePrefetch() {
 // Hook for link prefetching with hover intent
 export function useLinkPrefetch(href: string) {
   const { prefetchRoute } = usePrefetch();
-  let timeoutId: NodeJS.Timeout;
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = useCallback(() => {
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     // Add small delay to avoid prefetching accidental hovers
-    timeoutId = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       prefetchRoute(href);
     }, 50); // 50ms delay
-  };
+  }, [href, prefetchRoute]);
 
-  const handleMouseLeave = () => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+  const handleMouseLeave = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
-  };
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     onMouseEnter: handleMouseEnter,
