@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireCustomer } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -14,7 +15,13 @@ const getBaseUrl = () => {
 };
 
 export async function GET(request: NextRequest) {
-  try {
+  
+  // SECURITY: Require customer authentication
+  const authResult = await requireCustomer(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+try {
     const searchParams = request.nextUrl.searchParams;
     const customerId = searchParams.get("customer");
 

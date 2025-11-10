@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireCustomer } from "@/lib/auth/middleware";
 import { createClient } from "@supabase/supabase-js";
 import { walletPassGenerator } from "@/lib/wallet/pass-generator";
 import { logger } from "@/lib/logger";
@@ -18,7 +19,13 @@ const supabase = createClient(
  * Generate and download Apple Wallet pass for customer
  */
 export async function GET(request: NextRequest) {
-  try {
+  
+  // SECURITY: Require customer authentication
+  const authResult = await requireCustomer(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+try {
     const searchParams = request.nextUrl.searchParams;
     const customerId = searchParams.get("customer_id");
     const vendorId = searchParams.get("vendor_id");

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireCustomer } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -14,6 +15,12 @@ const getBaseUrl = () => {
 };
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  // SECURITY: Require customer authentication
+  const authResult = await requireCustomer(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { id } = await params;
 
@@ -36,6 +43,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  // SECURITY: Require customer authentication
+  const authResult = await requireCustomer(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
