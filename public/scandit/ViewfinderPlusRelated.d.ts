@@ -69,9 +69,7 @@ interface AimerViewfinderJSON extends ViewfinderJSON {
   dotColor: ColorJSON;
 }
 interface PrivateRectangularViewfinderAnimation {
-  fromJSON: (
-    json: RectangularViewfinderAnimationJSON,
-  ) => RectangularViewfinderAnimation;
+  fromJSON: (json: RectangularViewfinderAnimationJSON) => RectangularViewfinderAnimation;
 }
 declare class RectangularViewfinderAnimation
   implements Serializable<RectangularViewfinderAnimationJSON>

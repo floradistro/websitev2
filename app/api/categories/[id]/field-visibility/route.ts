@@ -6,20 +6,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+import { logger } from "@/lib/logger";
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: categoryId } = await params;
     const body = await request.json();
     const { fieldSlug, config } = body;
 
     if (!fieldSlug) {
-      return NextResponse.json(
-        { error: "Field slug is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Field slug is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -53,7 +48,7 @@ export async function PUT(
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Field visibility update error:", error);
+      logger.error("Field visibility update error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Failed to update field visibility" },

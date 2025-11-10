@@ -188,9 +188,7 @@ export function useBulkImportForm({
    * AI-generated product data indexed by product name
    * Example: { "Blue Dream": { strain_type: "Hybrid", lineage: "...", ... } }
    */
-  const [bulkEnrichedData, setBulkEnrichedData] = useState<
-    Record<string, EnrichedData>
-  >({});
+  const [bulkEnrichedData, setBulkEnrichedData] = useState<Record<string, EnrichedData>>({});
 
   /**
    * Loading state for AI enrichment process
@@ -222,9 +220,7 @@ export function useBulkImportForm({
   /**
    * Available pricing templates for vendor
    */
-  const [availableTemplates, setAvailableTemplates] = useState<
-    PricingTemplate[]
-  >([]);
+  const [availableTemplates, setAvailableTemplates] = useState<PricingTemplate[]>([]);
 
   /**
    * Selected pricing template ID for bulk products
@@ -252,9 +248,7 @@ export function useBulkImportForm({
    * Returns null if no products or invalid index
    */
   const currentProduct =
-    bulkProducts.length > 0 &&
-    currentReviewIndex >= 0 &&
-    currentReviewIndex < bulkProducts.length
+    bulkProducts.length > 0 && currentReviewIndex >= 0 && currentReviewIndex < bulkProducts.length
       ? bulkProducts[currentReviewIndex]
       : null;
 
@@ -267,9 +261,7 @@ export function useBulkImportForm({
    * Stays on last product if already at end
    */
   const goToNextProduct = () => {
-    setCurrentReviewIndex((prev) =>
-      Math.min(bulkProducts.length - 1, prev + 1),
-    );
+    setCurrentReviewIndex((prev) => Math.min(bulkProducts.length - 1, prev + 1));
   };
 
   /**
@@ -304,9 +296,7 @@ export function useBulkImportForm({
       return;
     }
 
-    const template = availableTemplates.find(
-      (t) => t.id === selectedBulkTemplateId,
-    );
+    const template = availableTemplates.find((t) => t.id === selectedBulkTemplateId);
     if (!template) {
       showNotification({
         type: "error",
@@ -430,8 +420,7 @@ export function useBulkImportForm({
       }
 
       // Call streaming AI API
-      const categoryName =
-        categories.find((c) => c.id === bulkCategory)?.name || "";
+      const categoryName = categories.find((c) => c.id === bulkCategory)?.name || "";
       const response = await fetch("/api/ai/bulk-autofill-stream", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -459,10 +448,7 @@ export function useBulkImportForm({
       // Process streaming response
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
-      if (!reader)
-        throw new Error(
-          "Could not establish streaming connection. Please try again.",
-        );
+      if (!reader) throw new Error("Could not establish streaming connection. Please try again.");
 
       let buffer = "";
       let allResults: BulkAIResult[] = [];
@@ -490,8 +476,7 @@ export function useBulkImportForm({
       // Process AI results
       for (const result of allResults) {
         const hasData =
-          result.lineage ||
-          (result.terpene_profile && result.terpene_profile.length > 0);
+          result.lineage || (result.terpene_profile && result.terpene_profile.length > 0);
         if (hasData) {
           enrichedData[result.product_name] = {
             strain_type: result.strain_type,
@@ -512,9 +497,7 @@ export function useBulkImportForm({
             strain_type: aiData.strain_type || "",
             lineage: aiData.lineage || "",
             nose: Array.isArray(aiData.nose) ? aiData.nose.join(", ") : "",
-            effects: Array.isArray(aiData.effects)
-              ? aiData.effects.join(", ")
-              : "",
+            effects: Array.isArray(aiData.effects) ? aiData.effects.join(", ") : "",
             terpene_profile: Array.isArray(aiData.terpene_profile)
               ? aiData.terpene_profile.join(", ")
               : "",
@@ -551,8 +534,7 @@ export function useBulkImportForm({
         });
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unexpected error occurred";
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       showNotification({
         type: "error",
         title: "❌ AI Enrichment Failed",
@@ -641,9 +623,7 @@ export function useBulkImportForm({
         });
         try {
           const enrichedData = bulkEnrichedData[product.name] || {};
-          const description =
-            enrichedData.description ||
-            `Bulk imported product: ${product.name}`;
+          const description = enrichedData.description || `Bulk imported product: ${product.name}`;
 
           // Build product data object
           const productData: ProductSubmissionData = {
@@ -671,17 +651,13 @@ export function useBulkImportForm({
           }
 
           // Submit product to API
-          const response = await axios.post(
-            "/api/vendor/products",
-            productData,
-            {
-              headers: {
-                "x-vendor-id": vendorId || "",
-                "Content-Type": "application/json",
-              },
-              withCredentials: true, // Send HTTP-only auth cookie
+          const response = await axios.post("/api/vendor/products", productData, {
+            headers: {
+              "x-vendor-id": vendorId || "",
+              "Content-Type": "application/json",
             },
-          );
+            withCredentials: true, // Send HTTP-only auth cookie
+          });
 
           if (response.data.success) {
             successCount++;
@@ -695,8 +671,7 @@ export function useBulkImportForm({
           if (failCount === 1) {
             const axiosError = err as AxiosError<APIErrorResponse>;
             const errorData = axiosError.response?.data;
-            let errorMessage =
-              "Validation failed. Please check product data and try again.";
+            let errorMessage = "Validation failed. Please check product data and try again.";
 
             if (errorData?.details && Array.isArray(errorData.details)) {
               // Format validation errors with better structure
@@ -756,8 +731,7 @@ export function useBulkImportForm({
         setTimeout(() => router.push("/vendor/products"), 2000);
       }
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
       showNotification({
         type: "error",
         title: "❌ Import Failed",

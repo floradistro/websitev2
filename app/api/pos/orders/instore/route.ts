@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -11,10 +12,7 @@ export async function GET(request: NextRequest) {
     const locationId = searchParams.get("locationId");
 
     if (!locationId) {
-      return NextResponse.json(
-        { error: "Missing locationId parameter" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing locationId parameter" }, { status: 400 });
     }
 
     // Get start of today in local timezone
@@ -65,15 +63,14 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching in-store orders:", error);
+        logger.error("❌ Error fetching in-store orders:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // Filter to only POS sales (exclude online pickup orders that were fulfilled)
     const posOrders = (data || []).filter(
-      (order: any) =>
-        order.metadata?.pos_sale === true || order.metadata?.walk_in === true,
+      (order: any) => order.metadata?.pos_sale === true || order.metadata?.walk_in === true,
     );
 
     // Debug: Log first order to see structure
@@ -83,7 +80,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ orders: posOrders });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in in-store orders endpoint:", error);
+      logger.error("Error in in-store orders endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

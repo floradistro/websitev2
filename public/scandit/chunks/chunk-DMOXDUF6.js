@@ -21,14 +21,12 @@ var d = {
       this.drawPerformanceFPSCounter = 0;
       this.lastDrawPerformanceFPSCounter = 0;
       ((this.performanceCanvasLayer = document.createElement("canvas")),
-        (r = e.parentElement) == null ||
-          r.insertBefore(this.performanceCanvasLayer, e));
+        (r = e.parentElement) == null || r.insertBefore(this.performanceCanvasLayer, e));
     }
     get performanceLayerContext() {
       if (
         !this._performanceLayerContext &&
-        ((this._performanceLayerContext =
-          this.performanceCanvasLayer.getContext("2d")),
+        ((this._performanceLayerContext = this.performanceCanvasLayer.getContext("2d")),
         !this._performanceLayerContext)
       )
         throw new TypeError("CanvasRenderingContext cannot be retrieved.");
@@ -54,8 +52,7 @@ var d = {
           "Drawing performance monitoring enabled, FPS will be drawn into canvas",
         ),
         (this.drawPerformanceTimer = setInterval(() => {
-          ((this.lastDrawPerformanceFPSCounter =
-            this.drawPerformanceFPSCounter),
+          ((this.lastDrawPerformanceFPSCounter = this.drawPerformanceFPSCounter),
             (this.drawPerformanceFPSCounter = 0));
         }, 1e3))),
         this.drawPerformanceFPSCounter++,
@@ -82,12 +79,7 @@ var d = {
         ((n = Math.max(this.performanceLayerContext.measureText(f).width, n)),
           i.push([f, t, t + r * s * l++]));
       }
-      this.performanceLayerContext.clearRect(
-        t,
-        t - r,
-        n,
-        Object.values(e).length * r * s,
-      );
+      this.performanceLayerContext.clearRect(t, t - r, n, Object.values(e).length * r * s);
       for (let a of i)
         (this.performanceLayerContext.fillText(...a),
           this.performanceLayerContext.strokeText(...a));

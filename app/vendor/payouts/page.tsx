@@ -1,16 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  DollarSign,
-  Calendar,
-  CheckCircle,
-  Clock,
-  Download,
-  TrendingUp,
-} from "lucide-react";
+import { DollarSign, Calendar, CheckCircle, Clock, Download, TrendingUp } from "lucide-react";
 import { getVendorPayouts } from "@/lib/supabase-api";
 
+import { logger } from "@/lib/logger";
 interface Payout {
   id: number;
   payoutNumber: string;
@@ -50,7 +44,7 @@ export default function VendorPayouts() {
         setLoading(false);
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error loading payouts:", error);
+          logger.error("Error loading payouts:", error);
         }
         setPayouts([]);
         setLoading(false);
@@ -101,8 +95,7 @@ export default function VendorPayouts() {
   const totalPaid = payouts
     .filter((p) => p.status === "completed")
     .reduce((sum, p) => sum + p.netEarnings, 0);
-  const avgPayout =
-    totalPaid / payouts.filter((p) => p.status === "completed").length || 0;
+  const avgPayout = totalPaid / payouts.filter((p) => p.status === "completed").length || 0;
 
   return (
     <div className="w-full px-4 lg:px-0">
@@ -128,9 +121,7 @@ export default function VendorPayouts() {
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">
-                Pending Payout
-              </div>
+              <div className="text-white/60 text-xs uppercase tracking-wider">Pending Payout</div>
               <Clock size={20} className="text-white/40" />
             </div>
             <div className="text-3xl font-light text-white mb-1">
@@ -144,14 +135,10 @@ export default function VendorPayouts() {
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">
-                Total Paid Out
-              </div>
+              <div className="text-white/60 text-xs uppercase tracking-wider">Total Paid Out</div>
               <DollarSign size={20} className="text-white/40" />
             </div>
-            <div className="text-3xl font-light text-white mb-1">
-              ${totalPaid.toLocaleString()}
-            </div>
+            <div className="text-3xl font-light text-white mb-1">${totalPaid.toLocaleString()}</div>
             <div className="text-white/40 text-xs">All time earnings</div>
           </div>
         </div>
@@ -160,14 +147,10 @@ export default function VendorPayouts() {
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">
-                Average Payout
-              </div>
+              <div className="text-white/60 text-xs uppercase tracking-wider">Average Payout</div>
               <TrendingUp size={20} className="text-white/40" />
             </div>
-            <div className="text-3xl font-light text-white mb-1">
-              ${avgPayout.toLocaleString()}
-            </div>
+            <div className="text-3xl font-light text-white mb-1">${avgPayout.toLocaleString()}</div>
             <div className="text-white/40 text-xs">Per payment period</div>
           </div>
         </div>
@@ -176,9 +159,7 @@ export default function VendorPayouts() {
       {/* Payout Table */}
       {loading ? (
         <div className="bg-black lg:border border-white/5 p-12">
-          <div className="text-center text-white/60">
-            Loading payout history...
-          </div>
+          <div className="text-center text-white/60">Loading payout history...</div>
         </div>
       ) : (
         <>
@@ -188,18 +169,11 @@ export default function VendorPayouts() {
             style={{ animation: "fadeInUp 0.6s ease-out 0.2s both" }}
           >
             {payouts.map((payout) => (
-              <div
-                key={payout.id}
-                className="px-4 py-4 active:bg-white/5 transition-all bg-black"
-              >
+              <div key={payout.id} className="px-4 py-4 active:bg-white/5 transition-all bg-black">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <div className="text-white text-sm font-medium mb-1">
-                      {payout.period}
-                    </div>
-                    <div className="text-white/40 text-xs font-mono">
-                      {payout.payoutNumber}
-                    </div>
+                    <div className="text-white text-sm font-medium mb-1">{payout.period}</div>
+                    <div className="text-white/40 text-xs font-mono">{payout.payoutNumber}</div>
                   </div>
                   {getStatusBadge(payout.status)}
                 </div>
@@ -212,24 +186,18 @@ export default function VendorPayouts() {
                   </div>
                   <div>
                     <div className="text-white/40 mb-1">Commission</div>
-                    <div className="text-red-500/80">
-                      -${payout.commission.toLocaleString()}
-                    </div>
+                    <div className="text-red-500/80">-${payout.commission.toLocaleString()}</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t border-white/5">
                   <div>
-                    <div className="text-white/40 text-xs mb-1">
-                      Net Earnings
-                    </div>
+                    <div className="text-white/40 text-xs mb-1">Net Earnings</div>
                     <div className="text-white font-medium text-lg">
                       ${payout.netEarnings.toLocaleString()}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-white/40 text-xs mb-1">
-                      Payout Date
-                    </div>
+                    <div className="text-white/40 text-xs mb-1">Payout Date</div>
                     <div className="text-white/60 text-xs">
                       {new Date(payout.payoutDate).toLocaleDateString()}
                     </div>
@@ -275,21 +243,14 @@ export default function VendorPayouts() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {payouts.map((payout) => (
-                  <tr
-                    key={payout.id}
-                    className="hover:bg-white/[0.02] transition-all"
-                  >
+                  <tr key={payout.id} className="hover:bg-white/[0.02] transition-all">
                     <td className="p-4">
-                      <span className="text-white font-mono text-sm">
-                        {payout.payoutNumber}
-                      </span>
+                      <span className="text-white font-mono text-sm">{payout.payoutNumber}</span>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <Calendar size={14} className="text-white/40" />
-                        <span className="text-white/60 text-sm">
-                          {payout.period}
-                        </span>
+                        <span className="text-white/60 text-sm">{payout.period}</span>
                       </div>
                     </td>
                     <td className="p-4">
@@ -342,10 +303,9 @@ export default function VendorPayouts() {
               Payout Information
             </div>
             <div className="text-white/60 text-xs leading-relaxed">
-              Payouts are processed on the 5th of each month for the previous
-              month's sales. Commission is 15% of gross revenue. Earnings are
-              deposited directly to your bank account on file. Allow 2-3
-              business days for funds to appear.
+              Payouts are processed on the 5th of each month for the previous month's sales.
+              Commission is 15% of gross revenue. Earnings are deposited directly to your bank
+              account on file. Allow 2-3 business days for funds to appear.
             </div>
           </div>
         </div>

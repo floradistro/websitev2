@@ -1,8 +1,8 @@
 import { Octokit } from "@octokit/rest";
 
+import { logger } from "@/lib/logger";
 const TEMPLATE_OWNER = process.env.GITHUB_TEMPLATE_ORG || "floradistro";
-const TEMPLATE_REPO =
-  process.env.GITHUB_TEMPLATE_REPO || "cannabis-storefront-template";
+const TEMPLATE_REPO = process.env.GITHUB_TEMPLATE_REPO || "cannabis-storefront-template";
 
 /**
  * Create Octokit instance with vendor's access token
@@ -22,13 +22,7 @@ export interface CreateRepoOptions {
 }
 
 export async function createRepositoryFromTemplate(options: CreateRepoOptions) {
-  const {
-    vendorAccessToken,
-    vendorUsername,
-    name,
-    description,
-    isPrivate = true,
-  } = options;
+  const { vendorAccessToken, vendorUsername, name, description, isPrivate = true } = options;
 
   try {
     const octokit = getVendorOctokit(vendorAccessToken);
@@ -65,7 +59,7 @@ export async function createRepositoryFromTemplate(options: CreateRepoOptions) {
     }
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error creating GitHub repo:", error);
+      logger.error("Error creating GitHub repo:", error);
     }
     throw new Error(`Failed to create repository: ${error.message}`);
   }
@@ -82,15 +76,7 @@ export interface CommitFileOptions {
 }
 
 export async function commitFile(options: CommitFileOptions) {
-  const {
-    vendorAccessToken,
-    owner,
-    repo,
-    path,
-    content,
-    message,
-    branch = "main",
-  } = options;
+  const { vendorAccessToken, owner, repo, path, content, message, branch = "main" } = options;
 
   try {
     const octokit = getVendorOctokit(vendorAccessToken);
@@ -126,7 +112,7 @@ export async function commitFile(options: CommitFileOptions) {
     return data;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error committing file:", error);
+      logger.error("Error committing file:", error);
     }
     throw new Error(`Failed to commit file: ${error.message}`);
   }
@@ -205,7 +191,7 @@ export async function commitMultipleFiles(
     return newCommit;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error committing multiple files:", error);
+      logger.error("Error committing multiple files:", error);
     }
     throw new Error(`Failed to commit files: ${error.message}`);
   }
@@ -230,7 +216,7 @@ export async function getRepositoryFiles(
     return Array.isArray(data) ? data : [data];
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error getting repository files:", error);
+      logger.error("Error getting repository files:", error);
     }
     throw new Error(`Failed to get files: ${error.message}`);
   }
@@ -260,7 +246,7 @@ export async function getFileContent(
     return null;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error getting file content:", error);
+      logger.error("Error getting file content:", error);
     }
     return null;
   }

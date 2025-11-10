@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * POST /api/vendor/website/setup-domain
  * Zero-friction domain setup
@@ -24,19 +25,13 @@ export async function POST(request: NextRequest) {
     const { domain } = await request.json();
 
     if (!domain) {
-      return NextResponse.json(
-        { error: "Domain is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Domain is required" }, { status: 400 });
     }
 
     // Validate domain format
     const domainRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;
     if (!domainRegex.test(domain)) {
-      return NextResponse.json(
-        { error: "Invalid domain format" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid domain format" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -92,12 +87,9 @@ export async function POST(request: NextRequest) {
 
     if (domainError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error saving domain:", domainError);
+        logger.error("Error saving domain:", domainError);
       }
-      return NextResponse.json(
-        { error: "Failed to save domain" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to save domain" }, { status: 500 });
     }
 
     // Return DNS instructions
@@ -158,7 +150,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error setting up domain:", error);
+      logger.error("Error setting up domain:", error);
     }
     return NextResponse.json(
       {
@@ -198,7 +190,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error getting domains:", error);
+      logger.error("Error getting domains:", error);
     }
     return NextResponse.json(
       {

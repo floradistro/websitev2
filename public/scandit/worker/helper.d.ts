@@ -15,10 +15,7 @@ declare function instantiateWebAssembly({
   wasmURI: string;
   expectedHash: string;
   verifyResponseHash: boolean;
-  successCallback: (
-    instance: WebAssembly.Instance,
-    wasmModule: WebAssembly.Module,
-  ) => void;
+  successCallback: (instance: WebAssembly.Instance, wasmModule: WebAssembly.Module) => void;
   progressCallback?: (info: ProgressInfo) => void;
   errorCallback?: (error: Error) => void;
   referredOrigin?: string;

@@ -221,10 +221,7 @@ export function FieldLibraryPanel({
     {} as Record<string, any[]>,
   );
 
-  const categories = [
-    "all",
-    ...Array.from(new Set(FIELD_TYPE_LIBRARY.map((f) => f.category))),
-  ];
+  const categories = ["all", ...Array.from(new Set(FIELD_TYPE_LIBRARY.map((f) => f.category)))];
   const filteredLibrary =
     selectedCategory === "all"
       ? FIELD_TYPE_LIBRARY
@@ -263,9 +260,7 @@ export function FieldLibraryPanel({
             {customFields.length === 0 ? (
               <div className="text-center py-12">
                 <Sparkles className="mx-auto mb-3 text-white/20" size={32} />
-                <p className="text-white/40 text-xs mb-2">
-                  No custom fields yet
-                </p>
+                <p className="text-white/40 text-xs mb-2">No custom fields yet</p>
                 <p className="text-white/30 text-[10px] leading-relaxed mb-4">
                   Browse the Field Library to add custom fields
                 </p>
@@ -278,67 +273,63 @@ export function FieldLibraryPanel({
               </div>
             ) : (
               <div className="space-y-3">
-                {Object.entries(fieldsBySection).map(
-                  ([sectionKey, fields]: [string, any]) => (
-                    <div key={sectionKey}>
-                      <div className="text-[#858585] text-[10px] uppercase tracking-wider mb-2 font-medium">
-                        {sectionKey}
-                      </div>
-                      <div className="space-y-1.5">
-                        {fields.map((field: any) => (
-                          <div
-                            key={field.id}
-                            className="bg-[#252526] border border-[#3e3e3e] rounded p-2.5"
-                          >
-                            <div className="flex items-start justify-between mb-2">
-                              <div className="flex-1">
-                                <div className="text-[#cccccc] text-xs font-medium">
-                                  {field.field_definition.label}
-                                </div>
-                                <div className="text-[#858585] text-[10px] font-mono">
-                                  {field.field_id}
-                                </div>
+                {Object.entries(fieldsBySection).map(([sectionKey, fields]: [string, any]) => (
+                  <div key={sectionKey}>
+                    <div className="text-[#858585] text-[10px] uppercase tracking-wider mb-2 font-medium">
+                      {sectionKey}
+                    </div>
+                    <div className="space-y-1.5">
+                      {fields.map((field: any) => (
+                        <div
+                          key={field.id}
+                          className="bg-[#252526] border border-[#3e3e3e] rounded p-2.5"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="text-[#cccccc] text-xs font-medium">
+                                {field.field_definition.label}
                               </div>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  onClick={() => setEditingField(field)}
-                                  className="text-white/40 hover:text-white p-1"
-                                  title="Edit field"
-                                >
-                                  <Edit2 size={10} />
-                                </button>
-                                <button
-                                  onClick={() => onDeleteField(field.id)}
-                                  className="text-red-400 hover:text-red-300 p-1"
-                                  title="Delete field"
-                                >
-                                  <X size={10} />
-                                </button>
+                              <div className="text-[#858585] text-[10px] font-mono">
+                                {field.field_id}
                               </div>
                             </div>
-
-                            <div className="flex items-center gap-2">
-                              <span className="text-[#858585] text-[9px] bg-[#252526] px-1.5 py-0.5 rounded border border-[#3e3e3e]">
-                                {field.field_definition.type}
-                              </span>
-                              {field.field_definition.required && (
-                                <span className="text-red-400 text-[9px]">
-                                  Required
-                                </span>
-                              )}
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => setEditingField(field)}
+                                className="text-white/40 hover:text-white p-1"
+                                title="Edit field"
+                              >
+                                <Edit2 size={10} />
+                              </button>
+                              <button
+                                onClick={() => onDeleteField(field.id)}
+                                className="text-red-400 hover:text-red-300 p-1"
+                                title="Delete field"
+                              >
+                                <X size={10} />
+                              </button>
                             </div>
+                          </div>
 
-                            {field.field_definition.helper_text && (
-                              <p className="text-white/40 text-[10px] mt-2 leading-relaxed">
-                                {field.field_definition.helper_text}
-                              </p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[#858585] text-[9px] bg-[#252526] px-1.5 py-0.5 rounded border border-[#3e3e3e]">
+                              {field.field_definition.type}
+                            </span>
+                            {field.field_definition.required && (
+                              <span className="text-red-400 text-[9px]">Required</span>
                             )}
                           </div>
-                        ))}
-                      </div>
+
+                          {field.field_definition.helper_text && (
+                            <p className="text-white/40 text-[10px] mt-2 leading-relaxed">
+                              {field.field_definition.helper_text}
+                            </p>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ),
-                )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -371,14 +362,10 @@ export function FieldLibraryPanel({
                   className="bg-white/5 rounded p-2.5 hover:bg-white/10 transition-colors"
                 >
                   <div className="flex items-start gap-2">
-                    <span className="text-xl flex-shrink-0">
-                      {fieldType.icon}
-                    </span>
+                    <span className="text-xl flex-shrink-0">{fieldType.icon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
-                        <h4 className="text-white text-xs font-medium">
-                          {fieldType.name}
-                        </h4>
+                        <h4 className="text-white text-xs font-medium">{fieldType.name}</h4>
                         <button
                           onClick={() => {
                             setSelectedFieldType(fieldType);
@@ -397,9 +384,7 @@ export function FieldLibraryPanel({
                         <span className="text-[#858585] text-[9px] bg-[#252526] px-1.5 py-0.5 rounded font-mono border border-[#3e3e3e]">
                           {fieldType.type}
                         </span>
-                        <span className="text-[#858585] text-[9px]">
-                          {fieldType.example}
-                        </span>
+                        <span className="text-[#858585] text-[9px]">{fieldType.example}</span>
                       </div>
                     </div>
                   </div>
@@ -426,9 +411,7 @@ export function FieldLibraryPanel({
 
             <div className="space-y-3">
               <div>
-                <label className="block text-white/80 text-xs mb-1">
-                  Label
-                </label>
+                <label className="block text-white/80 text-xs mb-1">Label</label>
                 <input
                   type="text"
                   value={editingField.field_definition.label}
@@ -446,9 +429,7 @@ export function FieldLibraryPanel({
               </div>
 
               <div>
-                <label className="block text-white/80 text-xs mb-1">
-                  Placeholder
-                </label>
+                <label className="block text-white/80 text-xs mb-1">Placeholder</label>
                 <input
                   type="text"
                   value={editingField.field_definition.placeholder || ""}
@@ -466,9 +447,7 @@ export function FieldLibraryPanel({
               </div>
 
               <div>
-                <label className="block text-white/80 text-xs mb-1">
-                  Helper Text
-                </label>
+                <label className="block text-white/80 text-xs mb-1">Helper Text</label>
                 <textarea
                   value={editingField.field_definition.helper_text || ""}
                   onChange={(e) =>

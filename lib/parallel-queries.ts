@@ -1,6 +1,7 @@
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { vendorCache, generateCacheKey } from "@/lib/cache-manager";
 
+import { logger } from "@/lib/logger";
 /**
  * Fetch all vendor dashboard data in parallel
  * Amazon-style parallel query execution
@@ -18,23 +19,20 @@ export async function getVendorDashboardData(vendorId: string) {
 
   // Execute ALL queries in parallel using Promise.allSettled
   // allSettled ensures all queries complete even if some fail
-  const [productsResult, inventoryResult, ordersResult, statsResult] =
-    await Promise.allSettled([
-      // Products - recent 50
-      supabase
-        .from("products")
-        .select(
-          "id, name, status, stock_quantity, price, image_urls, created_at",
-        )
-        .eq("vendor_id", vendorId)
-        .order("created_at", { ascending: false })
-        .limit(50),
+  const [productsResult, inventoryResult, ordersResult, statsResult] = await Promise.allSettled([
+    // Products - recent 50
+    supabase
+      .from("products")
+      .select("id, name, status, stock_quantity, price, image_urls, created_at")
+      .eq("vendor_id", vendorId)
+      .order("created_at", { ascending: false })
+      .limit(50),
 
-      // Inventory - all locations
-      supabase
-        .from("inventory")
-        .select(
-          `
+    // Inventory - all locations
+    supabase
+      .from("inventory")
+      .select(
+        `
         id, 
         product_id, 
         quantity, 
@@ -43,52 +41,39 @@ export async function getVendorDashboardData(vendorId: string) {
         low_stock_threshold,
         location:locations(id, name, city)
       `,
-        )
-        .eq("vendor_id", vendorId),
+      )
+      .eq("vendor_id", vendorId),
 
-      // Recent orders (30 days)
-      supabase
-        .from("orders")
-        .select(
-          `
+    // Recent orders (30 days)
+    supabase
+      .from("orders")
+      .select(
+        `
         id,
         total,
         status,
         created_at,
         order_items!inner(vendor_id, product_id, quantity, price)
       `,
-        )
-        .eq("order_items.vendor_id", vendorId)
-        .gte(
-          "created_at",
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        )
-        .order("created_at", { ascending: false })
-        .limit(100),
+      )
+      .eq("order_items.vendor_id", vendorId)
+      .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+      .order("created_at", { ascending: false })
+      .limit(100),
 
-      // Aggregate stats - total products, total sales, pending approvals
-      supabase
-        .from("products")
-        .select("id, status, stock_quantity, price", { count: "exact" })
-        .eq("vendor_id", vendorId),
-    ]);
+    // Aggregate stats - total products, total sales, pending approvals
+    supabase
+      .from("products")
+      .select("id, status, stock_quantity, price", { count: "exact" })
+      .eq("vendor_id", vendorId),
+  ]);
 
   // Handle results gracefully - even if some queries fail, we return partial data
   const result = {
-    products:
-      productsResult.status === "fulfilled"
-        ? productsResult.value.data || []
-        : [],
-    inventory:
-      inventoryResult.status === "fulfilled"
-        ? inventoryResult.value.data || []
-        : [],
-    orders:
-      ordersResult.status === "fulfilled" ? ordersResult.value.data || [] : [],
-    stats:
-      statsResult.status === "fulfilled"
-        ? calculateStats(statsResult.value.data || [])
-        : {},
+    products: productsResult.status === "fulfilled" ? productsResult.value.data || [] : [],
+    inventory: inventoryResult.status === "fulfilled" ? inventoryResult.value.data || [] : [],
+    orders: ordersResult.status === "fulfilled" ? ordersResult.value.data || [] : [],
+    stats: statsResult.status === "fulfilled" ? calculateStats(statsResult.value.data || []) : {},
     errors: [
       productsResult.status === "rejected"
         ? { type: "products", reason: productsResult.reason }
@@ -96,12 +81,8 @@ export async function getVendorDashboardData(vendorId: string) {
       inventoryResult.status === "rejected"
         ? { type: "inventory", reason: inventoryResult.reason }
         : null,
-      ordersResult.status === "rejected"
-        ? { type: "orders", reason: ordersResult.reason }
-        : null,
-      statsResult.status === "rejected"
-        ? { type: "stats", reason: statsResult.reason }
-        : null,
+      ordersResult.status === "rejected" ? { type: "orders", reason: ordersResult.reason } : null,
+      statsResult.status === "rejected" ? { type: "stats", reason: statsResult.reason } : null,
     ].filter(Boolean),
   };
 
@@ -168,10 +149,7 @@ export async function getVendorProducts(
   }
 
   const supabase = getServiceSupabase();
-  let query = supabase
-    .from("products")
-    .select("*", { count: "exact" })
-    .eq("vendor_id", vendorId);
+  let query = supabase.from("products").select("*", { count: "exact" }).eq("vendor_id", vendorId);
 
   if (options.status) {
     query = query.eq("status", options.status);
@@ -182,10 +160,7 @@ export async function getVendorProducts(
   }
 
   if (options.offset) {
-    query = query.range(
-      options.offset,
-      options.offset + (options.limit || 50) - 1,
-    );
+    query = query.range(options.offset, options.offset + (options.limit || 50) - 1);
   }
 
   const { data, count, error } = await query.order("created_at", {
@@ -194,7 +169,7 @@ export async function getVendorProducts(
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching vendor products:", error);
+      logger.error("Error fetching vendor products:", error);
     }
     throw error;
   }
@@ -229,7 +204,7 @@ export async function getVendorInventory(vendorId: string) {
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching vendor inventory:", error);
+      logger.error("Error fetching vendor inventory:", error);
     }
     throw error;
   }

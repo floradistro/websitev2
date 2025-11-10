@@ -25,9 +25,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [vendorLogo, setVendorLogo] = useState<string>("/yacht-club-logo.png");
-  const [expandedSections, setExpandedSections] = useState<
-    Record<string, boolean>
-  >(
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(
     navSections.reduce(
       (acc, section) => ({
         ...acc,
@@ -39,8 +37,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
   const isVisible = useAutoHideHeader(); // ✅ Shared hook - no memory leak
   const pathname = usePathname();
   const router = useRouter();
-  const { vendor, isAuthenticated, isLoading, logout, hasAppAccess } =
-    useAppAuth();
+  const { vendor, isAuthenticated, isLoading, logout, hasAppAccess } = useAppAuth();
 
   // Protect vendor routes - redirect to login if not authenticated
   useEffect(() => {
@@ -76,8 +73,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
   };
 
   const currentPage =
-    allNavItems.find((item) => pathname?.startsWith(item.href))?.label ||
-    "Portal";
+    allNavItems.find((item) => pathname?.startsWith(item.href))?.label || "Portal";
   const isActive = (href: string) => pathname?.startsWith(href);
   const toggleSection = (label: string) => {
     setExpandedSections((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -156,11 +152,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
           animation: subtle-glow 4s ease-in-out infinite;
         }
         .luxury-border {
-          border-image: linear-gradient(
-              135deg,
-              rgba(255, 255, 255, 0.1),
-              rgba(255, 255, 255, 0.03)
-            )
+          border-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03))
             1;
         }
         /* Sidebar scrollbar */
@@ -242,11 +234,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
               href="/vendor/apps"
               className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-200 hover:border-white/20 flex-shrink-0"
             >
-              <img
-                src={vendorLogo}
-                alt={vendorName}
-                className="w-full h-full object-contain p-1"
-              />
+              <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
             </Link>
           </div>
         </div>
@@ -287,12 +275,8 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                   />
                 </div>
                 <div>
-                  <div className="text-white text-xs tracking-wide">
-                    {vendorName}
-                  </div>
-                  <div className="text-white/30 text-[9px] tracking-[0.15em] uppercase">
-                    Portal
-                  </div>
+                  <div className="text-white text-xs tracking-wide">{vendorName}</div>
+                  <div className="text-white/30 text-[9px] tracking-[0.15em] uppercase">Portal</div>
                 </div>
               </Link>
               <button
@@ -328,9 +312,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                           {item.label}
                         </span>
                       </div>
-                      {active && (
-                        <div className="w-1 h-1 rounded-full bg-white" />
-                      )}
+                      {active && <div className="w-1 h-1 rounded-full bg-white" />}
                     </Link>
                   );
                 })}
@@ -339,9 +321,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
               {navSections.map((section) => {
                 const SectionIcon = section.icon;
                 const isExpanded = expandedSections[section.label];
-                const hasActiveItem = section.items.some((item) =>
-                  isActive(item.href),
-                );
+                const hasActiveItem = section.items.some((item) => isActive(item.href));
 
                 return (
                   <div key={section.label} className="mb-1">
@@ -354,10 +334,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <SectionIcon
-                          size={16}
-                          strokeWidth={hasActiveItem ? 2 : 1.5}
-                        />
+                        <SectionIcon size={16} strokeWidth={hasActiveItem ? 2 : 1.5} />
                         <span className="text-[10px] uppercase tracking-[0.15em]">
                           {section.label}
                         </span>
@@ -380,9 +357,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                     {isExpanded && (
                       <div className="mt-1 ml-3 space-y-1">
                         {section.items
-                          .filter(
-                            (item) => !item.appKey || hasAppAccess(item.appKey),
-                          )
+                          .filter((item) => !item.appKey || hasAppAccess(item.appKey))
                           .map((item) => {
                             const Icon = item.icon;
                             const active = isActive(item.href);
@@ -399,17 +374,12 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                                 }`}
                               >
                                 <div className="flex items-center gap-2.5">
-                                  <Icon
-                                    size={14}
-                                    strokeWidth={active ? 2 : 1.5}
-                                  />
+                                  <Icon size={14} strokeWidth={active ? 2 : 1.5} />
                                   <span className="text-[9px] uppercase tracking-[0.15em]">
                                     {item.label}
                                   </span>
                                 </div>
-                                {active && (
-                                  <div className="w-1 h-1 rounded-full bg-white" />
-                                )}
+                                {active && <div className="w-1 h-1 rounded-full bg-white" />}
                               </Link>
                             );
                           })}
@@ -420,8 +390,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
               })}
 
               {/* Settings at bottom */}
-              {(!settingsNavItem.appKey ||
-                hasAppAccess(settingsNavItem.appKey)) && (
+              {(!settingsNavItem.appKey || hasAppAccess(settingsNavItem.appKey)) && (
                 <Link
                   href={settingsNavItem.href}
                   onClick={() => setMobileMenuOpen(false)}
@@ -484,10 +453,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
       >
         <div className="w-full px-6">
           <div className="flex justify-between items-center h-[52px]">
-            <Link
-              href="/vendor/apps"
-              className="flex items-center gap-2.5 group"
-            >
+            <Link href="/vendor/apps" className="flex items-center gap-2.5 group">
               <div className="w-8 h-8 bg-white/[0.04] rounded-lg flex items-center justify-center overflow-hidden border border-white/[0.08] transition-all duration-200 group-hover:border-white/[0.12]">
                 <img
                   src={vendorLogo}
@@ -499,9 +465,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                 <div className="text-white/90 text-[11px] tracking-wide font-medium">
                   {vendorName}
                 </div>
-                <div className="text-white/40 text-[9px] tracking-[0.15em] uppercase">
-                  Portal
-                </div>
+                <div className="text-white/40 text-[9px] tracking-[0.15em] uppercase">Portal</div>
               </div>
             </Link>
 
@@ -572,9 +536,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                           {item.label}
                         </span>
                       </div>
-                      {active && (
-                        <div className="w-1 h-1 rounded-full bg-white/90" />
-                      )}
+                      {active && <div className="w-1 h-1 rounded-full bg-white/90" />}
                     </Link>
                   );
                 })}
@@ -583,9 +545,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
               {navSections.map((section) => {
                 const SectionIcon = section.icon;
                 const isExpanded = expandedSections[section.label];
-                const hasActiveItem = section.items.some((item) =>
-                  isActive(item.href),
-                );
+                const hasActiveItem = section.items.some((item) => isActive(item.href));
 
                 return (
                   <div key={section.label}>
@@ -598,10 +558,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
-                        <SectionIcon
-                          size={14}
-                          strokeWidth={hasActiveItem ? 2 : 1.5}
-                        />
+                        <SectionIcon size={14} strokeWidth={hasActiveItem ? 2 : 1.5} />
                         <span className="text-[10px] uppercase tracking-[0.15em] font-medium">
                           {section.label}
                         </span>
@@ -624,9 +581,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                     {isExpanded && (
                       <div className="mt-0.5 ml-2 space-y-0.5">
                         {section.items
-                          .filter(
-                            (item) => !item.appKey || hasAppAccess(item.appKey),
-                          )
+                          .filter((item) => !item.appKey || hasAppAccess(item.appKey))
                           .map((item) => {
                             const Icon = item.icon;
                             const active = isActive(item.href);
@@ -642,17 +597,12 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                                 }`}
                               >
                                 <div className="flex items-center gap-2.5">
-                                  <Icon
-                                    size={13}
-                                    strokeWidth={active ? 2 : 1.5}
-                                  />
+                                  <Icon size={13} strokeWidth={active ? 2 : 1.5} />
                                   <span className="text-[9px] uppercase tracking-[0.15em] font-medium">
                                     {item.label}
                                   </span>
                                 </div>
-                                {active && (
-                                  <div className="w-1 h-1 rounded-full bg-white/90" />
-                                )}
+                                {active && <div className="w-1 h-1 rounded-full bg-white/90" />}
                               </Link>
                             );
                           })}
@@ -663,8 +613,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
               })}
 
               {/* Settings at bottom */}
-              {(!settingsNavItem.appKey ||
-                hasAppAccess(settingsNavItem.appKey)) && (
+              {(!settingsNavItem.appKey || hasAppAccess(settingsNavItem.appKey)) && (
                 <Link
                   href={settingsNavItem.href}
                   className={`group flex items-center justify-between px-3 py-2 mt-1 transition-all duration-200 border rounded-lg ${
@@ -707,20 +656,13 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      <VendorSupportChat
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-      />
+      <VendorSupportChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <AIActivityMonitor />
     </>
   );
 }
 
-export default function VendorLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function VendorLayout({ children }: { children: React.ReactNode }) {
   // AppAuthProvider moved to root Providers - no longer duplicated here
   return <VendorLayoutContent>{children}</VendorLayoutContent>;
 }

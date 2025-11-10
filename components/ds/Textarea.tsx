@@ -5,12 +5,7 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   error?: string;
 }
 
-export function Textarea({
-  label,
-  error,
-  className = "",
-  ...props
-}: TextareaProps) {
+export function Textarea({ label, error, className = "", ...props }: TextareaProps) {
   return (
     <div className="space-y-2">
       {label && (

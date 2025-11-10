@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
-import {
-  addCustomDomain,
-  removeDomainFromProject,
-} from "@/lib/deployment/vercel";
+import { addCustomDomain, removeDomainFromProject } from "@/lib/deployment/vercel";
 import dns from "dns";
 import { promisify } from "util";
 
+import { logger } from "@/lib/logger";
 const resolveTxt = promisify(dns.resolveTxt);
 const resolve4 = promisify(dns.resolve4);
 const resolveCname = promisify(dns.resolveCname);
@@ -34,10 +32,7 @@ export async function POST(request: NextRequest) {
     const { domain } = await request.json();
 
     if (!domain) {
-      return NextResponse.json(
-        { error: "Domain is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Domain is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -115,15 +110,9 @@ export async function POST(request: NextRequest) {
         domain,
         checks: verificationResults,
         missing: {
-          txtRecord: !verificationResults.txtRecord
-            ? "Add TXT record for _whale-verify"
-            : null,
-          aRecord: !verificationResults.aRecord
-            ? "Add A record pointing to 76.76.21.21"
-            : null,
-          cnameRecord: !verificationResults.cnameRecord
-            ? "Add CNAME record for www"
-            : null,
+          txtRecord: !verificationResults.txtRecord ? "Add TXT record for _whale-verify" : null,
+          aRecord: !verificationResults.aRecord ? "Add A record pointing to 76.76.21.21" : null,
+          cnameRecord: !verificationResults.cnameRecord ? "Add CNAME record for www" : null,
         },
       });
     }
@@ -132,10 +121,7 @@ export async function POST(request: NextRequest) {
     const vercelProjectId = domainRecord.vendors.vercel_project_id;
 
     if (!vercelProjectId) {
-      return NextResponse.json(
-        { error: "No Vercel project found" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "No Vercel project found" }, { status: 400 });
     }
 
     // Get platform project ID to handle conflicts
@@ -145,8 +131,7 @@ export async function POST(request: NextRequest) {
       .eq("key", "platform_vercel_project_id")
       .single();
 
-    const platformProjectId =
-      platformConfig?.value || process.env.VERCEL_PROJECT_ID;
+    const platformProjectId = platformConfig?.value || process.env.VERCEL_PROJECT_ID;
 
     try {
       // Try to add the domain
@@ -169,10 +154,7 @@ export async function POST(request: NextRequest) {
             await addCustomDomain(vercelProjectId, domain);
           } catch (transferError: any) {
             if (process.env.NODE_ENV === "development") {
-              console.error(
-                "❌ Failed to transfer domain:",
-                transferError.message,
-              );
+              logger.error("❌ Failed to transfer domain:", transferError.message);
             }
             throw new Error(
               "Domain is in use by another project and could not be transferred automatically. Please contact support.",
@@ -185,7 +167,7 @@ export async function POST(request: NextRequest) {
         }
       } else if (!vercelError.message.includes("already exists")) {
         if (process.env.NODE_ENV === "development") {
-          console.error("⚠️  Vercel domain error:", vercelError.message);
+          logger.error("⚠️  Vercel domain error:", vercelError.message);
         }
         throw vercelError;
       }
@@ -202,10 +184,7 @@ export async function POST(request: NextRequest) {
           await addCustomDomain(vercelProjectId, `www.${domain}`);
         } catch (wwwTransferError) {
           if (process.env.NODE_ENV === "development") {
-            console.error(
-              "⚠️  Could not transfer www subdomain:",
-              wwwTransferError,
-            );
+            logger.error("⚠️  Could not transfer www subdomain:", wwwTransferError);
           }
           // Continue anyway - main domain is more important
         }
@@ -246,7 +225,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error verifying domain:", error);
+      logger.error("Error verifying domain:", error);
     }
     return NextResponse.json(
       {

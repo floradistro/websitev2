@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Get pricing tiers for a product
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = getServiceSupabase();
     const { id: productId } = await params;
@@ -21,7 +19,7 @@ export async function GET(
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Get tiers error:", error);
+        logger.error("Get tiers error:", error);
       }
       return NextResponse.json(
         { error: "Failed to get pricing tiers", details: error.message },
@@ -32,7 +30,7 @@ export async function GET(
     return NextResponse.json({ tiers: tiers || [] });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get pricing tiers error:", error);
+      logger.error("Get pricing tiers error:", error);
     }
     return NextResponse.json(
       { error: "Failed to get pricing tiers", details: error.message },
@@ -44,10 +42,7 @@ export async function GET(
 /**
  * Update pricing tiers for a product
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = getServiceSupabase();
     const { id: productId } = await params;
@@ -56,10 +51,7 @@ export async function PUT(
     const { tiers } = body;
 
     if (!Array.isArray(tiers)) {
-      return NextResponse.json(
-        { error: "Tiers must be an array" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Tiers must be an array" }, { status: 400 });
     }
 
     // Get product to get vendor_id
@@ -74,10 +66,7 @@ export async function PUT(
     }
 
     // Delete existing tiers
-    await supabase
-      .from("wholesale_pricing")
-      .delete()
-      .eq("product_id", productId);
+    await supabase.from("wholesale_pricing").delete().eq("product_id", productId);
 
     // Insert new tiers
     if (tiers.length > 0) {
@@ -91,13 +80,11 @@ export async function PUT(
         is_active: true,
       }));
 
-      const { error: insertError } = await supabase
-        .from("wholesale_pricing")
-        .insert(tiersToInsert);
+      const { error: insertError } = await supabase.from("wholesale_pricing").insert(tiersToInsert);
 
       if (insertError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Insert tiers error:", insertError);
+          logger.error("Insert tiers error:", insertError);
         }
         return NextResponse.json(
           {
@@ -115,7 +102,7 @@ export async function PUT(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Update pricing tiers error:", error);
+      logger.error("Update pricing tiers error:", error);
     }
     return NextResponse.json(
       { error: "Failed to update pricing tiers", details: error.message },

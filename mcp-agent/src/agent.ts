@@ -19,12 +19,10 @@ import {
   COMPLETE_AGENT_INSTRUCTIONS,
   CANNABIS_VENDOR_SPECIFIC_CONTENT,
 } from "./component-registry";
-import {
-  applyTemplate,
-  addComplianceSections,
-} from "./templates/template-engine";
+import { applyTemplate, addComplianceSections } from "./templates/template-engine";
 import { generateStorefrontParallel } from "./parallel-agent";
 
+import { logger } from "@/lib/logger";
 // Initialize clients lazily to avoid env var issues
 function getAnthropicClient() {
   return new Anthropic({
@@ -35,20 +33,19 @@ function getAnthropicClient() {
 function getExaClient() {
   const exaApiKey = process.env.EXA_API_KEY;
   if (!exaApiKey) {
-    console.warn("⚠️ EXA_API_KEY not found, web search disabled");
+    logger.warn("⚠️ EXA_API_KEY not found, web search disabled");
     return null;
   }
   return new Exa(exaApiKey);
 }
 
 function getSupabaseClient() {
-  const supabaseUrl =
-    process.env.SUPABASE_URL || "https://uaednwpxursknmwdeejn.supabase.co";
+  const supabaseUrl = process.env.SUPABASE_URL || "https://uaednwpxursknmwdeejn.supabase.co";
   const supabaseServiceKey =
     process.env.SUPABASE_SERVICE_KEY ||
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI";
 
-  console.log("🔌 Connecting to Supabase:", supabaseUrl);
+  logger.debug("🔌 Connecting to Supabase:", supabaseUrl);
 
   return createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
@@ -99,9 +96,7 @@ export async function generateStorefrontWithAgent(
     let webInsights = "";
     if (exa && enrichedVendorData.store_name) {
       try {
-        logs.push(
-          `🌐 Searching web for ${enrichedVendorData.store_name} inspiration...`,
-        );
+        logs.push(`🌐 Searching web for ${enrichedVendorData.store_name} inspiration...`);
         const searchResults = await exa.searchAndContents(
           `${enrichedVendorData.store_name} ${enrichedVendorData.vendor_type} website design trends`,
           { numResults: 3, text: true },
@@ -111,9 +106,7 @@ export async function generateStorefrontWithAgent(
           .join("\n");
         logs.push(`✅ Found ${searchResults.results.length} web insights`);
       } catch (e) {
-        logs.push(
-          `⚠️ Web search failed (non-critical): ${(e as Error).message}`,
-        );
+        logs.push(`⚠️ Web search failed (non-critical): ${(e as Error).message}`);
       }
     }
 
@@ -144,10 +137,7 @@ export async function generateStorefrontWithAgent(
       // PARALLEL MODE: Generate 5 page groups simultaneously
       logs.push(`⚡ PARALLEL MODE: Generating 5 groups simultaneously`);
 
-      const parallelResult = await generateStorefrontParallel(
-        vendorId,
-        enrichedVendorData,
-      );
+      const parallelResult = await generateStorefrontParallel(vendorId, enrichedVendorData);
       logs.push(...parallelResult.logs);
       errors.push(...parallelResult.errors);
 
@@ -250,9 +240,7 @@ NO markdown, NO explanations, ONLY JSON.`,
       const validation = validateStorefront(design, enrichedVendorData);
 
       if (!validation.valid) {
-        logs.push(
-          `⚠️ Design has ${validation.errors.length} errors. Asking Claude to fix...`,
-        );
+        logs.push(`⚠️ Design has ${validation.errors.length} errors. Asking Claude to fix...`);
 
         // Ask Claude to fix issues
         const fixResponse = await anthropic.messages.create({
@@ -301,10 +289,7 @@ Fix these issues and return corrected JSON (same format).`,
     // Phase 3: Insert into database using direct SQL (more reliable)
     logs.push(`💾 Inserting sections into database...`);
 
-    const insertedSections = await insertSectionsDirectSQL(
-      vendorId,
-      design.sections,
-    );
+    const insertedSections = await insertSectionsDirectSQL(vendorId, design.sections);
     logs.push(`✅ Created ${insertedSections.length} sections`);
 
     // Map section_keys to actual database IDs (composite key: page_type:section_key)
@@ -320,8 +305,7 @@ Fix these issues and return corrected JSON (same format).`,
     // Filter components with composite key matching
     const componentsData = design.components.filter((c: any) => {
       const pageType =
-        design.sections.find((s: any) => s.section_key === c.section_key)
-          ?.page_type || "home";
+        design.sections.find((s: any) => s.section_key === c.section_key)?.page_type || "home";
       const compositeKey = `${pageType}:${c.section_key}`;
       return sectionMap.has(compositeKey);
     });
@@ -356,7 +340,7 @@ Fix these issues and return corrected JSON (same format).`,
       logs,
     };
   } catch (error: any) {
-    console.error("❌ Generation failed:", error);
+    logger.error("❌ Generation failed:", error);
     errors.push(error.message);
 
     return {
@@ -375,10 +359,7 @@ Fix these issues and return corrected JSON (same format).`,
  * Enrich vendor data by querying actual database
  * Agent can make smarter decisions with real data
  */
-async function enrichVendorData(
-  vendorId: string,
-  vendorData: VendorData,
-): Promise<VendorData> {
+async function enrichVendorData(vendorId: string, vendorData: VendorData): Promise<VendorData> {
   try {
     const supabase = getSupabaseClient();
 
@@ -401,11 +382,7 @@ async function enrichVendorData(
     const locationCount = locations?.length || 0;
 
     // Get vendor full details
-    const { data: vendor } = await supabase
-      .from("vendors")
-      .select("*")
-      .eq("id", vendorId)
-      .single();
+    const { data: vendor } = await supabase.from("vendors").select("*").eq("id", vendorId).single();
 
     return {
       ...vendorData,
@@ -419,7 +396,7 @@ async function enrichVendorData(
       vendor_type: vendor?.vendor_type || vendorData.vendor_type || "retail",
     };
   } catch (error) {
-    console.warn("Could not enrich vendor data, using basic info:", error);
+    logger.warn("Could not enrich vendor data, using basic info:", error);
     // Fallback to basic data if database fails
     return {
       ...vendorData,
@@ -470,15 +447,13 @@ async function insertComponentsDirectSQL(
   const componentsToInsert = components
     .map((c) => {
       // Find page_type for this section
-      const section = sections.find(
-        (s: any) => s.section_key === c.section_key,
-      );
+      const section = sections.find((s: any) => s.section_key === c.section_key);
       const pageType = section?.page_type || "home";
       const compositeKey = `${pageType}:${c.section_key}`;
       const sectionId = sectionMap.get(compositeKey);
 
       if (!sectionId) {
-        console.warn(`No section ID found for ${compositeKey}`);
+        logger.warn(`No section ID found for ${compositeKey}`);
         return null;
       }
 
@@ -506,10 +481,7 @@ async function insertComponentsDirectSQL(
       .select("id");
 
     if (error) {
-      console.error(
-        `Failed to insert component batch ${i / batchSize + 1}:`,
-        error.message,
-      );
+      logger.error(`Failed to insert component batch ${i / batchSize + 1}:`, error.message);
       continue;
     }
 

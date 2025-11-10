@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { DollarSign } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface PricingTier {
   weight: string;
   price: number;
@@ -41,7 +42,7 @@ export function PricingDisplayField({
 
       if (!response.ok) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to fetch pricing:", response.status);
+          logger.error("Failed to fetch pricing:", response.status);
         }
         setLoading(false);
         return;
@@ -56,7 +57,7 @@ export function PricingDisplayField({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading pricing:", error);
+        logger.error("Error loading pricing:", error);
       }
     } finally {
       setLoading(false);
@@ -70,9 +71,7 @@ export function PricingDisplayField({
       <div className="bg-black/50 border border-white/20 rounded p-3 space-y-3">
         {/* Display Format */}
         <div>
-          <label className="block text-white/60 text-xs mb-1">
-            Display Format
-          </label>
+          <label className="block text-white/60 text-xs mb-1">Display Format</label>
           <select
             value={value.format || "table"}
             onChange={(e) => onChange({ ...value, format: e.target.value })}
@@ -86,17 +85,13 @@ export function PricingDisplayField({
 
         {/* Show Options */}
         <div className="space-y-2">
-          <label className="block text-white/60 text-xs mb-1">
-            Show Pricing For:
-          </label>
+          <label className="block text-white/60 text-xs mb-1">Show Pricing For:</label>
 
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
               checked={value.show_retail !== false}
-              onChange={(e) =>
-                onChange({ ...value, show_retail: e.target.checked })
-              }
+              onChange={(e) => onChange({ ...value, show_retail: e.target.checked })}
               className="w-4 h-4"
             />
             <span className="text-white text-xs">Retail Prices</span>
@@ -106,9 +101,7 @@ export function PricingDisplayField({
             <input
               type="checkbox"
               checked={value.show_wholesale || false}
-              onChange={(e) =>
-                onChange({ ...value, show_wholesale: e.target.checked })
-              }
+              onChange={(e) => onChange({ ...value, show_wholesale: e.target.checked })}
               className="w-4 h-4"
             />
             <span className="text-white text-xs">Wholesale Prices</span>
@@ -122,9 +115,7 @@ export function PricingDisplayField({
             <div className="bg-black/50 rounded p-2">
               <div className="flex items-center gap-2 text-white/60 text-xs">
                 <DollarSign size={12} />
-                <span>
-                  {pricingData.tiers?.length || 0} pricing tiers available
-                </span>
+                <span>{pricingData.tiers?.length || 0} pricing tiers available</span>
               </div>
             </div>
           </div>

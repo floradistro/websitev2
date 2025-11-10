@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -25,13 +26,7 @@ export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
-    const {
-      registerId,
-      locationId,
-      vendorId,
-      userId,
-      openingCash = 200.0,
-    } = await request.json();
+    const { registerId, locationId, vendorId, userId, openingCash = 200.0 } = await request.json();
 
     if (!registerId || !locationId) {
       return NextResponse.json(
@@ -53,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Atomic session error:", error);
+        logger.error("❌ Atomic session error:", error);
       }
       // Fallback: If function doesn't exist, use the old approach
       // (This will happen until SQL is run in Supabase)
@@ -118,10 +113,7 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        return NextResponse.json(
-          { error: createError.message },
-          { status: 500 },
-        );
+        return NextResponse.json({ error: createError.message }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -140,7 +132,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Session endpoint error:", error);
+      logger.error("❌ Session endpoint error:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

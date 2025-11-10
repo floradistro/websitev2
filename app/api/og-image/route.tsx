@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
+import { logger } from "@/lib/logger";
 export const runtime = "edge";
 
 export async function GET(request: NextRequest) {
@@ -27,8 +28,7 @@ export async function GET(request: NextRequest) {
               left: "25%",
               width: "400px",
               height: "400px",
-              background:
-                "radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)",
             }}
           />
           <div
@@ -38,8 +38,7 @@ export async function GET(request: NextRequest) {
               right: "25%",
               width: "400px",
               height: "400px",
-              background:
-                "radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)",
             }}
           />
 
@@ -117,7 +116,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (e: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error(`Error generating OG image: ${e.message}`);
+      logger.error(`Error generating OG image: ${e.message}`);
     }
     return new Response(`Failed to generate image`, {
       status: 500,

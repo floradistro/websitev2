@@ -107,18 +107,12 @@ export function CodeEditorField({
       {/* Security Warning */}
       <div className="mt-2 bg-yellow-500/10 border border-yellow-500/20 rounded p-2">
         <div className="flex gap-2">
-          <AlertCircle
-            size={12}
-            className="text-yellow-500 flex-shrink-0 mt-0.5"
-          />
+          <AlertCircle size={12} className="text-yellow-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-yellow-500 text-[10px] font-medium mb-1">
-              Security Notice
-            </p>
+            <p className="text-yellow-500 text-[10px] font-medium mb-1">Security Notice</p>
             <p className="text-white/60 text-[10px] leading-relaxed">
-              Code runs in a sandboxed iframe. Avoid accessing cookies or
-              localStorage. Only HTTPS iframes allowed. Dangerous patterns will
-              be blocked.
+              Code runs in a sandboxed iframe. Avoid accessing cookies or localStorage. Only HTTPS
+              iframes allowed. Dangerous patterns will be blocked.
             </p>
           </div>
         </div>

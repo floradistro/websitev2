@@ -6,6 +6,7 @@ import { CreditCard, Plus, X, Check } from "lucide-react";
 import axios from "axios";
 import { showNotification } from "@/components/NotificationToast";
 
+import { logger } from "@/lib/logger";
 interface PaymentMethod {
   id: string;
   type: string;
@@ -44,9 +45,7 @@ export default function SavedPaymentMethods() {
       const response = await axios.get(`/api/customers/${user.id}`);
 
       const customerData = response.data;
-      const methodsMeta = customerData.meta_data?.find(
-        (m: any) => m.key === "payment_methods",
-      );
+      const methodsMeta = customerData.meta_data?.find((m: any) => m.key === "payment_methods");
 
       if (methodsMeta && methodsMeta.value) {
         try {
@@ -61,7 +60,7 @@ export default function SavedPaymentMethods() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading payment methods:", error);
+        logger.error("Error loading payment methods:", error);
       }
     } finally {
       setLoading(false);
@@ -127,7 +126,7 @@ export default function SavedPaymentMethods() {
       setNewCard({ cardNumber: "", expiry: "", cvv: "", name: "" });
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error saving payment method:", error);
+        logger.error("Error saving payment method:", error);
       }
       showNotification({
         type: "error",
@@ -156,7 +155,7 @@ export default function SavedPaymentMethods() {
       setMethods(updatedMethods);
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error removing payment method:", error);
+        logger.error("Error removing payment method:", error);
       }
       showNotification({
         type: "error",
@@ -205,9 +204,7 @@ export default function SavedPaymentMethods() {
             onSubmit={handleAddCard}
             className="bg-[#3a3a3a] border border-white/10 p-6 space-y-4"
           >
-            <h3 className="text-xs uppercase tracking-[0.2em] text-white/80 mb-4">
-              Add New Card
-            </h3>
+            <h3 className="text-xs uppercase tracking-[0.2em] text-white/80 mb-4">Add New Card</h3>
 
             <div>
               <label className="block text-[10px] uppercase tracking-[0.2em] text-white/60 mb-2 font-medium">
@@ -216,9 +213,7 @@ export default function SavedPaymentMethods() {
               <input
                 type="text"
                 value={newCard.name}
-                onChange={(e) =>
-                  setNewCard({ ...newCard, name: e.target.value })
-                }
+                onChange={(e) => setNewCard({ ...newCard, name: e.target.value })}
                 className="w-full px-4 py-3 text-sm bg-black/20 border border-white/10 text-white focus:border-white/30 focus:outline-none transition-all"
                 required
               />
@@ -313,9 +308,7 @@ export default function SavedPaymentMethods() {
             <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/10">
               <CreditCard size={24} className="text-white/20" />
             </div>
-            <p className="text-white/40 text-xs uppercase tracking-[0.2em] mb-4">
-              No saved cards
-            </p>
+            <p className="text-white/40 text-xs uppercase tracking-[0.2em] mb-4">No saved cards</p>
             <button
               onClick={() => setShowAddCard(true)}
               className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 text-[10px] uppercase tracking-[0.2em] hover:bg-white/90 transition-all font-medium"

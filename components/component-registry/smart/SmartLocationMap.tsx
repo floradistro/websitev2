@@ -72,40 +72,25 @@ export function SmartLocationMap({
   }
 
   const colClass =
-    columns === 2
-      ? "md:grid-cols-2"
-      : columns === 4
-        ? "md:grid-cols-4"
-        : "md:grid-cols-3";
+    columns === 2 ? "md:grid-cols-2" : columns === 4 ? "md:grid-cols-4" : "md:grid-cols-3";
 
   return (
     <div className={className}>
       {(headline || subheadline) && (
         <div className="text-center mb-12">
-          {headline && (
-            <h2 className="text-3xl font-bold text-white mb-2">{headline}</h2>
-          )}
-          {subheadline && (
-            <p className="text-lg text-neutral-400">{subheadline}</p>
-          )}
+          {headline && <h2 className="text-3xl font-bold text-white mb-2">{headline}</h2>}
+          {subheadline && <p className="text-lg text-neutral-400">{subheadline}</p>}
         </div>
       )}
 
       <div className={`grid grid-cols-1 ${colClass} gap-6`}>
         {locations.map((loc) => (
-          <div
-            key={loc.id}
-            className="bg-neutral-900 rounded-lg p-6 border border-neutral-800"
-          >
+          <div key={loc.id} className="bg-neutral-900 rounded-lg p-6 border border-neutral-800">
             <div className="flex items-start gap-3 mb-3">
               <span className="text-2xl">📍</span>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white mb-1">
-                  {loc.name}
-                </h3>
-                <p className="text-sm text-neutral-400">
-                  {loc.address_line1 || loc.address || ""}
-                </p>
+                <h3 className="text-lg font-semibold text-white mb-1">{loc.name}</h3>
+                <p className="text-sm text-neutral-400">{loc.address_line1 || loc.address || ""}</p>
                 {loc.city && loc.state && (
                   <p className="text-sm text-neutral-400">
                     {loc.city}, {loc.state} {loc.zip || loc.zip_code || ""}

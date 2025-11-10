@@ -50,10 +50,7 @@ export function useDebounce<T>(value: T, delay: number = 500): T {
  *   disabled={isDebouncing}
  * />
  */
-export function useDebouncedSearch(
-  initialValue: string = "",
-  delay: number = 500,
-) {
+export function useDebouncedSearch(initialValue: string = "", delay: number = 500) {
   const [searchValue, setSearchValue] = useState(initialValue);
   const debouncedValue = useDebounce(searchValue, delay);
   const isDebouncing = searchValue !== debouncedValue;

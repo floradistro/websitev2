@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 
+import { logger } from "@/lib/logger";
 export interface VendorBranding {
   storeName: string;
   slug: string;
@@ -45,7 +46,7 @@ function walkDirectory(
           });
         } catch (error) {
           if (process.env.NODE_ENV === "development") {
-            console.error(`Error reading file ${relativePath}:`, error);
+            logger.error(`Error reading file ${relativePath}:`, error);
           }
         }
       }
@@ -115,10 +116,7 @@ export function rebrandStorefrontFiles(
 
     // Replace meta descriptions
     if (branding.description) {
-      content = content.replace(
-        /Premium cannabis products/g,
-        branding.description,
-      );
+      content = content.replace(/Premium cannabis products/g, branding.description);
     }
 
     return {
@@ -274,12 +272,7 @@ module.exports = nextConfig;
             "@/*": ["./*"],
           },
         },
-        include: [
-          "next-env.d.ts",
-          "**/*.ts",
-          "**/*.tsx",
-          ".next/types/**/*.ts",
-        ],
+        include: ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
         exclude: ["node_modules"],
       },
       null,

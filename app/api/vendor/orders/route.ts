@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * Vendor Orders API
  * Provides aggregated order data across all locations for a vendor
@@ -159,16 +160,14 @@ export async function GET(request: NextRequest) {
 
     if (ordersError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching vendor orders:", ordersError);
+        logger.error("❌ Error fetching vendor orders:", ordersError);
       }
       return NextResponse.json({ error: ordersError.message }, { status: 500 });
     }
 
     // Get location names for orders that don't have them
     const locationIds = [
-      ...new Set(
-        ordersData?.map((o) => o.pickup_location_id).filter(Boolean) || [],
-      ),
+      ...new Set(ordersData?.map((o) => o.pickup_location_id).filter(Boolean) || []),
     ];
 
     const { data: locations } = await supabase
@@ -182,9 +181,7 @@ export async function GET(request: NextRequest) {
     const processedOrders =
       ordersData?.map((order) => {
         // Filter order items to only include this vendor's items
-        const vendorItems = order.order_items.filter(
-          (item: any) => item.vendor_id === vendorId,
-        );
+        const vendorItems = order.order_items.filter((item: any) => item.vendor_id === vendorId);
 
         // Calculate vendor-specific totals
         const vendorSubtotal = vendorItems.reduce(
@@ -193,25 +190,18 @@ export async function GET(request: NextRequest) {
         );
 
         const vendorCommission = vendorItems.reduce(
-          (sum: number, item: any) =>
-            sum + parseFloat(item.commission_amount || 0),
+          (sum: number, item: any) => sum + parseFloat(item.commission_amount || 0),
           0,
         );
 
         const vendorNetEarnings = vendorSubtotal - vendorCommission;
 
-        const customer = Array.isArray(order.customers)
-          ? order.customers[0]
-          : order.customers;
-        const customerName = customer
-          ? `${customer.first_name} ${customer.last_name}`
-          : "Guest";
+        const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers;
+        const customerName = customer ? `${customer.first_name} ${customer.last_name}` : "Guest";
 
         const locationName =
           vendorItems[0]?.pickup_location_name ||
-          (order.pickup_location_id
-            ? locationMap.get(order.pickup_location_id)
-            : null) ||
+          (order.pickup_location_id ? locationMap.get(order.pickup_location_id) : null) ||
           "Online";
 
         // Determine order type
@@ -265,18 +255,9 @@ export async function GET(request: NextRequest) {
     // Calculate aggregate statistics
     const stats: OrderStats = {
       total_orders: processedOrders.length,
-      total_revenue: processedOrders.reduce(
-        (sum, o) => sum + o.vendorSubtotal,
-        0,
-      ),
-      total_commission: processedOrders.reduce(
-        (sum, o) => sum + o.vendorCommission,
-        0,
-      ),
-      net_earnings: processedOrders.reduce(
-        (sum, o) => sum + o.vendorNetEarnings,
-        0,
-      ),
+      total_revenue: processedOrders.reduce((sum, o) => sum + o.vendorSubtotal, 0),
+      total_commission: processedOrders.reduce((sum, o) => sum + o.vendorCommission, 0),
+      net_earnings: processedOrders.reduce((sum, o) => sum + o.vendorNetEarnings, 0),
       by_location: {},
       by_type: {
         pickup: 0,
@@ -342,7 +323,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Vendor orders API error:", error);
+      logger.error("❌ Vendor orders API error:", error);
     }
     return NextResponse.json(
       {

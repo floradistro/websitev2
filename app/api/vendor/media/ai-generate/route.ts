@@ -4,6 +4,7 @@ import { withErrorHandler } from "@/lib/api-handler";
 import { requireVendor } from "@/lib/auth/middleware";
 import OpenAI from "openai";
 
+import { logger } from "@/lib/logger";
 // Lazy-load OpenAI client
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -27,116 +28,71 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     const { prompt, category = "product_photos" } = body;
 
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Prompt is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
 
     // Generate image with DALL-E 3
+    // Using HD quality for better detail and consistency
+    // Style set to "natural" for more realistic, less dramatic results
     const response = await getOpenAI().images.generate({
       model: "dall-e-3",
       prompt: prompt,
       n: 1,
       size: "1024x1024",
-      quality: "standard",
+      quality: "hd", // Upgraded from "standard" to "hd" for finer details
+      style: "natural", // "natural" = more realistic, "vivid" = hyper-real/dramatic
       response_format: "url",
     });
 
     const imageUrl = response.data?.[0]?.url;
     if (!imageUrl) {
-      return NextResponse.json(
-        { error: "Image generation failed" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Image generation failed" }, { status: 500 });
     }
 
-    // Download the generated image
+    // Download and store temporarily in our storage
+    // This prevents DALL-E URL expiration issues
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {
-      return NextResponse.json(
-        { error: "Failed to download generated image" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to download generated image" }, { status: 500 });
     }
 
     const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-
     const supabase = getServiceSupabase();
 
-    // Generate filename
+    // Store in temp location for approval workflow
     const timestamp = Date.now();
-    const sanitizedPrompt = prompt
-      .substring(0, 30)
-      .replace(/[^a-zA-Z0-9]/g, "-");
-    const fileName = `ai-generated-${sanitizedPrompt}-${timestamp}.png`;
-    const filePath = `${vendorId}/${fileName}`;
+    const tempFileName = `temp-${timestamp}.png`;
+    const tempFilePath = `${vendorId}/temp/${tempFileName}`;
 
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from("vendor-product-images")
-      .upload(filePath, imageBuffer, {
+      .upload(tempFilePath, imageBuffer, {
         contentType: "image/png",
         cacheControl: "3600",
         upsert: false,
       });
 
     if (uploadError) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("❌ Upload error:", uploadError);
-      }
+      logger.error("Temp upload error:", uploadError);
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
-    // Get public URL
+    // Get public URL for temp file
     const {
       data: { publicUrl },
-    } = supabase.storage.from("vendor-product-images").getPublicUrl(filePath);
+    } = supabase.storage.from("vendor-product-images").getPublicUrl(tempFilePath);
 
-    // Save to database with metadata
-    const { data: mediaRecord, error: dbError } = await supabase
-      .from("vendor_media")
-      .insert({
-        vendor_id: vendorId,
-        file_name: fileName,
-        file_path: filePath,
-        file_url: publicUrl,
-        file_size: imageBuffer.length,
-        file_type: "image/png",
-        category: category,
-        ai_tags: ["ai-generated", "dall-e"],
-        ai_description: prompt,
-        title: `AI Generated: ${prompt.substring(0, 50)}`,
-        detected_content: {
-          has_text: false,
-          has_product: false,
-          has_logo: false,
-          has_people: false,
-          style: "illustration",
-          ai_generated: true,
-        },
-        quality_score: 85,
-        status: "active",
-      })
-      .select()
-      .single();
-
-    if (dbError) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("❌ Database error:", dbError);
-      }
-      return NextResponse.json({ error: dbError.message }, { status: 500 });
-    }
-
+    // Return temp URL for approval workflow
     return NextResponse.json({
       success: true,
-      file: mediaRecord,
+      tempUrl: publicUrl,
+      tempPath: tempFilePath, // Include path so we can clean up later
       prompt: prompt,
-      message: "Image generated successfully",
+      message: "Image generated successfully (pending approval)",
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json(
       {

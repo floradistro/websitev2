@@ -173,9 +173,7 @@ export class VendorProductsAPI {
   /**
    * Create a new product
    */
-  async createProduct(
-    productData: CreateProductRequest,
-  ): Promise<CreateProductResponse> {
+  async createProduct(productData: CreateProductRequest): Promise<CreateProductResponse> {
     const response = await fetch(this.baseUrl, {
       method: "POST",
       headers: this.headers,
@@ -229,9 +227,7 @@ export class VendorProductsAPI {
       credentials: "include",
     });
 
-    return this.handleResponse<{ success: boolean; customFields: string[] }>(
-      response,
-    );
+    return this.handleResponse<{ success: boolean; customFields: string[] }>(response);
   }
 
   /**
@@ -244,9 +240,7 @@ export class VendorProductsAPI {
       credentials: "include",
     });
 
-    return this.handleResponse<{ success: boolean; categories: string[] }>(
-      response,
-    );
+    return this.handleResponse<{ success: boolean; categories: string[] }>(response);
   }
 
   /**
@@ -257,9 +251,7 @@ export class VendorProductsAPI {
     results: Array<{ success: boolean; product?: Product; error?: string }>;
   }> {
     const results = await Promise.allSettled(
-      products.map((product) =>
-        this.createProduct(product as CreateProductRequest),
-      ),
+      products.map((product) => this.createProduct(product as CreateProductRequest)),
     );
 
     return {
@@ -293,8 +285,7 @@ export const vendorProductsAPI = {
   listProducts: () => new VendorProductsAPI().listProducts(),
   listProductsFull: () => new VendorProductsAPI().listProductsFull(),
   getProduct: (id: string) => new VendorProductsAPI().getProduct(id),
-  createProduct: (data: CreateProductRequest) =>
-    new VendorProductsAPI().createProduct(data),
+  createProduct: (data: CreateProductRequest) => new VendorProductsAPI().createProduct(data),
   updateProduct: (id: string, data: UpdateProductRequest) =>
     new VendorProductsAPI().updateProduct(id, data),
   deleteProduct: (id: string) => new VendorProductsAPI().deleteProduct(id),

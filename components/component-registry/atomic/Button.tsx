@@ -11,13 +11,7 @@ import { useSearchParams } from "next/navigation";
 
 export interface ButtonProps {
   text: string;
-  variant?:
-    | "primary"
-    | "secondary"
-    | "ghost"
-    | "outline"
-    | "danger"
-    | "success";
+  variant?: "primary" | "secondary" | "ghost" | "outline" | "danger" | "success";
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   href?: string;
   onClick?: () => void;
@@ -111,17 +105,13 @@ export function Button({
 
   // Variant classes
   const variantClasses: Record<string, string> = {
-    primary:
-      "bg-white text-black hover:bg-white/90 active:bg-white/80 border-transparent",
-    secondary:
-      "bg-transparent text-white hover:bg-white/5 active:bg-white/10 border-white/5",
-    ghost:
-      "bg-transparent text-white hover:bg-white/5 active:bg-white/10 border-transparent",
+    primary: "bg-white text-black hover:bg-white/90 active:bg-white/80 border-transparent",
+    secondary: "bg-transparent text-white hover:bg-white/5 active:bg-white/10 border-white/5",
+    ghost: "bg-transparent text-white hover:bg-white/5 active:bg-white/10 border-transparent",
     outline:
       "bg-transparent text-white hover:bg-white hover:text-black active:bg-white/90 border-white/10",
     danger: "bg-red-600/10 text-red-400 hover:bg-red-600/20 border-red-600/20",
-    success:
-      "bg-green-600/10 text-green-400 hover:bg-green-600/20 border-green-600/20",
+    success: "bg-green-600/10 text-green-400 hover:bg-green-600/20 border-green-600/20",
   };
 
   const baseClasses = [
@@ -166,9 +156,7 @@ export function Button({
             ></path>
           </svg>
         )}
-        {icon && iconPosition === "left" && (
-          <span className="mr-2">{icon}</span>
-        )}
+        {icon && iconPosition === "left" && <span className="mr-2">{icon}</span>}
         <span
           ref={editableRef}
           contentEditable={true}
@@ -180,9 +168,7 @@ export function Button({
         >
           {text}
         </span>
-        {icon && iconPosition === "right" && (
-          <span className="ml-2">{icon}</span>
-        )}
+        {icon && iconPosition === "right" && <span className="ml-2">{icon}</span>}
       </>
     ) : (
       <>
@@ -208,13 +194,9 @@ export function Button({
             ></path>
           </svg>
         )}
-        {icon && iconPosition === "left" && (
-          <span className="mr-2">{icon}</span>
-        )}
+        {icon && iconPosition === "left" && <span className="mr-2">{icon}</span>}
         {text}
-        {icon && iconPosition === "right" && (
-          <span className="ml-2">{icon}</span>
-        )}
+        {icon && iconPosition === "right" && <span className="ml-2">{icon}</span>}
       </>
     );
 
@@ -246,12 +228,7 @@ export function Button({
   }
 
   return (
-    <button
-      type={type}
-      className={baseClasses}
-      onClick={onClick}
-      disabled={disabled || loading}
-    >
+    <button type={type} className={baseClasses} onClick={onClick} disabled={disabled || loading}>
       {content}
     </button>
   );

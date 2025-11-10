@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 /**
  * Background Job Queue System
  * Handles async processing with retry logic
@@ -101,16 +103,14 @@ class JobQueue {
         this.queue = this.queue.filter((j) => j.id !== job.id);
       } catch (error: any) {
         if (process.env.NODE_ENV === "development") {
-          console.error(`❌ Job failed: ${job.type}`, error);
+          logger.error(`❌ Job failed: ${job.type}`, error);
         }
         job.error = error.message;
 
         if (job.attempts >= job.maxAttempts) {
           // Max attempts reached, mark as failed
           job.status = "failed";
-          console.error(
-            `🔴 Job permanently failed: ${job.type} (ID: ${job.id})`,
-          );
+          logger.error(`🔴 Job permanently failed: ${job.type} (ID: ${job.id})`);
 
           // Move to failed history
           this.failedJobs.unshift(job);
@@ -224,9 +224,7 @@ class JobQueue {
    */
   private async cleanupCache(data: any): Promise<void> {
     // Import cache managers
-    const { productCache, vendorCache, inventoryCache } = await import(
-      "./cache-manager"
-    );
+    const { productCache, vendorCache, inventoryCache } = await import("./cache-manager");
 
     if (!data.cacheType || data.cacheType === "all") {
       productCache.clear();
@@ -259,8 +257,7 @@ class JobQueue {
    */
   getStats(): JobStats {
     return {
-      total:
-        this.queue.length + this.completedJobs.length + this.failedJobs.length,
+      total: this.queue.length + this.completedJobs.length + this.failedJobs.length,
       pending: this.queue.filter((j) => j.status === "pending").length,
       processing: this.queue.filter((j) => j.status === "processing").length,
       completed: this.completedJobs.length,

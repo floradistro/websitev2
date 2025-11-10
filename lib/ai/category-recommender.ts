@@ -41,10 +41,7 @@ export class CategoryRecommender {
       },
       entrance: {
         focus: "popular",
-        categories: this.getPopularCategories(
-          availableCategories,
-          productCounts,
-        ),
+        categories: this.getPopularCategories(availableCategories, productCounts),
         reasoning:
           "Entrance displays create first impressions. Show your most popular categories to draw customers in.",
       },
@@ -57,8 +54,7 @@ export class CategoryRecommender {
       wall_menu: {
         focus: "comprehensive",
         categories: availableCategories, // Show everything
-        reasoning:
-          "Main wall menus serve as primary product browser. Display all categories.",
+        reasoning: "Main wall menus serve as primary product browser. Display all categories.",
       },
       other: {
         focus: "custom",
@@ -74,8 +70,7 @@ export class CategoryRecommender {
     if (dwellTimeSeconds < 15 && finalCategories.length > 3) {
       // Short dwell time = fewer categories
       finalCategories = finalCategories.slice(0, 3);
-      strategy.reasoning +=
-        " Limited to 3 categories due to short viewing time.";
+      strategy.reasoning += " Limited to 3 categories due to short viewing time.";
     }
 
     // Adjust based on business goals
@@ -107,13 +102,7 @@ export class CategoryRecommender {
    * Get impulse buy categories
    */
   private static getImpulseCategories(categories: string[]): string[] {
-    const impulseTypes = [
-      "edibles",
-      "beverages",
-      "accessories",
-      "pre-rolls",
-      "tinctures",
-    ];
+    const impulseTypes = ["edibles", "beverages", "accessories", "pre-rolls", "tinctures"];
     return categories.filter((cat) =>
       impulseTypes.some((type) => cat.toLowerCase().includes(type)),
     );
@@ -126,9 +115,7 @@ export class CategoryRecommender {
     categories: string[],
     productCounts: { [category: string]: number },
   ): string[] {
-    return categories
-      .sort((a, b) => (productCounts[b] || 0) - (productCounts[a] || 0))
-      .slice(0, 3); // Top 3
+    return categories.sort((a, b) => (productCounts[b] || 0) - (productCounts[a] || 0)).slice(0, 3); // Top 3
   }
 
   /**
@@ -139,9 +126,7 @@ export class CategoryRecommender {
     const types = {
       flower: categories.find((c) => c.toLowerCase().includes("flower")),
       edible: categories.find((c) => c.toLowerCase().includes("edible")),
-      concentrate: categories.find((c) =>
-        c.toLowerCase().includes("concentrate"),
-      ),
+      concentrate: categories.find((c) => c.toLowerCase().includes("concentrate")),
       other: categories.find(
         (c) =>
           !c.toLowerCase().includes("flower") &&
@@ -179,9 +164,7 @@ export class CategoryRecommender {
     const alternatives = [];
 
     // Alternative 1: Single category focus
-    const topCategory = Object.entries(productCounts).sort(
-      ([, a], [, b]) => b - a,
-    )[0]?.[0];
+    const topCategory = Object.entries(productCounts).sort(([, a], [, b]) => b - a)[0]?.[0];
 
     if (topCategory) {
       alternatives.push({
@@ -201,24 +184,20 @@ export class CategoryRecommender {
       alternatives.push({
         name: "Best Sellers",
         categories: topThree,
-        rationale:
-          "Display only your top-selling categories to maximize conversion.",
+        rationale: "Display only your top-selling categories to maximize conversion.",
       });
     }
 
     // Alternative 3: Premium only
     const premium = categories.filter((cat) =>
-      ["concentrate", "vape", "tincture"].some((type) =>
-        cat.toLowerCase().includes(type),
-      ),
+      ["concentrate", "vape", "tincture"].some((type) => cat.toLowerCase().includes(type)),
     );
 
     if (premium.length > 0) {
       alternatives.push({
         name: "Premium Products",
         categories: premium,
-        rationale:
-          "Showcase high-margin premium products for increased revenue.",
+        rationale: "Showcase high-margin premium products for increased revenue.",
       });
     }
 

@@ -62,16 +62,11 @@ export class LayoutOptimizer {
   /**
    * Main optimization function
    */
-  static optimize(
-    display: DisplayProfile,
-    products: ProductData,
-  ): OptimalLayout {
+  static optimize(display: DisplayProfile, products: ProductData): OptimalLayout {
     const reasoning: string[] = [];
 
     // Calculate optimal font size based on viewing distance
-    const minFontSize = this.calculateMinReadableFont(
-      display.viewingDistanceFeet,
-    );
+    const minFontSize = this.calculateMinReadableFont(display.viewingDistanceFeet);
     reasoning.push(
       `Minimum readable font: ${minFontSize}px (viewing distance: ${display.viewingDistanceFeet}ft)`,
     );
@@ -81,11 +76,7 @@ export class LayoutOptimizer {
     reasoning.push(`Display PPI: ${ppi.toFixed(1)}`);
 
     // Determine if we can fit all products or need carousel
-    const maxComfortableProducts = this.calculateMaxProducts(
-      display,
-      products,
-      minFontSize,
-    );
+    const maxComfortableProducts = this.calculateMaxProducts(display, products, minFontSize);
     const needsCarousel = products.totalProducts > maxComfortableProducts;
 
     if (needsCarousel) {
@@ -93,9 +84,7 @@ export class LayoutOptimizer {
         `${products.totalProducts} products exceed comfortable limit of ${maxComfortableProducts} - using carousel mode`,
       );
     } else {
-      reasoning.push(
-        `${products.totalProducts} products fit comfortably - using dense mode`,
-      );
+      reasoning.push(`${products.totalProducts} products fit comfortably - using dense mode`);
     }
 
     // Calculate optimal grid layout
@@ -109,19 +98,10 @@ export class LayoutOptimizer {
     );
 
     // Adjust typography based on display characteristics
-    const typography = this.calculateTypography(
-      display,
-      products,
-      grid,
-      minFontSize,
-    );
+    const typography = this.calculateTypography(display, products, grid, minFontSize);
 
     // Determine content strategy
-    const contentStrategy = this.determineContentStrategy(
-      display,
-      products,
-      grid,
-    );
+    const contentStrategy = this.determineContentStrategy(display, products, grid);
     if (!contentStrategy.showImages) {
       reasoning.push("Hiding images to maximize product count and readability");
     }
@@ -142,12 +122,7 @@ export class LayoutOptimizer {
     }
 
     // Calculate confidence score
-    const confidence = this.calculateConfidence(
-      display,
-      products,
-      grid,
-      needsCarousel,
-    );
+    const confidence = this.calculateConfidence(display, products, grid, needsCarousel);
     reasoning.push(`Confidence: ${confidence}%`);
 
     return {
@@ -184,9 +159,7 @@ export class LayoutOptimizer {
     const diagonalInches = Math.sqrt(
       display.screenWidthInches ** 2 + display.screenHeightInches ** 2,
     );
-    const diagonalPixels = Math.sqrt(
-      display.resolutionWidth ** 2 + display.resolutionHeight ** 2,
-    );
+    const diagonalPixels = Math.sqrt(display.resolutionWidth ** 2 + display.resolutionHeight ** 2);
     return diagonalPixels / diagonalInches;
   }
 
@@ -305,15 +278,9 @@ export class LayoutOptimizer {
   /**
    * Calculate carousel timing based on dwell time
    */
-  private static calculateCarouselTiming(
-    display: DisplayProfile,
-    products: ProductData,
-  ) {
+  private static calculateCarouselTiming(display: DisplayProfile, products: ProductData) {
     // Rule: Give 50% of dwell time per page
-    const rotationSpeed = Math.max(
-      10,
-      Math.round(display.dwellTimeSeconds * 0.5),
-    );
+    const rotationSpeed = Math.max(10, Math.round(display.dwellTimeSeconds * 0.5));
 
     return {
       rotationSpeed,

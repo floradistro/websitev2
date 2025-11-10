@@ -11,6 +11,7 @@ import { showNotification } from "@/components/NotificationToast";
 import { Button, Input, Textarea, Modal, ds, cn } from "@/components/ds";
 import axios from "axios";
 
+import { logger } from "@/lib/logger";
 interface CustomFieldModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -106,8 +107,7 @@ export function CustomFieldModal({
       showNotification({
         type: "error",
         title: "Validation Error",
-        message:
-          "Field ID can only contain lowercase letters, numbers, and underscores",
+        message: "Field ID can only contain lowercase letters, numbers, and underscores",
       });
       return;
     }
@@ -169,7 +169,7 @@ export function CustomFieldModal({
       onClose();
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating field:", error);
+        logger.error("Error creating field:", error);
       }
       showNotification({
         type: "error",
@@ -182,52 +182,27 @@ export function CustomFieldModal({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Create Custom Field"
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Create Custom Field" size="md">
       <div className="space-y-4 mb-6">
         {/* Field Label */}
         <div>
-          <label
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              "block mb-1.5",
-            )}
-          >
+          <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
             Field Label *
           </label>
           <Input
             value={formData.label}
-            onChange={(e) =>
-              setFormData({ ...formData, label: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, label: e.target.value })}
             placeholder="e.g., Strain Type, Lab Testing, THC Level"
             autoFocus
           />
-          <p
-            className={cn(
-              ds.typography.size.micro,
-              ds.colors.text.quaternary,
-              "mt-1",
-            )}
-          >
+          <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-1")}>
             This is what users will see
           </p>
         </div>
 
         {/* Field ID */}
         <div>
-          <label
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              "block mb-1.5",
-            )}
-          >
+          <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
             Field ID *
           </label>
           <div className="flex items-center gap-2">
@@ -252,26 +227,14 @@ export function CustomFieldModal({
               Auto
             </button>
           </div>
-          <p
-            className={cn(
-              ds.typography.size.micro,
-              ds.colors.text.quaternary,
-              "mt-1",
-            )}
-          >
+          <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-1")}>
             Lowercase, underscores only (used in code)
           </p>
         </div>
 
         {/* Field Type */}
         <div>
-          <label
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              "block mb-1.5",
-            )}
-          >
+          <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
             Field Type *
           </label>
           <select
@@ -296,20 +259,12 @@ export function CustomFieldModal({
 
         {/* Category Assignment */}
         <div>
-          <label
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              "block mb-1.5",
-            )}
-          >
+          <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
             Assign to Category (Optional)
           </label>
           <select
             value={formData.category_id}
-            onChange={(e) =>
-              setFormData({ ...formData, category_id: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
             className={cn(
               "w-full px-3 py-2 rounded-lg",
               ds.typography.size.xs,
@@ -328,33 +283,19 @@ export function CustomFieldModal({
                 </option>
               ))}
           </select>
-          <p
-            className={cn(
-              ds.typography.size.micro,
-              ds.colors.text.quaternary,
-              "mt-1",
-            )}
-          >
+          <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-1")}>
             Leave empty to show on all products
           </p>
         </div>
 
         {/* Description */}
         <div>
-          <label
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              "block mb-1.5",
-            )}
-          >
+          <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
             Description (Optional)
           </label>
           <Textarea
             value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Help text for this field"
             rows={2}
           />
@@ -362,20 +303,12 @@ export function CustomFieldModal({
 
         {/* Placeholder */}
         <div>
-          <label
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              "block mb-1.5",
-            )}
-          >
+          <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
             Placeholder (Optional)
           </label>
           <Input
             value={formData.placeholder}
-            onChange={(e) =>
-              setFormData({ ...formData, placeholder: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, placeholder: e.target.value })}
             placeholder="e.g., Enter THC percentage"
           />
         </div>
@@ -383,20 +316,12 @@ export function CustomFieldModal({
         {/* Options for Select type */}
         {formData.type === "select" && (
           <div>
-            <label
-              className={cn(
-                ds.typography.size.xs,
-                ds.colors.text.tertiary,
-                "block mb-1.5",
-              )}
-            >
+            <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
               Dropdown Options * (one per line)
             </label>
             <Textarea
               value={formData.options}
-              onChange={(e) =>
-                setFormData({ ...formData, options: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, options: e.target.value })}
               placeholder={"Indica\nSativa\nHybrid"}
               rows={4}
             />
@@ -409,18 +334,12 @@ export function CustomFieldModal({
             type="checkbox"
             id="required"
             checked={formData.required}
-            onChange={(e) =>
-              setFormData({ ...formData, required: e.target.checked })
-            }
+            onChange={(e) => setFormData({ ...formData, required: e.target.checked })}
             className="w-4 h-4 rounded cursor-pointer"
           />
           <label
             htmlFor="required"
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              "cursor-pointer",
-            )}
+            className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "cursor-pointer")}
           >
             Make this field required
           </label>
@@ -437,22 +356,13 @@ export function CustomFieldModal({
         )}
       >
         <div className="flex gap-3">
-          <Type
-            className={cn("w-4 h-4 flex-shrink-0 mt-0.5", ds.colors.icon.blue)}
-          />
+          <Type className={cn("w-4 h-4 flex-shrink-0 mt-0.5", ds.colors.icon.blue)} />
           <div>
             <p className={cn(ds.typography.size.xs, "text-white/80")}>
               Custom fields help you capture product-specific data
             </p>
-            <p
-              className={cn(
-                ds.typography.size.micro,
-                ds.colors.text.quaternary,
-                "mt-0.5",
-              )}
-            >
-              Examples: Strain lineage, terpene profiles, lab test results,
-              effects, etc.
+            <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-0.5")}>
+              Examples: Strain lineage, terpene profiles, lab test results, effects, etc.
             </p>
           </div>
         </div>
@@ -480,9 +390,7 @@ export function CustomFieldModal({
 
         <Button
           onClick={handleSubmit}
-          disabled={
-            saving || !formData.label.trim() || !formData.field_id.trim()
-          }
+          disabled={saving || !formData.label.trim() || !formData.field_id.trim()}
         >
           <Save className="w-3 h-3 mr-1.5" strokeWidth={1.5} />
           {saving ? "Creating..." : "Create Field"}

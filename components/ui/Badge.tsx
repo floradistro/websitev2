@@ -6,11 +6,7 @@ interface BadgeProps {
   size?: "sm" | "md";
 }
 
-export function Badge({
-  children,
-  variant = "neutral",
-  size = "md",
-}: BadgeProps) {
+export function Badge({ children, variant = "neutral", size = "md" }: BadgeProps) {
   const variantClass = (() => {
     switch (variant) {
       case "success":
@@ -28,9 +24,5 @@ export function Badge({
 
   const sizeClass = size === "sm" ? "text-[9px] px-1.5 py-0.5" : "";
 
-  return (
-    <span className={`badge-base ${variantClass} ${sizeClass}`}>
-      {children}
-    </span>
-  );
+  return <span className={`badge-base ${variantClass} ${sizeClass}`}>{children}</span>;
 }

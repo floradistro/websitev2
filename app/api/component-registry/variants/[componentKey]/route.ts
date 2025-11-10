@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getComponentVariants } from "@/lib/component-registry";
 
+import { logger } from "@/lib/logger";
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ componentKey: string }> },
@@ -22,7 +23,7 @@ export async function GET(
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Failed to fetch variants:", error);
+      logger.error("Failed to fetch variants:", error);
     }
     return NextResponse.json(
       { success: false, error: "Failed to fetch variants" },

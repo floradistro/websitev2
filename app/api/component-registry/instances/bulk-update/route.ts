@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Bulk update error:", error);
+      logger.error("Bulk update error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Failed to update components" },

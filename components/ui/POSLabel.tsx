@@ -11,12 +11,7 @@ export interface POSLabelProps {
  * POS-themed label component with consistent dark styling
  * Used across the vendor dashboard for form labels
  */
-export function POSLabel({
-  children,
-  required,
-  className = "",
-  htmlFor,
-}: POSLabelProps) {
+export function POSLabel({ children, required, className = "", htmlFor }: POSLabelProps) {
   return (
     <label
       htmlFor={htmlFor}

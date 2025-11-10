@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   // SECURITY: Require vendor authentication - Critical fix from Apple Assessment
   const authResult = await requireVendor(request);
@@ -46,15 +47,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Pagination
-    query = query
-      .order("created_at", { ascending: false })
-      .range(offset, offset + perPage - 1);
+    query = query.order("created_at", { ascending: false }).range(offset, offset + perPage - 1);
 
     const { data, error, count } = await query;
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching customers:", error);
+        logger.error("Error fetching customers:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -71,7 +70,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -113,21 +112,20 @@ export async function POST(request: NextRequest) {
 
     // Create Supabase auth user if password provided
     if (password) {
-      const { data: authData, error: authError } =
-        await supabase.auth.admin.createUser({
-          email,
-          password,
-          email_confirm: true,
-          user_metadata: {
-            first_name,
-            last_name,
-            phone,
-          },
-        });
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          first_name,
+          last_name,
+          phone,
+        },
+      });
 
       if (authError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error creating auth user:", authError);
+          logger.error("Error creating auth user:", authError);
         }
         return NextResponse.json({ error: authError.message }, { status: 500 });
       }
@@ -157,17 +155,14 @@ export async function POST(request: NextRequest) {
 
     if (customerError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating customer:", customerError);
+        logger.error("Error creating customer:", customerError);
       }
       // Rollback auth user if customer creation failed
       if (authUserId) {
         await supabase.auth.admin.deleteUser(authUserId);
       }
 
-      return NextResponse.json(
-        { error: customerError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: customerError.message }, { status: 500 });
     }
 
     // Log activity
@@ -183,7 +178,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

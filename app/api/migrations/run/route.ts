@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { readFileSync } from "fs";
 import { join } from "path";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -12,10 +13,7 @@ export async function POST(request: NextRequest) {
     const { migrationName } = await request.json();
 
     if (migrationName !== "001_enterprise_session_management") {
-      return NextResponse.json(
-        { error: "Invalid migration name" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid migration name" }, { status: 400 });
     }
 
     // Step 1: Create unique index
@@ -150,7 +148,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Migration error:", error);
+      logger.error("❌ Migration error:", error);
     }
     return NextResponse.json(
       { error: "Migration failed", details: error.message },

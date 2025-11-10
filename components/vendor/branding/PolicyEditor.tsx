@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FileText, Copy, Check, AlertCircle } from "lucide-react";
 import { ds, cn } from "@/lib/design-system";
 
+import { logger } from "@/lib/logger";
 interface PolicyEditorProps {
   label: string;
   value: string;
@@ -104,7 +105,7 @@ export function PolicyEditor({
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to copy:", err);
+        logger.error("Failed to copy:", err);
       }
     }
   };
@@ -298,13 +299,7 @@ export function PolicyEditor({
           ds.effects.radius.lg,
         )}
       >
-        <div
-          className={cn(
-            ds.typography.size.micro,
-            ds.colors.text.quaternary,
-            "space-y-1",
-          )}
-        >
+        <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "space-y-1")}>
           <div>
             <strong>Markdown Supported:</strong>
           </div>

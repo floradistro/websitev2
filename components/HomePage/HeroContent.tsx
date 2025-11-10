@@ -103,9 +103,7 @@ export function HeroContent() {
         >
           Replace your entire software stack.
           <br />
-          <span className="text-white/50">
-            POS. eCommerce. Inventory. Analytics.
-          </span>
+          <span className="text-white/50">POS. eCommerce. Inventory. Analytics.</span>
           <br />
           <span className="text-white/50">Everything. Everywhere.</span>
         </motion.p>

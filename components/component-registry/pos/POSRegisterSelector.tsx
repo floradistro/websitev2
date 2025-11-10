@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { logger } from "@/lib/logger";
 interface Register {
   id: string;
   register_number: string;
@@ -75,9 +76,7 @@ export function POSRegisterSelector({
 
   const loadRegisters = async () => {
     try {
-      const response = await fetch(
-        `/api/pos/registers?locationId=${locationId}`,
-      );
+      const response = await fetch(`/api/pos/registers?locationId=${locationId}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -85,12 +84,12 @@ export function POSRegisterSelector({
         setRegisters(data.registers || []);
       } else {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Failed to load registers:", response.status);
+          logger.error("❌ Failed to load registers:", response.status);
         }
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading registers:", error);
+        logger.error("Error loading registers:", error);
       }
     } finally {
       setLoading(false);
@@ -118,8 +117,7 @@ export function POSRegisterSelector({
 
         // Check if register has active payment processor
         const hasPaymentProcessor = !!(
-          register.payment_processor_id &&
-          register.payment_processor?.is_active === true
+          register.payment_processor_id && register.payment_processor?.is_active === true
         );
 
         // Either joined existing or created new - database guarantees no duplicates
@@ -128,24 +126,19 @@ export function POSRegisterSelector({
       } else {
         const error = await response.json();
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Atomic session failed:", error);
+          logger.error("❌ Atomic session failed:", error);
         }
-        alert(
-          `Failed to get/create session: ${error.error || "Unknown error"}`,
-        );
+        alert(`Failed to get/create session: ${error.error || "Unknown error"}`);
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error with atomic session:", error);
+        logger.error("Error with atomic session:", error);
       }
       alert("Failed to access session");
     }
   };
 
-  const handleCloseSession = async (
-    e: React.MouseEvent,
-    register: Register,
-  ) => {
+  const handleCloseSession = async (e: React.MouseEvent, register: Register) => {
     e.stopPropagation(); // Prevent selecting the register
 
     if (!register.current_session) return;
@@ -178,7 +171,7 @@ export function POSRegisterSelector({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error closing session:", error);
+        logger.error("Error closing session:", error);
       }
       alert("Failed to close session");
     }
@@ -233,7 +226,7 @@ export function POSRegisterSelector({
       loadRegisters();
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error force closing sessions:", error);
+        logger.error("Error force closing sessions:", error);
       }
       alert("Failed to close some sessions");
     } finally {
@@ -244,9 +237,7 @@ export function POSRegisterSelector({
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-white/40 text-xs uppercase tracking-[0.15em]">
-          Loading...
-        </div>
+        <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Loading...</div>
       </div>
     );
   }
@@ -265,13 +256,9 @@ export function POSRegisterSelector({
               <span>Dashboard</span>
             </Link>
             <ChevronRight size={16} className="text-white/20" />
-            <span className="text-white/60 uppercase tracking-[0.15em]">
-              POS
-            </span>
+            <span className="text-white/60 uppercase tracking-[0.15em]">POS</span>
             <ChevronRight size={16} className="text-white/20" />
-            <span className="text-white uppercase tracking-[0.15em]">
-              Select Register
-            </span>
+            <span className="text-white uppercase tracking-[0.15em]">Select Register</span>
           </nav>
 
           {/* Back to Location Selector Button */}
@@ -298,9 +285,7 @@ export function POSRegisterSelector({
           >
             Select Register
           </h1>
-          <p className="text-white/60 text-sm uppercase tracking-[0.15em]">
-            {locationName}
-          </p>
+          <p className="text-white/60 text-sm uppercase tracking-[0.15em]">{locationName}</p>
         </div>
 
         {/* Register Grid */}
@@ -310,9 +295,7 @@ export function POSRegisterSelector({
               <p className="text-white/40 text-sm uppercase tracking-[0.15em] mb-4">
                 No registers found
               </p>
-              <p className="text-white/60 text-xs">
-                Registers loaded: {registers.length}
-              </p>
+              <p className="text-white/60 text-xs">Registers loaded: {registers.length}</p>
             </div>
           ) : (
             registers.map((register) => (
@@ -337,9 +320,7 @@ export function POSRegisterSelector({
                   <div className="text-white/40 text-xs uppercase tracking-[0.15em]">
                     {register.register_number}
                   </div>
-                  <div className="text-white/60 text-xs mt-2">
-                    {register.device_name}
-                  </div>
+                  <div className="text-white/60 text-xs mt-2">{register.device_name}</div>
                 </div>
 
                 {/* Status */}
@@ -351,8 +332,7 @@ export function POSRegisterSelector({
                     </div>
                     <div className="text-[10px] text-white/60 space-y-1">
                       <div className="flex items-center gap-1.5">
-                        <DollarSign size={10} />$
-                        {register.current_session.total_sales.toFixed(2)}
+                        <DollarSign size={10} />${register.current_session.total_sales.toFixed(2)}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Clock size={10} />
@@ -403,9 +383,7 @@ export function POSRegisterSelector({
               className="px-6 py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/20 hover:border-red-500/50 transition-all text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ fontWeight: 900 }}
             >
-              {closingAll
-                ? "Closing All Sessions..."
-                : "⚠️ Force End All Sessions"}
+              {closingAll ? "Closing All Sessions..." : "⚠️ Force End All Sessions"}
             </button>
           </div>
         )}

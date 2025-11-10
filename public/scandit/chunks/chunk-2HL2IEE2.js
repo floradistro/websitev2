@@ -15,21 +15,13 @@ var v = class extends a {
   }
   addPointerDownListener() {
     a$1.hasApi
-      ? this.element.addEventListener(
-          a$1.prefixIfNeeded("pointerdown"),
-          this._onPointerDown,
-        )
+      ? this.element.addEventListener(a$1.prefixIfNeeded("pointerdown"), this._onPointerDown)
       : a$1.hasTouch
         ? this.element.addEventListener("touchstart", this._onTouchStart)
         : this.element.addEventListener("mousedown", this._onPointerDown);
   }
   onPointerDown(e) {
-    let {
-      clientX: n,
-      clientY: t,
-      button: o,
-      currentTarget: a = this.element,
-    } = e;
+    let { clientX: n, clientY: t, button: o, currentTarget: a = this.element } = e;
     o === 0 &&
       this.onTap(
         this.pointRelativeToElement({

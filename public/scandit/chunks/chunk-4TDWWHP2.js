@@ -34,22 +34,15 @@ var a = class n {
   }
   async switchToDesiredState(e) {
     if (e === "on") {
-      if (this.currentState === "on" || this.currentState === "starting")
-        return;
-    } else if (this.currentState === "off" || this.currentState === "stopping")
-      return;
-    return (
-      (this._desiredState = e),
-      this.setCurrentState(e === "on" ? "starting" : "off")
-    );
+      if (this.currentState === "on" || this.currentState === "starting") return;
+    } else if (this.currentState === "off" || this.currentState === "stopping") return;
+    return ((this._desiredState = e), this.setCurrentState(e === "on" ? "starting" : "off"));
   }
   addListener(e) {
     e != null && (this.listeners.includes(e) || this.listeners.push(e));
   }
   removeListener(e) {
-    e != null &&
-      this.listeners.includes(e) &&
-      this.listeners.splice(this.listeners.indexOf(e), 1);
+    e != null && this.listeners.includes(e) && this.listeners.splice(this.listeners.indexOf(e), 1);
   }
   async applySettings(e) {
     return (
@@ -82,8 +75,7 @@ var a = class n {
     if (this._context) return this._context.update([e]);
   }
   notifyListeners() {
-    for (let e of this.listeners)
-      e.didChangeState && e.didChangeState(this, this.currentState);
+    for (let e of this.listeners) e.didChangeState && e.didChangeState(this, this.currentState);
   }
   async processUploadedFileCapture(e) {
     var t, r;

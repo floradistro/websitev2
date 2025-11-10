@@ -182,10 +182,11 @@ Time: 30 seconds per component
 try {
   const ast = compiler.parse(wclCode);
 } catch (error) {
-  throw new CompilerError(
-    `Failed to parse WCL at line ${lineNumber}: ${error.message}`,
-    { line: lineNumber, column, suggestion: "..." },
-  );
+  throw new CompilerError(`Failed to parse WCL at line ${lineNumber}: ${error.message}`, {
+    line: lineNumber,
+    column,
+    suggestion: "...",
+  });
 }
 ```
 

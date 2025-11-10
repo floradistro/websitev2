@@ -1,10 +1,5 @@
 /// <reference types="emscripten" />
-import {
-  Quadrilateral,
-  QuadrilateralJSON,
-  PointJSON,
-  Point,
-} from "../Common.js";
+import { Quadrilateral, QuadrilateralJSON, PointJSON, Point } from "../Common.js";
 import { Serializable } from "./Serializable.js";
 
 interface AnchorPositionsJSON extends QuadrilateralJSON {
@@ -14,10 +9,7 @@ interface AnchorPositionsJSON extends QuadrilateralJSON {
   bottomCenter: PointJSON;
   center: PointJSON;
 }
-declare class AnchorPositions
-  extends Quadrilateral
-  implements Serializable<AnchorPositionsJSON>
-{
+declare class AnchorPositions extends Quadrilateral implements Serializable<AnchorPositionsJSON> {
   private readonly _centerRight;
   private readonly _centerLeft;
   private readonly _topCenter;

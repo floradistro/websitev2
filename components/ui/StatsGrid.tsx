@@ -11,11 +11,7 @@ interface StatsGridProps {
   className?: string;
 }
 
-export function StatsGrid({
-  children,
-  cols = 4,
-  className = "",
-}: StatsGridProps) {
+export function StatsGrid({ children, cols = 4, className = "" }: StatsGridProps) {
   const colsClass = {
     2: "grid-cols-2",
     3: "grid-cols-3",
@@ -24,9 +20,5 @@ export function StatsGrid({
     6: "grid-cols-2 lg:grid-cols-6",
   };
 
-  return (
-    <div className={`grid ${colsClass[cols]} gap-3 mb-8 ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`grid ${colsClass[cols]} gap-3 mb-8 ${className}`}>{children}</div>;
 }

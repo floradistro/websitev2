@@ -21,9 +21,7 @@ const getSupabaseImageUrl = (
 
   if (url.startsWith("http")) {
     if (url.includes("supabase.co/storage/v1/object/public/")) {
-      const match = url.match(
-        /\/storage\/v1\/object\/public\/([^\/]+)\/(.+?)(\?|$)/,
-      );
+      const match = url.match(/\/storage\/v1\/object\/public\/([^\/]+)\/(.+?)(\?|$)/);
       if (match) {
         const bucket = match[1];
         const path = match[2];
@@ -94,9 +92,7 @@ export const ProductCard = memo(
       let url = "";
 
       if (product.images?.[0]) {
-        url = typeof product.images[0] === "string"
-          ? product.images[0]
-          : product.images[0].url;
+        url = typeof product.images[0] === "string" ? product.images[0] : product.images[0].url;
       } else if ((product as any).featured_image_storage) {
         url = (product as any).featured_image_storage;
       } else if (product.featured_image) {
@@ -108,14 +104,11 @@ export const ProductCard = memo(
     }, [product.images, (product as any).featured_image_storage, product.featured_image]);
 
     const statusStyle =
-      statusStyles[product.status as keyof typeof statusStyles] ||
-      statusStyles.draft;
+      statusStyles[product.status as keyof typeof statusStyles] || statusStyles.draft;
 
     return (
       <div role="article" aria-label={`Product: ${product.name}`}>
-        <Card
-          className={cn("p-3 sm:p-4 transition-all", "hover:bg-white/[0.06]")}
-        >
+        <Card className={cn("p-3 sm:p-4 transition-all", "hover:bg-white/[0.06]")}>
           <div className="flex items-start gap-3 sm:gap-4">
             {/* Product Image */}
             <div
@@ -160,22 +153,10 @@ export const ProductCard = memo(
                     {product.name}
                   </h3>
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
-                    <span
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.tertiary,
-                      )}
-                    >
+                    <span className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                       SKU: {product.sku}
                     </span>
-                    <span
-                      className={cn(
-                        ds.colors.text.quaternary,
-                        "hidden sm:inline",
-                      )}
-                    >
-                      •
-                    </span>
+                    <span className={cn(ds.colors.text.quaternary, "hidden sm:inline")}>•</span>
                     <span
                       className={cn(
                         ds.typography.size.xs,
@@ -219,39 +200,24 @@ export const ProductCard = memo(
               {/* Price & Stock */}
               <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  <DollarSign
-                    className={cn("w-4 h-4 text-white/50")}
-                    strokeWidth={1}
-                  />
+                  <DollarSign className={cn("w-4 h-4 text-white/50")} strokeWidth={1} />
                   {product.pricing_mode === "tiered" &&
                   product.pricing_tiers &&
                   product.pricing_tiers.length > 0 ? (
-                    <span
-                      className={cn(ds.typography.size.xs, "text-white/70")}
-                    >
+                    <span className={cn(ds.typography.size.xs, "text-white/70")}>
                       {product.pricing_tiers[0].weight} $
                       {parseFloat(product.pricing_tiers[0].price).toFixed(2)}
                       {product.pricing_tiers.length > 1 && (
                         <span className="text-white/50">
                           {" "}
-                          -{" "}
-                          {
-                            product.pricing_tiers[
-                              product.pricing_tiers.length - 1
-                            ].weight
-                          }{" "}
-                          $
+                          - {product.pricing_tiers[product.pricing_tiers.length - 1].weight} $
                           {parseFloat(
-                            product.pricing_tiers[
-                              product.pricing_tiers.length - 1
-                            ].price,
+                            product.pricing_tiers[product.pricing_tiers.length - 1].price,
                           ).toFixed(2)}
                         </span>
                       )}
                     </span>
-                  ) : product.price !== undefined &&
-                    product.price !== null &&
-                    product.price > 0 ? (
+                  ) : product.price !== undefined && product.price !== null && product.price > 0 ? (
                     <>
                       <span
                         className={cn(
@@ -275,42 +241,23 @@ export const ProductCard = memo(
                       )}
                     </>
                   ) : (
-                    <span
-                      className={cn(
-                        ds.typography.size.xs,
-                        "text-white/40 italic",
-                      )}
-                    >
+                    <span className={cn(ds.typography.size.xs, "text-white/40 italic")}>
                       No pricing set
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  <Package
-                    className={cn("w-4 h-4 text-white/50")}
-                    strokeWidth={1}
-                  />
-                  <span
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                    )}
-                  >
+                  <Package className={cn("w-4 h-4 text-white/50")} strokeWidth={1} />
+                  <span className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                     <span className="hidden sm:inline">Stock: </span>
-                    <span className="font-medium text-white/70">
-                      {product.total_stock}
-                    </span>
+                    <span className="font-medium text-white/70">{product.total_stock}</span>
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Actions */}
-            <div
-              className="flex flex-col gap-2"
-              role="group"
-              aria-label="Product actions"
-            >
+            <div className="flex flex-col gap-2" role="group" aria-label="Product actions">
               <button
                 onClick={() => onView(product.id)}
                 className={cn(
@@ -335,11 +282,7 @@ export const ProductCard = memo(
                 aria-label={`Delete ${product.name}`}
                 aria-busy={isDeleting}
               >
-                <Trash2
-                  className="w-5 h-5"
-                  strokeWidth={1}
-                  aria-hidden="true"
-                />
+                <Trash2 className="w-5 h-5" strokeWidth={1} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -356,7 +299,8 @@ export const ProductCard = memo(
       prevProps.product.status === nextProps.product.status &&
       prevProps.product.price === nextProps.product.price &&
       prevProps.product.images === nextProps.product.images &&
-      (prevProps.product as any).featured_image_storage === (nextProps.product as any).featured_image_storage &&
+      (prevProps.product as any).featured_image_storage ===
+        (nextProps.product as any).featured_image_storage &&
       prevProps.product.featured_image === nextProps.product.featured_image
     );
   },

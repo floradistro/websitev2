@@ -57,24 +57,21 @@ export const COMPONENT_REGISTRY = {
       },
     },
     smart_location_map: {
-      description:
-        "Automatically displays vendor's physical locations with map",
+      description: "Automatically displays vendor's physical locations with map",
       auto_wires: "vendor_id",
       props: {
         show_hours: "boolean",
         show_directions: "boolean",
         show_phone: "boolean",
       },
-      use_when:
-        "Vendor has 1+ locations. Queries vendor_locations table automatically.",
+      use_when: "Vendor has 1+ locations. Queries vendor_locations table automatically.",
       example: {
         component_key: "smart_location_map",
         props: { show_hours: true, show_directions: true },
       },
     },
     smart_testimonials: {
-      description:
-        "Automatically displays customer reviews and testimonials from database",
+      description: "Automatically displays customer reviews and testimonials from database",
       auto_wires: "vendor_id",
       props: {
         limit: "number (3-6 recommended)",
@@ -82,8 +79,7 @@ export const COMPONENT_REGISTRY = {
         show_date: "boolean",
         layout: '"grid" | "carousel"',
       },
-      use_when:
-        "Always include for social proof. Gracefully handles 0 reviews.",
+      use_when: "Always include for social proof. Gracefully handles 0 reviews.",
       example: {
         component_key: "smart_testimonials",
         props: { limit: 5, show_rating: true, layout: "grid" },
@@ -125,16 +121,14 @@ export const COMPONENT_REGISTRY = {
         show_icons: "boolean",
         show_count: "boolean",
       },
-      use_when:
-        "Category browsing for vendors with multiple product categories",
+      use_when: "Category browsing for vendors with multiple product categories",
       example: {
         component_key: "smart_category_nav",
         props: { layout: "horizontal", show_count: true },
       },
     },
     smart_stats_counter: {
-      description:
-        "Animated stats display (products sold, happy customers, etc)",
+      description: "Animated stats display (products sold, happy customers, etc)",
       auto_wires: "vendor_id",
       props: {
         stats: "array of {label, value, suffix}",
@@ -304,20 +298,13 @@ export const COMPONENT_REGISTRY = {
         "button (CTA)",
         "image (optional)",
       ],
-      best_practices:
-        "Keep it bold and simple. Main message should be clear in 3 seconds.",
+      best_practices: "Keep it bold and simple. Main message should be clear in 3 seconds.",
     },
     process: {
       description: "How it works / Why choose us",
       recommended_for: ["cannabis", "food", "service"],
-      typical_components: [
-        "text (heading)",
-        "text (step 1)",
-        "text (step 2)",
-        "text (step 3)",
-      ],
-      best_practices:
-        "3-4 steps explaining the customer journey or unique selling points.",
+      typical_components: ["text (heading)", "text (step 1)", "text (step 2)", "text (step 3)"],
+      best_practices: "3-4 steps explaining the customer journey or unique selling points.",
     },
     featured_products: {
       description: "Showcase products",
@@ -330,8 +317,7 @@ export const COMPONENT_REGISTRY = {
       description: "Physical store locations",
       recommended_for: "Vendors with 1+ locations",
       typical_components: ["text (heading)", "smart_location_map"],
-      best_practices:
-        "Only include if vendor has locations. Auto-wires to locations table.",
+      best_practices: "Only include if vendor has locations. Auto-wires to locations table.",
     },
     reviews: {
       description: "Social proof / testimonials",
@@ -343,11 +329,7 @@ export const COMPONENT_REGISTRY = {
     about_story: {
       description: "Brand story / mission",
       recommended_for: ["premium brands", "local businesses"],
-      typical_components: [
-        "text (heading)",
-        "text (story)",
-        "image (optional)",
-      ],
+      typical_components: ["text (heading)", "text (story)", "image (optional)"],
       best_practices: "Create emotional connection. Write in vendor's voice.",
     },
     shipping_badges: {
@@ -358,8 +340,7 @@ export const COMPONENT_REGISTRY = {
         "text (discreet packaging)",
         "text (lab tested)",
       ],
-      best_practices:
-        "Highlight competitive advantages like speed, privacy, quality.",
+      best_practices: "Highlight competitive advantages like speed, privacy, quality.",
     },
     footer: {
       description: "Bottom navigation and links",
@@ -373,12 +354,7 @@ export const COMPONENT_REGISTRY = {
     cannabis_dispensary: {
       vibe: "Professional, trustworthy, medical-grade",
       colors: "Earth tones (greens, browns), clean whites",
-      emphasis: [
-        "Lab testing",
-        "Fast delivery",
-        "Discreet packaging",
-        "Locations",
-      ],
+      emphasis: ["Lab testing", "Fast delivery", "Discreet packaging", "Locations"],
       sections: [
         "hero",
         "process",
@@ -392,20 +368,8 @@ export const COMPONENT_REGISTRY = {
     restaurant: {
       vibe: "Appetizing, warm, inviting",
       colors: "Warm tones (reds, oranges, yellows)",
-      emphasis: [
-        "Menu highlights",
-        "Ambiance photos",
-        "Reservations",
-        "Location",
-      ],
-      sections: [
-        "hero",
-        "featured_products",
-        "about_story",
-        "locations",
-        "reviews",
-        "footer",
-      ],
+      emphasis: ["Menu highlights", "Ambiance photos", "Reservations", "Location"],
+      sections: ["hero", "featured_products", "about_story", "locations", "reviews", "footer"],
     },
     retail: {
       vibe: "Clean, modern, trustworthy",

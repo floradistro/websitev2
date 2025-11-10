@@ -9,22 +9,13 @@ import { z } from "zod";
 export const productVisibilitySchema = z.enum(["internal", "marketplace"]);
 
 // Product status types
-export const productStatusSchema = z.enum([
-  "draft",
-  "pending",
-  "published",
-  "rejected",
-]);
+export const productStatusSchema = z.enum(["draft", "pending", "published", "rejected"]);
 
 // Product type
 export const productTypeSchema = z.enum(["simple", "variable"]);
 
 // Stock status
-export const stockStatusSchema = z.enum([
-  "instock",
-  "outofstock",
-  "onbackorder",
-]);
+export const stockStatusSchema = z.enum(["instock", "outofstock", "onbackorder"]);
 
 // Pricing tier schema
 export const pricingTierSchema = z.object({
@@ -129,10 +120,7 @@ export const createProductSchema = z
       // If product_type is 'variable', attributes and variants are required
       if (data.product_type === "variable") {
         return (
-          data.attributes &&
-          data.attributes.length > 0 &&
-          data.variants &&
-          data.variants.length > 0
+          data.attributes && data.attributes.length > 0 && data.variants && data.variants.length > 0
         );
       }
       return true;
@@ -223,9 +211,7 @@ export const bulkProductSchema = z.object({
 export const aiAutofillRequestSchema = z.object({
   product_name: z.string().min(1),
   category: z.string().optional(),
-  selectedFields: z
-    .array(z.string())
-    .min(1, "At least one field must be selected"),
+  selectedFields: z.array(z.string()).min(1, "At least one field must be selected"),
   customPrompt: z.string().optional(),
 });
 
@@ -241,9 +227,7 @@ export const bulkAIAutofillRequestSchema = z.object({
     )
     .min(1, "At least one product is required"),
   category: z.string(),
-  selectedFields: z
-    .array(z.string())
-    .min(1, "At least one field must be selected"),
+  selectedFields: z.array(z.string()).min(1, "At least one field must be selected"),
   customPrompt: z.string().optional(),
 });
 
@@ -265,10 +249,7 @@ export type BulkAIAutofillRequest = z.infer<typeof bulkAIAutofillRequestSchema>;
  * Helper function to validate and parse request data
  * Returns parsed data on success, throws ZodError on failure
  */
-export function validateProductData<T>(
-  schema: z.ZodSchema<T>,
-  data: unknown,
-): T {
+export function validateProductData<T>(schema: z.ZodSchema<T>, data: unknown): T {
   return schema.parse(data);
 }
 

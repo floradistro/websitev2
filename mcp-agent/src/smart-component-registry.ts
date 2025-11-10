@@ -10,8 +10,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
 
   smart_header: {
     component_key: "smart_header",
-    description:
-      "Luxury navigation header with vendor branding, categories dropdown, cart, search",
+    description: "Luxury navigation header with vendor branding, categories dropdown, cart, search",
     auto_wires: ["vendorId", "vendorSlug", "vendorName", "vendorLogo"],
     page_type: "all",
     section_key: "header",
@@ -26,14 +25,12 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
       sticky: "boolean (default: true)",
       navLinks: "array of {label, href, showDropdown?}",
     },
-    best_practices:
-      "Always include. Auto-fetches categories from database for dropdown.",
+    best_practices: "Always include. Auto-fetches categories from database for dropdown.",
   },
 
   smart_footer: {
     component_key: "smart_footer",
-    description:
-      "Luxury footer with links, social, legal compliance, copyright",
+    description: "Luxury footer with links, social, legal compliance, copyright",
     auto_wires: ["vendorId", "vendorSlug", "vendorName", "vendorLogo"],
     page_type: "all",
     section_key: "footer",
@@ -74,14 +71,12 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
 
   smart_product_grid: {
     component_key: "smart_product_grid",
-    description:
-      "Auto-fetches and displays products from database with luxury styling",
+    description: "Auto-fetches and displays products from database with luxury styling",
     auto_wires: ["vendorId"],
     page_type: ["home", "shop"],
     section_key: "featured_products",
     props: {
-      selectedProductIds:
-        "array of UUIDs (optional - filter specific products)",
+      selectedProductIds: "array of UUIDs (optional - filter specific products)",
       selectedCategoryIds: "array of UUIDs (optional - filter by category)",
       headline: 'string (e.g., "FEATURED PRODUCTS")',
       subheadline: "string (optional)",
@@ -91,8 +86,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
       showQuickAdd: "boolean (default: true)",
       cardStyle: '"minimal" | "bordered" | "elevated"',
     },
-    best_practices:
-      "Always include on homepage. Fetches real products automatically.",
+    best_practices: "Always include on homepage. Fetches real products automatically.",
   },
 
   smart_faq: {
@@ -107,8 +101,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
       faqs: "array of {question, answer}",
       animate: "boolean (default: true)",
     },
-    best_practices:
-      "Include on homepage for trust. Full page available at /faq",
+    best_practices: "Include on homepage for trust. Full page available at /faq",
   },
 
   // ============================================================================
@@ -126,8 +119,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
       onSortChange: "callback (optional)",
       onLocationChange: "callback (optional)",
     },
-    best_practices:
-      "Required for /shop page. Auto-fetches categories and locations.",
+    best_practices: "Required for /shop page. Auto-fetches categories and locations.",
   },
 
   // ============================================================================
@@ -136,8 +128,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
 
   smart_product_detail: {
     component_key: "smart_product_detail",
-    description:
-      "Complete product page with images, pricing, fields, COA, add to cart",
+    description: "Complete product page with images, pricing, fields, COA, add to cart",
     auto_wires: ["vendorId", "vendorSlug"],
     page_type: "product",
     section_key: "product_detail",
@@ -153,8 +144,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
       showLabResults: "boolean (default: true)",
       showRelatedProducts: "boolean (default: false)",
     },
-    best_practices:
-      "Required for /products/[slug] page. Fetches product data automatically.",
+    best_practices: "Required for /products/[slug] page. Fetches product data automatically.",
   },
 
   // ============================================================================
@@ -219,8 +209,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
       lastUpdated: "string (date)",
       animate: "boolean (default: true)",
     },
-    best_practices:
-      "Use for /privacy, /terms, /cookies pages. Include actual legal content.",
+    best_practices: "Use for /privacy, /terms, /cookies pages. Include actual legal content.",
   },
 
   // ============================================================================
@@ -240,8 +229,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
       shippingInfo: "string (general shipping information)",
       animate: "boolean (default: true)",
     },
-    best_practices:
-      "Required for /shipping page. Include real shipping details.",
+    best_practices: "Required for /shipping page. Include real shipping details.",
   },
 
   // ============================================================================
@@ -281,8 +269,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
       coaFiles: "array of COA file objects (server-side fetched)",
       animate: "boolean (default: true)",
     },
-    best_practices:
-      "Required for /lab-results page. COA files auto-fetched from storage bucket.",
+    best_practices: "Required for /lab-results page. COA files auto-fetched from storage bucket.",
   },
 
   // ============================================================================
@@ -291,8 +278,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
 
   smart_location_map: {
     component_key: "smart_location_map",
-    description:
-      "Auto-fetches and displays vendor locations with map integration",
+    description: "Auto-fetches and displays vendor locations with map integration",
     auto_wires: ["vendorId"],
     page_type: ["home", "locations"],
     section_key: "locations",
@@ -304,8 +290,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
       showDirections: "boolean (default: true)",
       columns: "number (default: 3)",
     },
-    best_practices:
-      "Include if vendor has locations. Auto-fetches from database.",
+    best_practices: "Include if vendor has locations. Auto-fetches from database.",
   },
 
   smart_testimonials: {
@@ -364,8 +349,7 @@ export const COMPLETE_SMART_COMPONENT_REGISTRY = {
       animate: "boolean (default: true)",
       layout: '"horizontal" | "grid"',
     },
-    best_practices:
-      'Use for social proof (e.g., "500+ Products", "10K+ Customers")',
+    best_practices: 'Use for social proof (e.g., "500+ Products", "10K+ Customers")',
   },
 };
 

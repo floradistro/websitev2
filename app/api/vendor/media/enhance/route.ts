@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import FormData from "form-data";
 import axios from "axios";
 
+import { logger } from "@/lib/logger";
 const REMOVE_BG_API_KEY = "CTYgh57QAP1FvqrEAHAwzFqG";
 
 // Image enhancement with multiple options
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Upload error:", uploadError);
+        logger.error("❌ Upload error:", uploadError);
       }
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Enhance error:", error.response?.data || error.message);
+      logger.error("❌ Enhance error:", error.response?.data || error.message);
     }
     return NextResponse.json(
       {

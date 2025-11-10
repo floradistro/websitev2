@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ templateId: string }> },
@@ -29,7 +30,7 @@ export async function GET(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Template field groups API error:", error);
+      logger.error("Template field groups API error:", error);
     }
     return NextResponse.json(
       {

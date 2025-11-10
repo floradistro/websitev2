@@ -45,10 +45,7 @@ declare class GrayScaleFrameReader extends FrameReaderAbstract {
    * https://www.khronos.org/opengl/wiki/Primitive#Triangle_primitives
    */
   private _positions;
-  constructor(
-    originalGLContext: WebGLRenderingContext,
-    options?: PoolCapacityOptions | undefined,
-  );
+  constructor(originalGLContext: WebGLRenderingContext, options?: PoolCapacityOptions | undefined);
   private get _webglContext();
   readFromSource(source: TexImageSource): FrameCapture;
   setup(): void;

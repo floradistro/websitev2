@@ -20,11 +20,7 @@ declare class PrivateCanvasDrawer extends CanvasDrawerAbstract {
    * Draw given commands. If the canvas has not a valid size, postpone drawing until it is.
    */
   draw(commands: Uint8Array): void;
-  updateCanvasSizeAttributes(
-    width: number,
-    height: number,
-    devicePixelRatio?: number,
-  ): void;
+  updateCanvasSizeAttributes(width: number, height: number, devicePixelRatio?: number): void;
   /**
    * Observe the canvas until it has a valid size. When it happens,
    * draw postponed commands onto it.

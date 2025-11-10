@@ -22,9 +22,7 @@ export default function ProductReviews({ reviews }: ProductReviewsProps) {
         <div className="p-8 bg-white/5 border border-white/10 rounded-lg text-center">
           <Star className="w-12 h-12 text-white/20 mx-auto mb-3" />
           <p className="text-white/40">No reviews yet</p>
-          <p className="text-white/30 text-sm mt-1">
-            Be the first to review this product
-          </p>
+          <p className="text-white/30 text-sm mt-1">Be the first to review this product</p>
         </div>
       </div>
     );
@@ -37,19 +35,14 @@ export default function ProductReviews({ reviews }: ProductReviewsProps) {
       </h3>
       <div className="space-y-3">
         {reviews.map((review) => (
-          <div
-            key={review.id}
-            className="p-4 bg-white/5 border border-white/10 rounded-lg"
-          >
+          <div key={review.id} className="p-4 bg-white/5 border border-white/10 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
                     className={`w-4 h-4 ${
-                      i < review.rating
-                        ? "text-yellow-500 fill-yellow-500"
-                        : "text-white/20"
+                      i < review.rating ? "text-yellow-500 fill-yellow-500" : "text-white/20"
                     }`}
                   />
                 ))}

@@ -58,9 +58,7 @@ export default function PricingPanel({
   const costPrice = parseFloat(formData.cost_price);
   const sellingPrice = parseFloat(formData.price);
   const hasValidPrices = costPrice > 0 && sellingPrice > 0;
-  const margin = hasValidPrices
-    ? ((sellingPrice - costPrice) / sellingPrice) * 100
-    : 0;
+  const margin = hasValidPrices ? ((sellingPrice - costPrice) / sellingPrice) * 100 : 0;
   const profit = hasValidPrices ? sellingPrice - costPrice : 0;
 
   return (
@@ -92,10 +90,7 @@ export default function PricingPanel({
                 ds.typography.tracking.wide,
                 pricingMode === "single"
                   ? "bg-white/10 border-white/20 text-white"
-                  : cn(
-                      ds.colors.bg.primary,
-                      "border-white/10 text-white/60 hover:border-white/20",
-                    ),
+                  : cn(ds.colors.bg.primary, "border-white/10 text-white/60 hover:border-white/20"),
               )}
             >
               Single
@@ -110,10 +105,7 @@ export default function PricingPanel({
                 ds.typography.tracking.wide,
                 pricingMode === "tiered"
                   ? "bg-white/10 border-white/20 text-white"
-                  : cn(
-                      ds.colors.bg.primary,
-                      "border-white/10 text-white/60 hover:border-white/20",
-                    ),
+                  : cn(ds.colors.bg.primary, "border-white/10 text-white/60 hover:border-white/20"),
               )}
             >
               Tiered
@@ -165,13 +157,7 @@ export default function PricingPanel({
                   )}
                 />
               </div>
-              <p
-                className={cn(
-                  ds.typography.size.micro,
-                  ds.colors.text.quaternary,
-                  "mt-1.5",
-                )}
-              >
+              <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-1.5")}>
                 Private
               </p>
             </div>
@@ -204,9 +190,7 @@ export default function PricingPanel({
                   step="0.01"
                   required={pricingMode === "single"}
                   value={formData.price}
-                  onChange={(e) =>
-                    onFormDataChange({ ...formData, price: e.target.value })
-                  }
+                  onChange={(e) => onFormDataChange({ ...formData, price: e.target.value })}
                   placeholder="14.99"
                   className={cn(
                     ds.colors.bg.primary,
@@ -257,12 +241,7 @@ export default function PricingPanel({
 
       {/* Tiered Pricing Panel */}
       {pricingMode === "tiered" && (
-        <div
-          className={cn(
-            ds.colors.bg.primary,
-            "mt-4 border border-white/10 rounded-2xl p-4",
-          )}
-        >
+        <div className={cn(ds.colors.bg.primary, "mt-4 border border-white/10 rounded-2xl p-4")}>
           <SectionHeader as="h3" withMargin={false} className="mb-3">
             Pricing Tiers
           </SectionHeader>
@@ -279,11 +258,7 @@ export default function PricingPanel({
                   ds.colors.text.quaternary,
                 )}
               >
-                <Sparkles
-                  size={10}
-                  className="inline mr-1.5 text-white/60"
-                  strokeWidth={1}
-                />
+                <Sparkles size={10} className="inline mr-1.5 text-white/60" strokeWidth={1} />
                 Pricing Template <span className="text-white/60">*</span>
               </label>
               <div className="flex flex-col sm:flex-row gap-2">
@@ -319,14 +294,9 @@ export default function PricingPanel({
                 )}
               </div>
               {selectedTemplateId && (
-                <p
-                  className={cn(
-                    "text-white/50 mt-1.5",
-                    ds.typography.size.micro,
-                  )}
-                >
-                  {availableTemplates.find((t) => t.id === selectedTemplateId)
-                    ?.description || "Template selected"}
+                <p className={cn("text-white/50 mt-1.5", ds.typography.size.micro)}>
+                  {availableTemplates.find((t) => t.id === selectedTemplateId)?.description ||
+                    "Template selected"}
                 </p>
               )}
             </div>
@@ -357,11 +327,7 @@ export default function PricingPanel({
                     <div className="text-white/60 text-[10px] sm:text-xs truncate flex-shrink min-w-0">
                       {tier.weight || `${tier.qty}x`}
                     </div>
-                    <div
-                      className={cn(
-                        "text-white text-xs sm:text-sm font-medium flex-shrink-0",
-                      )}
-                    >
+                    <div className={cn("text-white text-xs sm:text-sm font-medium flex-shrink-0")}>
                       $
                       {tier.price && !isNaN(parseFloat(tier.price.toString()))
                         ? parseFloat(tier.price.toString()).toFixed(2)

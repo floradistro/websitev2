@@ -4,10 +4,8 @@ import { productCache, generateCacheKey } from "@/lib/cache-manager";
 import { monitor } from "@/lib/performance-monitor";
 import { requireVendor } from "@/lib/auth/middleware";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+import { logger } from "@/lib/logger";
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const endTimer = monitor.startTimer("Product Detail API");
 
   try {
@@ -89,16 +87,13 @@ export async function GET(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -119,10 +114,7 @@ export async function PUT(
       .single();
 
     if (!existing || existing.vendor_id !== vendorId) {
-      return NextResponse.json(
-        { error: "Product not found or unauthorized" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Product not found or unauthorized" }, { status: 404 });
     }
 
     // Build update object
@@ -131,30 +123,21 @@ export async function PUT(
     if (body.name !== undefined) updates.name = body.name;
     if (body.slug !== undefined) updates.slug = body.slug;
     if (body.description !== undefined) updates.description = body.description;
-    if (body.short_description !== undefined)
-      updates.short_description = body.short_description;
+    if (body.short_description !== undefined) updates.short_description = body.short_description;
     if (body.sku !== undefined) updates.sku = body.sku;
     if (body.type !== undefined) updates.type = body.type;
     if (body.status !== undefined) updates.status = body.status;
-    if (body.regular_price !== undefined)
-      updates.regular_price = parseFloat(body.regular_price);
+    if (body.regular_price !== undefined) updates.regular_price = parseFloat(body.regular_price);
     if (body.sale_price !== undefined)
       updates.sale_price = body.sale_price ? parseFloat(body.sale_price) : null;
-    if (body.featured_image !== undefined)
-      updates.featured_image = body.featured_image;
-    if (body.image_gallery !== undefined)
-      updates.image_gallery = body.image_gallery;
+    if (body.featured_image !== undefined) updates.featured_image = body.featured_image;
+    if (body.image_gallery !== undefined) updates.image_gallery = body.image_gallery;
     if (body.attributes !== undefined) updates.attributes = body.attributes;
-    if (body.custom_fields !== undefined)
-      updates.custom_fields = body.custom_fields;
-    if (body.manage_stock !== undefined)
-      updates.manage_stock = body.manage_stock;
-    if (body.stock_quantity !== undefined)
-      updates.stock_quantity = parseFloat(body.stock_quantity);
-    if (body.stock_status !== undefined)
-      updates.stock_status = body.stock_status;
-    if (body.weight !== undefined)
-      updates.weight = body.weight ? parseFloat(body.weight) : null;
+    if (body.custom_fields !== undefined) updates.custom_fields = body.custom_fields;
+    if (body.manage_stock !== undefined) updates.manage_stock = body.manage_stock;
+    if (body.stock_quantity !== undefined) updates.stock_quantity = parseFloat(body.stock_quantity);
+    if (body.stock_status !== undefined) updates.stock_status = body.stock_status;
+    if (body.weight !== undefined) updates.weight = body.weight ? parseFloat(body.weight) : null;
     if (body.featured !== undefined) updates.featured = body.featured;
     if (body.meta_data !== undefined) updates.meta_data = body.meta_data;
 
@@ -177,13 +160,11 @@ export async function PUT(
 
       // Insert new
       if (body.category_ids.length > 0) {
-        const categoryLinks = body.category_ids.map(
-          (catId: string, index: number) => ({
-            product_id: id,
-            category_id: catId,
-            is_primary: index === 0,
-          }),
-        );
+        const categoryLinks = body.category_ids.map((catId: string, index: number) => ({
+          product_id: id,
+          category_id: catId,
+          is_primary: index === 0,
+        }));
 
         await supabase.from("product_categories").insert(categoryLinks);
       }
@@ -200,7 +181,7 @@ export async function PUT(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -229,17 +210,11 @@ export async function DELETE(
       .single();
 
     if (!existing || existing.vendor_id !== vendorId) {
-      return NextResponse.json(
-        { error: "Product not found or unauthorized" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Product not found or unauthorized" }, { status: 404 });
     }
 
     // Delete product (cascades to categories, tags, etc.)
-    const { error: deleteError } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", id);
+    const { error: deleteError } = await supabase.from("products").delete().eq("id", id);
 
     if (deleteError) {
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
@@ -251,7 +226,7 @@ export async function DELETE(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

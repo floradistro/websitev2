@@ -221,8 +221,7 @@ Generate JSON with this structure:
     const issues: string[] = [];
 
     // Check for medical claims
-    const medicalTerms =
-      /medic(al|ine)|treat(ment)?|cure|heal|therapy|diagnos/i;
+    const medicalTerms = /medic(al|ine)|treat(ment)?|cure|heal|therapy|diagnos/i;
     if (medicalTerms.test(message)) {
       issues.push("Contains potential medical claims");
     }
@@ -248,10 +247,7 @@ Generate JSON with this structure:
   /**
    * Generate multiple variants for A/B testing
    */
-  async generateVariants(
-    params: SMSGenerationParams,
-    count: number = 3,
-  ): Promise<GeneratedSMS[]> {
+  async generateVariants(params: SMSGenerationParams, count: number = 3): Promise<GeneratedSMS[]> {
     const variants: GeneratedSMS[] = [];
 
     for (let i = 0; i < count; i++) {

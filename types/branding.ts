@@ -289,11 +289,6 @@ export const AVAILABLE_FONTS = [
 export type AvailableFont = (typeof AVAILABLE_FONTS)[number];
 
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-export const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-];
+export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 export const LOGO_RECOMMENDED_SIZE = { width: 300, height: 300 };
 export const BANNER_RECOMMENDED_SIZE = { width: 1920, height: 600 };

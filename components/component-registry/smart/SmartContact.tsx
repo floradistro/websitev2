@@ -66,11 +66,7 @@ export function SmartContact({
   ];
 
   return (
-    <SmartComponentWrapper
-      animate={false}
-      componentName="Contact"
-      className={className}
-    >
+    <SmartComponentWrapper animate={false} componentName="Contact" className={className}>
       {/* Hero Section */}
       <section className="pt-32 sm:pt-40 pb-16 sm:pb-20 px-4 sm:px-6 bg-black">
         <SmartContainers.MaxWidth>
@@ -107,9 +103,7 @@ export function SmartContact({
               </motion.div>
             )}
 
-            <SmartTypography.Headline className="mb-6">
-              {headline}
-            </SmartTypography.Headline>
+            <SmartTypography.Headline className="mb-6">{headline}</SmartTypography.Headline>
             <p className="text-xl sm:text-2xl text-white/60 uppercase tracking-wide">
               {subheadline}
             </p>
@@ -137,15 +131,9 @@ export function SmartContact({
               >
                 <SmartContainers.Card className="p-6 text-center">
                   <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
-                    <info.icon
-                      size={20}
-                      className="text-white"
-                      strokeWidth={2.5}
-                    />
+                    <info.icon size={20} className="text-white" strokeWidth={2.5} />
                   </div>
-                  <SmartTypography.Label className="mb-2">
-                    {info.label}
-                  </SmartTypography.Label>
+                  <SmartTypography.Label className="mb-2">{info.label}</SmartTypography.Label>
                   <p className="text-sm text-white/60">{info.value}</p>
                 </SmartContainers.Card>
               </motion.div>
@@ -176,9 +164,7 @@ export function SmartContact({
                     type="text"
                     required
                     value={formState.name}
-                    onChange={(e) =>
-                      setFormState({ ...formState, name: e.target.value })
-                    }
+                    onChange={(e) => setFormState({ ...formState, name: e.target.value })}
                     className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors"
                     placeholder="Your name"
                   />
@@ -192,9 +178,7 @@ export function SmartContact({
                     type="email"
                     required
                     value={formState.email}
-                    onChange={(e) =>
-                      setFormState({ ...formState, email: e.target.value })
-                    }
+                    onChange={(e) => setFormState({ ...formState, email: e.target.value })}
                     className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors"
                     placeholder="your@email.com"
                   />
@@ -208,9 +192,7 @@ export function SmartContact({
                     type="text"
                     required
                     value={formState.subject}
-                    onChange={(e) =>
-                      setFormState({ ...formState, subject: e.target.value })
-                    }
+                    onChange={(e) => setFormState({ ...formState, subject: e.target.value })}
                     className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors"
                     placeholder="How can we help?"
                   />
@@ -224,9 +206,7 @@ export function SmartContact({
                     required
                     rows={6}
                     value={formState.message}
-                    onChange={(e) =>
-                      setFormState({ ...formState, message: e.target.value })
-                    }
+                    onChange={(e) => setFormState({ ...formState, message: e.target.value })}
                     className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-colors resize-none"
                     placeholder="Your message..."
                   />

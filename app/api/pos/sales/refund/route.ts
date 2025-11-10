@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -17,10 +18,7 @@ export async function POST(request: NextRequest) {
     const { transactionId, reason } = body;
 
     if (!transactionId || !reason) {
-      return NextResponse.json(
-        { error: "Missing transactionId or reason" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing transactionId or reason" }, { status: 400 });
     }
 
     // Get original transaction
@@ -31,10 +29,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (txError || !transaction) {
-      return NextResponse.json(
-        { error: "Transaction not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     }
 
     // Update transaction status
@@ -83,7 +78,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error processing refund:", error);
+      logger.error("Error processing refund:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

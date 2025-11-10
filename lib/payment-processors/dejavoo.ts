@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 /**
  * Dejavoo SPIN REST API Client
  * Documentation: https://app.theneo.io/dejavoo/spin/spin-rest-api-methods
@@ -7,28 +9,23 @@
 // TYPES & INTERFACES
 // ============================================================
 
-export type DejavooEnvironment = 'production' | 'sandbox';
+export type DejavooEnvironment = "production" | "sandbox";
 
 export type DejavooPaymentType =
-  | 'Credit'
-  | 'Debit'
-  | 'EBT_Food'
-  | 'EBT_Cash'
-  | 'Card'
-  | 'Cash'
-  | 'Check'
-  | 'Gift';
+  | "Credit"
+  | "Debit"
+  | "EBT_Food"
+  | "EBT_Cash"
+  | "Card"
+  | "Cash"
+  | "Check"
+  | "Gift";
 
-export type DejavooTransactionType =
-  | 'Sale'
-  | 'Return'
-  | 'Void'
-  | 'Auth'
-  | 'Capture';
+export type DejavooTransactionType = "Sale" | "Return" | "Void" | "Auth" | "Capture";
 
-export type DejavooResultCode = 'Ok' | 'TerminalError' | 'ApiError';
+export type DejavooResultCode = "Ok" | "TerminalError" | "ApiError";
 
-export type DejavooReceiptOption = 'No' | 'Both' | 'Merchant' | 'Customer';
+export type DejavooReceiptOption = "No" | "Both" | "Merchant" | "Customer";
 
 export interface DejavooConfig {
   authkey: string;
@@ -119,9 +116,10 @@ export class DejavooClient {
     this.defaultTimeout = config.timeout || 120; // 2 minutes default
 
     // Set base URL based on environment
-    this.baseUrl = config.environment === 'production'
-      ? 'https://api.spinpos.net'
-      : 'https://test.spinpos.net/spin';
+    this.baseUrl =
+      config.environment === "production"
+        ? "https://api.spinpos.net"
+        : "https://test.spinpos.net/spin";
   }
 
   /**
@@ -134,15 +132,15 @@ export class DejavooClient {
       PaymentType: request.paymentType,
       ReferenceId: request.referenceId,
       InvoiceNumber: request.invoiceNumber,
-      PrintReceipt: request.printReceipt ?? 'No',
-      GetReceipt: request.getReceipt ?? 'Both',
+      PrintReceipt: request.printReceipt ?? "No",
+      GetReceipt: request.getReceipt ?? "Both",
       GetExtendedData: request.getExtendedData !== false,
       Tpn: this.tpn,
       Authkey: this.authkey,
       SPInProxyTimeout: request.timeout || this.defaultTimeout,
     };
 
-    return this.makeRequest<DejavooTransactionResponse>('v2/Payment/Sale', payload);
+    return this.makeRequest<DejavooTransactionResponse>("v2/Payment/Sale", payload);
   }
 
   /**
@@ -154,14 +152,14 @@ export class DejavooClient {
       PaymentType: request.paymentType,
       ReferenceId: request.referenceId,
       InvoiceNumber: request.invoiceNumber,
-      PrintReceipt: request.printReceipt ?? 'No',
-      GetReceipt: request.getReceipt ?? 'Both',
+      PrintReceipt: request.printReceipt ?? "No",
+      GetReceipt: request.getReceipt ?? "Both",
       GetExtendedData: request.getExtendedData !== false,
       Tpn: this.tpn,
       Authkey: this.authkey,
     };
 
-    return this.makeRequest<DejavooTransactionResponse>('v2/Payment/Return', payload);
+    return this.makeRequest<DejavooTransactionResponse>("v2/Payment/Return", payload);
   }
 
   /**
@@ -170,13 +168,13 @@ export class DejavooClient {
   async void(request: DejavooVoidRequest): Promise<DejavooTransactionResponse> {
     const payload = {
       ReferenceId: request.referenceId,
-      PrintReceipt: request.printReceipt ?? 'No',
-      GetReceipt: request.getReceipt ?? 'Both',
+      PrintReceipt: request.printReceipt ?? "No",
+      GetReceipt: request.getReceipt ?? "Both",
       Tpn: this.tpn,
       Authkey: this.authkey,
     };
 
-    return this.makeRequest<DejavooTransactionResponse>('v2/Payment/Void', payload);
+    return this.makeRequest<DejavooTransactionResponse>("v2/Payment/Void", payload);
   }
 
   /**
@@ -188,52 +186,47 @@ export class DejavooClient {
       PaymentType: request.paymentType,
       ReferenceId: request.referenceId,
       InvoiceNumber: request.invoiceNumber,
-      PrintReceipt: request.printReceipt ?? 'No',
-      GetReceipt: request.getReceipt ?? 'Both',
+      PrintReceipt: request.printReceipt ?? "No",
+      GetReceipt: request.getReceipt ?? "Both",
       GetExtendedData: request.getExtendedData !== false,
       Tpn: this.tpn,
       Authkey: this.authkey,
     };
 
-    return this.makeRequest<DejavooTransactionResponse>('v2/Payment/Auth', payload);
+    return this.makeRequest<DejavooTransactionResponse>("v2/Payment/Auth", payload);
   }
 
   /**
    * Make HTTP request to Dejavoo API
    */
-  private async makeRequest<T>(
-    endpoint: string,
-    payload: any
-  ): Promise<T> {
+  private async makeRequest<T>(endpoint: string, payload: any): Promise<T> {
     const url = `${this.baseUrl}/${endpoint}`;
-
-    });
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
 
       // Check for HTTP errors
       if (!response.ok) {
-        let errorBody = '';
+        let errorBody = "";
         try {
           errorBody = await response.text();
-          if (process.env.NODE_ENV === 'development') {
-            console.error('🔴 DejaVoo API Error Response:', errorBody);
+          if (process.env.NODE_ENV === "development") {
+            logger.error("🔴 DejaVoo API Error Response:", errorBody);
           }
         } catch (e) {
           // Ignore
         }
 
         throw new DejavooApiError(
-          `HTTP ${response.status}: ${response.statusText}${errorBody ? ` - ${errorBody}` : ''}`,
+          `HTTP ${response.status}: ${response.statusText}${errorBody ? ` - ${errorBody}` : ""}`,
           response.status.toString(),
-          response.statusText
+          response.statusText,
         );
       }
 
@@ -244,11 +237,11 @@ export class DejavooClient {
         const { ResultCode, StatusCode, Message, DetailedMessage } = data.GeneralResponse;
 
         // ResultCode "0" or StatusCode "0000" indicates success
-        if (ResultCode !== '0' && StatusCode !== '0000') {
+        if (ResultCode !== "0" && StatusCode !== "0000") {
           throw new DejavooApiError(
-            DetailedMessage || Message || 'Transaction failed',
+            DetailedMessage || Message || "Transaction failed",
             StatusCode,
-            ResultCode
+            ResultCode,
           );
         }
       }
@@ -261,9 +254,9 @@ export class DejavooClient {
 
       // Network or parsing errors
       throw new DejavooApiError(
-        error instanceof Error ? error.message : 'Unknown error occurred',
-        'NETWORK_ERROR',
-        'ApiError'
+        error instanceof Error ? error.message : "Unknown error occurred",
+        "NETWORK_ERROR",
+        "ApiError",
       );
     }
   }
@@ -278,16 +271,16 @@ export class DejavooClient {
       const testRef = `TEST-${Date.now()}`;
 
       await this.auth({
-        amount: 1.00,
-        paymentType: 'Credit',
+        amount: 1.0,
+        paymentType: "Credit",
         referenceId: testRef,
         getExtendedData: false,
       });
 
       return true;
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Dejavoo connection test failed:', error);
+      if (process.env.NODE_ENV === "development") {
+        logger.error("Dejavoo connection test failed:", error);
       }
       return false;
     }
@@ -302,45 +295,45 @@ export class DejavooApiError extends Error {
   constructor(
     message: string,
     public readonly statusCode: string,
-    public readonly resultCode: string
+    public readonly resultCode: string,
   ) {
     super(message);
-    this.name = 'DejavooApiError';
+    this.name = "DejavooApiError";
   }
 
   /**
    * Check if error is due to declined transaction
    */
   isDeclined(): boolean {
-    return this.statusCode !== '0000' && this.resultCode === '0';
+    return this.statusCode !== "0000" && this.resultCode === "0";
   }
 
   /**
    * Check if error is due to terminal error
    */
   isTerminalError(): boolean {
-    return this.resultCode === 'TerminalError';
+    return this.resultCode === "TerminalError";
   }
 
   /**
    * Check if error is due to API error
    */
   isApiError(): boolean {
-    return this.resultCode === 'ApiError';
+    return this.resultCode === "ApiError";
   }
 
   /**
    * Check if error is due to timeout
    */
   isTimeout(): boolean {
-    return this.statusCode === '2007' || this.message.includes('timeout');
+    return this.statusCode === "2007" || this.message.includes("timeout");
   }
 
   /**
    * Check if terminal is unavailable
    */
   isTerminalUnavailable(): boolean {
-    return this.statusCode === '2011';
+    return this.statusCode === "2011";
   }
 }
 
@@ -351,9 +344,11 @@ export class DejavooApiError extends Error {
 /**
  * Generate a unique reference ID for Dejavoo transactions
  */
-export function generateReferenceId(prefix = 'TXN'): string {
+export function generateReferenceId(prefix = "TXN"): string {
   const timestamp = Date.now();
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  const random = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, "0");
   return `${prefix}-${timestamp}-${random}`.substring(0, 50); // Max 50 chars
 }
 
@@ -372,11 +367,11 @@ export function parseCardType(cardType?: string): string | null {
 
   const normalized = cardType.toLowerCase();
 
-  if (normalized.includes('visa')) return 'Visa';
-  if (normalized.includes('mastercard') || normalized.includes('master')) return 'Mastercard';
-  if (normalized.includes('amex') || normalized.includes('american')) return 'American Express';
-  if (normalized.includes('discover')) return 'Discover';
-  if (normalized.includes('jcb')) return 'JCB';
+  if (normalized.includes("visa")) return "Visa";
+  if (normalized.includes("mastercard") || normalized.includes("master")) return "Mastercard";
+  if (normalized.includes("amex") || normalized.includes("american")) return "American Express";
+  if (normalized.includes("discover")) return "Discover";
+  if (normalized.includes("jcb")) return "JCB";
 
   return cardType;
 }
@@ -386,10 +381,10 @@ export function parseCardType(cardType?: string): string | null {
  */
 export function getStatusMessage(statusCode: string): string {
   const statusMessages: Record<string, string> = {
-    '0000': 'Approved',
-    '2007': 'Transaction timeout',
-    '2011': 'Terminal not available',
-    '2301': 'Invalid request',
+    "0000": "Approved",
+    "2007": "Transaction timeout",
+    "2011": "Terminal not available",
+    "2301": "Invalid request",
   };
 
   return statusMessages[statusCode] || `Unknown status: ${statusCode}`;

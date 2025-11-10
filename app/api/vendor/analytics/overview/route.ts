@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -32,10 +33,7 @@ export async function GET(request: NextRequest) {
     if (todayError) throw todayError;
 
     const todaySales =
-      todayOrders?.reduce(
-        (sum, o) => sum + parseFloat(o.vendor_subtotal || "0"),
-        0,
-      ) || 0;
+      todayOrders?.reduce((sum, o) => sum + parseFloat(o.vendor_subtotal || "0"), 0) || 0;
     const todayOrderCount = todayOrders?.length || 0;
 
     // Get last 7 days stats
@@ -51,10 +49,7 @@ export async function GET(request: NextRequest) {
     if (weekError) throw weekError;
 
     const weekSales =
-      weekOrders?.reduce(
-        (sum, o) => sum + parseFloat(o.vendor_subtotal || "0"),
-        0,
-      ) || 0;
+      weekOrders?.reduce((sum, o) => sum + parseFloat(o.vendor_subtotal || "0"), 0) || 0;
     const weekOrderCount = weekOrders?.length || 0;
 
     // Get last 30 days stats
@@ -70,13 +65,9 @@ export async function GET(request: NextRequest) {
     if (monthError) throw monthError;
 
     const monthSales =
-      monthOrders?.reduce(
-        (sum, o) => sum + parseFloat(o.vendor_subtotal || "0"),
-        0,
-      ) || 0;
+      monthOrders?.reduce((sum, o) => sum + parseFloat(o.vendor_subtotal || "0"), 0) || 0;
     const monthOrderCount = monthOrders?.length || 0;
-    const avgOrderValue =
-      monthOrderCount > 0 ? monthSales / monthOrderCount : 0;
+    const avgOrderValue = monthOrderCount > 0 ? monthSales / monthOrderCount : 0;
 
     // Get pending orders
     const { data: pendingOrders, error: pendingError } = await supabase
@@ -97,17 +88,16 @@ export async function GET(request: NextRequest) {
     if (payoutError) throw payoutError;
 
     const pendingPayout =
-      payoutData?.reduce(
-        (sum, o) => sum + parseFloat(o.vendor_net_amount || "0"),
-        0,
-      ) || 0;
+      payoutData?.reduce((sum, o) => sum + parseFloat(o.vendor_net_amount || "0"), 0) || 0;
 
     // Get top products from order_items
-    const { data: topProductsData, error: topProductsError } =
-      await supabase.rpc("get_vendor_top_products", {
+    const { data: topProductsData, error: topProductsError } = await supabase.rpc(
+      "get_vendor_top_products",
+      {
         p_vendor_id: vendorId,
         p_limit: 5,
-      });
+      },
+    );
 
     let topProducts = [];
     if (!topProductsError && topProductsData) {
@@ -131,9 +121,7 @@ export async function GET(request: NextRequest) {
       .eq("vendor_id", vendorId);
 
     const lowStockItems =
-      allInventory?.filter(
-        (item) => item.quantity <= (item.low_stock_threshold || 0),
-      ) || [];
+      allInventory?.filter((item) => item.quantity <= (item.low_stock_threshold || 0)) || [];
 
     const lowStockCount = lowStockItems.length;
 
@@ -167,7 +155,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Vendor analytics overview error:", error);
+      logger.error("Vendor analytics overview error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to fetch analytics" },

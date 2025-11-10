@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 /**
  * AI Code Feature V2 - Utility Functions
  * Timeout, retry, and error handling utilities
@@ -16,28 +18,17 @@ export interface RetryOptions {
  * @param ms Timeout in milliseconds
  * @param fallback Optional fallback value on timeout
  */
-export async function withTimeout<T>(
-  promise: Promise<T>,
-  ms: number,
-  fallback?: T,
-): Promise<T> {
+export async function withTimeout<T>(promise: Promise<T>, ms: number, fallback?: T): Promise<T> {
   const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(
-      () => reject(new Error(`Operation timed out after ${ms}ms`)),
-      ms,
-    );
+    setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms);
   });
 
   try {
     return await Promise.race([promise, timeoutPromise]);
   } catch (error) {
-    if (
-      fallback !== undefined &&
-      error instanceof Error &&
-      error.message.includes("timed out")
-    ) {
+    if (fallback !== undefined && error instanceof Error && error.message.includes("timed out")) {
       if (process.env.NODE_ENV === "development") {
-        console.warn(`Operation timed out, using fallback:`, error.message);
+        logger.warn("Operation timed out, using fallback", { error: error.message });
       }
       return fallback;
     }
@@ -54,12 +45,7 @@ export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   options: RetryOptions = {},
 ): Promise<T> {
-  const {
-    maxRetries = 3,
-    baseDelay = 1000,
-    maxDelay = 10000,
-    onRetry,
-  } = options;
+  const { maxRetries = 3, baseDelay = 1000, maxDelay = 10000, onRetry } = options;
 
   let lastError: Error;
 
@@ -75,10 +61,9 @@ export async function retryWithBackoff<T>(
 
       const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
       if (process.env.NODE_ENV === "development") {
-        console.warn(
-          `Attempt ${attempt + 1}/${maxRetries + 1} failed, retrying in ${delay}ms...`,
-          lastError.message,
-        );
+        logger.warn(`Attempt ${attempt + 1}/${maxRetries + 1} failed, retrying in ${delay}ms`, {
+          error: lastError.message,
+        });
       }
       if (onRetry) {
         onRetry(attempt, lastError);
@@ -105,9 +90,7 @@ export function sleep(ms: number): Promise<void> {
 export async function parallelWithTimeouts<T>(
   promises: Array<() => Promise<T>>,
   timeoutMs: number,
-): Promise<
-  Array<{ success: true; value: T } | { success: false; error: Error }>
-> {
+): Promise<Array<{ success: true; value: T } | { success: false; error: Error }>> {
   const wrappedPromises = promises.map(async (fn) => {
     try {
       const value = await withTimeout(fn(), timeoutMs);

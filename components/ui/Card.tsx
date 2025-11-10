@@ -47,8 +47,7 @@ export function Card({
     }
   })();
 
-  const hoverClass =
-    hover && variant === "glass" ? "hover:bg-white/[0.03]" : "";
+  const hoverClass = hover && variant === "glass" ? "hover:bg-white/[0.03]" : "";
 
   return (
     <div
@@ -67,21 +66,14 @@ interface CardHeaderProps {
   noPadding?: boolean;
 }
 
-export function CardHeader({
-  title,
-  subtitle,
-  action,
-  noPadding = false,
-}: CardHeaderProps) {
+export function CardHeader({ title, subtitle, action, noPadding = false }: CardHeaderProps) {
   return (
     <div
       className={`flex items-center justify-between ${noPadding ? "mb-4 md:mb-6" : "p-4 md:p-6 border-b border-white/5"}`}
     >
       <div>
         <h3 className="text-label text-xs md:text-sm mb-1 md:mb-2">{title}</h3>
-        {subtitle && (
-          <p className="text-sublabel text-[10px] md:text-xs">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-sublabel text-[10px] md:text-xs">{subtitle}</p>}
       </div>
       {action && <div className="flex-shrink-0">{action}</div>}
     </div>
@@ -94,17 +86,9 @@ interface CardSectionProps {
   className?: string;
 }
 
-export function CardSection({
-  children,
-  border = false,
-  className = "",
-}: CardSectionProps) {
+export function CardSection({ children, border = false, className = "" }: CardSectionProps) {
   return (
-    <div
-      className={`${border ? "border-t border-white/5 pt-6" : ""} ${className}`}
-    >
-      {children}
-    </div>
+    <div className={`${border ? "border-t border-white/5 pt-6" : ""} ${className}`}>{children}</div>
   );
 }
 

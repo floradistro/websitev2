@@ -219,10 +219,7 @@ export default function VendorLogin() {
                 </p>
                 <p className="text-white/40 text-xs font-light">
                   Need an account?{" "}
-                  <Link
-                    href="/"
-                    className="text-white/60 hover:text-white/90 transition-colors"
-                  >
+                  <Link href="/" className="text-white/60 hover:text-white/90 transition-colors">
                     Contact us
                   </Link>
                 </p>
@@ -234,10 +231,7 @@ export default function VendorLogin() {
           <div className="mt-6 text-center space-y-3">
             <p className="text-white/30 text-xs font-light">
               Customer?{" "}
-              <Link
-                href="/login"
-                className="text-white/50 hover:text-white/90 transition-colors"
-              >
+              <Link href="/login" className="text-white/50 hover:text-white/90 transition-colors">
                 Sign in here
               </Link>
             </p>

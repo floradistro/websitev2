@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 import { createRepositoryFromTemplate } from "@/lib/deployment/github";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     // Verify vendor authentication
@@ -23,14 +24,14 @@ export async function POST(request: NextRequest) {
 
     if (vendorError || !vendor) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Vendor not found:", vendorError);
+        logger.error("Vendor not found:", vendorError);
       }
       return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
     }
 
     if (!vendor.github_access_token || !vendor.github_username) {
       if (process.env.NODE_ENV === "development") {
-        console.error("GitHub not connected for vendor");
+        logger.error("GitHub not connected for vendor");
       }
       return NextResponse.json(
         { error: "Please connect your GitHub account first" },
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error updating vendor with repo info:", updateError);
+        logger.error("Error updating vendor with repo info:", updateError);
       }
     }
 
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error creating website repo:", error);
+      logger.error("Error creating website repo:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to create repository" },

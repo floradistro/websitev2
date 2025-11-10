@@ -7,10 +7,7 @@ interface ProductsHeaderProps {
   isLoading: boolean;
 }
 
-export function ProductsHeader({
-  totalProducts,
-  isLoading,
-}: ProductsHeaderProps) {
+export function ProductsHeader({ totalProducts, isLoading }: ProductsHeaderProps) {
   return (
     <header className="flex items-center justify-between mb-6" role="banner">
       <div>
@@ -41,10 +38,7 @@ export function ProductsHeader({
         </p>
       </div>
 
-      <Link
-        href="/vendor/products/new"
-        aria-label="Add a new product to your catalog"
-      >
+      <Link href="/vendor/products/new" aria-label="Add a new product to your catalog">
         <Button className="flex items-center gap-2">
           <Plus className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
           Add Product

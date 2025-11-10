@@ -121,8 +121,7 @@ var s = class i {
     if (this._context) return this._context.update([e]);
   }
   notifyListeners() {
-    for (let e of this._listeners)
-      e.didChangeState && e.didChangeState(this, this.currentState);
+    for (let e of this._listeners) e.didChangeState && e.didChangeState(this, this.currentState);
   }
   async processSubmittedImage(e) {
     var t;

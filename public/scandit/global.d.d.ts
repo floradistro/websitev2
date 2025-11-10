@@ -37,11 +37,7 @@ declare global {
     [K]?: ContextBridgeApi;
   }
   interface FinalizationRegistry<Target = object, HeldValue = any> {
-    register(
-      target: Target,
-      heldValue: HeldValue,
-      unregisterToken?: object,
-    ): void;
+    register(target: Target, heldValue: HeldValue, unregisterToken?: object): void;
     unregister(unregisterToken: object): boolean;
   }
 }

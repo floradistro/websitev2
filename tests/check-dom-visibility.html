@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DOM Visibility Checker</title>
+</head>
+<body>
+    <h1>Open this in your browser console while viewing the gallery</h1>
+    <pre>
+// Paste this in browser console after clicking a product:
+
+const checkVisibility = () => {
+    console.log('=== DOM VISIBILITY CHECK ===');
+
+    // Find the gallery container
+    const gallery = document.querySelector('[class*="ProductGallery"]') ||
+                   document.evaluate("//div[contains(text(), 'Bolo Candy')]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.closest('div');
+
+    if (!gallery) {
+        console.log('❌ Gallery element not found in DOM');
+        return;
+    }
+
+    console.log('✅ Gallery element found:', gallery);
+
+    const rect = gallery.getBoundingClientRect();
+    const computed = window.getComputedStyle(gallery);
+
+    console.log('📐 Position & Size:', {
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+        height: rect.height,
+        visible: rect.width > 0 && rect.height > 0
+    });
+
+    console.log('🎨 Computed Styles:', {
+        display: computed.display,
+        visibility: computed.visibility,
+        opacity: computed.opacity,
+        zIndex: computed.zIndex,
+        position: computed.position,
+        overflow: computed.overflow,
+        transform: computed.transform,
+        clip: computed.clip,
+        clipPath: computed.clipPath
+    });
+
+    // Check parent chain
+    let parent = gallery.parentElement;
+    let level = 1;
+    console.log('👪 Parent Chain:');
+    while (parent && level < 10) {
+        const pComputed = window.getComputedStyle(parent);
+        const pRect = parent.getBoundingClientRect();
+        console.log(`  Level ${level}:`, {
+            tag: parent.tagName,
+            class: parent.className,
+            display: pComputed.display,
+            overflow: pComputed.overflow,
+            width: pRect.width,
+            height: pRect.height,
+            hasChildren: parent.children.length
+        });
+        parent = parent.parentElement;
+        level++;
+    }
+
+    // Check what's on top
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const elementsAtPoint = document.elementsFromPoint(centerX, centerY);
+
+    console.log('🎯 Elements at gallery center:', elementsAtPoint.slice(0, 5).map(el => ({
+        tag: el.tagName,
+        class: el.className,
+        zIndex: window.getComputedStyle(el).zIndex
+    })));
+
+    // Check if it's the first element (visible)
+    console.log('👁️ Is gallery visible at center?', elementsAtPoint[0] === gallery || elementsAtPoint.includes(gallery));
+};
+
+checkVisibility();
+    </pre>
+</body>
+</html>

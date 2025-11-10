@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Bulk Inventory API - Fast inventory lookups
  * POST /api/bulk/inventory
@@ -11,11 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     const { product_ids, location_ids, vendor_id } = await request.json();
 
-    if (
-      !product_ids ||
-      !Array.isArray(product_ids) ||
-      product_ids.length === 0
-    ) {
+    if (!product_ids || !Array.isArray(product_ids) || product_ids.length === 0) {
       return NextResponse.json(
         { error: "Invalid request: product_ids array required" },
         { status: 400 },
@@ -43,11 +40,7 @@ export async function POST(request: NextRequest) {
       )
       .in("product_id", product_ids);
 
-    if (
-      location_ids &&
-      Array.isArray(location_ids) &&
-      location_ids.length > 0
-    ) {
+    if (location_ids && Array.isArray(location_ids) && location_ids.length > 0) {
       query = query.in("location_id", location_ids);
     }
 
@@ -59,12 +52,9 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Bulk inventory error:", error);
+        logger.error("Bulk inventory error:", error);
       }
-      return NextResponse.json(
-        { error: "Failed to fetch inventory" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch inventory" }, { status: 500 });
     }
 
     // Group by product_id for easy lookup
@@ -89,12 +79,9 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Bulk inventory error:", error);
+      logger.error("Bulk inventory error:", error);
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -109,10 +96,7 @@ export async function GET(request: NextRequest) {
     const lowStock = searchParams.get("low_stock") === "true";
 
     if (!locationId && !vendorId) {
-      return NextResponse.json(
-        { error: "location_id or vendor_id required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "location_id or vendor_id required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -139,12 +123,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Bulk inventory error:", error);
+        logger.error("Bulk inventory error:", error);
       }
-      return NextResponse.json(
-        { error: "Failed to fetch inventory" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch inventory" }, { status: 500 });
     }
 
     return NextResponse.json(
@@ -160,11 +141,8 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Bulk inventory error:", error);
+      logger.error("Bulk inventory error:", error);
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

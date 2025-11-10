@@ -3,17 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Modal, Button, Input } from "@/components/ds";
 import { ds, cn } from "@/components/ds";
-import {
-  Trash2,
-  Package,
-  Building2,
-  CheckCircle2,
-  XCircle,
-  Search,
-  X,
-} from "lucide-react";
+import { Trash2, Package, Building2, CheckCircle2, XCircle, Search, X } from "lucide-react";
 import { useAppAuth } from "@/context/AppAuthContext";
 
+import { logger } from "@/lib/logger";
 interface Supplier {
   id: string;
   external_name: string;
@@ -49,11 +42,7 @@ interface CreatePOModalProps {
   onSuccess: () => void;
 }
 
-export function CreatePOModal({
-  isOpen,
-  onClose,
-  onSuccess,
-}: CreatePOModalProps) {
+export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps) {
   const { vendor, locations: contextLocations } = useAppAuth();
 
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -95,19 +84,16 @@ export function CreatePOModal({
     if (!vendor?.id) return;
     setLoadingSuppliers(true);
     try {
-      const response = await fetch(
-        `/api/vendor/suppliers?vendor_id=${vendor.id}`,
-        {
-          credentials: "include",
-        },
-      );
+      const response = await fetch(`/api/vendor/suppliers?vendor_id=${vendor.id}`, {
+        credentials: "include",
+      });
       const data = await response.json();
       if (data.success) {
         setSuppliers(data.data || []);
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to load suppliers:", err);
+        logger.error("Failed to load suppliers:", err);
       }
     } finally {
       setLoadingSuppliers(false);
@@ -118,19 +104,16 @@ export function CreatePOModal({
     if (!vendor?.id) return;
     setLoadingProducts(true);
     try {
-      const response = await fetch(
-        `/api/vendor/products/full?vendor_id=${vendor.id}&limit=all`,
-        {
-          credentials: "include",
-        },
-      );
+      const response = await fetch(`/api/vendor/products/full?vendor_id=${vendor.id}&limit=all`, {
+        credentials: "include",
+      });
       const data = await response.json();
       if (data.success) {
         setAllProducts(data.products || []);
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to load products:", err);
+        logger.error("Failed to load products:", err);
       }
     } finally {
       setLoadingProducts(false);
@@ -141,19 +124,16 @@ export function CreatePOModal({
     if (!vendor?.id) return;
     setLoadingLocations(true);
     try {
-      const response = await fetch(
-        `/api/vendor/locations?vendor_id=${vendor.id}`,
-        {
-          credentials: "include",
-        },
-      );
+      const response = await fetch(`/api/vendor/locations?vendor_id=${vendor.id}`, {
+        credentials: "include",
+      });
       const data = await response.json();
       if (data.success) {
         setLocations(data.locations || []);
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to load locations:", err);
+        logger.error("Failed to load locations:", err);
       }
     } finally {
       setLoadingLocations(false);
@@ -202,21 +182,14 @@ export function CreatePOModal({
     setLineItems(lineItems.filter((_, i) => i !== index));
   };
 
-  const updateLineItem = (
-    index: number,
-    field: keyof POLineItem,
-    value: any,
-  ) => {
+  const updateLineItem = (index: number, field: keyof POLineItem, value: any) => {
     const updated = [...lineItems];
     updated[index] = { ...updated[index], [field]: value };
     setLineItems(updated);
   };
 
   const calculateSubtotal = () => {
-    return lineItems.reduce(
-      (sum, item) => sum + item.quantity * item.unit_price,
-      0,
-    );
+    return lineItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
   };
 
   const validateForm = () => {
@@ -325,12 +298,7 @@ export function CreatePOModal({
       size="xl"
       footer={
         <>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
+          <Button variant="ghost" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button
@@ -368,9 +336,7 @@ export function CreatePOModal({
           )}
         >
           <XCircle size={16} className="text-red-400" />
-          <span className={cn(ds.typography.size.xs, "text-red-400")}>
-            {error}
-          </span>
+          <span className={cn(ds.typography.size.xs, "text-red-400")}>{error}</span>
         </div>
       )}
 
@@ -398,27 +364,16 @@ export function CreatePOModal({
             "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         >
-          <option value="">
-            {loadingSuppliers ? "Loading suppliers..." : "Select supplier"}
-          </option>
+          <option value="">{loadingSuppliers ? "Loading suppliers..." : "Select supplier"}</option>
           {suppliers.map((supplier) => (
             <option key={supplier.id} value={supplier.id}>
-              {supplier.external_name ||
-                supplier.external_company ||
-                "Unknown Supplier"}
-              {supplier.supplier_vendor &&
-                ` (${supplier.supplier_vendor.store_name})`}
+              {supplier.external_name || supplier.external_company || "Unknown Supplier"}
+              {supplier.supplier_vendor && ` (${supplier.supplier_vendor.store_name})`}
             </option>
           ))}
         </select>
         {suppliers.length === 0 && !loadingSuppliers && (
-          <p
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.quaternary,
-              "mt-1",
-            )}
-          >
+          <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mt-1")}>
             No suppliers found. Create a supplier first.
           </p>
         )}
@@ -448,9 +403,7 @@ export function CreatePOModal({
             "disabled:opacity-50 disabled:cursor-not-allowed",
           )}
         >
-          <option value="">
-            {loadingLocations ? "Loading locations..." : "Select location"}
-          </option>
+          <option value="">{loadingLocations ? "Loading locations..." : "Select location"}</option>
           {locations.map((location) => (
             <option key={location.id} value={location.id}>
               {location.name}
@@ -458,13 +411,7 @@ export function CreatePOModal({
           ))}
         </select>
         {locations.length === 0 && !loadingLocations && (
-          <p
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.quaternary,
-              "mt-1",
-            )}
-          >
+          <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mt-1")}>
             No locations found. Create a location first.
           </p>
         )}
@@ -472,13 +419,7 @@ export function CreatePOModal({
 
       {/* Expected Delivery Date */}
       <div className="mb-4">
-        <label
-          className={cn(
-            ds.typography.size.xs,
-            ds.colors.text.quaternary,
-            "mb-2 block",
-          )}
-        >
+        <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-2 block")}>
           Expected Delivery Date
         </label>
         <Input
@@ -501,9 +442,7 @@ export function CreatePOModal({
             <Package size={12} />
             Products *
           </label>
-          <span
-            className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}
-          >
+          <span className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
             {lineItems.length} items
           </span>
         </div>
@@ -512,10 +451,7 @@ export function CreatePOModal({
         <div className="relative mb-3">
           <Search
             size={16}
-            className={cn(
-              "absolute left-3 top-1/2 -translate-y-1/2",
-              ds.colors.text.quaternary,
-            )}
+            className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.colors.text.quaternary)}
           />
           <input
             ref={searchInputRef}
@@ -581,9 +517,7 @@ export function CreatePOModal({
                       ds.typography.size.sm,
                     )}
                   >
-                    {productSearch.trim()
-                      ? "No products found"
-                      : "No products available"}
+                    {productSearch.trim() ? "No products found" : "No products available"}
                   </div>
                 ) : (
                   <>
@@ -598,9 +532,7 @@ export function CreatePOModal({
                       {filteredProducts.length === 1 ? "" : "s"}
                     </div>
                     {filteredProducts.map((product) => {
-                      const isAdded = lineItems.some(
-                        (item) => item.product_id === product.id,
-                      );
+                      const isAdded = lineItems.some((item) => item.product_id === product.id);
                       return (
                         <button
                           key={product.id}
@@ -613,12 +545,7 @@ export function CreatePOModal({
                           )}
                         >
                           <div className="flex-1 min-w-0">
-                            <div
-                              className={cn(
-                                ds.typography.size.sm,
-                                "text-white/90 truncate",
-                              )}
-                            >
+                            <div className={cn(ds.typography.size.sm, "text-white/90 truncate")}>
                               {product.name}
                             </div>
                             <div
@@ -638,27 +565,12 @@ export function CreatePOModal({
                             </div>
                           </div>
                           {product.regular_price && (
-                            <div
-                              className={cn(
-                                ds.typography.size.sm,
-                                ds.colors.text.secondary,
-                              )}
-                            >
-                              $
-                              {parseFloat(
-                                product.regular_price.toString(),
-                              ).toFixed(2)}
+                            <div className={cn(ds.typography.size.sm, ds.colors.text.secondary)}>
+                              ${parseFloat(product.regular_price.toString()).toFixed(2)}
                             </div>
                           )}
                           {isAdded && (
-                            <div
-                              className={cn(
-                                ds.typography.size.xs,
-                                "text-green-400",
-                              )}
-                            >
-                              Added
-                            </div>
+                            <div className={cn(ds.typography.size.xs, "text-green-400")}>Added</div>
                           )}
                         </button>
                       );
@@ -684,30 +596,16 @@ export function CreatePOModal({
               >
                 <div className="flex items-start gap-2 mb-2">
                   <div className="flex-1 min-w-0">
-                    <div
-                      className={cn(
-                        ds.typography.size.sm,
-                        "text-white/90 truncate",
-                      )}
-                    >
+                    <div className={cn(ds.typography.size.sm, "text-white/90 truncate")}>
                       {item.product_name}
                     </div>
                     {item.product_sku && (
-                      <div
-                        className={cn(
-                          ds.typography.size.xs,
-                          ds.colors.text.quaternary,
-                        )}
-                      >
+                      <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
                         SKU: {item.product_sku}
                       </div>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => removeLineItem(index)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => removeLineItem(index)}>
                     <Trash2 size={12} />
                   </Button>
                 </div>
@@ -715,23 +613,15 @@ export function CreatePOModal({
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.quaternary,
-                        "mb-1 block",
-                      )}
+                      className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1 block")}
                     >
                       Quantity
                     </label>
                     <Input
                       type="number"
-                      value={item.quantity || ""}
+                      value={item.quantity ? String(item.quantity) : ""}
                       onChange={(e) =>
-                        updateLineItem(
-                          index,
-                          "quantity",
-                          parseFloat(e.target.value) || 0,
-                        )
+                        updateLineItem(index, "quantity", parseFloat(e.target.value) || 0)
                       }
                       min={0}
                       step={0.01}
@@ -740,23 +630,15 @@ export function CreatePOModal({
                   </div>
                   <div>
                     <label
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.quaternary,
-                        "mb-1 block",
-                      )}
+                      className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1 block")}
                     >
                       Unit Price
                     </label>
                     <Input
                       type="number"
-                      value={item.unit_price || ""}
+                      value={item.unit_price ? String(item.unit_price) : ""}
                       onChange={(e) =>
-                        updateLineItem(
-                          index,
-                          "unit_price",
-                          parseFloat(e.target.value) || 0,
-                        )
+                        updateLineItem(index, "unit_price", parseFloat(e.target.value) || 0)
                       }
                       min={0}
                       step={0.01}
@@ -789,10 +671,7 @@ export function CreatePOModal({
           >
             <Search
               size={32}
-              className={cn(
-                "mx-auto mb-2 opacity-20",
-                ds.colors.text.quaternary,
-              )}
+              className={cn("mx-auto mb-2 opacity-20", ds.colors.text.quaternary)}
             />
             <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
               Search and add products to your purchase order
@@ -803,13 +682,7 @@ export function CreatePOModal({
 
       {/* Internal Notes */}
       <div className="mb-4">
-        <label
-          className={cn(
-            ds.typography.size.xs,
-            ds.colors.text.quaternary,
-            "mb-2 block",
-          )}
-        >
+        <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-2 block")}>
           Internal Notes
         </label>
         <Input
@@ -823,26 +696,13 @@ export function CreatePOModal({
       {subtotal > 0 && (
         <div className={cn("rounded-lg p-3", ds.colors.bg.secondary)}>
           <div className="flex items-center justify-between">
-            <span
-              className={cn(ds.typography.size.sm, ds.colors.text.secondary)}
-            >
-              Subtotal
-            </span>
-            <span
-              className={cn(ds.typography.size.lg, "text-white font-light")}
-            >
+            <span className={cn(ds.typography.size.sm, ds.colors.text.secondary)}>Subtotal</span>
+            <span className={cn(ds.typography.size.lg, "text-white font-light")}>
               ${subtotal.toFixed(2)}
             </span>
           </div>
-          <div
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.quaternary,
-              "mt-1",
-            )}
-          >
-            {lineItems.length} items • Tax and shipping can be added after PO is
-            created
+          <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mt-1")}>
+            {lineItems.length} items • Tax and shipping can be added after PO is created
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -47,21 +48,14 @@ export async function GET(request: NextRequest) {
 
     // Calculate revenue metrics
     const totalRevenue =
-      revenueData?.reduce(
-        (sum, item: any) => sum + parseFloat(item.line_total || "0"),
-        0,
-      ) || 0;
-    const totalOrders =
-      new Set(revenueData?.map((item: any) => item.orders?.created_at)).size ||
-      0;
+      revenueData?.reduce((sum, item: any) => sum + parseFloat(item.line_total || "0"), 0) || 0;
+    const totalOrders = new Set(revenueData?.map((item: any) => item.orders?.created_at)).size || 0;
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
     // Get products with cost data
     const { data: productsData, error: productsError } = await supabase
       .from("products")
-      .select(
-        "id, name, cost_price, regular_price, margin_percentage, sales_count",
-      )
+      .select("id, name, cost_price, regular_price, margin_percentage, sales_count")
       .eq("vendor_id", vendorId)
       .eq("status", "published")
       .order("margin_percentage", { ascending: false })
@@ -71,16 +65,12 @@ export async function GET(request: NextRequest) {
 
     // Calculate cost metrics
     const totalCost =
-      productsData?.reduce(
-        (sum, p) => sum + parseFloat(p.cost_price || "0") * p.sales_count,
-        0,
-      ) || 0;
+      productsData?.reduce((sum, p) => sum + parseFloat(p.cost_price || "0") * p.sales_count, 0) ||
+      0;
     const avgMargin =
       productsData?.length > 0
-        ? productsData.reduce(
-            (sum, p) => sum + parseFloat(p.margin_percentage || "0"),
-            0,
-          ) / productsData.length
+        ? productsData.reduce((sum, p) => sum + parseFloat(p.margin_percentage || "0"), 0) /
+          productsData.length
         : 0;
 
     // Get inventory data - correct column names
@@ -93,8 +83,7 @@ export async function GET(request: NextRequest) {
 
     const lowStockCount =
       inventoryData?.filter(
-        (i) =>
-          parseFloat(i.quantity) < parseFloat(i.low_stock_threshold || "0"),
+        (i) => parseFloat(i.quantity) < parseFloat(i.low_stock_threshold || "0"),
       ).length || 0;
 
     const stockValue =
@@ -108,8 +97,7 @@ export async function GET(request: NextRequest) {
     const avgStock =
       inventoryData?.reduce((sum, i) => sum + parseFloat(i.quantity), 0) /
       (inventoryData?.length || 1);
-    const totalSales =
-      productsData?.reduce((sum, p) => sum + p.sales_count, 0) || 0;
+    const totalSales = productsData?.reduce((sum, p) => sum + p.sales_count, 0) || 0;
     const turnoverRate = avgStock > 0 ? totalSales / avgStock : 0;
 
     // Group revenue by date for chart
@@ -140,14 +128,9 @@ export async function GET(request: NextRequest) {
 
     // Calculate trend (simplified: compare first half vs second half)
     const midpoint = Math.floor(revenueChartData.length / 2);
-    const firstHalf = revenueChartData
-      .slice(0, midpoint)
-      .reduce((sum, d) => sum + d.amount, 0);
-    const secondHalf = revenueChartData
-      .slice(midpoint)
-      .reduce((sum, d) => sum + d.amount, 0);
-    const trend =
-      firstHalf > 0 ? ((secondHalf - firstHalf) / firstHalf) * 100 : 0;
+    const firstHalf = revenueChartData.slice(0, midpoint).reduce((sum, d) => sum + d.amount, 0);
+    const secondHalf = revenueChartData.slice(midpoint).reduce((sum, d) => sum + d.amount, 0);
+    const trend = firstHalf > 0 ? ((secondHalf - firstHalf) / firstHalf) * 100 : 0;
 
     const analytics = {
       revenue: {
@@ -168,10 +151,7 @@ export async function GET(request: NextRequest) {
       costs: {
         totalCost,
         avgMargin,
-        profitability:
-          totalRevenue > 0
-            ? ((totalRevenue - totalCost) / totalRevenue) * 100
-            : 0,
+        profitability: totalRevenue > 0 ? ((totalRevenue - totalCost) / totalRevenue) * 100 : 0,
         grossProfit: totalRevenue - totalCost,
       },
       inventory: {
@@ -185,7 +165,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, analytics });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Analytics API Error:", error);
+      logger.error("Analytics API Error:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Failed to load analytics" },

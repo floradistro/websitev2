@@ -15,15 +15,12 @@ var n = class r {
     return a(this.translations.entries());
   }
   update(t) {
-    this.translations = new Map(
-      Object.entries({ ...a(this.translations), ...t }),
-    );
+    this.translations = new Map(Object.entries({ ...a(this.translations), ...t }));
     let i = this.getAll();
     for (let s of this.subscribers) s(i);
   }
   updateIfMissing(t) {
-    for (let [s, a] of Object.entries(t))
-      this.translations.has(s) || this.translations.set(s, a);
+    for (let [s, a] of Object.entries(t)) this.translations.has(s) || this.translations.set(s, a);
     let i = this.getAll();
     for (let s of this.subscribers) s(i);
   }

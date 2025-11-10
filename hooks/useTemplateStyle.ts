@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from "react";
 
+import { logger } from "@/lib/logger";
 interface TemplateStyle {
   color_palette: {
     background: string;
@@ -121,7 +122,7 @@ export function useTemplateStyle(vendorId?: string): TemplateStyle {
         }
       } catch (error) {
         // Silently fail, use default
-        console.log("Using default template style");
+        logger.debug("Using default template style");
       }
     }
 

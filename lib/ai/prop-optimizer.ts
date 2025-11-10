@@ -52,10 +52,8 @@ export class PropOptimizer {
     // Calculate current performance
     const conversionRate =
       analytics.views > 0 ? (analytics.conversions / analytics.views) * 100 : 0;
-    const clickRate =
-      analytics.views > 0 ? (analytics.clicks / analytics.views) * 100 : 0;
-    const cartRate =
-      analytics.views > 0 ? (analytics.addToCarts / analytics.views) * 100 : 0;
+    const clickRate = analytics.views > 0 ? (analytics.clicks / analytics.views) * 100 : 0;
+    const cartRate = analytics.views > 0 ? (analytics.addToCarts / analytics.views) * 100 : 0;
 
     // Ask Claude to optimize
     const response = await this.claude.messages.create({
@@ -160,8 +158,7 @@ Return ONLY valid JSON in this format:
       Object.entries(instance.props).forEach(([key, value]) => {
         if (!patterns[key]) patterns[key] = {};
         const valueStr = JSON.stringify(value);
-        patterns[key][valueStr] =
-          (patterns[key][valueStr] || 0) + instance.performance_score;
+        patterns[key][valueStr] = (patterns[key][valueStr] || 0) + instance.performance_score;
       });
     });
 
@@ -193,9 +190,7 @@ Return ONLY valid JSON in this format:
 
     // Apply winning patterns to each component
     for (const component of components) {
-      const winningProps = await this.findWinningPatterns(
-        component.component_key,
-      );
+      const winningProps = await this.findWinningPatterns(component.component_key);
 
       if (winningProps) {
         // Merge winning props with existing

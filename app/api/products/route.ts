@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 // Cache for 60 seconds, stale-while-revalidate for 120 seconds
 export const revalidate = 60;
 
@@ -14,23 +15,14 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const vendorId = searchParams.get("vendor_id");
-    const productIds = searchParams
-      .get("product_ids")
-      ?.split(",")
-      .filter(Boolean);
-    const categoryIds = searchParams
-      .get("category_ids")
-      ?.split(",")
-      .filter(Boolean);
+    const productIds = searchParams.get("product_ids")?.split(",").filter(Boolean);
+    const categoryIds = searchParams.get("category_ids")?.split(",").filter(Boolean);
     const limit = parseInt(searchParams.get("limit") || "12");
     const sort = searchParams.get("sort") || "created_at";
     const order = searchParams.get("order") || "desc";
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -70,34 +62,32 @@ export async function GET(request: NextRequest) {
     }
 
     // Extract pricing tiers from embedded pricing_data
-    const productsWithPricing = (productsResult.data || []).map(
-      (product: any) => {
-        const pricingData = product.pricing_data || {};
-        const pricingTiers: any[] = [];
+    const productsWithPricing = (productsResult.data || []).map((product: any) => {
+      const pricingData = product.pricing_data || {};
+      const pricingTiers: any[] = [];
 
-        // Extract tiers from embedded pricing_data
-        (pricingData.tiers || []).forEach((tier: any) => {
-          if (tier.enabled !== false && tier.price) {
-            pricingTiers.push({
-              break_id: tier.id,
-              label: tier.label,
-              quantity: tier.quantity || 1,
-              unit: tier.unit || "g",
-              price: parseFloat(tier.price),
-              price_per_gram: parseFloat(tier.price) / (tier.quantity || 1),
-              sort_order: tier.sort_order || 0,
-            });
-          }
-        });
+      // Extract tiers from embedded pricing_data
+      (pricingData.tiers || []).forEach((tier: any) => {
+        if (tier.enabled !== false && tier.price) {
+          pricingTiers.push({
+            break_id: tier.id,
+            label: tier.label,
+            quantity: tier.quantity || 1,
+            unit: tier.unit || "g",
+            price: parseFloat(tier.price),
+            price_per_gram: parseFloat(tier.price) / (tier.quantity || 1),
+            sort_order: tier.sort_order || 0,
+          });
+        }
+      });
 
-        pricingTiers.sort((a, b) => a.sort_order - b.sort_order);
+      pricingTiers.sort((a, b) => a.sort_order - b.sort_order);
 
-        return {
-          ...product,
-          pricing_tiers: pricingTiers,
-        };
-      },
-    );
+      return {
+        ...product,
+        pricing_tiers: pricingTiers,
+      };
+    });
 
     return NextResponse.json(
       {
@@ -113,7 +103,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Products API error:", error);
+      logger.error("Products API error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Failed to fetch products" },

@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
 // GET - Get single template by ID
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const authResult = await requireVendor(request);
@@ -25,10 +23,7 @@ export async function GET(
       .single();
 
     if (error || !template) {
-      return NextResponse.json(
-        { error: "Template not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Template not found" }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -36,19 +31,13 @@ export async function GET(
       template,
     });
   } catch (error: any) {
-    console.error("GET /prompt-templates/[id] error:", error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    logger.error("GET /prompt-templates/[id] error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
 
 // PUT - Update template
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const authResult = await requireVendor(request);
@@ -56,8 +45,7 @@ export async function PUT(
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const { name, description, prompt_text, category, style, parameters } =
-      body;
+    const { name, description, prompt_text, category, style, parameters } = body;
 
     const supabase = getServiceSupabase();
 
@@ -69,10 +57,7 @@ export async function PUT(
       .single();
 
     if (!existing || existing.vendor_id !== vendorId) {
-      return NextResponse.json(
-        { error: "Template not found or access denied" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "Template not found or access denied" }, { status: 403 });
     }
 
     // Update template
@@ -92,11 +77,8 @@ export async function PUT(
       .single();
 
     if (error) {
-      console.error("Error updating template:", error);
-      return NextResponse.json(
-        { error: "Failed to update template" },
-        { status: 500 },
-      );
+      logger.error("Error updating template:", error);
+      return NextResponse.json({ error: "Failed to update template" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -104,11 +86,8 @@ export async function PUT(
       template,
     });
   } catch (error: any) {
-    console.error("PUT /prompt-templates/[id] error:", error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    logger.error("PUT /prompt-templates/[id] error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -133,24 +112,15 @@ export async function DELETE(
       .single();
 
     if (!existing || existing.vendor_id !== vendorId) {
-      return NextResponse.json(
-        { error: "Template not found or access denied" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "Template not found or access denied" }, { status: 403 });
     }
 
     // Delete template
-    const { error } = await supabase
-      .from("prompt_templates")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("prompt_templates").delete().eq("id", id);
 
     if (error) {
-      console.error("Error deleting template:", error);
-      return NextResponse.json(
-        { error: "Failed to delete template" },
-        { status: 500 },
-      );
+      logger.error("Error deleting template:", error);
+      return NextResponse.json({ error: "Failed to delete template" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -158,19 +128,13 @@ export async function DELETE(
       message: "Template deleted successfully",
     });
   } catch (error: any) {
-    console.error("DELETE /prompt-templates/[id] error:", error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    logger.error("DELETE /prompt-templates/[id] error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
 
 // POST - Increment usage count
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const authResult = await requireVendor(request);
@@ -203,10 +167,7 @@ export async function POST(
       success: true,
     });
   } catch (error: any) {
-    console.error("POST /prompt-templates/[id] error:", error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    logger.error("POST /prompt-templates/[id] error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

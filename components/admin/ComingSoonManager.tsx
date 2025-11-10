@@ -3,21 +3,17 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, Calendar, Save, AlertCircle } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface ComingSoonManagerProps {
   vendorId: string;
   vendorName: string;
 }
 
-export function ComingSoonManager({
-  vendorId,
-  vendorName,
-}: ComingSoonManagerProps) {
+export function ComingSoonManager({ vendorId, vendorName }: ComingSoonManagerProps) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [comingSoon, setComingSoon] = useState(false);
-  const [message, setMessage] = useState(
-    "We're launching soon! Stay tuned for something amazing.",
-  );
+  const [message, setMessage] = useState("We're launching soon! Stay tuned for something amazing.");
   const [launchDate, setLaunchDate] = useState("");
   const [success, setSuccess] = useState(false);
 
@@ -37,14 +33,12 @@ export function ComingSoonManager({
             "We're launching soon! Stay tuned for something amazing.",
         );
         setLaunchDate(
-          data.data.launch_date
-            ? new Date(data.data.launch_date).toISOString().slice(0, 16)
-            : "",
+          data.data.launch_date ? new Date(data.data.launch_date).toISOString().slice(0, 16) : "",
         );
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to fetch coming soon status:", error);
+        logger.error("Failed to fetch coming soon status:", error);
       }
     } finally {
       setLoading(false);
@@ -74,7 +68,7 @@ export function ComingSoonManager({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to save coming soon settings:", error);
+        logger.error("Failed to save coming soon settings:", error);
       }
     } finally {
       setSaving(false);
@@ -144,8 +138,8 @@ export function ComingSoonManager({
                 Coming Soon Mode Active
               </p>
               <p className="text-white/60 leading-relaxed">
-                Customers will see a coming soon page instead of your
-                storefront. Preview mode still works for you.
+                Customers will see a coming soon page instead of your storefront. Preview mode still
+                works for you.
               </p>
             </div>
           </div>
@@ -180,9 +174,7 @@ export function ComingSoonManager({
             onChange={(e) => setLaunchDate(e.target.value)}
             className="w-full bg-black border border-white/5 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-white/10 transition-colors"
           />
-          <p className="text-white/40 text-sm mt-3">
-            Show a countdown timer to this date
-          </p>
+          <p className="text-white/40 text-sm mt-3">Show a countdown timer to this date</p>
         </div>
 
         {/* Actions */}

@@ -1,15 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import {
-  X,
-  Send,
-  MessageCircle,
-  User,
-  Bot,
-  Paperclip,
-  Image as ImageIcon,
-} from "lucide-react";
+import { X, Send, MessageCircle, User, Bot, Paperclip, Image as ImageIcon } from "lucide-react";
 
 interface Message {
   id: number;
@@ -24,10 +16,7 @@ interface VendorSupportChatProps {
   onClose: () => void;
 }
 
-export default function VendorSupportChat({
-  isOpen,
-  onClose,
-}: VendorSupportChatProps) {
+export default function VendorSupportChat({ isOpen, onClose }: VendorSupportChatProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -127,10 +116,7 @@ export default function VendorSupportChat({
                 </div>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="text-white/60 hover:text-white transition-colors"
-            >
+            <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
               <X size={20} strokeWidth={1.5} />
             </button>
           </div>
@@ -159,9 +145,7 @@ export default function VendorSupportChat({
                       : "bg-black border border-white/5"
                   }`}
                 >
-                  <p className="text-sm text-white/90 leading-relaxed">
-                    {message.text}
-                  </p>
+                  <p className="text-sm text-white/90 leading-relaxed">{message.text}</p>
                 </div>
 
                 {/* Timestamp */}

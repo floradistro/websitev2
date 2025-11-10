@@ -29,20 +29,14 @@ var a = "orientationchange",
         type: "portrait-primary",
         angle: 0,
       };
-      this.landscapeOrientationMediaQuery = matchMedia(
-        "(orientation: landscape)",
-      );
-      this.screenOrientationChangeListener =
-        this.onScreenOrientationChange.bind(this);
+      this.landscapeOrientationMediaQuery = matchMedia("(orientation: landscape)");
+      this.screenOrientationChangeListener = this.onScreenOrientationChange.bind(this);
       this.landscapeOrientationMediaQueryChangeListener =
         this.onLandscapeOrientationMediaQueryChange.bind(this);
     }
     register() {
       this.isScreenOrientationApiSupported()
-        ? (screen.orientation.addEventListener(
-            "change",
-            this.screenOrientationChangeListener,
-          ),
+        ? (screen.orientation.addEventListener("change", this.screenOrientationChangeListener),
           this.onScreenOrientationChange())
         : (this.landscapeOrientationMediaQuery.addEventListener(
             "change",
@@ -56,10 +50,7 @@ var a = "orientationchange",
     }
     unregister() {
       this.isScreenOrientationApiSupported()
-        ? screen.orientation.removeEventListener(
-            "change",
-            this.screenOrientationChangeListener,
-          )
+        ? screen.orientation.removeEventListener("change", this.screenOrientationChangeListener)
         : this.landscapeOrientationMediaQuery.removeEventListener(
             "change",
             this.landscapeOrientationMediaQueryChangeListener,
@@ -81,9 +72,7 @@ var a = "orientationchange",
     }
     onLandscapeOrientationMediaQueryChange(e) {
       let i = e;
-      ((this.orientation = i.matches
-        ? n["landscape-primary"]
-        : n["portrait-primary"]),
+      ((this.orientation = i.matches ? n["landscape-primary"] : n["portrait-primary"]),
         this.dispatchOrientationChangeEvent(this.orientation));
     }
   };

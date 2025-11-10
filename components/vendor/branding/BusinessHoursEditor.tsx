@@ -25,10 +25,7 @@ const DAYS = [
  *
  * Visual editor for setting store operating hours
  */
-export function BusinessHoursEditor({
-  value,
-  onChange,
-}: BusinessHoursEditorProps) {
+export function BusinessHoursEditor({ value, onChange }: BusinessHoursEditorProps) {
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
 
   const updateDayHours = (day: string, hours: DayHours | undefined) => {
@@ -148,31 +145,19 @@ export function BusinessHoursEditor({
                 <div className="flex items-center gap-3">
                   {isClosed ? (
                     <span
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.quaternary,
-                        "italic",
-                      )}
+                      className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "italic")}
                     >
                       Closed
                     </span>
                   ) : hours ? (
                     <span
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.tertiary,
-                        "font-mono",
-                      )}
+                      className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "font-mono")}
                     >
                       {hours.open} - {hours.close}
                     </span>
                   ) : (
                     <span
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.quaternary,
-                        "italic",
-                      )}
+                      className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "italic")}
                     >
                       Not set
                     </span>
@@ -193,10 +178,7 @@ export function BusinessHoursEditor({
                   >
                     <Plus
                       size={14}
-                      className={cn(
-                        ds.effects.transition.fast,
-                        isExpanded && "rotate-45",
-                      )}
+                      className={cn(ds.effects.transition.fast, isExpanded && "rotate-45")}
                     />
                   </button>
                 </div>
@@ -204,14 +186,7 @@ export function BusinessHoursEditor({
 
               {/* Expanded editor */}
               {isExpanded && (
-                <div
-                  className={cn(
-                    "px-4 py-4",
-                    "border-t",
-                    ds.colors.border.default,
-                    "space-y-3",
-                  )}
-                >
+                <div className={cn("px-4 py-4", "border-t", ds.colors.border.default, "space-y-3")}>
                   {/* Closed toggle */}
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -226,12 +201,7 @@ export function BusinessHoursEditor({
                         "cursor-pointer",
                       )}
                     />
-                    <span
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.tertiary,
-                      )}
-                    >
+                    <span className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                       Closed on {label}
                     </span>
                   </label>
@@ -379,13 +349,7 @@ export function BusinessHoursEditor({
           ds.effects.radius.lg,
         )}
       >
-        <div
-          className={cn(
-            ds.typography.size.micro,
-            ds.colors.text.quaternary,
-            "space-y-1",
-          )}
-        >
+        <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "space-y-1")}>
           <div>
             💡 <strong>Tip:</strong> Set hours that appear on your storefront
           </div>

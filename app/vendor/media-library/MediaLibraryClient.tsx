@@ -28,8 +28,10 @@ import {
 } from "lucide-react";
 import ProductBrowser from "./ProductBrowser";
 import GenerationInterface from "./GenerationInterface";
+import ProductGallery from "./ProductGallery";
 import type { PromptTemplate } from "@/lib/types/prompt-template";
 
+import { logger } from "@/lib/logger";
 interface MediaFile {
   id: string;
   file_name: string;
@@ -78,10 +80,7 @@ const GridItem = memo(
   }) => {
     // Use Supabase render API for thumbnails with cache-busting
     const thumbnailUrl = file.file_url.includes("supabase.co")
-      ? file.file_url.replace(
-          "/storage/v1/object/public/",
-          "/storage/v1/render/image/public/",
-        ) +
+      ? file.file_url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
         `?width=400&height=400&quality=75&t=${file.updated_at || file.created_at}`
       : file.file_url;
 
@@ -113,23 +112,17 @@ const GridItem = memo(
         {/* Overlay on hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <div className="absolute bottom-0 left-0 right-0 p-2.5">
-            <p className="text-white text-xs font-medium truncate">
-              {file.file_name}
-            </p>
+            <p className="text-white text-xs font-medium truncate">{file.file_name}</p>
           </div>
         </div>
 
         {/* Selection indicator */}
         <div
           className={`absolute top-2 right-2 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-            isSelected
-              ? "bg-white border-white"
-              : "bg-black/40 border-white/60 backdrop-blur-sm"
+            isSelected ? "bg-white border-white" : "bg-black/40 border-white/60 backdrop-blur-sm"
           }`}
         >
-          {isSelected && (
-            <Check className="w-3 h-3 text-black" strokeWidth={3} />
-          )}
+          {isSelected && <Check className="w-3 h-3 text-black" strokeWidth={3} />}
         </div>
       </div>
     );
@@ -158,8 +151,22 @@ export default function MediaLibraryClient() {
 
   // Generation mode state
   const [generationMode, setGenerationMode] = useState(false);
-  const [selectedProductsForGeneration, setSelectedProductsForGeneration] = useState<Set<string>>(new Set());
-  const [productsForGeneration, setProductsForGeneration] = useState<Array<{ id: string; name: string }>>([]);
+
+  // DEBUG: Track generation mode changes
+  useEffect(() => {
+    logger.debug("⚙️ GenerationMode changed:", {
+      value: generationMode,
+      selectedCategory,
+      splitViewMode,
+      stack: new Error().stack
+    });
+  }, [generationMode]);
+  const [selectedProductsForGeneration, setSelectedProductsForGeneration] = useState<Set<string>>(
+    new Set(),
+  );
+  const [productsForGeneration, setProductsForGeneration] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
 
   // Load products for generation when mode is enabled
   useEffect(() => {
@@ -172,12 +179,10 @@ export default function MediaLibraryClient() {
         });
         const data = await response.json();
         if (data.success && data.products) {
-          setProductsForGeneration(
-            data.products.map((p: any) => ({ id: p.id, name: p.name }))
-          );
+          setProductsForGeneration(data.products.map((p: any) => ({ id: p.id, name: p.name })));
         }
       } catch (error) {
-        console.error("Error loading products for generation:", error);
+        logger.error("Error loading products for generation:", error);
       }
     };
 
@@ -205,6 +210,21 @@ export default function MediaLibraryClient() {
     failed: number;
   } | null>(null);
 
+  // Product gallery state
+  const [galleryProduct, setGalleryProduct] = useState<{
+    id: string;
+    name: string;
+    featured_image_storage: string | null;
+  } | null>(null);
+
+  // DEBUG: Track gallery product changes
+  useEffect(() => {
+    logger.debug("🎭 Gallery product changed", {
+      productName: galleryProduct?.name || "null",
+      stack: new Error().stack
+    });
+  }, [galleryProduct]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load media files
@@ -225,7 +245,7 @@ export default function MediaLibraryClient() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading media:", error);
+        logger.error("Error loading media:", error);
       }
     } finally {
       setLoading(false);
@@ -291,17 +311,14 @@ export default function MediaLibraryClient() {
       await loadMedia();
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Upload error:", error);
+        logger.error("Upload error:", error);
       }
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleChangeCategory = async (
-    file: MediaFile,
-    newCategory: MediaCategory,
-  ) => {
+  const handleChangeCategory = async (file: MediaFile, newCategory: MediaCategory) => {
     if (!newCategory || file.category === newCategory || !vendor?.id) return;
 
     try {
@@ -322,15 +339,12 @@ export default function MediaLibraryClient() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error changing category:", error);
+        logger.error("Error changing category:", error);
       }
     }
   };
 
-  const handleUpdateMetadata = async (
-    file: MediaFile,
-    updates: Partial<MediaFile>,
-  ) => {
+  const handleUpdateMetadata = async (file: MediaFile, updates: Partial<MediaFile>) => {
     if (!vendor?.id) return;
 
     try {
@@ -352,7 +366,7 @@ export default function MediaLibraryClient() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error updating metadata:", error);
+        logger.error("Error updating metadata:", error);
       }
     }
   };
@@ -361,20 +375,41 @@ export default function MediaLibraryClient() {
     if (!vendor?.id || selectedFiles.size === 0) return;
     if (!confirm(`Delete ${selectedFiles.size} file(s)?`)) return;
 
+    setLoading(true);
+    const errors: string[] = [];
+
     try {
-      for (const fileName of selectedFiles) {
-        await fetch(`/api/vendor/media?file=${fileName}`, {
-          method: "DELETE",
-          headers: { "x-vendor-id": vendor.id },
-        });
+      // Delete files in parallel
+      const deletePromises = Array.from(selectedFiles).map(async (fileName) => {
+        try {
+          const response = await fetch(`/api/vendor/media?file=${encodeURIComponent(fileName)}`, {
+            method: "DELETE",
+            headers: { "x-vendor-id": vendor.id },
+          });
+
+          if (!response.ok) {
+            const data = await response.json();
+            errors.push(`${fileName}: ${data.error || "Failed to delete"}`);
+          }
+        } catch (error) {
+          errors.push(`${fileName}: Network error`);
+        }
+      });
+
+      await Promise.all(deletePromises);
+
+      if (errors.length > 0) {
+        logger.error("Delete errors:", errors);
+        alert(`Failed to delete ${errors.length} file(s). Check console for details.`);
       }
 
       setSelectedFiles(new Set());
       await loadMedia();
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Delete error:", error);
-      }
+      logger.error("Delete error:", error);
+      alert("An error occurred while deleting files");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -402,11 +437,11 @@ export default function MediaLibraryClient() {
 
       if (response.ok) {
         // Success feedback could go here
-        console.log("✅ Product linked successfully");
+        logger.debug("✅ Product linked successfully");
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Link error:", error);
+        logger.error("Link error:", error);
       }
     }
   };
@@ -434,7 +469,7 @@ export default function MediaLibraryClient() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Auto-match error:", error);
+        logger.error("Auto-match error:", error);
       }
     } finally {
       setAutoMatching(false);
@@ -468,14 +503,14 @@ export default function MediaLibraryClient() {
       const data = await response.json();
 
       if (data.success) {
-        console.log(`✅ Linked ${data.linked} products`);
+        logger.debug(`✅ Linked ${data.linked} products`);
         setShowingAutoMatch(false);
         setAutoMatchResults(null);
         await loadMedia();
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Apply auto-match error:", error);
+        logger.error("Apply auto-match error:", error);
       }
     }
   };
@@ -485,9 +520,7 @@ export default function MediaLibraryClient() {
   const handleBulkRetag = async () => {
     if (!vendor?.id || selectedFiles.size === 0) return;
 
-    const selectedFileObjs = files.filter((f) =>
-      selectedFiles.has(f.file_name),
-    );
+    const selectedFileObjs = files.filter((f) => selectedFiles.has(f.file_name));
     const total = selectedFileObjs.length;
 
     setRetagging(true);
@@ -529,7 +562,7 @@ export default function MediaLibraryClient() {
       // Show success message
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Bulk retag error:", error);
+        logger.error("Bulk retag error:", error);
       }
     } finally {
       setRetagging(false);
@@ -541,9 +574,7 @@ export default function MediaLibraryClient() {
   const handleRemoveBackground = async () => {
     if (!vendor?.id || selectedFiles.size === 0) return;
 
-    const selectedFileObjs = files.filter((f) =>
-      selectedFiles.has(f.file_name),
-    );
+    const selectedFileObjs = files.filter((f) => selectedFiles.has(f.file_name));
     const total = selectedFileObjs.length;
 
     setRemovingBg(true);
@@ -618,7 +649,7 @@ export default function MediaLibraryClient() {
       setSelectedFiles(new Set());
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Remove background error:", error);
+        logger.error("Remove background error:", error);
       }
     } finally {
       setRemovingBg(false);
@@ -649,11 +680,11 @@ export default function MediaLibraryClient() {
       const data = await response.json();
 
       if (data.success) {
-        console.log(`✅ Fixed ${data.fixed}/${data.total} broken image records`);
+        logger.debug(`✅ Fixed ${data.fixed}/${data.total} broken image records`);
         await loadMedia(); // Reload to show fixed images
       }
     } catch (error) {
-      console.error("Fix images error:", error);
+      logger.error("Fix images error:", error);
     } finally {
       setFixingImages(false);
     }
@@ -690,7 +721,7 @@ export default function MediaLibraryClient() {
       onDragOver={(e) => {
         e.preventDefault();
         // Only show upload overlay if NOT in split view and dragging files
-        if (!splitViewMode && e.dataTransfer.types.includes('Files')) {
+        if (!splitViewMode && e.dataTransfer.types.includes("Files")) {
           setIsDraggingOver(true);
         }
       }}
@@ -715,9 +746,7 @@ export default function MediaLibraryClient() {
             <button
               onClick={() => setSplitViewMode(!splitViewMode)}
               className={`p-1.5 rounded transition-colors ${
-                splitViewMode
-                  ? "bg-white/[0.12] text-white"
-                  : "text-white/40 hover:text-white/60"
+                splitViewMode ? "bg-white/[0.12] text-white" : "text-white/40 hover:text-white/60"
               }`}
               title="Split View"
             >
@@ -876,9 +905,12 @@ export default function MediaLibraryClient() {
               <ProductBrowser
                 vendorId={vendor.id}
                 onDragStart={(product) => setDropTargetProduct(product.id)}
-                onProductSelect={(product) => console.log("Selected:", product)}
+                onProductSelect={(product) => {
+                  logger.debug("🎬 ProductBrowser: Setting gallery product", { productName: product.name });
+                  setGalleryProduct(product);
+                }}
                 onLinkMedia={handleLinkProductToMedia}
-                selectionMode={generationMode}
+                selectionMode={false}
                 selectedProducts={selectedProductsForGeneration}
                 onSelectionChange={setSelectedProductsForGeneration}
               />
@@ -917,9 +949,35 @@ export default function MediaLibraryClient() {
               </span>
             </div>
 
-            {/* Grid with Drop Zone OR Generation Interface */}
+            {/* Grid with Drop Zone OR Generation Interface OR Gallery */}
             <div className="flex-1 overflow-hidden">
-              {generationMode && selectedCategory === "product_photos" ? (
+              {(() => {
+                logger.debug("🎬 Conditional render check:", {
+                  hasGalleryProduct: !!galleryProduct,
+                  productName: galleryProduct?.name,
+                  hasVendor: !!vendor,
+                  generationMode,
+                  selectedCategory,
+                  willShowGallery: !!(galleryProduct && vendor)
+                });
+                return null;
+              })()}
+              {galleryProduct && vendor ? (
+                /* GALLERY MODE */
+                <div className="h-full">
+                  <ProductGallery
+                    product={galleryProduct}
+                    vendorId={vendor.id}
+                    onBack={() => {
+                      logger.debug("🔙 onBack called - clearing gallery product");
+                      setGalleryProduct(null);
+                    }}
+                    onImageUpdate={() => {
+                      loadMedia();
+                    }}
+                  />
+                </div>
+              ) : generationMode && selectedCategory === "product_photos" ? (
                 /* GENERATION MODE - Products */
                 <GenerationInterface
                   vendorId={vendor?.id || ""}
@@ -937,9 +995,7 @@ export default function MediaLibraryClient() {
                       {selectedCategory === "menus" && "Menu Generation"}
                       {selectedCategory === "brand" && "Brand Generation"}
                     </h3>
-                    <p className="text-sm text-white/50 font-light">
-                      Coming soon
-                    </p>
+                    <p className="text-sm text-white/50 font-light">Coming soon</p>
                   </div>
                 </div>
               ) : filteredFiles.length === 0 ? (
@@ -948,9 +1004,7 @@ export default function MediaLibraryClient() {
                     <div className="w-20 h-20 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mx-auto mb-6">
                       <ImageIcon className="w-10 h-10 text-white/20" />
                     </div>
-                    <h3 className="text-white text-base font-medium mb-2">
-                      No images yet
-                    </h3>
+                    <h3 className="text-white text-base font-medium mb-2">No images yet</h3>
                     <p className="text-white/40 text-sm mb-6">
                       Upload or drag files to get started
                     </p>
@@ -964,21 +1018,23 @@ export default function MediaLibraryClient() {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                  {filteredFiles.map((file) => (
-                    <GridItem
-                      key={file.id}
-                      file={file}
-                      isSelected={selectedFiles.has(file.file_name)}
-                      onSelect={() => toggleFileSelection(file.file_name)}
-                      onContextMenu={(e) => {
-                        e.preventDefault();
-                        setContextMenu({ x: e.clientX, y: e.clientY, file });
-                      }}
-                      onQuickView={() => setQuickViewFile(file)}
-                      onDragStart={(file) => setDraggedMedia(file)}
-                    />
-                  ))}
+                <div className="p-6 overflow-y-auto h-full">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                    {filteredFiles.map((file) => (
+                      <GridItem
+                        key={file.id}
+                        file={file}
+                        isSelected={selectedFiles.has(file.file_name)}
+                        onSelect={() => toggleFileSelection(file.file_name)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setContextMenu({ x: e.clientX, y: e.clientY, file });
+                        }}
+                        onQuickView={() => setQuickViewFile(file)}
+                        onDragStart={(file) => setDraggedMedia(file)}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -1018,52 +1074,59 @@ export default function MediaLibraryClient() {
               </button>
             ))}
             <div className="flex-1" />
-            <span className="text-xs text-white/40 tabular-nums">
-              {filteredFiles.length} items
-            </span>
+            <span className="text-xs text-white/40 tabular-nums">{filteredFiles.length} items</span>
           </div>
 
-          {/* Grid */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {filteredFiles.length === 0 ? (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-20 h-20 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mx-auto mb-6">
-                    <ImageIcon className="w-10 h-10 text-white/20" />
+          {/* Gallery or Grid */}
+          {galleryProduct && vendor ? (
+            <div className="flex-1 overflow-hidden h-full">
+              <ProductGallery
+                product={galleryProduct}
+                vendorId={vendor.id}
+                onBack={() => setGalleryProduct(null)}
+                onImageUpdate={() => {
+                  loadMedia();
+                }}
+              />
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto p-6">
+              {filteredFiles.length === 0 ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-20 h-20 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mx-auto mb-6">
+                      <ImageIcon className="w-10 h-10 text-white/20" />
+                    </div>
+                    <h3 className="text-white text-base font-medium mb-2">No images yet</h3>
+                    <p className="text-white/40 text-sm mb-6">Upload or drag files to get started</p>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="bg-white text-black px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-white/90 transition-colors inline-flex items-center gap-2"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Upload Images
+                    </button>
                   </div>
-                  <h3 className="text-white text-base font-medium mb-2">
-                    No images yet
-                  </h3>
-                  <p className="text-white/40 text-sm mb-6">
-                    Upload or drag files to get started
-                  </p>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="bg-white text-black px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-white/90 transition-colors inline-flex items-center gap-2"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Upload Images
-                  </button>
                 </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-                {filteredFiles.map((file) => (
-                  <GridItem
-                    key={file.id}
-                    file={file}
-                    isSelected={selectedFiles.has(file.file_name)}
-                    onSelect={() => toggleFileSelection(file.file_name)}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      setContextMenu({ x: e.clientX, y: e.clientY, file });
-                    }}
-                    onQuickView={() => setQuickViewFile(file)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+                  {filteredFiles.map((file) => (
+                    <GridItem
+                      key={file.id}
+                      file={file}
+                      isSelected={selectedFiles.has(file.file_name)}
+                      onSelect={() => toggleFileSelection(file.file_name)}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        setContextMenu({ x: e.clientX, y: e.clientY, file });
+                      }}
+                      onQuickView={() => setQuickViewFile(file)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
 
@@ -1108,8 +1171,7 @@ export default function MediaLibraryClient() {
                 <button
                   key={cat.value}
                   onClick={() => {
-                    if (cat.value)
-                      handleChangeCategory(contextMenu.file, cat.value);
+                    if (cat.value) handleChangeCategory(contextMenu.file, cat.value);
                     setContextMenu(null);
                   }}
                   className={`w-full px-2 py-1.5 text-left rounded-lg transition-colors flex items-center gap-2 text-xs ${
@@ -1118,9 +1180,7 @@ export default function MediaLibraryClient() {
                       : "text-white/60 hover:bg-white/[0.04] hover:text-white"
                   }`}
                 >
-                  {contextMenu.file.category === cat.value && (
-                    <Check className="w-3 h-3" />
-                  )}
+                  {contextMenu.file.category === cat.value && <Check className="w-3 h-3" />}
                   {cat.label}
                 </button>
               ))}
@@ -1278,9 +1338,7 @@ export default function MediaLibraryClient() {
             <div className="w-24 h-24 rounded-2xl bg-white/[0.08] border border-white/[0.12] flex items-center justify-center mx-auto mb-4">
               <Upload className="w-12 h-12 text-white/60" />
             </div>
-            <p className="text-white text-lg font-medium">
-              Drop files to upload
-            </p>
+            <p className="text-white text-lg font-medium">Drop files to upload</p>
           </div>
         </div>
       )}
@@ -1343,7 +1401,6 @@ export default function MediaLibraryClient() {
         onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
         className="hidden"
       />
-
     </div>
   );
 }

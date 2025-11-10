@@ -8,6 +8,7 @@
 import React, { useState, useEffect } from "react";
 import { ProductGrid } from "../composite/ProductGrid";
 
+import { logger } from "@/lib/logger";
 export interface SmartProductGridProps {
   vendorId: string;
   selectedProductIds?: string[];
@@ -63,24 +64,18 @@ export function SmartProductGrid({
           if (result.success) {
             // Filter to this vendor's products
             const allProducts = result.data.products || [];
-            let vendorProducts = allProducts.filter(
-              (p: any) => p.vendor_id === vendorId,
-            );
+            let vendorProducts = allProducts.filter((p: any) => p.vendor_id === vendorId);
 
             // Apply category filter if specified
             if (selectedCategoryIds.length > 0) {
               vendorProducts = vendorProducts.filter((p: any) =>
-                p.categories?.some((cat: any) =>
-                  selectedCategoryIds.includes(cat.id),
-                ),
+                p.categories?.some((cat: any) => selectedCategoryIds.includes(cat.id)),
               );
             }
 
             // Apply product ID filter if specified
             if (selectedProductIds.length > 0) {
-              vendorProducts = vendorProducts.filter((p: any) =>
-                selectedProductIds.includes(p.id),
-              );
+              vendorProducts = vendorProducts.filter((p: any) => selectedProductIds.includes(p.id));
             }
 
             // Limit results
@@ -92,7 +87,7 @@ export function SmartProductGrid({
         }
       } catch (err) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Products fetch error:", err);
+          logger.error("Products fetch error:", err);
         }
       }
     }
@@ -111,9 +106,7 @@ export function SmartProductGrid({
   if (!isClient) {
     return (
       <div className={className} style={{ minHeight: "400px" }}>
-        <div className="text-center py-12 text-white/40">
-          Loading products...
-        </div>
+        <div className="text-center py-12 text-white/40">Loading products...</div>
       </div>
     );
   }
@@ -124,9 +117,7 @@ export function SmartProductGrid({
       <div className={className}>
         <div className="text-center py-12">
           <p className="text-white/60 text-lg">No products available</p>
-          <p className="text-white/40 text-sm mt-2">
-            Check back soon for new arrivals
-          </p>
+          <p className="text-white/40 text-sm mt-2">Check back soon for new arrivals</p>
         </div>
       </div>
     );
@@ -136,12 +127,8 @@ export function SmartProductGrid({
     <div className={className}>
       {(headline || subheadline) && (
         <div className="text-center mb-8">
-          {headline && (
-            <h2 className="text-3xl font-bold text-white mb-2">{headline}</h2>
-          )}
-          {subheadline && (
-            <p className="text-lg text-neutral-400">{subheadline}</p>
-          )}
+          {headline && <h2 className="text-3xl font-bold text-white mb-2">{headline}</h2>}
+          {subheadline && <p className="text-lg text-neutral-400">{subheadline}</p>}
         </div>
       )}
 

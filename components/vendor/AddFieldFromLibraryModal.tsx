@@ -9,6 +9,7 @@ import { PricingDisplayField } from "@/components/fields/PricingDisplayField";
 import { LocationPickerField } from "@/components/fields/LocationPickerField";
 import { CodeEditorField } from "@/components/fields/CodeEditorField";
 
+import { logger } from "@/lib/logger";
 interface AddFieldFromLibraryModalProps {
   fieldType: any;
   onClose: () => void;
@@ -31,10 +32,7 @@ export function AddFieldFromLibraryModal({
     helper_text: "",
   });
   const [previewValue, setPreviewValue] = useState<any>(null);
-  const vendorId =
-    typeof window !== "undefined"
-      ? localStorage.getItem("vendor_id") || ""
-      : "";
+  const vendorId = typeof window !== "undefined" ? localStorage.getItem("vendor_id") || "" : "";
 
   const handleAdd = async () => {
     if (!config.field_id || !config.label) {
@@ -78,7 +76,7 @@ export function AddFieldFromLibraryModal({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error:", error);
+        logger.error("Error:", error);
       }
       alert("Failed to add field");
     }
@@ -166,9 +164,7 @@ export function AddFieldFromLibraryModal({
       case "text":
         return (
           <div className="mb-4">
-            <label className="block text-white/80 text-sm mb-2">
-              Preview: Text Input
-            </label>
+            <label className="block text-white/80 text-sm mb-2">Preview: Text Input</label>
             <input
               type="text"
               value={previewValue || ""}
@@ -182,9 +178,7 @@ export function AddFieldFromLibraryModal({
       case "color":
         return (
           <div className="mb-4">
-            <label className="block text-white/80 text-sm mb-2">
-              Preview: Color Picker
-            </label>
+            <label className="block text-white/80 text-sm mb-2">Preview: Color Picker</label>
             <div className="flex gap-2">
               <input
                 type="color"
@@ -211,18 +205,14 @@ export function AddFieldFromLibraryModal({
               onChange={(e) => setPreviewValue(e.target.checked)}
               className="w-5 h-5"
             />
-            <label className="text-white/80 text-sm">
-              Preview: Toggle Option
-            </label>
+            <label className="text-white/80 text-sm">Preview: Toggle Option</label>
           </div>
         );
 
       default:
         return (
           <div className="bg-white/5 border border-white/10 rounded p-4 text-center">
-            <p className="text-white/40 text-sm">
-              Preview not available for this field type
-            </p>
+            <p className="text-white/40 text-sm">Preview not available for this field type</p>
             <p className="text-white/30 text-xs mt-2">{fieldType.example}</p>
           </div>
         );
@@ -237,9 +227,7 @@ export function AddFieldFromLibraryModal({
           <div className="flex items-center gap-3">
             <span className="text-2xl">{fieldType.icon}</span>
             <div>
-              <h3 className="text-[#cccccc] font-medium text-sm">
-                {fieldType.name}
-              </h3>
+              <h3 className="text-[#cccccc] font-medium text-sm">{fieldType.name}</h3>
               <p className="text-[#858585] text-xs">{fieldType.description}</p>
             </div>
           </div>
@@ -259,9 +247,7 @@ export function AddFieldFromLibraryModal({
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Eye size={16} className="text-purple-400" />
-                  <h4 className="text-white font-medium text-sm">
-                    Live Preview
-                  </h4>
+                  <h4 className="text-white font-medium text-sm">Live Preview</h4>
                 </div>
                 <div className="bg-black border border-white/10 rounded-lg p-4">
                   {renderFieldPreview()}
@@ -273,9 +259,7 @@ export function AddFieldFromLibraryModal({
 
               {/* Properties */}
               <div className="bg-purple-500/10 border border-purple-500/20 rounded p-3 mb-4">
-                <p className="text-purple-400 text-xs font-medium mb-2">
-                  Properties Available:
-                </p>
+                <p className="text-purple-400 text-xs font-medium mb-2">Properties Available:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {fieldType.properties.map((prop: string) => (
                     <span
@@ -290,12 +274,8 @@ export function AddFieldFromLibraryModal({
 
               {/* Use Cases */}
               <div className="bg-white/5 border border-white/10 rounded p-3">
-                <p className="text-white/80 text-xs font-medium mb-2">
-                  Example Use Cases:
-                </p>
-                <p className="text-white/60 text-[11px] leading-relaxed">
-                  {fieldType.example}
-                </p>
+                <p className="text-white/80 text-xs font-medium mb-2">Example Use Cases:</p>
+                <p className="text-white/60 text-[11px] leading-relaxed">{fieldType.example}</p>
               </div>
             </>
           ) : (
@@ -317,9 +297,7 @@ export function AddFieldFromLibraryModal({
                     onChange={(e) =>
                       setConfig({
                         ...config,
-                        field_id: e.target.value
-                          .toLowerCase()
-                          .replace(/[^a-z0-9_]/g, "_"),
+                        field_id: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "_"),
                       })
                     }
                     placeholder="my_custom_field"
@@ -337,26 +315,18 @@ export function AddFieldFromLibraryModal({
                   <input
                     type="text"
                     value={config.label}
-                    onChange={(e) =>
-                      setConfig({ ...config, label: e.target.value })
-                    }
+                    onChange={(e) => setConfig({ ...config, label: e.target.value })}
                     placeholder={`My ${fieldType.name}`}
                     className="w-full bg-black border border-white/10 rounded px-3 py-2 text-white"
                   />
-                  <p className="text-white/40 text-[10px] mt-1">
-                    What users see in the editor
-                  </p>
+                  <p className="text-white/40 text-[10px] mt-1">What users see in the editor</p>
                 </div>
 
                 <div>
-                  <label className="block text-white/80 text-sm mb-1">
-                    Helper Text (Optional)
-                  </label>
+                  <label className="block text-white/80 text-sm mb-1">Helper Text (Optional)</label>
                   <textarea
                     value={config.helper_text}
-                    onChange={(e) =>
-                      setConfig({ ...config, helper_text: e.target.value })
-                    }
+                    onChange={(e) => setConfig({ ...config, helper_text: e.target.value })}
                     placeholder="Explain what this field does..."
                     rows={2}
                     className="w-full bg-black border border-white/10 rounded px-3 py-2 text-white text-sm"

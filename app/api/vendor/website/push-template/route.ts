@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 import { commitMultipleFiles } from "@/lib/deployment/github";
+import { logger } from "@/lib/logger";
 import {
   getStorefrontTemplateFiles,
   rebrandStorefrontFiles,
@@ -39,14 +40,14 @@ export async function POST(request: NextRequest) {
 
     if (vendorError || !vendor) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Vendor not found:", vendorError);
+        logger.error("Vendor not found:", vendorError);
       }
       return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
     }
 
     if (!vendor.github_access_token || !vendor.github_username) {
       if (process.env.NODE_ENV === "development") {
-        console.error("GitHub not connected");
+        logger.error("GitHub not connected");
       }
       return NextResponse.json(
         { error: "Please connect your GitHub account first" },
@@ -56,12 +57,9 @@ export async function POST(request: NextRequest) {
 
     if (!vendor.github_repo_name) {
       if (process.env.NODE_ENV === "development") {
-        console.error("No repo found");
+        logger.error("No repo found");
       }
-      return NextResponse.json(
-        { error: "Please create a repository first" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Please create a repository first" }, { status: 400 });
     }
 
     // Get all storefront files
@@ -104,7 +102,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error pushing template:", error);
+      logger.error("❌ Error pushing template:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to push template" },

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
@@ -14,8 +11,7 @@ export async function PATCH(
 
     const updateData: any = {};
     if (typeof coming_soon === "boolean") updateData.coming_soon = coming_soon;
-    if (coming_soon_message !== undefined)
-      updateData.coming_soon_message = coming_soon_message;
+    if (coming_soon_message !== undefined) updateData.coming_soon_message = coming_soon_message;
     if (launch_date !== undefined) updateData.launch_date = launch_date;
 
     const { data, error } = await supabase
@@ -35,19 +31,14 @@ export async function PATCH(
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const supabase = getServiceSupabase();
 
     const { data, error } = await supabase
       .from("vendors")
-      .select(
-        "coming_soon, coming_soon_message, launch_date, store_name, logo_url",
-      )
+      .select("coming_soon, coming_soon_message, launch_date, store_name, logo_url")
       .eq("id", id)
       .single();
 

@@ -3,13 +3,17 @@ import { LucideIcon } from "lucide-react";
 interface InputProps {
   type?: string;
   value: string;
-  onChange: (value: string) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
   icon?: LucideIcon;
   label?: string;
   disabled?: boolean;
   className?: string;
   error?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  autoFocus?: boolean;
 }
 
 export function Input({
@@ -22,6 +26,10 @@ export function Input({
   disabled,
   className = "",
   error,
+  min,
+  max,
+  step,
+  autoFocus,
 }: InputProps) {
   return (
     <div className="space-y-2">
@@ -32,20 +40,21 @@ export function Input({
       )}
       <div className="relative">
         {Icon && (
-          <Icon
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
-          />
+          <Icon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
         )}
         <input
           type={type}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={onChange}
           placeholder={placeholder}
           disabled={disabled}
+          min={min}
+          max={max}
+          step={step}
+          autoFocus={autoFocus}
           className={`
-            w-full bg-black/20 border text-white px-4 py-3 
-            focus:outline-none transition-all rounded-[14px] text-sm 
+            w-full bg-black/20 border text-white px-4 py-3
+            focus:outline-none transition-all rounded-[14px] text-sm
             placeholder-white/30
             ${error ? "border-red-500/50 focus:border-red-500" : "border-white/10 focus:border-white/30"}
             ${Icon ? "pl-10" : ""}

@@ -21,17 +21,11 @@ interface ActionsListProps {
   className?: string;
 }
 
-export function ActionsList({
-  title,
-  actions,
-  className = "",
-}: ActionsListProps) {
+export function ActionsList({ title, actions, className = "" }: ActionsListProps) {
   return (
     <div className={`minimal-glass ${className}`}>
       <div className="mb-6 p-6 border-b border-white/5">
-        <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">
-          {title}
-        </h3>
+        <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">{title}</h3>
       </div>
       <div className="grid grid-cols-1 gap-2 p-4">
         {actions.map((action) => {
@@ -42,9 +36,7 @@ export function ActionsList({
                 <Icon size={16} className="text-white/60" strokeWidth={1.5} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-light mb-0.5">
-                  {action.title}
-                </p>
+                <p className="text-white text-sm font-light mb-0.5">{action.title}</p>
                 {action.description && (
                   <p className="text-white/40 text-xs">{action.description}</p>
                 )}
@@ -58,11 +50,7 @@ export function ActionsList({
 
           if (action.onClick) {
             return (
-              <button
-                key={action.id}
-                onClick={action.onClick}
-                className="w-full text-left"
-              >
+              <button key={action.id} onClick={action.onClick} className="w-full text-left">
                 {content}
               </button>
             );

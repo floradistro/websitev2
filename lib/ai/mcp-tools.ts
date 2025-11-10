@@ -55,8 +55,7 @@ export const MCP_TOOLS: MCPTool[] = [
   },
   {
     name: "get_vendor_info",
-    description:
-      "Get vendor details like store name, logo, tagline, and branding",
+    description: "Get vendor details like store name, logo, tagline, and branding",
     input_schema: {
       type: "object",
       properties: {
@@ -91,10 +90,7 @@ export const MCP_TOOLS: MCPTool[] = [
 /**
  * Execute MCP tool and return results
  */
-export async function executeMCPTool(
-  toolName: string,
-  input: any,
-): Promise<any> {
+export async function executeMCPTool(toolName: string, input: any): Promise<any> {
   const supabase = getServiceSupabase();
 
   switch (toolName) {
@@ -144,8 +140,7 @@ export async function executeMCPTool(
             strain_type: p.strain_type,
             category: (p as any).categories?.name,
             price: (p as any).product_pricing?.[0]?.base_price,
-            pricing_tier: (p as any).product_pricing?.[0]?.pricing_tiers
-              ?.tier_name,
+            pricing_tier: (p as any).product_pricing?.[0]?.pricing_tiers?.tier_name,
             stock: (p as any).product_inventory?.[0]?.quantity_available || 0,
           })) || [],
         total: data?.length || 0,
@@ -176,9 +171,7 @@ export async function executeMCPTool(
 
       const { data, error } = await supabase
         .from("vendors")
-        .select(
-          "id, slug, store_name, tagline, logo_url, primary_color, secondary_color",
-        )
+        .select("id, slug, store_name, tagline, logo_url, primary_color, secondary_color")
         .eq("id", vendor_id)
         .single();
 

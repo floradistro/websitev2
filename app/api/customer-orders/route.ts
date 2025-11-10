@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 // Get base URL for internal API calls
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -62,10 +63,8 @@ export async function GET(request: NextRequest) {
       payment_method: order.payment_method,
       payment_method_title: order.payment_method_title,
       customer_note: order.customer_note,
-      has_delivery:
-        order.delivery_type === "delivery" || order.delivery_type === "mixed",
-      has_pickup:
-        order.delivery_type === "pickup" || order.delivery_type === "mixed",
+      has_delivery: order.delivery_type === "delivery" || order.delivery_type === "mixed",
+      has_pickup: order.delivery_type === "pickup" || order.delivery_type === "mixed",
       pickup_location: order.pickup_location_id,
     }));
 
@@ -76,7 +75,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Customer orders error:", error);
+      logger.error("Customer orders error:", error);
     }
     return NextResponse.json(
       {

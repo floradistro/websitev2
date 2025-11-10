@@ -25,12 +25,8 @@ import "../NotificationStyle.js";
 declare class ConcreteNotificationPresenter implements NotificationPresenter {
   private _hintPresenter;
   constructor(hintPresenter: HintPresenter);
-  showNotification(
-    notificationConfiguration: NotificationConfiguration,
-  ): Promise<void>;
-  hideNotification(
-    notificationConfiguration: NotificationConfiguration,
-  ): Promise<void>;
+  showNotification(notificationConfiguration: NotificationConfiguration): Promise<void>;
+  hideNotification(notificationConfiguration: NotificationConfiguration): Promise<void>;
 }
 
 export { ConcreteNotificationPresenter };

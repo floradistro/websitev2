@@ -18,19 +18,10 @@ var n = (b, a, d, e) => {
 };
 var p = (b, a, d) => (
   (d = b != null ? j(l(b)) : {}),
-  n(
-    a || !b || !b.__esModule
-      ? h(d, "default", { value: b, enumerable: true })
-      : d,
-    b,
-  )
+  n(a || !b || !b.__esModule ? h(d, "default", { value: b, enumerable: true }) : d, b)
 );
 var q = (b, a, d, e) => {
-  for (
-    var c = e > 1 ? void 0 : e ? i(a, d) : a, f = b.length - 1, g;
-    f >= 0;
-    f--
-  )
+  for (var c = e > 1 ? void 0 : e ? i(a, d) : a, f = b.length - 1, g; f >= 0; f--)
     (g = b[f]) && (c = (e ? g(a, d, c) : g(c)) || c);
   return (e && c && h(a, d, c), c);
 };

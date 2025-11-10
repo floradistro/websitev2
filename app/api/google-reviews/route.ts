@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 // Enable ISR caching - reviews don't change frequently
 export const revalidate = 3600; // 1 hour cache
 export const runtime = "nodejs";
@@ -33,7 +34,7 @@ async function findPlaceId(query: string): Promise<string | null> {
     return null;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error searching place:", error);
+      logger.error("Error searching place:", error);
     }
     return null;
   }
@@ -55,12 +56,12 @@ async function getPlaceDetails(placeId: string) {
     }
 
     if (process.env.NODE_ENV === "development") {
-      console.error("Place details error:", data.status, data.error_message);
+      logger.error("Place details error:", data.status, data.error_message);
     }
     return null;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching place details:", error);
+      logger.error("Error fetching place details:", error);
     }
     return null;
   }
@@ -72,10 +73,7 @@ export async function GET(request: Request) {
   const address = searchParams.get("address");
 
   if (!locationName || !address) {
-    return NextResponse.json(
-      { error: "Missing location or address" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Missing location or address" }, { status: 400 });
   }
 
   // Check in-memory cache first
@@ -141,7 +139,7 @@ export async function GET(request: Request) {
     return NextResponse.json(details);
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in Google Reviews API:", error);
+      logger.error("Error in Google Reviews API:", error);
     }
     return NextResponse.json(
       {

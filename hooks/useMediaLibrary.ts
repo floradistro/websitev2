@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 
+import { logger } from "@/lib/logger";
 export interface MediaFile {
   id: string;
   file_name: string;
@@ -96,7 +97,7 @@ export function useMediaLibrary(
       const data = await response.json();
       setFiles(data.files || []);
     } catch (err: any) {
-      console.error("❌ useMediaLibrary error:", err);
+      logger.error("❌ useMediaLibrary error:", err);
       setError(err.message);
       setFiles([]);
     } finally {
@@ -136,8 +137,7 @@ export function useMediaLibrary(
   const getFilesByTag = useCallback(
     (filterTag: string): MediaFile[] => {
       return files.filter(
-        (f) =>
-          f.ai_tags?.includes(filterTag) || f.custom_tags?.includes(filterTag),
+        (f) => f.ai_tags?.includes(filterTag) || f.custom_tags?.includes(filterTag),
       );
     },
     [files],
@@ -177,9 +177,7 @@ export function getMediaLibrarySummary(files: MediaFile[]): string {
   };
 
   const allTags = Array.from(
-    new Set(
-      files.flatMap((f) => [...(f.ai_tags || []), ...(f.custom_tags || [])]),
-    ),
+    new Set(files.flatMap((f) => [...(f.ai_tags || []), ...(f.custom_tags || [])])),
   ).slice(0, 10);
 
   return `
@@ -199,10 +197,7 @@ Example: useMediaLibrary(vendorId, { category: 'product_photos' })
 /**
  * Helper to suggest appropriate media for a component type
  */
-export function suggestMediaForComponent(
-  componentType: string,
-  files: MediaFile[],
-): MediaFile[] {
+export function suggestMediaForComponent(componentType: string, files: MediaFile[]): MediaFile[] {
   const suggestions: { [key: string]: string } = {
     hero: "product_photos",
     gallery: "product_photos",

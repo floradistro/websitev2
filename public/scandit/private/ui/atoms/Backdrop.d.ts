@@ -15,11 +15,7 @@ declare class Backdrop extends ScanditHTMLElement {
   static create(): Backdrop;
   protected static register(): void;
   private static createStyleElement;
-  attributeChangedCallback(
-    name: string,
-    _oldValue: string | null,
-    newValue: string | null,
-  ): void;
+  attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null): void;
   show(): Promise<void>;
   hide(): Promise<void>;
 }

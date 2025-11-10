@@ -1,6 +1,7 @@
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 // GET /api/vendor/wholesale-customers - List all wholesale customers for vendor
 export async function GET(request: NextRequest) {
   try {
@@ -13,10 +14,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id is required" }, { status: 400 });
     }
 
     let query = supabase
@@ -51,23 +49,16 @@ export async function GET(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error fetching wholesale customers:", error);
+          logger.error("Error fetching wholesale customers:", error);
         }
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 500 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
       }
 
       const filtered = allCustomers?.filter((customer) => {
         const searchLower = search.toLowerCase();
-        const externalName =
-          customer.external_company_name?.toLowerCase() || "";
-        const vendorName =
-          customer.customer_vendor?.store_name?.toLowerCase() || "";
-        return (
-          externalName.includes(searchLower) || vendorName.includes(searchLower)
-        );
+        const externalName = customer.external_company_name?.toLowerCase() || "";
+        const vendorName = customer.customer_vendor?.store_name?.toLowerCase() || "";
+        return externalName.includes(searchLower) || vendorName.includes(searchLower);
       });
 
       return NextResponse.json({
@@ -81,12 +72,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching wholesale customers:", error);
+        logger.error("Error fetching wholesale customers:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -96,12 +84,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in GET /api/vendor/wholesale-customers:", error);
+      logger.error("Error in GET /api/vendor/wholesale-customers:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -113,31 +98,21 @@ export async function POST(request: NextRequest) {
     const { action, vendor_id, ...customerData } = body;
 
     if (!vendor_id) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id is required" }, { status: 400 });
     }
 
     if (!action) {
-      return NextResponse.json(
-        { success: false, error: "action is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "action is required" }, { status: 400 });
     }
 
     switch (action) {
       case "create": {
         // Validate: must have either customer_vendor_id OR external_company_name
-        if (
-          !customerData.customer_vendor_id &&
-          !customerData.external_company_name
-        ) {
+        if (!customerData.customer_vendor_id && !customerData.external_company_name) {
           return NextResponse.json(
             {
               success: false,
-              error:
-                "Either customer_vendor_id or external_company_name is required",
+              error: "Either customer_vendor_id or external_company_name is required",
             },
             { status: 400 },
           );
@@ -170,22 +145,16 @@ export async function POST(request: NextRequest) {
             credit_limit: customerData.credit_limit || null,
             tax_id: customerData.tax_id || null,
             notes: customerData.notes || null,
-            is_active:
-              customerData.is_active !== undefined
-                ? customerData.is_active
-                : true,
+            is_active: customerData.is_active !== undefined ? customerData.is_active : true,
           })
           .select()
           .single();
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error creating wholesale customer:", error);
+            logger.error("Error creating wholesale customer:", error);
           }
-          return NextResponse.json(
-            { success: false, error: error.message },
-            { status: 500 },
-          );
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -206,15 +175,11 @@ export async function POST(request: NextRequest) {
         }
 
         // Validate: must have either customer_vendor_id OR external_company_name
-        if (
-          !customerData.customer_vendor_id &&
-          !customerData.external_company_name
-        ) {
+        if (!customerData.customer_vendor_id && !customerData.external_company_name) {
           return NextResponse.json(
             {
               success: false,
-              error:
-                "Either customer_vendor_id or external_company_name is required",
+              error: "Either customer_vendor_id or external_company_name is required",
             },
             { status: 400 },
           );
@@ -256,12 +221,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error updating wholesale customer:", error);
+            logger.error("Error updating wholesale customer:", error);
           }
-          return NextResponse.json(
-            { success: false, error: error.message },
-            { status: 500 },
-          );
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -295,12 +257,9 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error deleting wholesale customer:", error);
+            logger.error("Error deleting wholesale customer:", error);
           }
-          return NextResponse.json(
-            { success: false, error: error.message },
-            { status: 500 },
-          );
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         return NextResponse.json({
@@ -318,11 +277,8 @@ export async function POST(request: NextRequest) {
     }
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in POST /api/vendor/wholesale-customers:", error);
+      logger.error("Error in POST /api/vendor/wholesale-customers:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

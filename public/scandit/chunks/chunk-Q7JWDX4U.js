@@ -1,10 +1,7 @@
 var t = class t {
   constructor(i, e) {
     this._running = false;
-    ((this.duration =
-      i > t.maxDurationAllowedByJSEngines
-        ? t.maxDurationAllowedByJSEngines
-        : i),
+    ((this.duration = i > t.maxDurationAllowedByJSEngines ? t.maxDurationAllowedByJSEngines : i),
       (this.callback = e));
   }
   get running() {

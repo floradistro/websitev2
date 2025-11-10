@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, MessageSquare, Trash2, Clock, Sparkles } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -31,9 +32,7 @@ export function ConversationHistory({
   onLoadConversation,
 }: ConversationHistoryProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<
-    string | null
-  >(null);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +53,7 @@ export function ConversationHistory({
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to load conversations:", err);
+        logger.error("Failed to load conversations:", err);
       }
     }
     setLoading(false);
@@ -71,7 +70,7 @@ export function ConversationHistory({
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to load messages:", err);
+        logger.error("Failed to load messages:", err);
       }
     }
 
@@ -113,11 +112,7 @@ export function ConversationHistory({
         <div className="h-14 border-b border-white/5 flex items-center justify-between px-6 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-              <MessageSquare
-                size={16}
-                className="text-white/60"
-                strokeWidth={2}
-              />
+              <MessageSquare size={16} className="text-white/60" strokeWidth={2} />
             </div>
             <div>
               <h2
@@ -163,15 +158,9 @@ export function ConversationHistory({
                 </div>
               ) : conversations.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                  <Sparkles
-                    size={24}
-                    className="text-white/20 mb-3"
-                    strokeWidth={1.5}
-                  />
+                  <Sparkles size={24} className="text-white/20 mb-3" strokeWidth={1.5} />
                   <p className="text-white/40 text-xs">No conversations yet</p>
-                  <p className="text-white/20 text-[10px] mt-1">
-                    Start chatting to see history
-                  </p>
+                  <p className="text-white/20 text-[10px] mt-1">Start chatting to see history</p>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -205,9 +194,7 @@ export function ConversationHistory({
                       <div className="flex items-center gap-2 text-[10px] text-white/40">
                         <Clock size={10} strokeWidth={2} />
                         {formatTime(conv.updated_at)}
-                        <span className="ml-auto">
-                          {conv.message_count} msgs
-                        </span>
+                        <span className="ml-auto">{conv.message_count} msgs</span>
                       </div>
                     </button>
                   ))}
@@ -252,9 +239,7 @@ export function ConversationHistory({
                 {onLoadConversation && (
                   <div className="p-4 border-t border-white/5">
                     <button
-                      onClick={() =>
-                        onLoadConversation(selectedConversation, messages)
-                      }
+                      onClick={() => onLoadConversation(selectedConversation, messages)}
                       className="w-full bg-white/10 hover:bg-white/15 border border-white/20 text-white px-4 py-3 rounded-xl text-xs font-black uppercase tracking-tight transition-all"
                       style={{ fontWeight: 900 }}
                     >
@@ -271,9 +256,7 @@ export function ConversationHistory({
                     className="text-white/10 mx-auto mb-4"
                     strokeWidth={1.5}
                   />
-                  <p className="text-white/40 text-sm">
-                    Select a conversation to view messages
-                  </p>
+                  <p className="text-white/40 text-sm">Select a conversation to view messages</p>
                 </div>
               </div>
             )}

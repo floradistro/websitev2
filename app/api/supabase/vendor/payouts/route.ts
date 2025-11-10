@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
@@ -14,10 +15,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    let query = supabase
-      .from("vendor_payouts")
-      .select("*")
-      .eq("vendor_id", vendorId);
+    let query = supabase.from("vendor_payouts").select("*").eq("vendor_id", vendorId);
 
     if (status) {
       query = query.eq("status", status);
@@ -29,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching payouts:", error);
+        logger.error("Error fetching payouts:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -40,7 +38,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

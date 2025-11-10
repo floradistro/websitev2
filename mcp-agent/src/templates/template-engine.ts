@@ -5,6 +5,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 export interface VendorData {
   id: string;
   store_name: string;
@@ -51,9 +52,7 @@ function getSupabaseClient() {
 /**
  * Fetch template from database
  */
-async function fetchTemplate(
-  templateId: string = "b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0",
-) {
+async function fetchTemplate(templateId: string = "b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0") {
   const supabase = getSupabaseClient();
 
   const { data, error } = await supabase
@@ -72,16 +71,12 @@ async function fetchTemplate(
 /**
  * Apply template to vendor data (now reads from database)
  */
-export async function applyTemplate(
-  vendorData: VendorData,
-): Promise<AppliedTemplate> {
-  console.log("📖 Fetching Wilson's Template from Supabase...");
+export async function applyTemplate(vendorData: VendorData): Promise<AppliedTemplate> {
+  logger.debug("📖 Fetching Wilson's Template from Supabase...");
 
   const templateComponents = await fetchTemplate();
 
-  console.log(
-    `✅ Loaded ${templateComponents.length} components from database`,
-  );
+  logger.debug(`✅ Loaded ${templateComponents.length} components from database`);
 
   const sections: any[] = [];
   const components: any[] = [];
@@ -124,10 +119,7 @@ export async function applyTemplate(
 /**
  * Process props - replace {{placeholders}} with real data
  */
-function processProps(
-  props: Record<string, any>,
-  vendorData: VendorData,
-): Record<string, any> {
+function processProps(props: Record<string, any>, vendorData: VendorData): Record<string, any> {
   const processed: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(props)) {
@@ -152,10 +144,7 @@ function replacePlaceholders(text: string, vendorData: VendorData): string {
       /\{\{vendor\.store_tagline\}\}/g,
       vendorData.store_tagline || "Premium cannabis delivered with care",
     )
-    .replace(
-      /\{\{vendor\.logo_url\}\}/g,
-      vendorData.logo_url || "/default-logo.png",
-    );
+    .replace(/\{\{vendor\.logo_url\}\}/g, vendorData.logo_url || "/default-logo.png");
 }
 
 /**
@@ -179,7 +168,7 @@ export async function fetchComplianceContent(
   const { data, error } = await query.order("display_order");
 
   if (error) {
-    console.error("Error fetching compliance content:", error);
+    logger.error("Error fetching compliance content:", error);
     return [];
   }
 

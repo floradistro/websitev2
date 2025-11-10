@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/vendor/style
  * Fetch vendor's applied style preset (Wilson's Template)
@@ -12,10 +13,7 @@ export async function GET(request: NextRequest) {
     const vendorId = searchParams.get("vendor_id");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { error: "vendor_id required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "vendor_id required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -56,7 +54,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching style:", error);
+      logger.error("Error fetching style:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -90,7 +88,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating style:", error);
+      logger.error("Error updating style:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

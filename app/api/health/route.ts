@@ -12,11 +12,9 @@ export async function GET(request: NextRequest) {
       supabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
       supabaseUrlLength: process.env.NEXT_PUBLIC_SUPABASE_URL?.length || 0,
       supabaseAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      supabaseAnonKeyLength:
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0,
+      supabaseAnonKeyLength: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length || 0,
       supabaseServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-      supabaseServiceKeyLength:
-        process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0,
+      supabaseServiceKeyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0,
     },
     checks: {
       database: { status: "unknown", latency: 0 },
@@ -27,10 +25,7 @@ export async function GET(request: NextRequest) {
   };
 
   // Check for missing environment variables
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     checks.status = "unhealthy";
     return NextResponse.json(
       {
@@ -52,10 +47,7 @@ export async function GET(request: NextRequest) {
     // Database check
     const dbStart = Date.now();
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { error: dbError } = await supabase
-      .from("vendors")
-      .select("id")
-      .limit(1);
+    const { error: dbError } = await supabase.from("vendors").select("id").limit(1);
     checks.checks.database = {
       status: dbError ? "unhealthy" : "healthy",
       latency: Date.now() - dbStart,
@@ -70,9 +62,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Overall status
-    const allHealthy = Object.values(checks.checks).every(
-      (check) => check.status === "healthy",
-    );
+    const allHealthy = Object.values(checks.checks).every((check) => check.status === "healthy");
     checks.status = allHealthy ? "healthy" : "degraded";
 
     return NextResponse.json(checks, {

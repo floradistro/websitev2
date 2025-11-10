@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Bulk Products API - Lightning fast product fetching
  * POST /api/bulk/products
@@ -8,25 +9,15 @@ import { getServiceSupabase } from "@/lib/supabase/client";
  */
 export async function POST(request: NextRequest) {
   try {
-    const {
-      ids,
-      include_inventory = false,
-      include_categories = true,
-    } = await request.json();
+    const { ids, include_inventory = false, include_categories = true } = await request.json();
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
-      return NextResponse.json(
-        { error: "Invalid request: ids array required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid request: ids array required" }, { status: 400 });
     }
 
     // Limit to prevent abuse
     if (ids.length > 500) {
-      return NextResponse.json(
-        { error: "Maximum 500 products per request" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Maximum 500 products per request" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -68,18 +59,14 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Bulk products fetch error:", error);
+        logger.error("Bulk products fetch error:", error);
       }
-      return NextResponse.json(
-        { error: "Failed to fetch products" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
     }
 
     // Filter out suspended vendors
     const activeProducts =
-      products?.filter((p: any) => !p.vendor || p.vendor.status === "active") ||
-      [];
+      products?.filter((p: any) => !p.vendor || p.vendor.status === "active") || [];
 
     // Optionally fetch inventory in parallel
     let inventoryMap = new Map();
@@ -127,12 +114,9 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Bulk products error:", error);
+      logger.error("Bulk products error:", error);
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -189,26 +173,20 @@ export async function GET(request: NextRequest) {
       query = query.eq("vendor_id", vendorId);
     }
 
-    query = query
-      .order("date_created", { ascending: false })
-      .range(offset, offset + limit - 1);
+    query = query.order("date_created", { ascending: false }).range(offset, offset + limit - 1);
 
     const { data: products, error, count } = await query;
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Bulk products fetch error:", error);
+        logger.error("Bulk products fetch error:", error);
       }
-      return NextResponse.json(
-        { error: "Failed to fetch products" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
     }
 
     // Filter out suspended vendors
     const activeProducts =
-      products?.filter((p: any) => !p.vendor || p.vendor.status === "active") ||
-      [];
+      products?.filter((p: any) => !p.vendor || p.vendor.status === "active") || [];
 
     return NextResponse.json(
       {
@@ -228,11 +206,8 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Bulk products error:", error);
+      logger.error("Bulk products error:", error);
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

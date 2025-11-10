@@ -40,9 +40,7 @@
  * @param animation - The animation to cancel
  * @returns true if the animation was successfully cancelled, false if it failed or was already finished
  */
-declare function safeCancelAnimation(
-  animation: Animation | null | undefined,
-): boolean;
+declare function safeCancelAnimation(animation: Animation | null | undefined): boolean;
 /**
  * Safely awaits an animation's finished promise, handling potential AbortError rejections
  * from strict polyfills when animations are cancelled.
@@ -50,8 +48,6 @@ declare function safeCancelAnimation(
  * @param animation - The animation to await
  * @returns Promise that resolves when animation completes or is cancelled (never rejects)
  */
-declare function safeAwaitAnimation(
-  animation: Animation | null | undefined,
-): Promise<void>;
+declare function safeAwaitAnimation(animation: Animation | null | undefined): Promise<void>;
 
 export { safeAwaitAnimation, safeCancelAnimation };

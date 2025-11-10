@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     // SECURITY: Use requireVendor to get vendor_id from authenticated session
@@ -21,23 +22,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading employees:", error);
+        logger.error("Error loading employees:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, employees: data || [] });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in vendor employees API:", error);
+      logger.error("Error in vendor employees API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -74,21 +69,20 @@ export async function POST(request: NextRequest) {
           Math.random().toString(36).slice(-10).toUpperCase() +
           "!123";
 
-        const { data: authUser, error: authError } =
-          await supabase.auth.admin.createUser({
-            email,
-            password: tempPassword,
-            email_confirm: true,
-            user_metadata: {
-              first_name,
-              last_name,
-              role: role || "pos_staff",
-            },
-          });
+        const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+          email,
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: {
+            first_name,
+            last_name,
+            role: role || "pos_staff",
+          },
+        });
 
         if (authError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error creating auth user:", authError);
+            logger.error("Error creating auth user:", authError);
           }
           return NextResponse.json(
             {
@@ -119,7 +113,7 @@ export async function POST(request: NextRequest) {
 
         if (dbError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error creating employee in database:", dbError);
+            logger.error("Error creating employee in database:", dbError);
           }
           // Cleanup: delete auth user if database insert fails
           await supabase.auth.admin.deleteUser(authUser.user.id);
@@ -133,16 +127,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Step 3: Send password reset email
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-          email,
-          {
-            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/reset-password`,
-          },
-        );
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/reset-password`,
+        });
 
         if (resetError) {
           if (process.env.NODE_ENV === "development") {
-            console.warn("Failed to send password reset email:", resetError);
+            logger.warn("Failed to send password reset email:", resetError);
           }
         }
 
@@ -153,7 +144,7 @@ export async function POST(request: NextRequest) {
         });
       } catch (error: any) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error in employee creation:", error);
+          logger.error("Error in employee creation:", error);
         }
         return NextResponse.json(
           {
@@ -209,10 +200,7 @@ export async function POST(request: NextRequest) {
         .eq("vendor_id", vendorId);
 
       if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -241,10 +229,7 @@ export async function POST(request: NextRequest) {
         .eq("vendor_id", vendorId);
 
       if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -294,18 +279,13 @@ export async function POST(request: NextRequest) {
         can_manage_inventory: true,
       }));
 
-      const { error } = await supabase
-        .from("user_locations")
-        .insert(assignments);
+      const { error } = await supabase.from("user_locations").insert(assignments);
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error assigning locations:", error);
+          logger.error("Error assigning locations:", error);
         }
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -346,7 +326,7 @@ export async function POST(request: NextRequest) {
 
       if (verifyError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error fetching employee:", verifyError);
+          logger.error("Error fetching employee:", verifyError);
         }
         return NextResponse.json(
           {
@@ -378,14 +358,13 @@ export async function POST(request: NextRequest) {
       }
 
       // Update password using Supabase Admin API
-      const { error: passwordError } = await supabase.auth.admin.updateUserById(
-        emp.auth_user_id,
-        { password },
-      );
+      const { error: passwordError } = await supabase.auth.admin.updateUserById(emp.auth_user_id, {
+        password,
+      });
 
       if (passwordError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error updating password:", passwordError);
+          logger.error("Error updating password:", passwordError);
         }
         return NextResponse.json(
           {
@@ -422,10 +401,7 @@ export async function POST(request: NextRequest) {
         .eq("vendor_id", vendorId);
 
       if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -443,11 +419,8 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in vendor employees API:", error);
+      logger.error("Error in vendor employees API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

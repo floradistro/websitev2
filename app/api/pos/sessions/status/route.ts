@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -15,10 +16,7 @@ export async function GET(request: NextRequest) {
     const sessionId = searchParams.get("sessionId");
 
     if (!sessionId) {
-      return NextResponse.json(
-        { error: "sessionId is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "sessionId is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -31,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error checking session status:", error);
+        logger.error("Error checking session status:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -39,7 +37,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ session });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in session status endpoint:", error);
+      logger.error("Error in session status endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

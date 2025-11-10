@@ -8,6 +8,7 @@ import { jobQueue } from "./job-queue";
 import { productCache, vendorCache, inventoryCache } from "./cache-manager";
 import { getServiceSupabase } from "./supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Run all scheduled tasks
  * Call this from a cron job or interval
@@ -27,7 +28,7 @@ export async function runScheduledTasks(): Promise<void> {
     const duration = Date.now() - startTime;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error in scheduled tasks:", error);
+      logger.error("❌ Error in scheduled tasks:", error);
     }
   }
 }
@@ -49,15 +50,11 @@ async function cleanupExpiredCache(): Promise<void> {
     // Optional: Force clear old caches during off-peak hours
     const hour = new Date().getHours();
     if (hour >= 2 && hour <= 4) {
-      await jobQueue.enqueue(
-        "cleanup-cache",
-        { cacheType: "all" },
-        { priority: 5 },
-      );
+      await jobQueue.enqueue("cleanup-cache", { cacheType: "all" }, { priority: 5 });
     }
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Cache cleanup failed:", error);
+      logger.error("❌ Cache cleanup failed:", error);
     }
   }
 }
@@ -88,7 +85,7 @@ async function checkLowStockAlerts(): Promise<void> {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching low stock:", error);
+        logger.error("❌ Error fetching low stock:", error);
       }
       return;
     }
@@ -124,7 +121,7 @@ async function checkLowStockAlerts(): Promise<void> {
     }
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Low stock check failed:", error);
+      logger.error("❌ Low stock check failed:", error);
     }
   }
 }
@@ -159,17 +156,15 @@ async function generateDailyMetrics(): Promise<void> {
 
     if (ordersError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching orders:", ordersError);
+        logger.error("❌ Error fetching orders:", ordersError);
       }
       return;
     }
 
     const totalOrders = orders?.length || 0;
     const totalRevenue =
-      orders?.reduce((sum, order) => sum + parseFloat(order.total || "0"), 0) ||
-      0;
-    const completedOrders =
-      orders?.filter((o) => o.status === "completed").length || 0;
+      orders?.reduce((sum, order) => sum + parseFloat(order.total || "0"), 0) || 0;
+    const completedOrders = orders?.filter((o) => o.status === "completed").length || 0;
 
     // Queue report generation
     await jobQueue.enqueue(
@@ -187,7 +182,7 @@ async function generateDailyMetrics(): Promise<void> {
     );
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Daily metrics generation failed:", error);
+      logger.error("❌ Daily metrics generation failed:", error);
     }
   }
 }
@@ -207,7 +202,7 @@ async function cleanupOldJobs(): Promise<void> {
     }
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Job cleanup failed:", error);
+      logger.error("❌ Job cleanup failed:", error);
     }
   }
 }
@@ -243,12 +238,12 @@ export async function refreshMaterializedViews(): Promise<void> {
     // const { error } = await supabase.rpc('refresh_materialized_views');
 
     // if (error) {
-    //   console.error('❌ Failed to refresh materialized views:', error);
+    //   logger.error('❌ Failed to refresh materialized views:', error);
     //   return;
     // }
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Materialized views refresh failed:", error);
+      logger.error("❌ Materialized views refresh failed:", error);
     }
   }
 }

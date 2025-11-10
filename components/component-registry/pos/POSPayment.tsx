@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, X, Banknote, CreditCard, Wallet } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface SplitPayment {
   method: "cash" | "card";
   amount: number;
@@ -36,9 +37,7 @@ export function POSPayment({
   registerId,
   hasPaymentProcessor = false,
 }: POSPaymentProps) {
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "split">(
-    "cash",
-  );
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "split">("cash");
   const [cashTendered, setCashTendered] = useState("");
   const [processing, setProcessing] = useState(false);
   const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
@@ -80,10 +79,7 @@ export function POSPayment({
     if (amount > 0 && amount <= remaining + 0.01) {
       const finalAmount = Math.min(amount, remaining);
       const roundedAmount = Math.round(finalAmount * 100) / 100;
-      setSplitPayments([
-        ...splitPayments,
-        { method: splitMethod, amount: roundedAmount },
-      ]);
+      setSplitPayments([...splitPayments, { method: splitMethod, amount: roundedAmount }]);
       setSplitAmount("");
     }
   };
@@ -162,7 +158,7 @@ export function POSPayment({
       }
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Payment error:", error);
+        logger.error("Payment error:", error);
       }
       alert(`Payment failed: ${error.message}`);
       setProcessing(false);
@@ -306,9 +302,7 @@ export function POSPayment({
             {processing ? (
               <>
                 <div className="text-white text-sm font-bold uppercase tracking-wider mb-2">
-                  {hasPaymentProcessor
-                    ? "Processing on terminal..."
-                    : "Processing manual entry..."}
+                  {hasPaymentProcessor ? "Processing on terminal..." : "Processing manual entry..."}
                 </div>
                 <div className="text-white/60 text-[10px]">
                   {hasPaymentProcessor
@@ -319,9 +313,7 @@ export function POSPayment({
             ) : (
               <>
                 <div className="text-white text-sm font-bold uppercase tracking-wider mb-2">
-                  {hasPaymentProcessor
-                    ? "Ready to process"
-                    : "Manual card entry"}
+                  {hasPaymentProcessor ? "Ready to process" : "Manual card entry"}
                 </div>
                 <div className="text-white/60 text-[10px]">
                   {hasPaymentProcessor
@@ -354,10 +346,7 @@ export function POSPayment({
                         <div className="text-[10px] uppercase tracking-[0.15em] text-white/40">
                           {payment.method}
                         </div>
-                        <div
-                          className="text-white font-black text-sm"
-                          style={{ fontWeight: 900 }}
-                        >
+                        <div className="text-white font-black text-sm" style={{ fontWeight: 900 }}>
                           ${payment.amount.toFixed(2)}
                         </div>
                       </div>
@@ -376,20 +365,13 @@ export function POSPayment({
             {/* Payment Progress */}
             <div className="bg-[#141414] border border-white/5 rounded-2xl p-4">
               <div className="flex justify-between text-xs mb-2">
-                <span className="text-white/40 uppercase tracking-[0.15em]">
-                  Paid
-                </span>
-                <span
-                  className="text-white font-black"
-                  style={{ fontWeight: 900 }}
-                >
+                <span className="text-white/40 uppercase tracking-[0.15em]">Paid</span>
+                <span className="text-white font-black" style={{ fontWeight: 900 }}>
                   ${totalPaid.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between text-xs mb-3">
-                <span className="text-white/40 uppercase tracking-[0.15em]">
-                  Remaining
-                </span>
+                <span className="text-white/40 uppercase tracking-[0.15em]">Remaining</span>
                 <span
                   className={`font-black ${remaining > 0 ? "text-white" : "text-green-400"}`}
                   style={{ fontWeight: 900 }}

@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { productCache, generateCacheKey } from "@/lib/cache-manager";
 import { monitor } from "@/lib/performance-monitor";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   const startTime = performance.now();
   const endTimer = monitor.startTimer("Product List");
@@ -61,12 +62,9 @@ export async function GET(request: NextRequest) {
 
     if (productsError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching products:", productsError);
+        logger.error("❌ Error fetching products:", productsError);
       }
-      return NextResponse.json(
-        { error: productsError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: productsError.message }, { status: 500 });
     }
 
     if (products && products.length > 0) {
@@ -74,8 +72,9 @@ export async function GET(request: NextRequest) {
 
     // Fetch product categories relationships
 
-    const { data: productCategoriesData, error: categoriesError } =
-      await supabase.from("product_categories").select(`
+    const { data: productCategoriesData, error: categoriesError } = await supabase.from(
+      "product_categories",
+    ).select(`
         product_id,
         category_id,
         is_primary,
@@ -84,7 +83,7 @@ export async function GET(request: NextRequest) {
 
     if (categoriesError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching categories:", categoriesError);
+        logger.error("❌ Error fetching categories:", categoriesError);
       }
     }
 
@@ -121,7 +120,7 @@ export async function GET(request: NextRequest) {
 
     if (invError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching inventory:", invError);
+        logger.error("❌ Error fetching inventory:", invError);
       }
     }
 
@@ -146,9 +145,7 @@ export async function GET(request: NextRequest) {
       const categories = categoriesMap.get(p.id) || [];
 
       // Filter active locations
-      const activeInventory = inventory.filter(
-        (inv: any) => inv.location?.is_active === true,
-      );
+      const activeInventory = inventory.filter((inv: any) => inv.location?.is_active === true);
 
       // Calculate stock
       const totalStock = activeInventory.reduce(
@@ -176,9 +173,7 @@ export async function GET(request: NextRequest) {
       pricingTiers.sort((a, b) => a.sort_order - b.sort_order);
 
       // Ensure custom_fields is an array
-      const blueprintFieldsArray = Array.isArray(p.custom_fields)
-        ? p.custom_fields
-        : [];
+      const blueprintFieldsArray = Array.isArray(p.custom_fields) ? p.custom_fields : [];
 
       return {
         id: p.id,
@@ -228,10 +223,10 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ FATAL ERROR in products API:", error);
+      logger.error("❌ FATAL ERROR in products API:", error);
     }
     if (process.env.NODE_ENV === "development") {
-      console.error("Stack:", error.stack);
+      logger.error("Stack:", error.stack);
     }
     return NextResponse.json(
       {

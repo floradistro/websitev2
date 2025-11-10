@@ -9,6 +9,7 @@ import dotenv from "dotenv";
 import fetch from "node-fetch";
 import { generateStorefrontWithAgent } from "./agent";
 
+import { logger } from "@/lib/logger";
 // Load environment variables
 dotenv.config();
 
@@ -37,10 +38,7 @@ app.use((req, res, next) => {
     return next();
   }
 
-  if (
-    !process.env.MCP_AGENT_SECRET ||
-    secret !== process.env.MCP_AGENT_SECRET
-  ) {
+  if (!process.env.MCP_AGENT_SECRET || secret !== process.env.MCP_AGENT_SECRET) {
     return res.status(401).json({ success: false, error: "Unauthorized" });
   }
 
@@ -76,29 +74,29 @@ app.post("/api/generate-storefront", async (req, res) => {
       });
     }
 
-    console.log(`\n${"=".repeat(60)}`);
-    console.log(`🤖 AGENT STARTING: ${vendorData.store_name}`);
-    console.log(`${"=".repeat(60)}\n`);
+    logger.debug(`\n${"=".repeat(60)}`);
+    logger.debug(`🤖 AGENT STARTING: ${vendorData.store_name}`);
+    logger.debug(`${"=".repeat(60)}\n`);
 
     // Generate storefront using Claude agent
     const result = await generateStorefrontWithAgent(vendorId, vendorData);
 
-    console.log(`\n${"=".repeat(60)}`);
+    logger.debug(`\n${"=".repeat(60)}`);
     if (result.success) {
-      console.log(`✅ AGENT SUCCESS: ${vendorData.store_name}`);
-      console.log(`   Sections: ${result.sectionsCreated}`);
-      console.log(`   Components: ${result.componentsCreated}`);
-      console.log(`   URL: ${result.storefrontUrl}`);
+      logger.debug(`✅ AGENT SUCCESS: ${vendorData.store_name}`);
+      logger.debug(`   Sections: ${result.sectionsCreated}`);
+      logger.debug(`   Components: ${result.componentsCreated}`);
+      logger.debug(`   URL: ${result.storefrontUrl}`);
     } else {
-      console.log(`❌ AGENT FAILED: ${vendorData.store_name}`);
-      console.log(`   Errors: ${result.errors?.join(", ")}`);
+      logger.debug(`❌ AGENT FAILED: ${vendorData.store_name}`);
+      logger.debug(`   Errors: ${result.errors?.join(", ")}`);
     }
-    console.log(`${"=".repeat(60)}\n`);
+    logger.debug(`${"=".repeat(60)}\n`);
 
     // Return result
     res.json(result);
   } catch (error: any) {
-    console.error("❌ Server error:", error);
+    logger.error("❌ Server error:", error);
 
     res.status(500).json({
       success: false,
@@ -120,21 +118,21 @@ app.post("/api/test", async (req, res) => {
 const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
-  console.log(`\n${"🚀".repeat(30)}`);
-  console.log(`   YACHT CLUB AI AGENT SERVER RUNNING`);
-  console.log(`   Port: ${PORT}`);
-  console.log(`   Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`   Ready to generate storefronts!`);
-  console.log(`${"🚀".repeat(30)}\n`);
+  logger.debug(`\n${"🚀".repeat(30)}`);
+  logger.debug(`   YACHT CLUB AI AGENT SERVER RUNNING`);
+  logger.debug(`   Port: ${PORT}`);
+  logger.debug(`   Environment: ${process.env.NODE_ENV || "development"}`);
+  logger.debug(`   Ready to generate storefronts!`);
+  logger.debug(`${"🚀".repeat(30)}\n`);
 });
 
 // Graceful shutdown
 process.on("SIGTERM", () => {
-  console.log("🛑 SIGTERM signal received: closing server");
+  logger.debug("🛑 SIGTERM signal received: closing server");
   process.exit(0);
 });
 
 process.on("SIGINT", () => {
-  console.log("🛑 SIGINT signal received: closing server");
+  logger.debug("🛑 SIGINT signal received: closing server");
   process.exit(0);
 });

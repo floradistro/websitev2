@@ -50,9 +50,7 @@ export function CompactListProductCard({
 
   // Get first custom field value (ultra compact - only show one)
   const firstCustomField =
-    customFieldsToShow.length > 0
-      ? product.custom_fields?.[customFieldsToShow[0]]
-      : null;
+    customFieldsToShow.length > 0 ? product.custom_fields?.[customFieldsToShow[0]] : null;
 
   return (
     <motion.div

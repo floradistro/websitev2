@@ -7,6 +7,7 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import { DynamicField, EnrichedProductData } from "@/lib/types/product";
 import { ds, cn } from "@/components/ds";
 
+import { logger } from "@/lib/logger";
 interface Category {
   id: string;
   name: string;
@@ -37,10 +38,7 @@ interface ProductBasicInfoProps {
   }) => void;
   onCategoryChange: (categoryId: string) => void;
   onProductTypeChange: (type: "simple" | "variable") => void;
-  onAIAutofill: (
-    selectedFields: string[],
-    customPrompt: string,
-  ) => Promise<void>;
+  onAIAutofill: (selectedFields: string[], customPrompt: string) => Promise<void>;
   onApplySuggestions: (selectedFields: string[]) => void;
   onCloseSuggestions: () => void;
 }
@@ -85,9 +83,7 @@ export default function ProductBasicInfo({
   const loadSubcategories = async (parentId: string) => {
     try {
       setLoadingSubcategories(true);
-      const response = await fetch(
-        `/api/supabase/categories?parent=${parentId}&active=true`,
-      );
+      const response = await fetch(`/api/supabase/categories?parent=${parentId}&active=true`);
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
@@ -96,7 +92,7 @@ export default function ProductBasicInfo({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading subcategories:", error);
+        logger.error("Error loading subcategories:", error);
       }
     } finally {
       setLoadingSubcategories(false);
@@ -135,9 +131,7 @@ export default function ProductBasicInfo({
             type="text"
             required
             value={formData.name}
-            onChange={(e) =>
-              onFormDataChange({ ...formData, name: e.target.value })
-            }
+            onChange={(e) => onFormDataChange({ ...formData, name: e.target.value })}
             placeholder="e.g., Blue Dream"
             className={cn(
               ds.colors.bg.primary,
@@ -171,9 +165,7 @@ export default function ProductBasicInfo({
             required
             rows={3}
             value={formData.description}
-            onChange={(e) =>
-              onFormDataChange({ ...formData, description: e.target.value })
-            }
+            onChange={(e) => onFormDataChange({ ...formData, description: e.target.value })}
             placeholder="Describe your product..."
             className={cn(
               ds.colors.bg.primary,
@@ -223,8 +215,7 @@ export default function ProductBasicInfo({
                     className="block text-white/60 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black"
                     style={{ fontWeight: 900 }}
                   >
-                    Select specific option{" "}
-                    <span className="text-red-400">*</span>
+                    Select specific option <span className="text-red-400">*</span>
                   </label>
                   <select
                     required
@@ -271,10 +262,7 @@ export default function ProductBasicInfo({
                 "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
                 productType === "simple"
                   ? "bg-white/10 border-white/20 text-white"
-                  : cn(
-                      ds.colors.bg.primary,
-                      "border-white/10 text-white/60 hover:border-white/20",
-                    ),
+                  : cn(ds.colors.bg.primary, "border-white/10 text-white/60 hover:border-white/20"),
               )}
               style={{ fontWeight: 900 }}
             >
@@ -287,10 +275,7 @@ export default function ProductBasicInfo({
                 "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
                 productType === "variable"
                   ? "bg-white/10 border-white/20 text-white"
-                  : cn(
-                      ds.colors.bg.primary,
-                      "border-white/10 text-white/60 hover:border-white/20",
-                    ),
+                  : cn(ds.colors.bg.primary, "border-white/10 text-white/60 hover:border-white/20"),
               )}
               style={{ fontWeight: 900 }}
             >
@@ -320,18 +305,13 @@ export default function ProductBasicInfo({
                 "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
                 formData.product_visibility === "internal"
                   ? "bg-white/10 border-white/20 text-white"
-                  : cn(
-                      ds.colors.bg.primary,
-                      "border-white/10 text-white/60 hover:border-white/20",
-                    ),
+                  : cn(ds.colors.bg.primary, "border-white/10 text-white/60 hover:border-white/20"),
               )}
               style={{ fontWeight: 900 }}
             >
               <div className="flex flex-col items-center gap-1">
                 <span>🔒 Internal</span>
-                <span className="text-[7px] text-white/40 font-normal">
-                  POS, Inventory, TV
-                </span>
+                <span className="text-[7px] text-white/40 font-normal">POS, Inventory, TV</span>
               </div>
             </button>
             <button
@@ -346,18 +326,13 @@ export default function ProductBasicInfo({
                 "px-3 py-2.5 rounded-xl border transition-all text-[10px] uppercase tracking-[0.15em] font-black",
                 formData.product_visibility === "marketplace"
                   ? "bg-white/10 border-white/20 text-white"
-                  : cn(
-                      ds.colors.bg.primary,
-                      "border-white/10 text-white/60 hover:border-white/20",
-                    ),
+                  : cn(ds.colors.bg.primary, "border-white/10 text-white/60 hover:border-white/20"),
               )}
               style={{ fontWeight: 900 }}
             >
               <div className="flex flex-col items-center gap-1">
                 <span>🌐 Marketplace</span>
-                <span className="text-[7px] text-white/40 font-normal">
-                  Requires approval
-                </span>
+                <span className="text-[7px] text-white/40 font-normal">Requires approval</span>
               </div>
             </button>
           </div>

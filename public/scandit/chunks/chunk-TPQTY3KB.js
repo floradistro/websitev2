@@ -27,10 +27,7 @@ var u = class e {
   },
   m = class e {
     constructor(t, i, r, o) {
-      ((this._topLeft = t),
-        (this._topRight = i),
-        (this._bottomRight = r),
-        (this._bottomLeft = o));
+      ((this._topLeft = t), (this._topRight = i), (this._bottomRight = r), (this._bottomLeft = o));
     }
     get topLeft() {
       return this._topLeft;
@@ -147,9 +144,7 @@ var u = class e {
       return new e(n.fromJSON(t.width), n.fromJSON(t.height));
     }
     isSameAs(t) {
-      return (
-        JSON.stringify(this.toJSONObject()) === JSON.stringify(t.toJSONObject())
-      );
+      return JSON.stringify(this.toJSONObject()) === JSON.stringify(t.toJSONObject());
     }
     toJSONObject() {
       return {
@@ -236,80 +231,48 @@ var u = class e {
     }
     static fromJSON(t) {
       if (t.width && t.height)
-        return e.sizeWithWidthAndHeight(
-          new l(n.fromJSON(t.width), n.fromJSON(t.height)),
-        );
+        return e.sizeWithWidthAndHeight(new l(n.fromJSON(t.width), n.fromJSON(t.height)));
       if (t.width && typeof t.aspect == "number")
         return e.sizeWithWidthAndAspectRatio(n.fromJSON(t.width), t.aspect);
       if (t.height && typeof t.aspect == "number")
         return e.sizeWithHeightAndAspectRatio(n.fromJSON(t.height), t.aspect);
       if (t.shorterDimension && typeof t.aspect == "number")
-        return e.sizeWithShorterDimensionAndAspectRatio(
-          n.fromJSON(t.shorterDimension),
-          t.aspect,
-        );
-      throw new Error(
-        `SizeWithUnitAndAspectJSON is malformed: ${JSON.stringify(t)}`,
-      );
+        return e.sizeWithShorterDimensionAndAspectRatio(n.fromJSON(t.shorterDimension), t.aspect);
+      throw new Error(`SizeWithUnitAndAspectJSON is malformed: ${JSON.stringify(t)}`);
     }
     toJSONObject() {
       var t, i, r, o, s, c, h, b;
       switch (this.sizingMode) {
         case "widthAndAspectRatio":
           return {
-            width:
-              (t = this.widthAndAspectRatio) == null
-                ? void 0
-                : t.size.toJSONObject(),
+            width: (t = this.widthAndAspectRatio) == null ? void 0 : t.size.toJSONObject(),
             aspect: (i = this.widthAndAspectRatio) == null ? void 0 : i.aspect,
           };
         case "heightAndAspectRatio":
           return {
-            height:
-              (r = this.heightAndAspectRatio) == null
-                ? void 0
-                : r.size.toJSONObject(),
+            height: (r = this.heightAndAspectRatio) == null ? void 0 : r.size.toJSONObject(),
             aspect: (o = this.heightAndAspectRatio) == null ? void 0 : o.aspect,
           };
         case "shorterDimensionAndAspectRatio":
           return {
             shorterDimension:
-              (s = this.shorterDimensionAndAspectRatio) == null
-                ? void 0
-                : s.size.toJSONObject(),
-            aspect:
-              (c = this.shorterDimensionAndAspectRatio) == null
-                ? void 0
-                : c.aspect,
+              (s = this.shorterDimensionAndAspectRatio) == null ? void 0 : s.size.toJSONObject(),
+            aspect: (c = this.shorterDimensionAndAspectRatio) == null ? void 0 : c.aspect,
           };
         default:
           return {
-            width:
-              (h = this.widthAndHeight) == null
-                ? void 0
-                : h.width.toJSONObject(),
-            height:
-              (b = this.widthAndHeight) == null
-                ? void 0
-                : b.height.toJSONObject(),
+            width: (h = this.widthAndHeight) == null ? void 0 : h.width.toJSONObject(),
+            height: (b = this.widthAndHeight) == null ? void 0 : b.height.toJSONObject(),
           };
       }
     }
   },
   J = class e {
     constructor(t, i, r, o) {
-      ((this._left = t),
-        (this._top = i),
-        (this._right = r),
-        (this._bottom = o));
+      ((this._left = t), (this._top = i), (this._right = r), (this._bottom = o));
     }
     static get zero() {
-      return new e(
-        new n(0, "pixel"),
-        new n(0, "pixel"),
-        new n(0, "pixel"),
-        new n(0, "pixel"),
-      );
+      return new e(new n(0, "pixel"), new n(0, "pixel"), new n(0, "pixel"), new n(0, "pixel"));
     }
     get left() {
       return this._left;
@@ -372,16 +335,11 @@ var u = class e {
       return new e(e.normalizeHex(t));
     }
     static fromRGBA(t, i, r, o = 1) {
-      let s = [t, i, r, e.normalizeAlpha(o)].reduce(
-        (c, h) => c + e.numberToHex(h),
-        "",
-      );
+      let s = [t, i, r, e.normalizeAlpha(o)].reduce((c, h) => c + e.numberToHex(h), "");
       return new e(s);
     }
     static areEquals(t, i) {
-      return t == null || i == null
-        ? false
-        : t.hexadecimalString === i.hexadecimalString;
+      return t == null || i == null ? false : t.hexadecimalString === i.hexadecimalString;
     }
     static hexToNumber(t) {
       return Number.parseInt(t, 16);
@@ -406,8 +364,7 @@ var u = class e {
       return t > 0 && t <= 1 ? 255 * t : t;
     }
     withAlpha(t) {
-      let i =
-        this.hexadecimalString.slice(0, 6) + e.numberToHex(e.normalizeAlpha(t));
+      let i = this.hexadecimalString.slice(0, 6) + e.numberToHex(e.normalizeAlpha(t));
       return e.fromHex(i);
     }
     toJSON() {

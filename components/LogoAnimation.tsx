@@ -22,8 +22,7 @@ export default function LogoAnimation() {
     canvas.height = 800;
 
     // Particle system
-    const particles: Array<{ x: number; y: number; vx: number; vy: number }> =
-      [];
+    const particles: Array<{ x: number; y: number; vx: number; vy: number }> = [];
     const numParticles = 60;
     const maxDistance = 150;
 

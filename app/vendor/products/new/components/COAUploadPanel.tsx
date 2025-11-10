@@ -65,18 +65,12 @@ export default function COAUploadPanel({
                     className="bg-blue-500/20 border border-blue-500/40 text-blue-400 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-[0.15em] flex items-center gap-1"
                     style={{ fontWeight: 900 }}
                   >
-                    <Loader
-                      size={8}
-                      strokeWidth={1.5}
-                      className="animate-spin"
-                    />
+                    <Loader size={8} strokeWidth={1.5} className="animate-spin" />
                     Uploading
                   </span>
                 )}
               </div>
-              <div className="text-white/40 text-[9px]">
-                {(coaFile.size / 1024).toFixed(1)} KB
-              </div>
+              <div className="text-white/40 text-[9px]">{(coaFile.size / 1024).toFixed(1)} KB</div>
             </div>
           </div>
           <button
@@ -112,25 +106,16 @@ export default function COAUploadPanel({
               PDF format, max 5MB
             </div>
           </div>
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={onCOAUpload}
-            className="hidden"
-          />
+          <input type="file" accept=".pdf" onChange={onCOAUpload} className="hidden" />
         </label>
       )}
 
       <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
         <div className="flex gap-2">
-          <FileText
-            size={14}
-            strokeWidth={1.5}
-            className="text-blue-400 flex-shrink-0 mt-0.5"
-          />
+          <FileText size={14} strokeWidth={1.5} className="text-blue-400 flex-shrink-0 mt-0.5" />
           <div className="text-blue-300/90 text-[9px] leading-relaxed">
-            All products must include a Certificate of Analysis from an
-            accredited laboratory. COAs must be less than 90 days old.
+            All products must include a Certificate of Analysis from an accredited laboratory. COAs
+            must be less than 90 days old.
           </div>
         </div>
       </div>

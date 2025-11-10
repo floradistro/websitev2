@@ -58,9 +58,7 @@ var v = ((e) => ((e.Circle = "circle"), (e.Square = "square"), e))(v || {}),
     get backgroundShape() {
       var t;
       let e =
-        (t = /shape-(.*)/.exec(this.containerElement.classList.value)) == null
-          ? void 0
-          : t[1];
+        (t = /shape-(.*)/.exec(this.containerElement.classList.value)) == null ? void 0 : t[1];
       return e != null && e !== "none" ? e : null;
     }
     set backgroundShape(e) {
@@ -105,8 +103,7 @@ var v = ((e) => ((e.Circle = "circle"), (e.Square = "square"), e))(v || {}),
     disconnectedCallback() {
       var t;
       let e = (t = this.shadowRoot) == null ? void 0 : t.querySelector("slot");
-      e == null ||
-        e.removeEventListener("slotchange", this.onSlotChangeListener);
+      e == null || e.removeEventListener("slotchange", this.onSlotChangeListener);
     }
     render({ propChanged: e, value: t }) {
       switch (e) {
@@ -136,14 +133,8 @@ var v = ((e) => ((e.Circle = "circle"), (e.Square = "square"), e))(v || {}),
         }
         case "backgroundshape": {
           let o = t;
-          (this.containerElement.classList.toggle(
-            "shape-circle",
-            o === "circle",
-          ),
-            this.containerElement.classList.toggle(
-              "shape-square",
-              o === "square",
-            ),
+          (this.containerElement.classList.toggle("shape-circle", o === "circle"),
+            this.containerElement.classList.toggle("shape-square", o === "square"),
             this.containerElement.classList.toggle("shape-none", o === "none"));
           break;
         }

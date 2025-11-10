@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching pending products:", error);
+        logger.error("❌ Error fetching pending products:", error);
       }
       return NextResponse.json(
         {
@@ -27,9 +28,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get vendors separately to avoid relationship issues
-    const vendorIds = [
-      ...new Set(products?.map((p) => p.vendor_id).filter(Boolean) || []),
-    ];
+    const vendorIds = [...new Set(products?.map((p) => p.vendor_id).filter(Boolean) || [])];
     const { data: vendors } = await supabase
       .from("vendors")
       .select("id, store_name")
@@ -42,9 +41,7 @@ export async function GET(request: NextRequest) {
 
     // Get categories separately
     const categoryIds = [
-      ...new Set(
-        products?.map((p) => p.primary_category_id).filter(Boolean) || [],
-      ),
+      ...new Set(products?.map((p) => p.primary_category_id).filter(Boolean) || []),
     ];
     const { data: categories } = await supabase
       .from("categories")
@@ -58,8 +55,7 @@ export async function GET(request: NextRequest) {
 
     // Map to expected format for admin UI with full details
     const pendingProducts = (products || []).map((p: any) => {
-      const isUpdate =
-        p.updated_at && new Date(p.updated_at) > new Date(p.created_at);
+      const isUpdate = p.updated_at && new Date(p.updated_at) > new Date(p.created_at);
 
       return {
         id: p.id,
@@ -112,7 +108,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get pending products error:", error);
+      logger.error("Get pending products error:", error);
     }
     return NextResponse.json(
       {

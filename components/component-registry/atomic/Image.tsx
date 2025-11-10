@@ -82,9 +82,7 @@ export function Image({
 
   // Validate image URL
   const isValidUrl =
-    src &&
-    !src.includes("example.com") &&
-    (src.startsWith("http") || src.startsWith("/"));
+    src && !src.includes("example.com") && (src.startsWith("http") || src.startsWith("/"));
 
   // If explicit width/height are provided, render with fixed dimensions (hero logo mode)
   if (width || height) {
@@ -135,9 +133,7 @@ export function Image({
   // Use Next.js Image for optimization (if valid URL)
   if (aspect !== "auto" && isValidUrl) {
     return (
-      <div
-        className={`relative overflow-hidden ${aspectClasses[aspect]} ${radiusClasses[radius]}`}
-      >
+      <div className={`relative overflow-hidden ${aspectClasses[aspect]} ${radiusClasses[radius]}`}>
         <NextImage
           src={src}
           alt={alt}

@@ -141,9 +141,7 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
         <div className="w-20 h-20 rounded-3xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center mb-6 shadow-lg shadow-black/20">
           <Package size={32} className="text-white/20" strokeWidth={1.5} />
         </div>
-        <div className="text-white/40 text-sm mb-2 tracking-tight">
-          No apps available
-        </div>
+        <div className="text-white/40 text-sm mb-2 tracking-tight">No apps available</div>
         <p className="text-white/20 text-[11px] text-center max-w-md font-light tracking-wide">
           Contact your administrator to request access
         </p>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -17,10 +18,7 @@ export async function GET(request: NextRequest) {
     const locationId = searchParams.get("locationId");
 
     if (!locationId) {
-      return NextResponse.json(
-        { error: "locationId is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "locationId is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -45,9 +43,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching registers:", error);
+        logger.error("Error fetching registers:", error);
       }
-      console.error("Error details:", JSON.stringify(error, null, 2));
+      logger.error("Error details:", JSON.stringify(error, null, 2));
       return NextResponse.json(
         { error: "Failed to fetch registers", details: error.message },
         { status: 500 },
@@ -101,12 +99,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ registers: formattedRegisters });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in GET /api/pos/registers:", error);
+      logger.error("Error in GET /api/pos/registers:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -153,12 +148,9 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating register:", error);
+        logger.error("Error creating register:", error);
       }
-      return NextResponse.json(
-        { error: "Failed to create register" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to create register" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -168,11 +160,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in POST /api/pos/registers:", error);
+      logger.error("Error in POST /api/pos/registers:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

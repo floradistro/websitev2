@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { POSModal } from "./POSModal";
 
+import { logger } from "@/lib/logger";
 interface OrderItem {
   id: string;
   product_name: string;
@@ -135,8 +136,7 @@ export function POSPickupQueue({
     if (enableSound && typeof window !== "undefined") {
       // Simple beep using Web Audio API
       try {
-        const audioContext = new (window.AudioContext ||
-          (window as any).webkitAudioContext)();
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
 
@@ -156,9 +156,7 @@ export function POSPickupQueue({
   // Load pickup orders via API
   const loadPickupOrders = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/pos/orders/pickup?locationId=${locationId}`,
-      );
+      const response = await fetch(`/api/pos/orders/pickup?locationId=${locationId}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -170,7 +168,7 @@ export function POSPickupQueue({
       setError(null);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading pickup orders:", err);
+        logger.error("Error loading pickup orders:", err);
       }
       setError(err.message);
     }
@@ -179,14 +177,12 @@ export function POSPickupQueue({
   // Load shipping orders via API
   const loadShippingOrders = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/pos/orders/shipping?locationId=${locationId}`,
-      );
+      const response = await fetch(`/api/pos/orders/shipping?locationId=${locationId}`);
 
       if (!response.ok) {
         const errorData = await response.json();
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Shipping orders API error:", errorData);
+          logger.error("❌ Shipping orders API error:", errorData);
         }
         throw new Error(errorData.error || "Failed to load shipping orders");
       }
@@ -197,7 +193,7 @@ export function POSPickupQueue({
       setError(null);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading shipping orders:", err);
+        logger.error("Error loading shipping orders:", err);
       }
       setError(err.message);
     }
@@ -206,14 +202,12 @@ export function POSPickupQueue({
   // Load in-store orders (POS sales) via API
   const loadInstoreOrders = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/pos/orders/instore?locationId=${locationId}`,
-      );
+      const response = await fetch(`/api/pos/orders/instore?locationId=${locationId}`);
 
       if (!response.ok) {
         const errorData = await response.json();
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ In-store orders API error:", errorData);
+          logger.error("❌ In-store orders API error:", errorData);
         }
         throw new Error(errorData.error || "Failed to load in-store orders");
       }
@@ -224,7 +218,7 @@ export function POSPickupQueue({
       setError(null);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading in-store orders:", err);
+        logger.error("Error loading in-store orders:", err);
       }
       setError(err.message);
     }
@@ -233,11 +227,7 @@ export function POSPickupQueue({
   // Load all orders
   const loadAllOrders = useCallback(async () => {
     setLoading(true);
-    await Promise.all([
-      loadPickupOrders(),
-      loadShippingOrders(),
-      loadInstoreOrders(),
-    ]);
+    await Promise.all([loadPickupOrders(), loadShippingOrders(), loadInstoreOrders()]);
     setLoading(false);
   }, [loadPickupOrders, loadShippingOrders, loadInstoreOrders]);
 
@@ -336,8 +326,7 @@ export function POSPickupQueue({
       }
 
       // Show success message
-      const successTitle =
-        activeTab === "shipping" ? "Order Shipped" : "Order Ready";
+      const successTitle = activeTab === "shipping" ? "Order Shipped" : "Order Ready";
       const successMessage =
         activeTab === "shipping"
           ? `Order ${orderNumber} has been marked as shipped!`
@@ -351,7 +340,7 @@ export function POSPickupQueue({
       });
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fulfilling order:", err);
+        logger.error("Error fulfilling order:", err);
       }
       setModal({
         isOpen: true,
@@ -372,8 +361,7 @@ export function POSPickupQueue({
     const diffMins = Math.floor(diffMs / 60000);
 
     if (diffMins < 1) return "Just now";
-    if (diffMins < 60)
-      return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
+    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
 
     const diffHours = Math.floor(diffMins / 60);
     return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
@@ -431,10 +419,7 @@ export function POSPickupQueue({
                   ? "To Ship"
                   : "Today's Sales"}
             </div>
-            <div
-              className="text-white font-black text-2xl mt-1"
-              style={{ fontWeight: 900 }}
-            >
+            <div className="text-white font-black text-2xl mt-1" style={{ fontWeight: 900 }}>
               {orders.length}
             </div>
           </div>
@@ -462,9 +447,7 @@ export function POSPickupQueue({
           {instoreOrders.length > 0 && (
             <span
               className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                activeTab === "instore"
-                  ? "bg-white/20 text-white"
-                  : "bg-white/10 text-white/60"
+                activeTab === "instore" ? "bg-white/20 text-white" : "bg-white/10 text-white/60"
               }`}
             >
               {instoreOrders.length}
@@ -484,9 +467,7 @@ export function POSPickupQueue({
           {pickupOrders.length > 0 && (
             <span
               className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                activeTab === "pickup"
-                  ? "bg-white/20 text-white"
-                  : "bg-white/10 text-white/60"
+                activeTab === "pickup" ? "bg-white/20 text-white" : "bg-white/10 text-white/60"
               }`}
             >
               {pickupOrders.length}
@@ -506,9 +487,7 @@ export function POSPickupQueue({
           {shippingOrders.length > 0 && (
             <span
               className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-                activeTab === "shipping"
-                  ? "bg-white/20 text-white"
-                  : "bg-white/10 text-white/60"
+                activeTab === "shipping" ? "bg-white/20 text-white" : "bg-white/10 text-white/60"
               }`}
             >
               {shippingOrders.length}
@@ -522,11 +501,7 @@ export function POSPickupQueue({
         <div className="bg-white/5 border border-white/10 rounded-2xl p-12 text-center">
           <div className="text-white/40 text-lg mb-2">
             No{" "}
-            {activeTab === "pickup"
-              ? "Pickup"
-              : activeTab === "shipping"
-                ? "Shipping"
-                : "In-Store"}{" "}
+            {activeTab === "pickup" ? "Pickup" : activeTab === "shipping" ? "Shipping" : "In-Store"}{" "}
             Orders
           </div>
           <div className="text-white/20 text-sm">
@@ -549,10 +524,7 @@ export function POSPickupQueue({
               {/* Order Header */}
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <div
-                    className="text-white font-black text-xl"
-                    style={{ fontWeight: 900 }}
-                  >
+                  <div className="text-white font-black text-xl" style={{ fontWeight: 900 }}>
                     Order #{order.order_number}
                   </div>
                   <div className="text-white/80 text-lg mt-1">
@@ -563,26 +535,17 @@ export function POSPickupQueue({
                         "Walk-In Customer"}
                   </div>
                   {order.customers?.phone && (
-                    <div className="text-white/40 text-sm mt-1">
-                      {order.customers.phone}
-                    </div>
+                    <div className="text-white/40 text-sm mt-1">{order.customers.phone}</div>
                   )}
-                  <div className="text-white/40 text-xs mt-2">
-                    {getTimeAgo(order.created_at)}
-                  </div>
+                  <div className="text-white/40 text-xs mt-2">{getTimeAgo(order.created_at)}</div>
                 </div>
                 <div className="text-right">
-                  <div
-                    className="text-white font-black text-3xl"
-                    style={{ fontWeight: 900 }}
-                  >
+                  <div className="text-white font-black text-3xl" style={{ fontWeight: 900 }}>
                     ${order.total_amount.toFixed(2)}
                   </div>
                   <div
                     className={`text-sm font-bold mt-1 ${
-                      order.payment_status === "paid"
-                        ? "text-green-500"
-                        : "text-yellow-500"
+                      order.payment_status === "paid" ? "text-green-500" : "text-yellow-500"
                     }`}
                   >
                     {order.payment_status === "paid"
@@ -595,17 +558,11 @@ export function POSPickupQueue({
               {/* Order Items */}
               <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
                 {order.order_items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between text-white/60 text-sm"
-                  >
+                  <div key={item.id} className="flex justify-between text-white/60 text-sm">
                     <span>
-                      {item.product_name}{" "}
-                      <span className="text-white/40">({item.quantity}x)</span>
+                      {item.product_name} <span className="text-white/40">({item.quantity}x)</span>
                     </span>
-                    <span className="font-bold">
-                      ${item.line_total.toFixed(2)}
-                    </span>
+                    <span className="font-bold">${item.line_total.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -647,14 +604,12 @@ export function POSPickupQueue({
                     {order.shipping_address.address_2 && (
                       <div>{order.shipping_address.address_2}</div>
                     )}
-                    {order.shipping_address.city &&
-                      order.shipping_address.state && (
-                        <div>
-                          {order.shipping_address.city},{" "}
-                          {order.shipping_address.state}{" "}
-                          {order.shipping_address.postcode}
-                        </div>
-                      )}
+                    {order.shipping_address.city && order.shipping_address.state && (
+                      <div>
+                        {order.shipping_address.city}, {order.shipping_address.state}{" "}
+                        {order.shipping_address.postcode}
+                      </div>
+                    )}
                   </div>
                   {order.shipping_method_title && (
                     <div className="text-white/60 text-xs mt-2">

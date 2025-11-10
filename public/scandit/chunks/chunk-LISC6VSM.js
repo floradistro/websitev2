@@ -1,7 +1,7 @@
 import { a } from "./chunk-UCD6YLP3.js";
 var p = [
-    119, 101, 98, 107, 105, 116, 84, 114, 97, 110, 115, 112, 111, 114, 116, 68,
-    117, 112, 108, 101, 120, 67, 104, 97, 110, 110, 101, 108,
+    119, 101, 98, 107, 105, 116, 84, 114, 97, 110, 115, 112, 111, 114, 116, 68, 117, 112, 108, 101,
+    120, 67, 104, 97, 110, 110, 101, 108,
   ],
   s = [53, 65, 41, 124, 75, 47, 108, 120, 50, 48, 115, 62, 66, 60, 107, 57],
   c = [111, 74, 88, 52, 51, 101, 51, 112, 66, 79, 38, 88, 40, 65, 36, 94],
@@ -18,12 +18,7 @@ function l() {
 }
 function r(o) {
   let e = o;
-  if (
-    e != null &&
-    typeof e.getAppInfo == "function" &&
-    typeof e.getKey == "function"
-  )
-    return e;
+  if (e != null && typeof e.getAppInfo == "function" && typeof e.getKey == "function") return e;
 }
 function m() {
   let { name: o = "" } = a.getUserAgentInfo().getBrowser();

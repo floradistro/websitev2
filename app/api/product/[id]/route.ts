@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_cache } from "next/cache";
 
+import { logger } from "@/lib/logger";
 // Get base URL for internal API calls
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -19,18 +20,13 @@ const getCachedProductComplete = unstable_cache(
       const baseUrl = getBaseUrl();
 
       // Fetch ALL data in parallel from Supabase
-      const [productRes, inventoryRes, locationsRes, reviewsRes, pricingRes] =
-        await Promise.all([
-          fetch(`${baseUrl}/api/supabase/products/${productId}`),
-          fetch(`${baseUrl}/api/supabase/inventory?product_id=${productId}`),
-          fetch(`${baseUrl}/api/supabase/locations`),
-          fetch(
-            `${baseUrl}/api/supabase/reviews?product_id=${productId}&status=approved`,
-          ),
-          fetch(`${baseUrl}/api/supabase/products/${productId}/pricing`).catch(
-            () => ({ ok: false }),
-          ),
-        ]);
+      const [productRes, inventoryRes, locationsRes, reviewsRes, pricingRes] = await Promise.all([
+        fetch(`${baseUrl}/api/supabase/products/${productId}`),
+        fetch(`${baseUrl}/api/supabase/inventory?product_id=${productId}`),
+        fetch(`${baseUrl}/api/supabase/locations`),
+        fetch(`${baseUrl}/api/supabase/reviews?product_id=${productId}&status=approved`),
+        fetch(`${baseUrl}/api/supabase/products/${productId}/pricing`).catch(() => ({ ok: false })),
+      ]);
 
       const productData = await productRes.json();
       const inventoryData = await inventoryRes.json();
@@ -79,9 +75,7 @@ const getCachedProductComplete = unstable_cache(
 
       // Extract pricing tiers from Supabase vendor_pricing_tiers
       const pricingTiers =
-        pricingData.pricingTiers ||
-        product.meta_data?._product_price_tiers ||
-        [];
+        pricingData.pricingTiers || product.meta_data?._product_price_tiers || [];
 
       // Extract product fields from meta_data
       const transformedFields: any = {};
@@ -118,7 +112,7 @@ const getCachedProductComplete = unstable_cache(
       };
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error(`Error fetching product ${productId}:`, error);
+        logger.error(`Error fetching product ${productId}:`, error);
       }
       return null;
     }
@@ -127,28 +121,19 @@ const getCachedProductComplete = unstable_cache(
   { revalidate: 180, tags: ["product"] }, // 3 minutes cache
 );
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: "Product ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Product ID required" }, { status: 400 });
     }
 
     // Get complete product data from cache
     const data = await getCachedProductComplete(id);
 
     if (!data) {
-      return NextResponse.json(
-        { success: false, error: "Product not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -158,7 +143,7 @@ export async function GET(
   } catch (error: any) {
     if (!error.message?.includes("404")) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Product API error:", error);
+        logger.error("Product API error:", error);
       }
     }
     return NextResponse.json(

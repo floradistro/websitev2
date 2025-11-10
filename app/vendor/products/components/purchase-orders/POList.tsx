@@ -1,11 +1,4 @@
-import {
-  Package,
-  Calendar,
-  Building2,
-  Users,
-  PackageCheck,
-  MapPin,
-} from "lucide-react";
+import { Package, Calendar, Building2, Users, PackageCheck, MapPin } from "lucide-react";
 import { ds, cn, Button } from "@/components/ds";
 import type { PurchaseOrder } from "./types";
 
@@ -50,14 +43,8 @@ export function POList({ orders, isLoading, type, onReceive }: POListProps) {
           ds.colors.border.default,
         )}
       >
-        <Package
-          size={48}
-          className="text-white/10 mx-auto mb-4"
-          strokeWidth={1}
-        />
-        <p className={cn(ds.typography.size.sm, "text-white/60 mb-2")}>
-          No purchase orders found
-        </p>
+        <Package size={48} className="text-white/10 mx-auto mb-4" strokeWidth={1} />
+        <p className={cn(ds.typography.size.sm, "text-white/60 mb-2")}>No purchase orders found</p>
         <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
           Create your first {type} PO to get started
         </p>
@@ -100,9 +87,7 @@ export function POList({ orders, isLoading, type, onReceive }: POListProps) {
             {/* Left Side */}
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h3
-                  className={cn(ds.typography.size.sm, "text-white font-light")}
-                >
+                <h3 className={cn(ds.typography.size.sm, "text-white font-light")}>
                   {po.po_number}
                 </h3>
                 <span
@@ -182,18 +167,10 @@ export function POList({ orders, isLoading, type, onReceive }: POListProps) {
               {/* Action Button - Only "Receive Items" */}
               {type === "inbound" &&
                 onReceive &&
-                ["ordered", "confirmed", "shipped", "receiving"].includes(
-                  po.status,
-                ) && (
-                  <Button
-                    variant="primary"
-                    size="xs"
-                    onClick={() => onReceive(po)}
-                  >
+                ["ordered", "confirmed", "shipped", "receiving"].includes(po.status) && (
+                  <Button variant="primary" size="sm" onClick={() => onReceive(po)}>
                     <PackageCheck size={12} />
-                    {po.status === "receiving"
-                      ? "Continue Receiving"
-                      : "Receive Items"}
+                    {po.status === "receiving" ? "Continue Receiving" : "Receive Items"}
                   </Button>
                 )}
             </div>

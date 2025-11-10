@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Dynamically fetch available pricing tiers for categories based on actual pricing blueprints.
  * Uses price_breaks from pricing_tier_blueprints to extract available tier names (break_ids).
@@ -25,10 +26,7 @@ export async function GET(request: NextRequest) {
     const categoriesParam = searchParams.get("categories");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id is required" }, { status: 400 });
     }
 
     const requestedCategories = categoriesParam
@@ -57,15 +55,9 @@ export async function GET(request: NextRequest) {
 
     if (productsError) {
       if (process.env.NODE_ENV === "development") {
-        console.error(
-          "[category-pricing-tiers] Error fetching products:",
-          productsError,
-        );
+        logger.error("[category-pricing-tiers] Error fetching products:", productsError);
       }
-      return NextResponse.json(
-        { success: false, error: productsError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: productsError.message }, { status: 500 });
     }
 
     if (!products || products.length === 0) {
@@ -94,10 +86,7 @@ export async function GET(request: NextRequest) {
       const assignments = product.product_pricing_assignments || [];
       for (const assignment of assignments) {
         const blueprint = assignment.pricing_tier_blueprints as any;
-        if (
-          !blueprint?.price_breaks ||
-          !Array.isArray(blueprint.price_breaks)
-        ) {
+        if (!blueprint?.price_breaks || !Array.isArray(blueprint.price_breaks)) {
           continue;
         }
 
@@ -138,7 +127,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("[category-pricing-tiers] Unexpected error:", error);
+      logger.error("[category-pricing-tiers] Unexpected error:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Internal server error" },

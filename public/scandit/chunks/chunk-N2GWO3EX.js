@@ -16,8 +16,7 @@ var o = class r {
     return this._sound;
   }
   emit() {
-    (this.sound && this.sound.play(),
-      this.vibration && this.vibration.vibrate());
+    (this.sound && this.sound.play(), this.vibration && this.vibration.vibrate());
   }
   toJSONObject() {
     let i = {};

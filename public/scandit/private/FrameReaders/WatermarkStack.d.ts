@@ -26,11 +26,7 @@ declare class WatermarkStack<T> {
   private readonly capacity;
   private readonly lowWaterMark;
   private readonly createItem;
-  constructor(options: {
-    capacity: number;
-    lowWaterMark: number;
-    createItem: () => T;
-  });
+  constructor(options: { capacity: number; lowWaterMark: number; createItem: () => T });
   get length(): number;
   pop(): T;
   push(item: T): number | undefined;

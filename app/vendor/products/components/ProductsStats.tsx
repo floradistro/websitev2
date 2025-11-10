@@ -54,9 +54,7 @@ export function ProductsStats({
       >
         {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i} className="p-4 animate-pulse">
-            <div
-              className={cn("h-4 rounded w-20 mb-2", ds.colors.bg.elevated)}
-            />
+            <div className={cn("h-4 rounded w-20 mb-2", ds.colors.bg.elevated)} />
             <div className={cn("h-8 rounded w-12", ds.colors.bg.elevated)} />
           </Card>
         ))}
@@ -73,17 +71,8 @@ export function ProductsStats({
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
-          <div
-            key={stat.label}
-            role="article"
-            aria-label={`${stat.label}: ${stat.value}`}
-          >
-            <Card
-              className={cn(
-                "p-4 transition-all",
-                stat.highlight && "ring-1 ring-white/20",
-              )}
-            >
+          <div key={stat.label} role="article" aria-label={`${stat.label}: ${stat.value}`}>
+            <Card className={cn("p-4 transition-all", stat.highlight && "ring-1 ring-white/20")}>
               <div className="flex items-center justify-between">
                 <div>
                   <p

@@ -1,15 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Plus,
-  Edit2,
-  Trash2,
-  ChevronDown,
-  ChevronRight,
-  Layers,
-  DollarSign,
-} from "lucide-react";
+import { Plus, Edit2, Trash2, ChevronDown, ChevronRight, Layers, DollarSign } from "lucide-react";
 import { Card, Button, ds, cn } from "@/components/ds";
 import { showNotification, showConfirm } from "@/components/NotificationToast";
 import { FieldVisibilityModal } from "@/components/vendor/FieldVisibilityModal";
@@ -23,6 +15,7 @@ import type {
 } from "@/lib/types/product";
 import axios from "axios";
 
+import { logger } from "@/lib/logger";
 interface CategoriesManagementProps {
   vendorId: string;
 }
@@ -37,8 +30,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
   }>({});
 
   // Field visibility modal state
-  const [showFieldVisibilityModal, setShowFieldVisibilityModal] =
-    useState(false);
+  const [showFieldVisibilityModal, setShowFieldVisibilityModal] = useState(false);
   const [visibilityModalData, setVisibilityModalData] = useState<{
     fieldName: string;
     fieldSlug: string;
@@ -69,7 +61,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading categories:", error);
+        logger.error("Error loading categories:", error);
       }
       showNotification({
         type: "error",
@@ -87,34 +79,26 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
         headers: { "x-vendor-id": vendorId },
       });
       if (response.data.success) {
-        const fieldGroups = (response.data.fields || []).map(
-          (field: unknown) => {
-            const f = field as Record<string, unknown>;
-            return {
-              id: String(f.id || ""),
-              vendor_id: vendorId,
-              name: String(
-                f.label ||
-                  (f.definition as Record<string, unknown>)?.label ||
-                  "Unnamed",
-              ),
-              slug: String(f.fieldId || f.slug || ""),
-              description: String(
-                f.description ||
-                  (f.definition as Record<string, unknown>)?.description ||
-                  "",
-              ),
-              fields: [field] as unknown as DynamicField[],
-              is_active: true,
-              category_id: f.categoryId as string | undefined,
-            } as FieldGroup;
-          },
-        );
+        const fieldGroups = (response.data.fields || []).map((field: unknown) => {
+          const f = field as Record<string, unknown>;
+          return {
+            id: String(f.id || ""),
+            vendor_id: vendorId,
+            name: String(f.label || (f.definition as Record<string, unknown>)?.label || "Unnamed"),
+            slug: String(f.fieldId || f.slug || ""),
+            description: String(
+              f.description || (f.definition as Record<string, unknown>)?.description || "",
+            ),
+            fields: [field] as unknown as DynamicField[],
+            is_active: true,
+            category_id: f.categoryId as string | undefined,
+          } as FieldGroup;
+        });
         setFieldGroups(fieldGroups);
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading field groups:", error);
+        logger.error("Error loading field groups:", error);
       }
     }
   };
@@ -149,11 +133,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
     }
   };
 
-  const openFieldVisibilityModal = (
-    categoryId: string,
-    fieldSlug: string,
-    fieldName: string,
-  ) => {
+  const openFieldVisibilityModal = (categoryId: string, fieldSlug: string, fieldName: string) => {
     const category = categories.find((c) => c.id === categoryId);
     const defaultConfig: FieldVisibilityConfig = {
       shop: true,
@@ -328,9 +308,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
         <div className="space-y-4">
           {parentCategories.map((category) => {
             const subcategories = getSubcategories(category.id);
-            const categoryFields = fieldGroups.filter(
-              (fg) => fg.category_id === category.id,
-            );
+            const categoryFields = fieldGroups.filter((fg) => fg.category_id === category.id);
             const isExpanded = expandedCategory === category.id;
             const currentSection = expandedSection[category.id];
 
@@ -366,11 +344,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                         </h3>
                         {category.description && (
                           <p
-                            className={cn(
-                              ds.typography.size.xs,
-                              ds.colors.text.tertiary,
-                              "mt-0.5",
-                            )}
+                            className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mt-0.5")}
                           >
                             {category.description}
                           </p>
@@ -393,9 +367,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                         <Edit2 size={14} strokeWidth={1} />
                       </button>
                       <button
-                        onClick={() =>
-                          handleDeleteCategory(category.id, category.name)
-                        }
+                        onClick={() => handleDeleteCategory(category.id, category.name)}
                         className={cn(
                           "p-2 rounded-lg transition-colors text-white/50 hover:text-white/80 hover:bg-white/10",
                         )}
@@ -410,11 +382,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                   {/* Subcategories count */}
                   {subcategories.length > 0 && (
                     <div
-                      className={cn(
-                        "mt-2 ml-7",
-                        ds.typography.size.xs,
-                        ds.colors.text.quaternary,
-                      )}
+                      className={cn("mt-2 ml-7", ds.typography.size.xs, ds.colors.text.quaternary)}
                     >
                       {subcategories.length} subcategor
                       {subcategories.length === 1 ? "y" : "ies"}
@@ -426,12 +394,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                 {isExpanded && (
                   <>
                     {/* Section Buttons */}
-                    <div
-                      className={cn(
-                        "flex gap-2 px-6 pb-4 border-t",
-                        ds.colors.border.default,
-                      )}
-                    >
+                    <div className={cn("flex gap-2 px-6 pb-4 border-t", ds.colors.border.default)}>
                       <button
                         onClick={() => toggleSection(category.id, "fields")}
                         className={cn(
@@ -450,11 +413,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                               ),
                         )}
                       >
-                        <Layers
-                          size={12}
-                          className="inline mr-1.5"
-                          strokeWidth={1.5}
-                        />
+                        <Layers size={12} className="inline mr-1.5" strokeWidth={1.5} />
                         Fields ({categoryFields.length})
                       </button>
                     </div>
@@ -495,12 +454,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                           </button>
                         </div>
                         {categoryFields.length === 0 ? (
-                          <p
-                            className={cn(
-                              ds.typography.size.xs,
-                              ds.colors.text.quaternary,
-                            )}
-                          >
+                          <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
                             No custom fields assigned to this category
                           </p>
                         ) : (
@@ -515,12 +469,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                                 )}
                               >
                                 <div>
-                                  <div
-                                    className={cn(
-                                      ds.typography.size.xs,
-                                      "text-white/80",
-                                    )}
-                                  >
+                                  <div className={cn(ds.typography.size.xs, "text-white/80")}>
                                     {fieldGroup.name}
                                   </div>
                                   {fieldGroup.description && (

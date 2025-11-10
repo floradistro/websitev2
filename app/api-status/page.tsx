@@ -21,9 +21,7 @@ export default function ApiStatusPage() {
     setMounted(true);
 
     const interval = setInterval(() => {
-      setLatency((prev) =>
-        Math.max(20, Math.min(60, prev + (Math.random() - 0.5) * 5)),
-      );
+      setLatency((prev) => Math.max(20, Math.min(60, prev + (Math.random() - 0.5) * 5)));
       setUptime((prev) => Math.min(100, prev + (Math.random() - 0.5) * 0.001));
     }, 3000);
 
@@ -160,9 +158,7 @@ export default function ApiStatusPage() {
                 >
                   {metric.value}
                   {metric.unit && (
-                    <span className="text-lg sm:text-xl text-white/60">
-                      {metric.unit}
-                    </span>
+                    <span className="text-lg sm:text-xl text-white/60">{metric.unit}</span>
                   )}
                 </div>
                 <div

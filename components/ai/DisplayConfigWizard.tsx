@@ -2,15 +2,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  Monitor,
-  MapPin,
-  Target,
-  Sparkles,
-  ChevronRight,
-  ChevronLeft,
-} from "lucide-react";
+import { logger } from "@/lib/logger";
+import { X, Monitor, MapPin, Target, Sparkles, ChevronRight, ChevronLeft } from "lucide-react";
 
 interface DisplayConfigWizardProps {
   isOpen: boolean;
@@ -130,9 +123,7 @@ export default function DisplayConfigWizard({
 
   const toggleBusinessGoal = (goal: string) => {
     const current = profile.businessGoals;
-    const updated = current.includes(goal)
-      ? current.filter((g) => g !== goal)
-      : [...current, goal];
+    const updated = current.includes(goal) ? current.filter((g) => g !== goal) : [...current, goal];
     updateProfile({ businessGoals: updated });
   };
 
@@ -161,7 +152,7 @@ export default function DisplayConfigWizard({
       onComplete(data.profileId);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error saving profile:", err);
+        logger.error("Error saving profile:", err);
       }
       setError(err.message || "Failed to save profile");
     } finally {
@@ -170,10 +161,8 @@ export default function DisplayConfigWizard({
   };
 
   const canProgress = () => {
-    if (step === 1)
-      return profile.screenWidthInches > 0 && profile.screenHeightInches > 0;
-    if (step === 2)
-      return profile.viewingDistanceFeet > 0 && profile.locationType;
+    if (step === 1) return profile.screenWidthInches > 0 && profile.screenHeightInches > 0;
+    if (step === 2) return profile.viewingDistanceFeet > 0 && profile.locationType;
     if (step === 3) return true;
     return true;
   };
@@ -199,10 +188,7 @@ export default function DisplayConfigWizard({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2
-                className="text-2xl font-black text-white"
-                style={{ fontWeight: 900 }}
-              >
+              <h2 className="text-2xl font-black text-white" style={{ fontWeight: 900 }}>
                 Configure Display
               </h2>
               <p className="text-white/40 text-sm mt-1">{deviceName}</p>
@@ -242,20 +228,14 @@ export default function DisplayConfigWizard({
                     <Monitor size={20} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">
-                      Physical Specs
-                    </h3>
-                    <p className="text-white/40 text-sm">
-                      Tell us about your display
-                    </p>
+                    <h3 className="text-lg font-bold text-white">Physical Specs</h3>
+                    <p className="text-white/40 text-sm">Tell us about your display</p>
                   </div>
                 </div>
 
                 {/* Screen Size */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-3">
-                    Screen Size
-                  </label>
+                  <label className="block text-white text-sm font-medium mb-3">Screen Size</label>
                   <div className="grid grid-cols-4 gap-2">
                     {SCREEN_SIZES.map((size) => (
                       <button
@@ -278,9 +258,7 @@ export default function DisplayConfigWizard({
                 {profile.screenWidthInches === 0 && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-white/60 text-sm mb-2">
-                        Width (inches)
-                      </label>
+                      <label className="block text-white/60 text-sm mb-2">Width (inches)</label>
                       <input
                         type="number"
                         value={profile.screenWidthInches || ""}
@@ -293,9 +271,7 @@ export default function DisplayConfigWizard({
                       />
                     </div>
                     <div>
-                      <label className="block text-white/60 text-sm mb-2">
-                        Height (inches)
-                      </label>
+                      <label className="block text-white/60 text-sm mb-2">Height (inches)</label>
                       <input
                         type="number"
                         value={profile.screenHeightInches || ""}
@@ -312,9 +288,7 @@ export default function DisplayConfigWizard({
 
                 {/* Resolution */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-3">
-                    Resolution
-                  </label>
+                  <label className="block text-white text-sm font-medium mb-3">Resolution</label>
                   <div className="grid grid-cols-2 gap-3">
                     {RESOLUTIONS.map((res) => (
                       <button
@@ -332,9 +306,7 @@ export default function DisplayConfigWizard({
                             : "border-white/10 hover:border-white/30"
                         }`}
                       >
-                        <div className="text-white font-bold mb-1">
-                          {res.label}
-                        </div>
+                        <div className="text-white font-bold mb-1">{res.label}</div>
                         <div className="text-white/40 text-xs">
                           {res.width} × {res.height}
                         </div>
@@ -358,12 +330,8 @@ export default function DisplayConfigWizard({
                     <MapPin size={20} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">
-                      Context & Location
-                    </h3>
-                    <p className="text-white/40 text-sm">
-                      Where and how customers see it
-                    </p>
+                    <h3 className="text-lg font-bold text-white">Context & Location</h3>
+                    <p className="text-white/40 text-sm">Where and how customers see it</p>
                   </div>
                 </div>
 
@@ -386,9 +354,7 @@ export default function DisplayConfigWizard({
                   />
                   <div className="flex justify-between text-white/40 text-sm mt-2">
                     <span>3ft (close)</span>
-                    <span className="text-white font-bold">
-                      {profile.viewingDistanceFeet}ft
-                    </span>
+                    <span className="text-white font-bold">{profile.viewingDistanceFeet}ft</span>
                     <span>30ft (far)</span>
                   </div>
                 </div>
@@ -403,21 +369,15 @@ export default function DisplayConfigWizard({
                       <button
                         key={loc.value}
                         type="button"
-                        onClick={() =>
-                          updateProfile({ locationType: loc.value })
-                        }
+                        onClick={() => updateProfile({ locationType: loc.value })}
                         className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
                           profile.locationType === loc.value
                             ? "border-white bg-white/10"
                             : "border-white/10 hover:border-white/30"
                         }`}
                       >
-                        <div className="text-white font-bold mb-1">
-                          {loc.label}
-                        </div>
-                        <div className="text-white/40 text-xs">
-                          {loc.description}
-                        </div>
+                        <div className="text-white font-bold mb-1">{loc.label}</div>
+                        <div className="text-white/40 text-xs">{loc.description}</div>
                       </button>
                     ))}
                   </div>
@@ -433,9 +393,7 @@ export default function DisplayConfigWizard({
                       <button
                         key={lighting}
                         type="button"
-                        onClick={() =>
-                          updateProfile({ ambientLighting: lighting })
-                        }
+                        onClick={() => updateProfile({ ambientLighting: lighting })}
                         className={`p-3 rounded-xl border-2 transition-all capitalize ${
                           profile.ambientLighting === lighting
                             ? "border-white bg-white/10 text-white"
@@ -467,9 +425,7 @@ export default function DisplayConfigWizard({
                   />
                   <div className="flex justify-between text-white/40 text-sm mt-2">
                     <span>5s (quick)</span>
-                    <span className="text-white font-bold">
-                      {profile.avgDwellTimeSeconds}s
-                    </span>
+                    <span className="text-white font-bold">{profile.avgDwellTimeSeconds}s</span>
                     <span>2min (browsing)</span>
                   </div>
                 </div>
@@ -489,37 +445,29 @@ export default function DisplayConfigWizard({
                     <Target size={20} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">
-                      Business Goals
-                    </h3>
-                    <p className="text-white/40 text-sm">
-                      What do you want to achieve?
-                    </p>
+                    <h3 className="text-lg font-bold text-white">Business Goals</h3>
+                    <p className="text-white/40 text-sm">What do you want to achieve?</p>
                   </div>
                 </div>
 
                 {/* Brand Vibe */}
                 <div>
-                  <label className="block text-white text-sm font-medium mb-3">
-                    Brand Vibe
-                  </label>
+                  <label className="block text-white text-sm font-medium mb-3">Brand Vibe</label>
                   <div className="grid grid-cols-2 gap-3">
-                    {["premium", "casual", "medical", "recreational"].map(
-                      (vibe) => (
-                        <button
-                          key={vibe}
-                          type="button"
-                          onClick={() => updateProfile({ brandVibe: vibe })}
-                          className={`p-3 rounded-xl border-2 transition-all capitalize ${
-                            profile.brandVibe === vibe
-                              ? "border-white bg-white/10 text-white"
-                              : "border-white/10 text-white/60 hover:border-white/30"
-                          }`}
-                        >
-                          {vibe}
-                        </button>
-                      ),
-                    )}
+                    {["premium", "casual", "medical", "recreational"].map((vibe) => (
+                      <button
+                        key={vibe}
+                        type="button"
+                        onClick={() => updateProfile({ brandVibe: vibe })}
+                        className={`p-3 rounded-xl border-2 transition-all capitalize ${
+                          profile.brandVibe === vibe
+                            ? "border-white bg-white/10 text-white"
+                            : "border-white/10 text-white/60 hover:border-white/30"
+                        }`}
+                      >
+                        {vibe}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -531,9 +479,7 @@ export default function DisplayConfigWizard({
                   <input
                     type="text"
                     value={profile.targetAudience}
-                    onChange={(e) =>
-                      updateProfile({ targetAudience: e.target.value })
-                    }
+                    onChange={(e) => updateProfile({ targetAudience: e.target.value })}
                     placeholder="e.g., medical patients, young professionals"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30"
                   />

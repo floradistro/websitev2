@@ -15,6 +15,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useTemplateStyle } from "@/hooks/useTemplateStyle";
 
+import { logger } from "@/lib/logger";
 export interface SmartProductDetailProps {
   productSlug?: string; // If not provided, extract from URL
   vendorId: string;
@@ -55,16 +56,12 @@ export function SmartProductDetail({
   const [selectedPrice, setSelectedPrice] = useState<number | null>(null);
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
   const [selectedTierName, setSelectedTierName] = useState<string | null>(null);
-  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
-    null,
-  );
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [addedToCart, setAddedToCart] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const [fulfillmentMethod, setFulfillmentMethod] = useState<
-    "delivery" | "pickup"
-  >("delivery");
+  const [fulfillmentMethod, setFulfillmentMethod] = useState<"delivery" | "pickup">("delivery");
   const [pickupLocationId, setPickupLocationId] = useState<string>("");
   const [userLocation, setUserLocation] = useState<{
     lat: number;
@@ -112,7 +109,7 @@ export function SmartProductDetail({
         const res = await fetch(apiUrl);
         if (!res.ok) {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ Failed to fetch products:", res.status);
+            logger.error("❌ Failed to fetch products:", res.status);
           }
           return;
         }
@@ -120,7 +117,7 @@ export function SmartProductDetail({
         const data = await res.json();
         if (!data.success) {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ API returned error:", data);
+            logger.error("❌ API returned error:", data);
           }
           return;
         }
@@ -131,13 +128,11 @@ export function SmartProductDetail({
 
         // Find this product
         const foundProduct = data.data.products.find(
-          (p: any) =>
-            p.vendor_id === vendorId &&
-            (p.slug === productSlug || p.id === productSlug),
+          (p: any) => p.vendor_id === vendorId && (p.slug === productSlug || p.id === productSlug),
         );
 
         if (!foundProduct) {
-          console.error("❌ Product not found:", {
+          logger.error("❌ Product not found:", {
             productSlug,
             vendorId,
             availableProducts: data.data.products.map((p: any) => ({
@@ -152,22 +147,18 @@ export function SmartProductDetail({
         setProduct(foundProduct);
 
         // Set pricing tiers
-        if (
-          foundProduct.pricing_tiers &&
-          foundProduct.pricing_tiers.length > 0
-        ) {
+        if (foundProduct.pricing_tiers && foundProduct.pricing_tiers.length > 0) {
           setPricingTiers(foundProduct.pricing_tiers);
           setSelectedTier(foundProduct.pricing_tiers[0]);
           setSelectedPrice(foundProduct.pricing_tiers[0].price);
           setSelectedTierName(
-            foundProduct.pricing_tiers[0].label ||
-              foundProduct.pricing_tiers[0].tier_name,
+            foundProduct.pricing_tiers[0].label || foundProduct.pricing_tiers[0].tier_name,
           );
           setSelectedQuantity(foundProduct.pricing_tiers[0].quantity || 1);
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error loading product:", error);
+          logger.error("❌ Error loading product:", error);
         }
       } finally {
         setLoading(false);
@@ -239,12 +230,7 @@ export function SmartProductDetail({
     }
 
     // Calculate distance using Haversine formula
-    const calculateDistance = (
-      lat1: number,
-      lon1: number,
-      lat2: number,
-      lon2: number,
-    ) => {
+    const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
       const R = 3959; // Earth's radius in miles
       const dLat = ((lat2 - lat1) * Math.PI) / 180;
       const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -308,19 +294,12 @@ export function SmartProductDetail({
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <p className="text-white/60 text-lg font-light mb-4">
-            Product not found
-          </p>
+          <p className="text-white/60 text-lg font-light mb-4">Product not found</p>
           <p className="text-white/40 text-sm mb-4">
             Slug: {productSlug}, Vendor: {vendorId}
           </p>
-          <p className="text-white/40 text-sm mb-4">
-            Products loaded: {allProducts.length}
-          </p>
-          <Link
-            href={`/storefront/shop?vendor=${vendorSlug}`}
-            className="text-white underline"
-          >
+          <p className="text-white/40 text-sm mb-4">Products loaded: {allProducts.length}</p>
+          <Link href={`/storefront/shop?vendor=${vendorSlug}`} className="text-white underline">
             Back to Shop
           </Link>
         </div>
@@ -340,10 +319,7 @@ export function SmartProductDetail({
       name: product.name,
     });
   }
-  if (
-    product.image_gallery_storage &&
-    product.image_gallery_storage.length > 0
-  ) {
+  if (product.image_gallery_storage && product.image_gallery_storage.length > 0) {
     product.image_gallery_storage.forEach((img: string, idx: number) => {
       formattedImages.push({
         src: img,
@@ -352,11 +328,7 @@ export function SmartProductDetail({
       });
     });
   }
-  if (
-    formattedImages.length === 0 &&
-    product.images &&
-    product.images.length > 0
-  ) {
+  if (formattedImages.length === 0 && product.images && product.images.length > 0) {
     formattedImages.push(...product.images);
   }
 
@@ -371,8 +343,7 @@ export function SmartProductDetail({
 
   const inventory = product?.inventory || [];
   const isInStock =
-    product.stock_status === "instock" ||
-    (product.stock_quantity && product.stock_quantity > 0);
+    product.stock_status === "instock" || (product.stock_quantity && product.stock_quantity > 0);
 
   // Get location stock info
   const getLocationStockInfo = () => {
@@ -390,10 +361,7 @@ export function SmartProductDetail({
     return {
       hasLocations: locationsWithStock.length > 0,
       locationNames: locationsWithStock.map((l: any) => l.name),
-      totalStock: locationsWithStock.reduce(
-        (sum: number, l: any) => sum + l.quantity,
-        0,
-      ),
+      totalStock: locationsWithStock.reduce((sum: number, l: any) => sum + l.quantity, 0),
     };
   };
 
@@ -472,9 +440,7 @@ export function SmartProductDetail({
                         key={idx}
                         onClick={() => setSelectedImageIndex(idx)}
                         className={`relative w-16 h-16 flex-shrink-0 bg-black border-2 rounded-xl overflow-hidden transition-all ${
-                          selectedImageIndex === idx
-                            ? "border-white"
-                            : "border-white/10"
+                          selectedImageIndex === idx ? "border-white" : "border-white/10"
                         }`}
                       >
                         <Image
@@ -498,8 +464,7 @@ export function SmartProductDetail({
                 className="uppercase text-white leading-tight"
                 style={{
                   fontSize: templateStyle.typography.product_detail_name_mobile,
-                  fontWeight:
-                    templateStyle.typography.product_detail_name_weight,
+                  fontWeight: templateStyle.typography.product_detail_name_weight,
                   letterSpacing: "0.08em",
                 }}
               >
@@ -527,14 +492,13 @@ export function SmartProductDetail({
                         ` · ${stockInfo.locationNames.length} locations`}
                     </span>
                   </div>
-                  {stockInfo.hasLocations &&
-                    stockInfo.locationNames.length > 0 && (
-                      <span className="text-[10px] text-white/40 truncate ml-3.5">
-                        {stockInfo.locationNames.slice(0, 2).join(", ")}
-                        {stockInfo.locationNames.length > 2 &&
-                          ` +${stockInfo.locationNames.length - 2} more`}
-                      </span>
-                    )}
+                  {stockInfo.hasLocations && stockInfo.locationNames.length > 0 && (
+                    <span className="text-[10px] text-white/40 truncate ml-3.5">
+                      {stockInfo.locationNames.slice(0, 2).join(", ")}
+                      {stockInfo.locationNames.length > 2 &&
+                        ` +${stockInfo.locationNames.length - 2} more`}
+                    </span>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col gap-1">
@@ -544,9 +508,7 @@ export function SmartProductDetail({
                       Out of Stock
                     </span>
                   </div>
-                  <span className="text-[10px] text-white/30 ml-3.5">
-                    Check back soon
-                  </span>
+                  <span className="text-[10px] text-white/30 ml-3.5">Check back soon</span>
                 </div>
               )}
 
@@ -556,10 +518,7 @@ export function SmartProductDetail({
                   {Object.entries(product.fields)
                     .slice(0, 3)
                     .map(([key, value]: [string, any]) => (
-                      <div
-                        key={key}
-                        className="flex items-center justify-between gap-2"
-                      >
+                      <div key={key} className="flex items-center justify-between gap-2">
                         <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
                           {key}
                         </span>
@@ -604,11 +563,7 @@ export function SmartProductDetail({
                     Choose location...
                   </option>
                   {locationsWithDistance.map((inv: any, idx: number) => (
-                    <option
-                      key={idx}
-                      value={inv.location?.id}
-                      className="bg-black"
-                    >
+                    <option key={idx} value={inv.location?.id} className="bg-black">
                       {inv.location?.name || "Unknown"}
                       {inv.distance !== null && inv.distance !== undefined
                         ? ` - ${inv.distance.toFixed(1)} mi away`
@@ -642,19 +597,13 @@ export function SmartProductDetail({
                 <select
                   value={selectedTier?.break_id || ""}
                   onChange={(e) => {
-                    const tier = pricingTiers.find(
-                      (t) => t.break_id === e.target.value,
-                    );
+                    const tier = pricingTiers.find((t) => t.break_id === e.target.value);
                     if (tier) handlePriceSelect(tier);
                   }}
                   className="w-full bg-black border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-white/20 transition-all"
                 >
                   {pricingTiers.map((tier: any) => (
-                    <option
-                      key={tier.break_id}
-                      value={tier.break_id}
-                      className="bg-black"
-                    >
+                    <option key={tier.break_id} value={tier.break_id} className="bg-black">
                       {tier.label || tier.tier_name} - ${tier.price}
                     </option>
                   ))}
@@ -722,36 +671,31 @@ export function SmartProductDetail({
             )}
 
             {/* All Fields - If More Than 3 */}
-            {showFields &&
-              product.fields &&
-              Object.keys(product.fields).length > 3 && (
-                <div
-                  style={{
-                    backgroundColor: templateStyle.color_palette.card_bg,
-                    border: `1px solid ${templateStyle.color_palette.border}`,
-                    borderRadius: templateStyle.border_radius.card,
-                    padding: templateStyle.spacing_scale.card_padding_mobile,
-                  }}
-                >
-                  <div className="space-y-2">
-                    {Object.entries(product.fields)
-                      .slice(3)
-                      .map(([key, value]: [string, any]) => (
-                        <div
-                          key={key}
-                          className="flex items-center justify-between gap-2 py-1"
-                        >
-                          <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
-                            {key}
-                          </span>
-                          <span className="text-[11px] tracking-wide text-white/90 font-normal text-right truncate">
-                            {value}
-                          </span>
-                        </div>
-                      ))}
-                  </div>
+            {showFields && product.fields && Object.keys(product.fields).length > 3 && (
+              <div
+                style={{
+                  backgroundColor: templateStyle.color_palette.card_bg,
+                  border: `1px solid ${templateStyle.color_palette.border}`,
+                  borderRadius: templateStyle.border_radius.card,
+                  padding: templateStyle.spacing_scale.card_padding_mobile,
+                }}
+              >
+                <div className="space-y-2">
+                  {Object.entries(product.fields)
+                    .slice(3)
+                    .map(([key, value]: [string, any]) => (
+                      <div key={key} className="flex items-center justify-between gap-2 py-1">
+                        <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
+                          {key}
+                        </span>
+                        <span className="text-[11px] tracking-wide text-white/90 font-normal text-right truncate">
+                          {value}
+                        </span>
+                      </div>
+                    ))}
                 </div>
-              )}
+              </div>
+            )}
 
             {/* Description */}
             {product.description && (
@@ -783,18 +727,12 @@ export function SmartProductDetail({
                   }}
                 >
                   <div className="flex items-center gap-3">
-                    <FlaskConical
-                      size={16}
-                      className="text-white/60"
-                      strokeWidth={1.5}
-                    />
+                    <FlaskConical size={16} className="text-white/60" strokeWidth={1.5} />
                     <div className="flex-1">
                       <div className="text-xs uppercase tracking-[0.12em] text-white/90">
                         Lab Tested
                       </div>
-                      <div className="text-[10px] text-white/40">
-                        View test results →
-                      </div>
+                      <div className="text-[10px] text-white/40">View test results →</div>
                     </div>
                   </div>
                 </div>
@@ -831,9 +769,7 @@ export function SmartProductDetail({
                           key={idx}
                           onClick={() => setSelectedImageIndex(idx)}
                           className={`relative aspect-square bg-black border-2 rounded-2xl overflow-hidden transition-all hover:border-white/40 ${
-                            selectedImageIndex === idx
-                              ? "border-white"
-                              : "border-white/20"
+                            selectedImageIndex === idx ? "border-white" : "border-white/20"
                           }`}
                         >
                           <Image
@@ -904,22 +840,15 @@ export function SmartProductDetail({
                     <select
                       value={selectedTier?.break_id || ""}
                       onChange={(e) => {
-                        const tier = pricingTiers.find(
-                          (t) => t.break_id === e.target.value,
-                        );
+                        const tier = pricingTiers.find((t) => t.break_id === e.target.value);
                         if (tier) handlePriceSelect(tier);
                       }}
                       className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-4 text-white backdrop-blur-xl hover:bg-white/10 focus:bg-white/10 focus:border-white/20 transition-all"
                     >
                       {pricingTiers.map((tier: any) => (
-                        <option
-                          key={tier.break_id}
-                          value={tier.break_id}
-                          className="bg-black"
-                        >
+                        <option key={tier.break_id} value={tier.break_id} className="bg-black">
                           {tier.label || tier.tier_name} - ${tier.price}{" "}
-                          {tier.price_per_gram &&
-                            `($${tier.price_per_gram.toFixed(2)}/g)`}
+                          {tier.price_per_gram && `($${tier.price_per_gram.toFixed(2)}/g)`}
                         </option>
                       ))}
                     </select>
@@ -980,32 +909,23 @@ export function SmartProductDetail({
                 )}
 
                 {/* Blueprint Fields */}
-                {showFields &&
-                  product.fields &&
-                  Object.keys(product.fields).length > 0 && (
-                    <div className="">
-                      <div className="border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl p-6">
-                        <h3 className="text-xs uppercase tracking-wider font-semibold mb-4 text-white/60">
-                          Product Details
-                        </h3>
-                        <dl className="space-y-3">
-                          {Object.entries(product.fields).map(
-                            ([key, value]: [string, any]) => (
-                              <div
-                                key={key}
-                                className="flex justify-between text-sm"
-                              >
-                                <dt className="text-white/60">{key}:</dt>
-                                <dd className="text-white font-medium">
-                                  {value}
-                                </dd>
-                              </div>
-                            ),
-                          )}
-                        </dl>
-                      </div>
+                {showFields && product.fields && Object.keys(product.fields).length > 0 && (
+                  <div className="">
+                    <div className="border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl p-6">
+                      <h3 className="text-xs uppercase tracking-wider font-semibold mb-4 text-white/60">
+                        Product Details
+                      </h3>
+                      <dl className="space-y-3">
+                        {Object.entries(product.fields).map(([key, value]: [string, any]) => (
+                          <div key={key} className="flex justify-between text-sm">
+                            <dt className="text-white/60">{key}:</dt>
+                            <dd className="text-white font-medium">{value}</dd>
+                          </div>
+                        ))}
+                      </dl>
                     </div>
-                  )}
+                  </div>
+                )}
 
                 {/* Description */}
                 {product.description && (
@@ -1038,8 +958,7 @@ export function SmartProductDetail({
                               Lab Tested
                             </h3>
                             <p className="text-xs text-white/60 font-light">
-                              View our complete library of third-party test
-                              results →
+                              View our complete library of third-party test results →
                             </p>
                           </div>
                         </div>

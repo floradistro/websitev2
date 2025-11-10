@@ -16,12 +16,7 @@ interface ColorPickerProps {
  *
  * Combined color input with hex text field
  */
-export function ColorPicker({
-  label,
-  value,
-  onChange,
-  hint,
-}: ColorPickerProps) {
+export function ColorPicker({ label, value, onChange, hint }: ColorPickerProps) {
   const [error, setError] = useState("");
 
   const validateHex = (hex: string): boolean => {
@@ -101,10 +96,7 @@ export function ColorPicker({
         {/* Hex text input */}
         <div className="flex-1 relative">
           <div
-            className={cn(
-              "absolute left-3 top-1/2 -translate-y-1/2",
-              ds.colors.text.quaternary,
-            )}
+            className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.colors.text.quaternary)}
           >
             <Palette size={14} strokeWidth={1.5} />
           </div>

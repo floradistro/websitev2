@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -11,10 +12,7 @@ export async function GET(request: NextRequest) {
     const locationId = searchParams.get("locationId");
 
     if (!locationId) {
-      return NextResponse.json(
-        { error: "Missing locationId parameter" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing locationId parameter" }, { status: 400 });
     }
 
     // Fetch pickup orders for this location
@@ -55,7 +53,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching pickup orders:", error);
+        logger.error("Error fetching pickup orders:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -63,7 +61,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ orders: data || [] });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in pickup orders endpoint:", error);
+      logger.error("Error in pickup orders endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

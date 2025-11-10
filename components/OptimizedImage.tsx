@@ -89,18 +89,14 @@ export default function OptimizedImage({
     <div ref={imgRef} className={`relative ${className}`}>
       {isInView && (
         <>
-          {!isLoaded && (
-            <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-          )}
+          {!isLoaded && <div className="absolute inset-0 bg-gray-200 animate-pulse" />}
           <Image
             src={src}
             alt={alt}
             width={fill ? undefined : width}
             height={fill ? undefined : height}
             fill={fill}
-            className={`transition-opacity duration-300 ${
-              isLoaded ? "opacity-100" : "opacity-0"
-            }`}
+            className={`transition-opacity duration-300 ${isLoaded ? "opacity-100" : "opacity-0"}`}
             onLoad={() => setIsLoaded(true)}
             onError={() => setError(true)}
             loading={priority ? "eager" : "lazy"}

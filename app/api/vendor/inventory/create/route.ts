@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     // SECURITY: Use requireVendor to get vendor_id from authenticated session
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Create inventory error:", error);
+      logger.error("Create inventory error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

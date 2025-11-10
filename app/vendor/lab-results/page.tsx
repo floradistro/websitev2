@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
+import { logger } from "@/lib/logger";
 interface COA {
   id: string;
   productId: string | null;
@@ -105,7 +106,7 @@ export default function VendorLabResults() {
       setCoas(data.coas || []);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error loading COAs:", err);
+        logger.error("❌ Error loading COAs:", err);
       }
       setError(err.message);
     } finally {
@@ -147,7 +148,7 @@ export default function VendorLabResults() {
       setSelectedCOAs(new Set());
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error uploading COAs:", err);
+        logger.error("❌ Error uploading COAs:", err);
       }
       setError("Failed to upload COAs");
     } finally {
@@ -202,7 +203,7 @@ export default function VendorLabResults() {
       setSelectedCOAs(new Set());
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error deleting COAs:", err);
+        logger.error("❌ Error deleting COAs:", err);
       }
       setError("Failed to delete COAs");
     }
@@ -253,13 +254,7 @@ export default function VendorLabResults() {
       const matchesBatch = coa.batchNumber.toLowerCase().includes(query);
       const matchesLab = coa.testingLab.toLowerCase().includes(query);
 
-      if (
-        !matchesName &&
-        !matchesCOA &&
-        !matchesSKU &&
-        !matchesBatch &&
-        !matchesLab
-      ) {
+      if (!matchesName && !matchesCOA && !matchesSKU && !matchesBatch && !matchesLab) {
         return false;
       }
     }
@@ -286,9 +281,7 @@ export default function VendorLabResults() {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 md:w-16 md:h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-3 md:mb-4"></div>
-          <p className="text-white/60 text-[10px] uppercase tracking-[0.15em]">
-            Loading...
-          </p>
+          <p className="text-white/60 text-[10px] uppercase tracking-[0.15em]">Loading...</p>
         </div>
       </div>
     );
@@ -298,9 +291,7 @@ export default function VendorLabResults() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <p className="text-white/60 text-[10px] uppercase tracking-[0.15em]">
-          Please log in
-        </p>
+        <p className="text-white/60 text-[10px] uppercase tracking-[0.15em]">Please log in</p>
       </div>
     );
   }
@@ -335,18 +326,13 @@ export default function VendorLabResults() {
               <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">
                 Total
               </div>
-              <div className="text-xl md:text-2xl font-medium text-white">
-                {stats.total}
-              </div>
+              <div className="text-xl md:text-2xl font-medium text-white">{stats.total}</div>
             </div>
             <div className="bg-[#0a0a0a] border border-white/[0.06] rounded-2xl p-3 md:p-4">
               <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">
                 Linked
               </div>
-              <div
-                className="text-xl md:text-2xl font-medium"
-                style={{ color: "#22c55e" }}
-              >
+              <div className="text-xl md:text-2xl font-medium" style={{ color: "#22c55e" }}>
                 {stats.withProducts}
               </div>
             </div>
@@ -354,10 +340,7 @@ export default function VendorLabResults() {
               <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">
                 Recent
               </div>
-              <div
-                className="text-xl md:text-2xl font-medium"
-                style={{ color: "#3b82f6" }}
-              >
+              <div className="text-xl md:text-2xl font-medium" style={{ color: "#3b82f6" }}>
                 {stats.recent}
               </div>
             </div>
@@ -365,10 +348,7 @@ export default function VendorLabResults() {
               <div className="text-[10px] uppercase tracking-[0.15em] mb-1 text-white/40">
                 Expired
               </div>
-              <div
-                className="text-xl md:text-2xl font-medium"
-                style={{ color: "#ef4444" }}
-              >
+              <div className="text-xl md:text-2xl font-medium" style={{ color: "#ef4444" }}>
                 {stats.expired}
               </div>
             </div>
@@ -378,9 +358,7 @@ export default function VendorLabResults() {
           {error && (
             <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-2xl p-3 flex items-center gap-3">
               <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-              <p className="text-red-500 text-[10px] uppercase tracking-[0.15em]">
-                {error}
-              </p>
+              <p className="text-red-500 text-[10px] uppercase tracking-[0.15em]">{error}</p>
               <button
                 onClick={() => setError(null)}
                 className="ml-auto text-red-500 hover:text-red-400"
@@ -426,16 +404,13 @@ export default function VendorLabResults() {
                   onClick={toggleSelectAll}
                   className="flex-shrink-0 flex items-center gap-2 px-3 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-white/60 hover:bg-white/10 hover:border-white/20 hover:text-white transition-all"
                 >
-                  {selectedCOAs.size === filteredCOAs.length &&
-                  filteredCOAs.length > 0 ? (
+                  {selectedCOAs.size === filteredCOAs.length && filteredCOAs.length > 0 ? (
                     <CheckSquare className="w-3.5 h-3.5" />
                   ) : (
                     <Square className="w-3.5 h-3.5" />
                   )}
                   <span className="text-[10px] uppercase tracking-[0.15em]">
-                    {selectedCOAs.size === 0
-                      ? "Select All"
-                      : `${selectedCOAs.size} Selected`}
+                    {selectedCOAs.size === 0 ? "Select All" : `${selectedCOAs.size} Selected`}
                   </span>
                 </button>
               )}
@@ -640,13 +615,10 @@ export default function VendorLabResults() {
           onDownload={() => handleDownload(quickViewCOA)}
           onDelete={async () => {
             if (confirm(`Delete COA "${quickViewCOA.coaNumber}"?`)) {
-              await fetch(
-                `/api/vendor/coas?id=${encodeURIComponent(quickViewCOA.id)}`,
-                {
-                  method: "DELETE",
-                  headers: { "x-vendor-id": vendor?.id || "" },
-                },
-              );
+              await fetch(`/api/vendor/coas?id=${encodeURIComponent(quickViewCOA.id)}`, {
+                method: "DELETE",
+                headers: { "x-vendor-id": vendor?.id || "" },
+              });
               await loadCOAs();
               setQuickViewCOA(null);
             }
@@ -667,19 +639,11 @@ interface COACardProps {
   onQuickView: () => void;
 }
 
-function COACard({
-  coa,
-  selected,
-  onToggleSelect,
-  onDownload,
-  onQuickView,
-}: COACardProps) {
+function COACard({ coa, selected, onToggleSelect, onDownload, onQuickView }: COACardProps) {
   return (
     <div
       className={`group relative flex flex-col bg-[#0a0a0a] hover:bg-white/[0.02] border rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
-        selected
-          ? "border-white/[0.12]"
-          : "border-white/[0.06] hover:border-white/[0.12]"
+        selected ? "border-white/[0.12]" : "border-white/[0.06] hover:border-white/[0.12]"
       }`}
     >
       {/* Selection Checkbox */}
@@ -764,25 +728,17 @@ function COACard({
         {/* Cannabinoid Quick Info */}
         <div className="flex items-center gap-3 mb-2 pb-2 border-b border-white/[0.06]">
           <div>
-            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
-              THC
-            </div>
+            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">THC</div>
             <div className="text-white text-xs font-medium">{coa.thc}</div>
           </div>
           <div>
-            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
-              CBD
-            </div>
+            <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBD</div>
             <div className="text-white text-xs font-medium">{coa.cbd}</div>
           </div>
           {coa.totalTerpenes && (
             <div>
-              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
-                Terps
-              </div>
-              <div className="text-white text-xs font-medium">
-                {coa.totalTerpenes}
-              </div>
+              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">Terps</div>
+              <div className="text-white text-xs font-medium">{coa.totalTerpenes}</div>
             </div>
           )}
         </div>
@@ -829,19 +785,11 @@ interface COAListItemProps {
   onQuickView: () => void;
 }
 
-function COAListItem({
-  coa,
-  selected,
-  onToggleSelect,
-  onDownload,
-  onQuickView,
-}: COAListItemProps) {
+function COAListItem({ coa, selected, onToggleSelect, onDownload, onQuickView }: COAListItemProps) {
   return (
     <div
       className={`flex items-center gap-3 bg-[#0a0a0a] hover:bg-white/[0.02] border rounded-2xl p-3 transition-all ${
-        selected
-          ? "border-white/[0.12]"
-          : "border-white/[0.06] hover:border-white/[0.12]"
+        selected ? "border-white/[0.12]" : "border-white/[0.06] hover:border-white/[0.12]"
       }`}
     >
       {/* Checkbox */}
@@ -938,12 +886,7 @@ interface COAQuickViewModalProps {
   vendorId: string;
 }
 
-function COAQuickViewModal({
-  coa,
-  onClose,
-  onDownload,
-  onDelete,
-}: COAQuickViewModalProps) {
+function COAQuickViewModal({ coa, onClose, onDownload, onDelete }: COAQuickViewModalProps) {
   // Handle ESC key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -1079,9 +1022,7 @@ function COAQuickViewModal({
               </div>
               <div>
                 <div className="text-white/40 mb-1">Batch</div>
-                <div className="text-white font-medium font-mono">
-                  {coa.batchNumber}
-                </div>
+                <div className="text-white font-medium font-mono">{coa.batchNumber}</div>
               </div>
               <div>
                 <div className="text-white/40 mb-1">Test Date</div>
@@ -1092,9 +1033,7 @@ function COAQuickViewModal({
               {coa.expiryDate && (
                 <div>
                   <div className="text-white/40 mb-1">Expiry</div>
-                  <div
-                    className={`font-medium ${coa.isExpired ? "text-red-500" : "text-white"}`}
-                  >
+                  <div className={`font-medium ${coa.isExpired ? "text-red-500" : "text-white"}`}>
                     {new Date(coa.expiryDate).toLocaleDateString()}
                   </div>
                 </div>
@@ -1121,50 +1060,30 @@ function COAQuickViewModal({
                 <div className="text-white text-xl font-medium">{coa.cbd}</div>
               </div>
             </div>
-            {(coa.thca ||
-              coa.cbda ||
-              coa.cbg ||
-              coa.cbn ||
-              coa.totalCannabinoids) && (
+            {(coa.thca || coa.cbda || coa.cbg || coa.cbn || coa.totalCannabinoids) && (
               <div className="grid grid-cols-3 gap-2">
                 {coa.thca && (
                   <div className="bg-black/20 rounded-xl p-2">
-                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
-                      THCa
-                    </div>
-                    <div className="text-white text-xs font-medium">
-                      {coa.thca}
-                    </div>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">THCa</div>
+                    <div className="text-white text-xs font-medium">{coa.thca}</div>
                   </div>
                 )}
                 {coa.cbda && (
                   <div className="bg-black/20 rounded-xl p-2">
-                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
-                      CBDa
-                    </div>
-                    <div className="text-white text-xs font-medium">
-                      {coa.cbda}
-                    </div>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBDa</div>
+                    <div className="text-white text-xs font-medium">{coa.cbda}</div>
                   </div>
                 )}
                 {coa.cbg && (
                   <div className="bg-black/20 rounded-xl p-2">
-                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
-                      CBG
-                    </div>
-                    <div className="text-white text-xs font-medium">
-                      {coa.cbg}
-                    </div>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBG</div>
+                    <div className="text-white text-xs font-medium">{coa.cbg}</div>
                   </div>
                 )}
                 {coa.cbn && (
                   <div className="bg-black/20 rounded-xl p-2">
-                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
-                      CBN
-                    </div>
-                    <div className="text-white text-xs font-medium">
-                      {coa.cbn}
-                    </div>
+                    <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">CBN</div>
+                    <div className="text-white text-xs font-medium">{coa.cbn}</div>
                   </div>
                 )}
                 {coa.totalCannabinoids && (
@@ -1172,9 +1091,7 @@ function COAQuickViewModal({
                     <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">
                       Total
                     </div>
-                    <div className="text-white text-xs font-medium">
-                      {coa.totalCannabinoids}
-                    </div>
+                    <div className="text-white text-xs font-medium">{coa.totalCannabinoids}</div>
                   </div>
                 )}
               </div>
@@ -1191,9 +1108,7 @@ function COAQuickViewModal({
                 <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-1">
                   Total
                 </div>
-                <div className="text-white text-xl font-medium">
-                  {coa.totalTerpenes}
-                </div>
+                <div className="text-white text-xl font-medium">{coa.totalTerpenes}</div>
               </div>
               {coa.terpenes && typeof coa.terpenes === "object" && (
                 <div className="grid grid-cols-3 gap-2">
@@ -1202,9 +1117,7 @@ function COAQuickViewModal({
                       <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] capitalize">
                         {name}
                       </div>
-                      <div className="text-white text-xs font-medium">
-                        {String(value)}%
-                      </div>
+                      <div className="text-white text-xs font-medium">{String(value)}%</div>
                     </div>
                   ))}
                 </div>

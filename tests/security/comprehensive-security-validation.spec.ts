@@ -14,6 +14,7 @@
 import { test, expect } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 // Supabase setup
@@ -39,23 +40,22 @@ async function getVendorAuthToken(vendorId: string): Promise<string | null> {
       .single();
 
     if (error || !user || !user.auth_user_id) {
-      console.log("⚠️  No auth-enabled user found for vendor:", vendorId);
+      logger.debug("⚠️  No auth-enabled user found for vendor:", vendorId);
       return null;
     }
 
-    const { data: sessionData, error: sessionError } =
-      await supabase.auth.admin.createSession({
-        user_id: user.auth_user_id,
-      });
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
+      user_id: user.auth_user_id,
+    });
 
     if (sessionError || !sessionData.session) {
-      console.error("❌ Failed to create session:", sessionError);
+      logger.error("❌ Failed to create session:", sessionError);
       return null;
     }
 
     return sessionData.session.access_token;
   } catch (error) {
-    console.error("❌ Error getting auth token:", error);
+    logger.error("❌ Error getting auth token:", error);
     return null;
   }
 }
@@ -82,7 +82,7 @@ test.describe("Attack Scenarios - Auth Bypass Prevention", () => {
           : await request.get(`${BASE_URL}${endpoint.url}`);
 
       expect(response.status()).toBe(401);
-      console.log(`✅ ${endpoint.url} - Blocked unauthenticated request`);
+      logger.debug(`✅ ${endpoint.url} - Blocked unauthenticated request`);
     }
   });
 
@@ -103,7 +103,7 @@ test.describe("Attack Scenarios - Auth Bypass Prevention", () => {
       });
 
       expect(response.status()).toBe(401);
-      console.log(`✅ ${endpoint} - Header spoofing blocked`);
+      logger.debug(`✅ ${endpoint} - Header spoofing blocked`);
     }
   });
 
@@ -127,14 +127,14 @@ test.describe("Attack Scenarios - Auth Bypass Prevention", () => {
       expect(response.status()).toBe(401);
     }
 
-    console.log(`✅ All malformed tokens rejected`);
+    logger.debug(`✅ All malformed tokens rejected`);
   });
 
   test("ATTACK 4: Token + mismatched vendor header", async ({ request }) => {
     const vendorToken = await getVendorAuthToken(VENDOR_A_ID);
 
     if (!vendorToken) {
-      console.log("⚠️  Skipping test - no token available");
+      logger.debug("⚠️  Skipping test - no token available");
       return;
     }
 
@@ -151,13 +151,9 @@ test.describe("Attack Scenarios - Auth Bypass Prevention", () => {
 
       // Should return Vendor A's data (from token), not fake vendor
       if (data.employees && data.employees.length > 0) {
-        const allBelongToVendorA = data.employees.every(
-          (e: any) => e.vendor_id === VENDOR_A_ID,
-        );
+        const allBelongToVendorA = data.employees.every((e: any) => e.vendor_id === VENDOR_A_ID);
         expect(allBelongToVendorA).toBe(true);
-        console.log(
-          `✅ Header override ignored - returned correct vendor data`,
-        );
+        logger.debug(`✅ Header override ignored - returned correct vendor data`);
       }
     }
   });
@@ -180,14 +176,14 @@ test.describe("Attack Scenarios - Auth Bypass Prevention", () => {
       expect(response.status()).toBe(401);
     }
 
-    console.log(`✅ SQL injection attempts blocked`);
+    logger.debug(`✅ SQL injection attempts blocked`);
   });
 
   test("ATTACK 6: Cross-vendor data access attempt", async ({ request }) => {
     const vendorToken = await getVendorAuthToken(VENDOR_A_ID);
 
     if (!vendorToken) {
-      console.log("⚠️  Skipping test - no token available");
+      logger.debug("⚠️  Skipping test - no token available");
       return;
     }
 
@@ -201,12 +197,10 @@ test.describe("Attack Scenarios - Auth Bypass Prevention", () => {
 
       // Verify all employees belong to Vendor A
       if (dataA.employees && dataA.employees.length > 0) {
-        const hasOtherVendor = dataA.employees.some(
-          (e: any) => e.vendor_id !== VENDOR_A_ID,
-        );
+        const hasOtherVendor = dataA.employees.some((e: any) => e.vendor_id !== VENDOR_A_ID);
 
         expect(hasOtherVendor).toBe(false);
-        console.log(`✅ Cross-vendor isolation enforced`);
+        logger.debug(`✅ Cross-vendor isolation enforced`);
       }
     }
   });
@@ -226,97 +220,75 @@ test.describe("Phase 1 Routes - P0 Critical Security", () => {
   // Inventory Management (4 routes)
   test("P1-01: GET /api/vendor/inventory/grouped", async ({ request }) => {
     // Without auth
-    const noAuth = await request.get(
-      `${BASE_URL}/api/vendor/inventory/grouped`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/vendor/inventory/grouped`);
     expect(noAuth.status()).toBe(401);
 
     // With auth
     if (authToken) {
-      const withAuth = await request.get(
-        `${BASE_URL}/api/vendor/inventory/grouped`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-        },
-      );
+      const withAuth = await request.get(`${BASE_URL}/api/vendor/inventory/grouped`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
       expect([200, 403]).toContain(withAuth.status());
-      console.log("✅ Inventory grouped - Auth enforced");
+      logger.debug("✅ Inventory grouped - Auth enforced");
     }
   });
 
   test("P1-02: POST /api/vendor/inventory/adjust", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/inventory/adjust`,
-      {
-        data: { productId: "test", adjustment: 5 },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/inventory/adjust`, {
+      data: { productId: "test", adjustment: 5 },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Inventory adjust - Auth enforced");
+    logger.debug("✅ Inventory adjust - Auth enforced");
   });
 
   test("P1-03: POST /api/vendor/inventory/transfer", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/inventory/transfer`,
-      {
-        data: {
-          productId: "test",
-          fromLocationId: "loc1",
-          toLocationId: "loc2",
-          quantity: 5,
-        },
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/inventory/transfer`, {
+      data: {
+        productId: "test",
+        fromLocationId: "loc1",
+        toLocationId: "loc2",
+        quantity: 5,
       },
-    );
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Inventory transfer - Auth enforced");
+    logger.debug("✅ Inventory transfer - Auth enforced");
   });
 
   test("P1-04: POST /api/vendor/inventory/create", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/inventory/create`,
-      {
-        data: { productId: "test", locationId: "loc1", quantity: 10 },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/inventory/create`, {
+      data: { productId: "test", locationId: "loc1", quantity: 10 },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Inventory create - Auth enforced");
+    logger.debug("✅ Inventory create - Auth enforced");
   });
 
   // Analytics (4 routes)
   test("P1-05: GET /api/vendor/analytics", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/vendor/analytics`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Analytics - Auth enforced");
+    logger.debug("✅ Analytics - Auth enforced");
   });
 
   test("P1-06: GET /api/vendor/analytics/sales-trend", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/vendor/analytics/sales-trend`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/vendor/analytics/sales-trend`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Sales trend - Auth enforced");
+    logger.debug("✅ Sales trend - Auth enforced");
   });
 
   test("P1-07: GET /api/vendor/analytics/overview", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/vendor/analytics/overview`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/vendor/analytics/overview`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Analytics overview - Auth enforced");
+    logger.debug("✅ Analytics overview - Auth enforced");
   });
 
   test("P1-08: GET /api/vendor/analytics/products", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/vendor/analytics/products`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/vendor/analytics/products`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Product analytics - Auth enforced");
+    logger.debug("✅ Product analytics - Auth enforced");
   });
 
   // Employees (2 routes)
-  test("P1-09: GET /api/vendor/employees - Vendor isolation", async ({
-    request,
-  }) => {
+  test("P1-09: GET /api/vendor/employees - Vendor isolation", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/vendor/employees`);
     expect(noAuth.status()).toBe(401);
 
@@ -328,13 +300,9 @@ test.describe("Phase 1 Routes - P0 Critical Security", () => {
       if (withAuth.status() === 200) {
         const data = await withAuth.json();
         if (data.employees && data.employees.length > 0) {
-          const allBelongToVendor = data.employees.every(
-            (e: any) => e.vendor_id === VENDOR_A_ID,
-          );
+          const allBelongToVendor = data.employees.every((e: any) => e.vendor_id === VENDOR_A_ID);
           expect(allBelongToVendor).toBe(true);
-          console.log(
-            `✅ Employees - ${data.employees.length} returned, all isolated`,
-          );
+          logger.debug(`✅ Employees - ${data.employees.length} returned, all isolated`);
         }
       }
     }
@@ -345,43 +313,33 @@ test.describe("Phase 1 Routes - P0 Critical Security", () => {
       data: { action: "create", email: "test@test.com" },
     });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Employee create - Auth enforced");
+    logger.debug("✅ Employee create - Auth enforced");
   });
 
   // Products (2 routes)
   test("P1-11: GET /api/page-data/vendor-products", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/page-data/vendor-products`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/page-data/vendor-products`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Vendor products - Auth enforced");
+    logger.debug("✅ Vendor products - Auth enforced");
   });
 
   test("P1-12: PUT /api/supabase/products/[id]", async ({ request }) => {
-    const noAuth = await request.put(
-      `${BASE_URL}/api/supabase/products/test-id`,
-      {
-        data: { name: "Hacked" },
-      },
-    );
+    const noAuth = await request.put(`${BASE_URL}/api/supabase/products/test-id`, {
+      data: { name: "Hacked" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Product update - Auth enforced");
+    logger.debug("✅ Product update - Auth enforced");
   });
 
   // Locations (1 route)
-  test("P1-13: GET /api/supabase/locations - Public vs vendor", async ({
-    request,
-  }) => {
+  test("P1-13: GET /api/supabase/locations - Public vs vendor", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/supabase/locations`);
 
     if (noAuth.status() === 200) {
       const data = await noAuth.json();
-      const vendorLocations =
-        data.locations?.filter((l: any) => l.type === "vendor") || [];
+      const vendorLocations = data.locations?.filter((l: any) => l.type === "vendor") || [];
       expect(vendorLocations.length).toBe(0);
-      console.log(
-        `✅ Locations - ${data.locations?.length || 0} public, 0 vendor (without auth)`,
-      );
+      logger.debug(`✅ Locations - ${data.locations?.length || 0} public, 0 vendor (without auth)`);
     }
   });
 
@@ -389,22 +347,20 @@ test.describe("Phase 1 Routes - P0 Critical Security", () => {
   test("P1-14: GET /api/vendor/profit-stats", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/vendor/profit-stats`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Profit stats - Auth enforced");
+    logger.debug("✅ Profit stats - Auth enforced");
   });
 
   // Configuration (3 routes)
   test("P1-15: GET /api/vendor/custom-fields", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/vendor/custom-fields`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Custom fields - Auth enforced");
+    logger.debug("✅ Custom fields - Auth enforced");
   });
 
   test("P1-16: GET /api/vendor/pricing-templates", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/vendor/pricing-templates`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/vendor/pricing-templates`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Pricing templates - Auth enforced");
+    logger.debug("✅ Pricing templates - Auth enforced");
   });
 
   test("P1-17: POST /api/categories", async ({ request }) => {
@@ -412,16 +368,14 @@ test.describe("Phase 1 Routes - P0 Critical Security", () => {
       data: { name: "Hacked" },
     });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Categories - Auth enforced");
+    logger.debug("✅ Categories - Auth enforced");
   });
 
   // Page Data (1 route)
   test("P1-18: GET /api/page-data/vendor-inventory", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/page-data/vendor-inventory`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/page-data/vendor-inventory`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Vendor inventory page data - Auth enforced");
+    logger.debug("✅ Vendor inventory page data - Auth enforced");
   });
 });
 
@@ -440,46 +394,36 @@ test.describe("Phase 2 Routes - P1 High Security", () => {
   test("P2-01: GET /api/supabase/vendor/payouts", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/supabase/vendor/payouts`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Payouts - Auth enforced");
+    logger.debug("✅ Payouts - Auth enforced");
   });
 
   // Settings (6 routes)
   test("P2-02: GET /api/supabase/vendor/settings", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/supabase/vendor/settings`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/supabase/vendor/settings`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Vendor settings GET - Auth enforced");
+    logger.debug("✅ Vendor settings GET - Auth enforced");
   });
 
   test("P2-03: PUT /api/supabase/vendor/settings", async ({ request }) => {
-    const noAuth = await request.put(
-      `${BASE_URL}/api/supabase/vendor/settings`,
-      {
-        data: { notifications: {} },
-      },
-    );
+    const noAuth = await request.put(`${BASE_URL}/api/supabase/vendor/settings`, {
+      data: { notifications: {} },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Vendor settings PUT - Auth enforced");
+    logger.debug("✅ Vendor settings PUT - Auth enforced");
   });
 
   test("P2-04: GET /api/vendor/cost-plus-pricing", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/vendor/cost-plus-pricing`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/vendor/cost-plus-pricing`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Cost-plus pricing GET - Auth enforced");
+    logger.debug("✅ Cost-plus pricing GET - Auth enforced");
   });
 
   test("P2-05: POST /api/vendor/cost-plus-pricing", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/cost-plus-pricing`,
-      {
-        data: { name: "test", markup_tiers: [] },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/cost-plus-pricing`, {
+      data: { name: "test", markup_tiers: [] },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Cost-plus pricing POST - Auth enforced");
+    logger.debug("✅ Cost-plus pricing POST - Auth enforced");
   });
 
   test("P2-06: POST /api/schemas/presets", async ({ request }) => {
@@ -487,127 +431,101 @@ test.describe("Phase 2 Routes - P1 High Security", () => {
       data: { preset_id: "test" },
     });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Schema presets - Auth enforced");
+    logger.debug("✅ Schema presets - Auth enforced");
   });
 
   // Inventory (5 routes)
   test("P2-07: PUT /api/supabase/inventory/[id]", async ({ request }) => {
-    const noAuth = await request.put(
-      `${BASE_URL}/api/supabase/inventory/test-id`,
-      {
-        data: { quantity: 100 },
-      },
-    );
+    const noAuth = await request.put(`${BASE_URL}/api/supabase/inventory/test-id`, {
+      data: { quantity: 100 },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Inventory update - Auth enforced");
+    logger.debug("✅ Inventory update - Auth enforced");
   });
 
   test("P2-08: DELETE /api/supabase/inventory/[id]", async ({ request }) => {
-    const noAuth = await request.delete(
-      `${BASE_URL}/api/supabase/inventory/test-id`,
-    );
+    const noAuth = await request.delete(`${BASE_URL}/api/supabase/inventory/test-id`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Inventory delete - Auth enforced");
+    logger.debug("✅ Inventory delete - Auth enforced");
   });
 
   test("P2-09: GET /api/supabase/stock-movements", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/supabase/stock-movements`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/supabase/stock-movements`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Stock movements GET - Auth enforced");
+    logger.debug("✅ Stock movements GET - Auth enforced");
   });
 
   test("P2-10: POST /api/supabase/stock-movements", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/supabase/stock-movements`,
-      {
-        data: {
-          inventory_id: "test",
-          product_id: "test",
-          movement_type: "sale",
-          quantity: 1,
-        },
+    const noAuth = await request.post(`${BASE_URL}/api/supabase/stock-movements`, {
+      data: {
+        inventory_id: "test",
+        product_id: "test",
+        movement_type: "sale",
+        quantity: 1,
       },
-    );
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Stock movements POST - Auth enforced");
+    logger.debug("✅ Stock movements POST - Auth enforced");
   });
 
   // Vendor Management (8 routes)
   test("P2-11: GET /api/supabase/vendor/analytics", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/supabase/vendor/analytics`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/supabase/vendor/analytics`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Vendor analytics - Auth enforced");
+    logger.debug("✅ Vendor analytics - Auth enforced");
   });
 
   test("P2-12: GET /api/supabase/vendor/branding", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/supabase/vendor/branding`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/supabase/vendor/branding`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Vendor branding - Auth enforced");
+    logger.debug("✅ Vendor branding - Auth enforced");
   });
 
   test("P2-13: GET /api/supabase/vendor/coa", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/supabase/vendor/coa`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ COA list - Auth enforced");
+    logger.debug("✅ COA list - Auth enforced");
   });
 
   test("P2-14: DELETE /api/supabase/vendor/coa/[id]", async ({ request }) => {
-    const noAuth = await request.delete(
-      `${BASE_URL}/api/supabase/vendor/coa/test-id`,
-    );
+    const noAuth = await request.delete(`${BASE_URL}/api/supabase/vendor/coa/test-id`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ COA delete - Auth enforced");
+    logger.debug("✅ COA delete - Auth enforced");
   });
 
   test("P2-15: POST /api/supabase/vendor/upload", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/supabase/vendor/upload`,
-      {
-        data: { file: "test" },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/supabase/vendor/upload`, {
+      data: { file: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Vendor upload - Auth enforced");
+    logger.debug("✅ Vendor upload - Auth enforced");
   });
 
   test("P2-16: GET /api/supabase/vendor/reviews", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/supabase/vendor/reviews`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Vendor reviews - Auth enforced");
+    logger.debug("✅ Vendor reviews - Auth enforced");
   });
 
-  test("P2-17: POST /api/supabase/vendor/reviews/[id]/respond", async ({
-    request,
-  }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/supabase/vendor/reviews/test-id/respond`,
-      {
-        data: { response: "test" },
-      },
-    );
+  test("P2-17: POST /api/supabase/vendor/reviews/[id]/respond", async ({ request }) => {
+    const noAuth = await request.post(`${BASE_URL}/api/supabase/vendor/reviews/test-id/respond`, {
+      data: { response: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Review respond - Auth enforced");
+    logger.debug("✅ Review respond - Auth enforced");
   });
 
   test("P2-18: GET /api/page-data/vendor-dashboard", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/page-data/vendor-dashboard`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/page-data/vendor-dashboard`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Dashboard data - Auth enforced");
+    logger.debug("✅ Dashboard data - Auth enforced");
   });
 
   // Media Management (15 routes)
   test("P2-19: GET /api/vendor/media", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/vendor/media`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media GET - Auth enforced");
+    logger.debug("✅ Media GET - Auth enforced");
   });
 
   test("P2-20: POST /api/vendor/media", async ({ request }) => {
@@ -615,40 +533,31 @@ test.describe("Phase 2 Routes - P1 High Security", () => {
       data: { file: "test" },
     });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media POST - Auth enforced");
+    logger.debug("✅ Media POST - Auth enforced");
   });
 
   test("P2-21: POST /api/vendor/media/add-background", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/media/add-background`,
-      {
-        data: { mediaId: "test" },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/media/add-background`, {
+      data: { mediaId: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media add-background - Auth enforced");
+    logger.debug("✅ Media add-background - Auth enforced");
   });
 
   test("P2-22: POST /api/vendor/media/bulk-auto-match", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/media/bulk-auto-match`,
-      {
-        data: { products: [] },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/media/bulk-auto-match`, {
+      data: { products: [] },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media bulk-auto-match - Auth enforced");
+    logger.debug("✅ Media bulk-auto-match - Auth enforced");
   });
 
   test("P2-23: POST /api/vendor/media/bulk-enhance", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/media/bulk-enhance`,
-      {
-        data: { mediaIds: [] },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/media/bulk-enhance`, {
+      data: { mediaIds: [] },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media bulk-enhance - Auth enforced");
+    logger.debug("✅ Media bulk-enhance - Auth enforced");
   });
 
   test("P2-24: POST /api/vendor/media/enhance", async ({ request }) => {
@@ -656,18 +565,15 @@ test.describe("Phase 2 Routes - P1 High Security", () => {
       data: { mediaId: "test" },
     });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media enhance - Auth enforced");
+    logger.debug("✅ Media enhance - Auth enforced");
   });
 
   test("P2-25: POST /api/vendor/media/enhance-stream", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/media/enhance-stream`,
-      {
-        data: { mediaId: "test" },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/media/enhance-stream`, {
+      data: { mediaId: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media enhance-stream - Auth enforced");
+    logger.debug("✅ Media enhance-stream - Auth enforced");
   });
 
   test("P2-26: POST /api/vendor/media/generate", async ({ request }) => {
@@ -675,7 +581,7 @@ test.describe("Phase 2 Routes - P1 High Security", () => {
       data: { prompt: "test" },
     });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media generate - Auth enforced");
+    logger.debug("✅ Media generate - Auth enforced");
   });
 
   test("P2-27: POST /api/vendor/media/migrate", async ({ request }) => {
@@ -683,42 +589,31 @@ test.describe("Phase 2 Routes - P1 High Security", () => {
       data: {},
     });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media migrate - Auth enforced");
+    logger.debug("✅ Media migrate - Auth enforced");
   });
 
   test("P2-28: POST /api/vendor/media/reimagine", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/media/reimagine`,
-      {
-        data: { mediaId: "test" },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/media/reimagine`, {
+      data: { mediaId: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media reimagine - Auth enforced");
+    logger.debug("✅ Media reimagine - Auth enforced");
   });
 
   test("P2-29: POST /api/vendor/media/remove-bg", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/media/remove-bg`,
-      {
-        data: { mediaId: "test" },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/media/remove-bg`, {
+      data: { mediaId: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media remove-bg - Auth enforced");
+    logger.debug("✅ Media remove-bg - Auth enforced");
   });
 
-  test("P2-30: POST /api/vendor/media/remove-bg-stream", async ({
-    request,
-  }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/media/remove-bg-stream`,
-      {
-        data: { mediaId: "test" },
-      },
-    );
+  test("P2-30: POST /api/vendor/media/remove-bg-stream", async ({ request }) => {
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/media/remove-bg-stream`, {
+      data: { mediaId: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media remove-bg-stream - Auth enforced");
+    logger.debug("✅ Media remove-bg-stream - Auth enforced");
   });
 
   test("P2-31: PUT /api/vendor/media/rename", async ({ request }) => {
@@ -726,20 +621,15 @@ test.describe("Phase 2 Routes - P1 High Security", () => {
       data: { mediaId: "test", name: "new" },
     });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media rename - Auth enforced");
+    logger.debug("✅ Media rename - Auth enforced");
   });
 
-  test("P2-32: POST /api/vendor/media/search-inspiration", async ({
-    request,
-  }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/media/search-inspiration`,
-      {
-        data: { query: "test" },
-      },
-    );
+  test("P2-32: POST /api/vendor/media/search-inspiration", async ({ request }) => {
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/media/search-inspiration`, {
+      data: { query: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media search-inspiration - Auth enforced");
+    logger.debug("✅ Media search-inspiration - Auth enforced");
   });
 
   test("P2-33: POST /api/vendor/media/upscale", async ({ request }) => {
@@ -747,162 +637,117 @@ test.describe("Phase 2 Routes - P1 High Security", () => {
       data: { mediaId: "test" },
     });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media upscale - Auth enforced");
+    logger.debug("✅ Media upscale - Auth enforced");
   });
 
   test("P2-34: POST /api/vendor/media/upscale-stream", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/media/upscale-stream`,
-      {
-        data: { mediaId: "test" },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/media/upscale-stream`, {
+      data: { mediaId: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Media upscale-stream - Auth enforced");
+    logger.debug("✅ Media upscale-stream - Auth enforced");
   });
 
   // Marketing (11 routes)
-  test("P2-35: POST /api/vendor/marketing/alpineiq/sync-loyalty", async ({
-    request,
-  }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/marketing/alpineiq/sync-loyalty`,
-      {
-        data: {},
-      },
-    );
+  test("P2-35: POST /api/vendor/marketing/alpineiq/sync-loyalty", async ({ request }) => {
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/marketing/alpineiq/sync-loyalty`, {
+      data: {},
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ AlpineIQ sync - Auth enforced");
+    logger.debug("✅ AlpineIQ sync - Auth enforced");
   });
 
   test("P2-36: GET /api/vendor/marketing/analytics", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/vendor/marketing/analytics`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/vendor/marketing/analytics`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Marketing analytics - Auth enforced");
+    logger.debug("✅ Marketing analytics - Auth enforced");
   });
 
   test("P2-37: GET /api/vendor/marketing/automation", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/vendor/marketing/automation`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/vendor/marketing/automation`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Marketing automation GET - Auth enforced");
+    logger.debug("✅ Marketing automation GET - Auth enforced");
   });
 
   test("P2-38: POST /api/vendor/marketing/automation", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/marketing/automation`,
-      {
-        data: { name: "test" },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/marketing/automation`, {
+      data: { name: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Marketing automation POST - Auth enforced");
+    logger.debug("✅ Marketing automation POST - Auth enforced");
   });
 
   test("P2-39: GET /api/vendor/marketing/campaigns", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/vendor/marketing/campaigns`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/vendor/marketing/campaigns`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Marketing campaigns - Auth enforced");
+    logger.debug("✅ Marketing campaigns - Auth enforced");
   });
 
-  test("P2-40: POST /api/vendor/marketing/email/generate", async ({
-    request,
-  }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/marketing/email/generate`,
-      {
-        data: { prompt: "test" },
-      },
-    );
+  test("P2-40: POST /api/vendor/marketing/email/generate", async ({ request }) => {
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/marketing/email/generate`, {
+      data: { prompt: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Email generate - Auth enforced");
+    logger.debug("✅ Email generate - Auth enforced");
   });
 
-  test("P2-41: POST /api/vendor/marketing/segments/estimate", async ({
-    request,
-  }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/marketing/segments/estimate`,
-      {
-        data: { filters: [] },
-      },
-    );
+  test("P2-41: POST /api/vendor/marketing/segments/estimate", async ({ request }) => {
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/marketing/segments/estimate`, {
+      data: { filters: [] },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Segment estimate - Auth enforced");
+    logger.debug("✅ Segment estimate - Auth enforced");
   });
 
   test("P2-42: GET /api/vendor/marketing/segments", async ({ request }) => {
-    const noAuth = await request.get(
-      `${BASE_URL}/api/vendor/marketing/segments`,
-    );
+    const noAuth = await request.get(`${BASE_URL}/api/vendor/marketing/segments`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Segments GET - Auth enforced");
+    logger.debug("✅ Segments GET - Auth enforced");
   });
 
   test("P2-43: POST /api/vendor/marketing/segments", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/marketing/segments`,
-      {
-        data: { name: "test" },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/marketing/segments`, {
+      data: { name: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Segments POST - Auth enforced");
+    logger.debug("✅ Segments POST - Auth enforced");
   });
 
-  test("P2-44: POST /api/vendor/marketing/sms/campaigns", async ({
-    request,
-  }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/marketing/sms/campaigns`,
-      {
-        data: { message: "test" },
-      },
-    );
+  test("P2-44: POST /api/vendor/marketing/sms/campaigns", async ({ request }) => {
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/marketing/sms/campaigns`, {
+      data: { message: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ SMS campaigns POST - Auth enforced");
+    logger.debug("✅ SMS campaigns POST - Auth enforced");
   });
 
-  test("P2-45: POST /api/vendor/marketing/sms/generate", async ({
-    request,
-  }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/vendor/marketing/sms/generate`,
-      {
-        data: { prompt: "test" },
-      },
-    );
+  test("P2-45: POST /api/vendor/marketing/sms/generate", async ({ request }) => {
+    const noAuth = await request.post(`${BASE_URL}/api/vendor/marketing/sms/generate`, {
+      data: { prompt: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ SMS generate - Auth enforced");
+    logger.debug("✅ SMS generate - Auth enforced");
   });
 
   test("P2-46: GET /api/vendor/marketing/stats", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/vendor/marketing/stats`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Marketing stats - Auth enforced");
+    logger.debug("✅ Marketing stats - Auth enforced");
   });
 
   // Other (2 routes)
   test("P2-47: POST /api/business-templates/import", async ({ request }) => {
-    const noAuth = await request.post(
-      `${BASE_URL}/api/business-templates/import`,
-      {
-        data: { template_id: "test" },
-      },
-    );
+    const noAuth = await request.post(`${BASE_URL}/api/business-templates/import`, {
+      data: { template_id: "test" },
+    });
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Business templates - Auth enforced");
+    logger.debug("✅ Business templates - Auth enforced");
   });
 
   test("P2-48: GET /api/vendor/reviews", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/vendor/reviews`);
     expect(noAuth.status()).toBe(401);
-    console.log("✅ Vendor reviews - Auth enforced");
+    logger.debug("✅ Vendor reviews - Auth enforced");
   });
 });
 
@@ -917,21 +762,16 @@ test.describe("Real-World Security Scenarios", () => {
     authToken = await getVendorAuthToken(VENDOR_A_ID);
   });
 
-  test("SCENARIO 1: Complete vendor workflow (authenticated)", async ({
-    request,
-  }) => {
+  test("SCENARIO 1: Complete vendor workflow (authenticated)", async ({ request }) => {
     if (!authToken) {
-      console.log("⚠️  Skipping - no token");
+      logger.debug("⚠️  Skipping - no token");
       return;
     }
 
     // 1. Get vendor dashboard data
-    const dashboard = await request.get(
-      `${BASE_URL}/api/page-data/vendor-dashboard`,
-      {
-        headers: { Authorization: `Bearer ${authToken}` },
-      },
-    );
+    const dashboard = await request.get(`${BASE_URL}/api/page-data/vendor-dashboard`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
     expect([200, 403]).toContain(dashboard.status());
 
     // 2. Get employees
@@ -941,12 +781,9 @@ test.describe("Real-World Security Scenarios", () => {
     expect([200, 403]).toContain(employees.status());
 
     // 3. Get inventory
-    const inventory = await request.get(
-      `${BASE_URL}/api/vendor/inventory/grouped`,
-      {
-        headers: { Authorization: `Bearer ${authToken}` },
-      },
-    );
+    const inventory = await request.get(`${BASE_URL}/api/vendor/inventory/grouped`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
     expect([200, 403]).toContain(inventory.status());
 
     // 4. Get analytics
@@ -955,12 +792,10 @@ test.describe("Real-World Security Scenarios", () => {
     });
     expect([200, 403]).toContain(analytics.status());
 
-    console.log("✅ Complete authenticated workflow successful");
+    logger.debug("✅ Complete authenticated workflow successful");
   });
 
-  test("SCENARIO 2: Attacker tries multiple bypass techniques", async ({
-    request,
-  }) => {
+  test("SCENARIO 2: Attacker tries multiple bypass techniques", async ({ request }) => {
     const attackVectors = [
       // No auth
       { headers: {}, expectedStatus: 401 },
@@ -983,14 +818,12 @@ test.describe("Real-World Security Scenarios", () => {
       expect(response.status()).toBe(attack.expectedStatus);
     }
 
-    console.log("✅ All attack vectors blocked");
+    logger.debug("✅ All attack vectors blocked");
   });
 
-  test("SCENARIO 3: Vendor isolation across multiple endpoints", async ({
-    request,
-  }) => {
+  test("SCENARIO 3: Vendor isolation across multiple endpoints", async ({ request }) => {
     if (!authToken) {
-      console.log("⚠️  Skipping - no token");
+      logger.debug("⚠️  Skipping - no token");
       return;
     }
 
@@ -1017,7 +850,7 @@ test.describe("Real-World Security Scenarios", () => {
       }
     }
 
-    console.log("✅ Vendor isolation maintained across endpoints");
+    logger.debug("✅ Vendor isolation maintained across endpoints");
   });
 });
 
@@ -1031,7 +864,7 @@ test.describe("Edge Cases and Error Handling", () => {
       headers: { Authorization: "" },
     });
     expect(response.status()).toBe(401);
-    console.log("✅ Empty auth header rejected");
+    logger.debug("✅ Empty auth header rejected");
   });
 
   test("EDGE 2: Authorization header without Bearer", async ({ request }) => {
@@ -1039,7 +872,7 @@ test.describe("Edge Cases and Error Handling", () => {
       headers: { Authorization: "some-token" },
     });
     expect(response.status()).toBe(401);
-    console.log("✅ Non-Bearer auth rejected");
+    logger.debug("✅ Non-Bearer auth rejected");
   });
 
   test("EDGE 3: Multiple Authorization headers", async ({ request }) => {
@@ -1049,7 +882,7 @@ test.describe("Edge Cases and Error Handling", () => {
       },
     });
     expect(response.status()).toBe(401);
-    console.log("✅ Multiple auth headers rejected");
+    logger.debug("✅ Multiple auth headers rejected");
   });
 
   test("EDGE 4: Case sensitivity in headers", async ({ request }) => {
@@ -1066,7 +899,7 @@ test.describe("Edge Cases and Error Handling", () => {
       expect(response.status()).toBe(401);
     }
 
-    console.log("✅ Header case variations handled");
+    logger.debug("✅ Header case variations handled");
   });
 
   test("EDGE 5: Very long token", async ({ request }) => {
@@ -1075,12 +908,10 @@ test.describe("Edge Cases and Error Handling", () => {
       headers: { Authorization: `Bearer ${longToken}` },
     });
     expect(response.status()).toBe(401);
-    console.log("✅ Extremely long token rejected");
+    logger.debug("✅ Extremely long token rejected");
   });
 
-  test("EDGE 6: Unicode and special characters in headers", async ({
-    request,
-  }) => {
+  test("EDGE 6: Unicode and special characters in headers", async ({ request }) => {
     const specialChars = ["🔥", "\n\r", "\0", "<script>", "../../etc/passwd"];
 
     for (const char of specialChars) {
@@ -1096,7 +927,7 @@ test.describe("Edge Cases and Error Handling", () => {
       }
     }
 
-    console.log("✅ Special characters in headers rejected");
+    logger.debug("✅ Special characters in headers rejected");
   });
 });
 
@@ -1106,22 +937,20 @@ test.describe("Edge Cases and Error Handling", () => {
 
 test.describe("Test Suite Summary", () => {
   test("Final validation - All security measures active", async () => {
-    console.log("\n" + "=".repeat(70));
-    console.log("COMPREHENSIVE SECURITY VALIDATION - SUMMARY");
-    console.log("=".repeat(70));
-    console.log("✅ Attack Scenarios: 6 scenarios tested");
-    console.log("✅ Phase 1 Routes: 18 P0 routes tested");
-    console.log(
-      "✅ Phase 2 Routes: 48 P1 routes tested (41 unique + variations)",
-    );
-    console.log("✅ Real-World Scenarios: 3 workflows tested");
-    console.log("✅ Edge Cases: 6 edge cases tested");
-    console.log("=".repeat(70));
-    console.log("Total Tests: 80+ comprehensive security tests");
-    console.log("Coverage: 59 unique routes (Phase 1: 18 + Phase 2: 41)");
-    console.log("=".repeat(70));
-    console.log("🔒 ALL SECURITY MEASURES VALIDATED ✅");
-    console.log("=".repeat(70) + "\n");
+    logger.debug("\n" + "=".repeat(70));
+    logger.debug("COMPREHENSIVE SECURITY VALIDATION - SUMMARY");
+    logger.debug("=".repeat(70));
+    logger.debug("✅ Attack Scenarios: 6 scenarios tested");
+    logger.debug("✅ Phase 1 Routes: 18 P0 routes tested");
+    logger.debug("✅ Phase 2 Routes: 48 P1 routes tested (41 unique + variations)");
+    logger.debug("✅ Real-World Scenarios: 3 workflows tested");
+    logger.debug("✅ Edge Cases: 6 edge cases tested");
+    logger.debug("=".repeat(70));
+    logger.debug("Total Tests: 80+ comprehensive security tests");
+    logger.debug("Coverage: 59 unique routes (Phase 1: 18 + Phase 2: 41)");
+    logger.debug("=".repeat(70));
+    logger.debug("🔒 ALL SECURITY MEASURES VALIDATED ✅");
+    logger.debug("=".repeat(70) + "\n");
 
     expect(true).toBe(true);
   });

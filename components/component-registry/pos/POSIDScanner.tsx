@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Camera, X, AlertCircle, CheckCircle2, Scan } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface ScannedIDData {
   firstName: string;
   lastName: string;
@@ -30,13 +31,7 @@ export function POSIDScanner({
   onClose,
 }: POSIDScannerProps) {
   const [status, setStatus] = useState<
-    | "idle"
-    | "initializing"
-    | "scanning"
-    | "processing"
-    | "success"
-    | "no-match"
-    | "error"
+    "idle" | "initializing" | "scanning" | "processing" | "success" | "no-match" | "error"
   >("idle");
   const [message, setMessage] = useState("");
   const [cameraError, setCameraError] = useState("");
@@ -131,7 +126,7 @@ export function POSIDScanner({
         },
         didFailWithError: (idCapture: any, error: any) => {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ didFailWithError callback triggered:", error);
+            logger.error("❌ didFailWithError callback triggered:", error);
           }
           setCameraError(`ID capture failed: ${error.message}`);
           setStatus("error");
@@ -158,16 +153,14 @@ export function POSIDScanner({
       }
 
       setStatus("scanning");
-      setMessage(
-        "Point camera at the barcode on the back of the ID (works in any orientation)",
-      );
+      setMessage("Point camera at the barcode on the back of the ID (works in any orientation)");
 
       // Enable ID capture mode and start scanning
       await idCapture.setEnabled(true);
       await camera.switchToDesiredState(SDCCore.FrameSourceState.On);
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Scandit initialization error:", err);
+        logger.error("Scandit initialization error:", err);
       }
       setStatus("error");
       setCameraError(
@@ -239,9 +232,7 @@ export function POSIDScanner({
       // Stop scanning
       if (cameraRef.current) {
         const SDCCore = await import("@scandit/web-datacapture-core");
-        await cameraRef.current.switchToDesiredState(
-          SDCCore.FrameSourceState.Off,
-        );
+        await cameraRef.current.switchToDesiredState(SDCCore.FrameSourceState.Off);
       }
 
       setStatus("processing");
@@ -378,9 +369,7 @@ export function POSIDScanner({
         if (data.customer) {
           // Customer found!
           setStatus("success");
-          setMessage(
-            `Found: ${data.customer.first_name} ${data.customer.last_name}`,
-          );
+          setMessage(`Found: ${data.customer.first_name} ${data.customer.last_name}`);
 
           setTimeout(() => {
             onCustomerFound(data.customer);
@@ -399,7 +388,7 @@ export function POSIDScanner({
       }
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("ID processing error:", error);
+        logger.error("ID processing error:", error);
       }
       setStatus("error");
       setMessage(error.message || "Failed to process ID. Please try again.");
@@ -480,10 +469,7 @@ export function POSIDScanner({
               Scan ID / License
             </h3>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/40 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -494,12 +480,8 @@ export function POSIDScanner({
             <div className="scanner-view flex items-center justify-center p-8">
               <div className="text-center">
                 <AlertCircle size={48} className="text-red-400 mx-auto mb-4" />
-                <div className="text-white/80 text-sm mb-2">
-                  Camera Access Required
-                </div>
-                <div className="text-white/40 text-xs max-w-md">
-                  {cameraError}
-                </div>
+                <div className="text-white/80 text-sm mb-2">Camera Access Required</div>
+                <div className="text-white/40 text-xs max-w-md">{cameraError}</div>
                 <div className="text-white/30 text-[10px] uppercase tracking-wider mt-4">
                   Please allow camera access in your browser settings
                 </div>
@@ -629,11 +611,7 @@ export function POSIDScanner({
           .scanner-modal {
             max-width: 95vw;
             max-height: calc(
-              100vh - env(safe-area-inset-top, 0px) - env(
-                  safe-area-inset-bottom,
-                  0px
-                ) -
-                20px
+              100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px
             );
           }
         }
@@ -642,11 +620,7 @@ export function POSIDScanner({
         @media (display-mode: standalone) {
           .scanner-modal {
             max-height: calc(
-              100vh - env(safe-area-inset-top, 0px) - env(
-                  safe-area-inset-bottom,
-                  0px
-                ) -
-                20px
+              100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 20px
             );
           }
         }

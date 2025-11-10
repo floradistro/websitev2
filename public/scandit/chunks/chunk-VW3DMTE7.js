@@ -33,9 +33,7 @@ function y(e$1) {
     SingleImageUploader: {
       Settings: {
         iconElement: n(e$1.SingleImageUploader.Settings.iconElement),
-        informationElement: n(
-          e$1.SingleImageUploader.Settings.informationElement,
-        ),
+        informationElement: n(e$1.SingleImageUploader.Settings.informationElement),
         buttonElement: n(e$1.SingleImageUploader.Settings.buttonElement),
         containerStyle: e$1.SingleImageUploader.Settings.containerStyle,
         iconStyle: e$1.SingleImageUploader.Settings.iconStyle,
@@ -45,12 +43,8 @@ function y(e$1) {
       },
     },
     DataCaptureView: {
-      scanAreaMargins: m.fromJSON(
-        JSON.parse(e$1.DataCaptureView.scanAreaMargins),
-      ),
-      pointOfInterest: e.fromJSON(
-        JSON.parse(e$1.DataCaptureView.pointOfInterest),
-      ),
+      scanAreaMargins: m.fromJSON(JSON.parse(e$1.DataCaptureView.scanAreaMargins)),
+      pointOfInterest: e.fromJSON(JSON.parse(e$1.DataCaptureView.pointOfInterest)),
       logoStyle: e$1.DataCaptureView.logoStyle,
       logoAnchor: e$1.DataCaptureView.logoAnchor,
       logoOffset: e.fromJSON(JSON.parse(e$1.DataCaptureView.logoOffset)),
@@ -127,10 +121,8 @@ var C = y({
   SingleImageUploader: {
     Settings: {
       iconElement: atob(a),
-      informationElement:
-        "<p data-scandit-default>(This text is updated from translations)</p>",
-      buttonElement:
-        "<div data-scandit-default>(This text is updated from translations)</div>",
+      informationElement: "<p data-scandit-default>(This text is updated from translations)</p>",
+      buttonElement: "<div data-scandit-default>(This text is updated from translations)</div>",
       containerStyle: { backgroundColor: "#FFFFFF" },
       iconStyle: { fill: "#121619" },
       informationStyle: { color: "#121619", marginBottom: "2em" },

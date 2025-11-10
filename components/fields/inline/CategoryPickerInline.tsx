@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Check, ChevronDown, X } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface Category {
   id: string;
   name: string;
@@ -38,7 +39,7 @@ export function CategoryPickerFieldInline({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error:", error);
+        logger.error("Error:", error);
       }
     } finally {
       setLoading(false);
@@ -86,9 +87,7 @@ export function CategoryPickerFieldInline({
       {/* Loading state while fetching category names */}
       {value.length > 0 && categories.length === 0 && (
         <div className="bg-white/5 rounded px-2 py-1 mb-1">
-          <span className="text-white/40 text-[10px]">
-            Loading category names...
-          </span>
+          <span className="text-white/40 text-[10px]">Loading category names...</span>
         </div>
       )}
 
@@ -113,26 +112,19 @@ export function CategoryPickerFieldInline({
       {showPicker && (
         <div className="mt-1 bg-[#252526] border border-[#3e3e3e] rounded max-h-48 overflow-y-auto shadow-lg">
           {loading ? (
-            <div className="p-3 text-center text-white/40 text-xs">
-              Loading...
-            </div>
+            <div className="p-3 text-center text-white/40 text-xs">Loading...</div>
           ) : categories.length === 0 ? (
-            <div className="p-3 text-center text-white/40 text-xs">
-              No categories found
-            </div>
+            <div className="p-3 text-center text-white/40 text-xs">No categories found</div>
           ) : (
             <div className="p-1">
               {categories.map((cat) => {
-                const isSelected =
-                  value.includes(cat.id) || value.includes(cat.slug);
+                const isSelected = value.includes(cat.id) || value.includes(cat.slug);
                 return (
                   <div
                     key={cat.id}
                     onClick={() => {
                       if (isSelected) {
-                        onChange(
-                          value.filter((v) => v !== cat.id && v !== cat.slug),
-                        );
+                        onChange(value.filter((v) => v !== cat.id && v !== cat.slug));
                       } else {
                         onChange([...value, cat.id]);
                       }
@@ -145,9 +137,7 @@ export function CategoryPickerFieldInline({
                   >
                     <div
                       className={`w-3 h-3 rounded border flex items-center justify-center ${
-                        isSelected
-                          ? "bg-[#007acc] border-[#007acc]"
-                          : "border-[#3e3e3e]"
+                        isSelected ? "bg-[#007acc] border-[#007acc]" : "border-[#3e3e3e]"
                       }`}
                     >
                       {isSelected && <Check size={8} className="text-white" />}

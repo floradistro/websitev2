@@ -42,10 +42,7 @@ export class ExaClient {
    * @example
    * searchDesignInspiration('luxury cannabis storefront design')
    */
-  async searchDesignInspiration(
-    query: string,
-    industry?: string,
-  ): Promise<ExaResult[]> {
+  async searchDesignInspiration(query: string, industry?: string): Promise<ExaResult[]> {
     const enhancedQuery = industry
       ? `best ${industry} website design inspiration 2025 ${query}`
       : `best website design inspiration 2025 ${query}`;
@@ -73,10 +70,7 @@ export class ExaClient {
   /**
    * Research e-commerce best practices
    */
-  async searchBestPractices(
-    topic: string,
-    industry?: string,
-  ): Promise<ExaResult[]> {
+  async searchBestPractices(topic: string, industry?: string): Promise<ExaResult[]> {
     const query = industry
       ? `${industry} ${topic} best practices 2025 conversion optimization`
       : `${topic} best practices 2025 e-commerce`;
@@ -109,10 +103,7 @@ export class ExaClient {
   /**
    * Analyze competitor websites
    */
-  async analyzeCompetitors(
-    industry: string,
-    location?: string,
-  ): Promise<ExaResult[]> {
+  async analyzeCompetitors(industry: string, location?: string): Promise<ExaResult[]> {
     const query = location
       ? `top ${industry} companies ${location} website design`
       : `best ${industry} websites 2025`;
@@ -199,12 +190,7 @@ export class ExaClient {
         useAutoprompt: true,
         type: "neural",
         text: { maxCharacters: 1000 },
-        includeDomains: [
-          "w3.org",
-          "webaim.org",
-          "a11yproject.com",
-          "developer.mozilla.org",
-        ],
+        includeDomains: ["w3.org", "webaim.org", "a11yproject.com", "developer.mozilla.org"],
       },
     );
 
@@ -242,10 +228,7 @@ export class ExaClient {
         // Auto-detect intent
         if (query.includes("design") || query.includes("inspiration")) {
           return this.searchDesignInspiration(query, industry);
-        } else if (
-          query.includes("best practice") ||
-          query.includes("how to")
-        ) {
+        } else if (query.includes("best practice") || query.includes("how to")) {
           return this.searchBestPractices(query, industry);
         } else {
           return this.researchTrends(query);
@@ -320,9 +303,7 @@ export function extractDesignInsights(results: ExaResult[]): {
     if (typo) insights.typography.push(...typo.slice(0, 2));
 
     // Extract animation mentions
-    const anims = text.match(
-      /(?:animation|transition|hover|scroll|fade|slide)[^.]*/g,
-    );
+    const anims = text.match(/(?:animation|transition|hover|scroll|fade|slide)[^.]*/g);
     if (anims) insights.animations.push(...anims.slice(0, 2));
 
     // Extract best practices

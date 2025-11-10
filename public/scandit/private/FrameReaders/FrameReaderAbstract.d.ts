@@ -1,8 +1,5 @@
 /// <reference types="emscripten" />
-export {
-  bl as FrameReaderAbstract,
-  bn as PoolCapacityOptions,
-} from "../../Camera-C_4xOv5n.js";
+export { bl as FrameReaderAbstract, bn as PoolCapacityOptions } from "../../Camera-C_4xOv5n.js";
 import "./WatermarkStack.js";
 import "../../tsHelper.js";
 import "../Serializable.js";

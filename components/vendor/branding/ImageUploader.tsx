@@ -124,9 +124,7 @@ export function ImageUploader({
           {label}
         </label>
         {recommendedSize && (
-          <span
-            className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}
-          >
+          <span className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}>
             {recommendedSize} recommended
           </span>
         )}
@@ -150,9 +148,7 @@ export function ImageUploader({
               alt="Preview"
               className={cn(
                 "w-full h-full",
-                aspectRatio === "square"
-                  ? "object-contain p-4"
-                  : "object-cover",
+                aspectRatio === "square" ? "object-contain p-4" : "object-cover",
               )}
             />
 
@@ -220,17 +216,9 @@ export function ImageUploader({
                 ds.typography.weight.medium,
               )}
             >
-              {isDragging
-                ? "Drop image here"
-                : "Click to upload or drag & drop"}
+              {isDragging ? "Drop image here" : "Click to upload or drag & drop"}
             </div>
-            <div
-              className={cn(
-                ds.typography.size.micro,
-                ds.colors.text.quaternary,
-                "mt-1",
-              )}
-            >
+            <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-1")}>
               PNG, JPG, WEBP, GIF • Max {maxSizeMB}MB
             </div>
           </div>

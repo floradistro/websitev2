@@ -8,8 +8,7 @@ var A = {
   MIRRORED_CLASS_NAME: "scandit-mirrored",
   CAMERA_RECOVERY_CLASS_NAME: "scandit-camera-recovery",
   ERROR_CLASS_NAME: "scandit-error",
-  SINGLE_IMAGE_UPLOADER_CONTAINER_CLASS_NAME:
-    "scandit-single-image-uploader-container",
+  SINGLE_IMAGE_UPLOADER_CONTAINER_CLASS_NAME: "scandit-single-image-uploader-container",
   CANVAS_VIDEO_PREVIEW_CLASS_NAME: "scandit-canvas-video-preview",
   TORCH_SWITCH_CONTROL_CLASS_NAME: "torch",
   CAMERA_SWITCH_CONTROL_CLASS_NAME: "camera",

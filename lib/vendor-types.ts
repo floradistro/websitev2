@@ -75,10 +75,5 @@ export interface LowStockItem {
   threshold: number;
 }
 
-export type ProductStatus =
-  | "approved"
-  | "pending"
-  | "rejected"
-  | "draft"
-  | "published";
+export type ProductStatus = "approved" | "pending" | "rejected" | "draft" | "published";
 export type StatusVariant = "approved" | "pending" | "rejected" | "draft";

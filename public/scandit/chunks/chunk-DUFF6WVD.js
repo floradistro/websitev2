@@ -22,10 +22,7 @@ var n = class n extends a$1 {
     super();
     this.onDidToastHideHandler = this.onDidToastHide.bind(this);
     this.orientationObserver = new b$1();
-    this.onOrientationChangeHandler = a$2(
-      this.onOrientationChange.bind(this),
-      200,
-    );
+    this.onOrientationChangeHandler = a$2(this.onOrientationChange.bind(this), 200);
     let t = this.attachShadow({ mode: "open" });
     ((t.innerHTML = a$3`
       <div id="root">
@@ -45,10 +42,7 @@ var n = class n extends a$1 {
     return (n.register(), document.createElement(n.tag));
   }
   connectedCallback() {
-    (this.orientationObserver.addEventListener(
-      a$6,
-      this.onOrientationChangeHandler,
-    ),
+    (this.orientationObserver.addEventListener(a$6, this.onOrientationChangeHandler),
       this.orientationObserver.register(),
       this.addEventListener("didhide", this.onDidToastHideHandler),
       this._viewFinderRect == null &&
@@ -68,8 +62,7 @@ var n = class n extends a$1 {
       origin: { y: e },
       size: { height: i },
     } = this._viewFinderRect;
-    (this.root.style.setProperty(a, `${e}px`),
-      this.root.style.setProperty(s, `${e + i}px`));
+    (this.root.style.setProperty(a, `${e}px`), this.root.style.setProperty(s, `${e + i}px`));
   }
   async handleMessage(t) {
     let { type: e } = t;
@@ -136,9 +129,7 @@ var n = class n extends a$1 {
       t.tag === "MoveCloserGuidance")
     ) {
       let d = a$7.create();
-      (d.setAttribute("slot", "first-child"),
-        i.append(d),
-        i.setAttribute("direction", "column"));
+      (d.setAttribute("slot", "first-child"), i.append(d), i.setAttribute("direction", "column"));
     }
     return i.show();
   }

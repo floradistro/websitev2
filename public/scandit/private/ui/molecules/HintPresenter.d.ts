@@ -2,10 +2,7 @@
 import "../../../ScanditIcon.js";
 import "../../utils/ScanditHTMLElement.js";
 import "../../../Common.js";
-export {
-  U as HintPresenter,
-  bv as HintPresenterEvents,
-} from "../../../Camera-C_4xOv5n.js";
+export { U as HintPresenter, bv as HintPresenterEvents } from "../../../Camera-C_4xOv5n.js";
 import "../../Serializable.js";
 import "../../FrameReaders/WatermarkStack.js";
 import "../../../tsHelper.js";

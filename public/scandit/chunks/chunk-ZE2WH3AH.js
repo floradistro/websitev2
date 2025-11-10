@@ -36,13 +36,7 @@ async function f(e) {
   }
 }
 async function u(e) {
-  return (
-    i ||
-      (c
-        ? ((i = true), (a = a.then(async () => ((i = false), f(e)))))
-        : (a = f(e))),
-    a
-  );
+  return (i || (c ? ((i = true), (a = a.then(async () => ((i = false), f(e))))) : (a = f(e))), a);
 }
 async function p(e) {
   ((l = e),

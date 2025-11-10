@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { isStockAvailable } from "@/lib/unit-conversion";
 import { AlpineIQClient } from "@/lib/marketing/alpineiq-client";
 
+import { logger } from "@/lib/logger";
 // Get base URL for internal API calls
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -90,16 +91,13 @@ async function syncOrderToAlpineIQ(orderId: string, customerId: string) {
 
   // Format transaction date for Alpine IQ
   const transactionDate =
-    new Date(order.created_at || order.order_date)
-      .toISOString()
-      .replace("T", " ")
-      .split(".")[0] + " +0000";
+    new Date(order.created_at || order.order_date).toISOString().replace("T", " ").split(".")[0] +
+    " +0000";
 
   // Initialize Alpine IQ client
   const alpine = new AlpineIQClient({
     apiKey:
-      process.env.ALPINE_API_KEY ||
-      "U_SKZShKgmfH1U5CyIBsH0OcNQnWkOcx4oUNMZcq8BFtOiWFEMRPmB6Iqw",
+      process.env.ALPINE_API_KEY || "U_SKZShKgmfH1U5CyIBsH0OcNQnWkOcx4oUNMZcq8BFtOiWFEMRPmB6Iqw",
     userId: process.env.ALPINE_USER_ID || "3999",
   });
 
@@ -151,9 +149,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch orders from Supabase
-    const response = await fetch(
-      `${getBaseUrl()}/api/supabase/orders?${params}`,
-    );
+    const response = await fetch(`${getBaseUrl()}/api/supabase/orders?${params}`);
     const data = await response.json();
 
     if (!data.success) {
@@ -198,7 +194,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Orders API error:", error);
+      logger.error("Orders API error:", error);
     }
     return NextResponse.json(
       {
@@ -256,7 +252,7 @@ export async function POST(request: NextRequest) {
 
       if (productError || !product) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Product not found:", item.product_id);
+          logger.error("❌ Product not found:", item.product_id);
         }
         return NextResponse.json(
           {
@@ -272,7 +268,7 @@ export async function POST(request: NextRequest) {
 
       if (!isStockAvailable(availableStock, quantity_grams)) {
         if (process.env.NODE_ENV === "development") {
-          console.error(
+          logger.error(
             `❌ Insufficient stock for ${product.name}. Need: ${quantity_grams}g, Have: ${availableStock}g`,
           );
         }
@@ -319,7 +315,7 @@ export async function POST(request: NextRequest) {
 
     if (orderError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Failed to create order:", orderError);
+        logger.error("❌ Failed to create order:", orderError);
       }
       throw new Error("Failed to create order");
     }
@@ -361,7 +357,7 @@ export async function POST(request: NextRequest) {
 
       if (itemError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Failed to create order item:", itemError);
+          logger.error("❌ Failed to create order item:", itemError);
         }
         throw new Error(`Failed to create order item for ${item.name}`);
       }
@@ -381,7 +377,7 @@ export async function POST(request: NextRequest) {
 
       if (fetchError || !currentProduct) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Failed to fetch product:", fetchError);
+          logger.error("❌ Failed to fetch product:", fetchError);
         }
         throw new Error(`Failed to fetch product ${item.name}`);
       }
@@ -402,7 +398,7 @@ export async function POST(request: NextRequest) {
 
       if (stockError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Failed to update inventory:", stockError);
+          logger.error("❌ Failed to update inventory:", stockError);
         }
         throw new Error(`Failed to update inventory for ${item.name}`);
       }
@@ -431,10 +427,7 @@ export async function POST(request: NextRequest) {
 
           if (locationStockError) {
             if (process.env.NODE_ENV === "development") {
-              console.warn(
-                "⚠️ Location inventory update failed:",
-                locationStockError,
-              );
+              logger.warn("⚠️ Location inventory update failed:", locationStockError);
             }
             // Don't fail the order, just log it
           } else {
@@ -448,10 +441,7 @@ export async function POST(request: NextRequest) {
     // ============================================================================
     // Push order to Alpine IQ for loyalty points (don't await - let it run in background)
     syncOrderToAlpineIQ(order.id, customer_id).catch((error) => {
-      console.error(
-        "⚠️ Alpine IQ sync failed (order still created):",
-        error.message,
-      );
+      logger.error("⚠️ Alpine IQ sync failed (order still created):", error.message);
     });
 
     // ============================================================================
@@ -482,7 +472,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Order creation error:", error);
+      logger.error("❌ Order creation error:", error);
     }
     return NextResponse.json(
       {

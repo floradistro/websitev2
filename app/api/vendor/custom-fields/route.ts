@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/vendor/custom-fields
  * Get all custom fields for a vendor
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, customFields });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching custom fields:", error);
+      logger.error("Error fetching custom fields:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -93,8 +94,7 @@ export async function POST(request: NextRequest) {
       if (error.code === "23505") {
         return NextResponse.json(
           {
-            error:
-              "A custom field with this ID already exists for this section",
+            error: "A custom field with this ID already exists for this section",
           },
           { status: 409 },
         );
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error adding custom field:", error);
+      logger.error("Error adding custom field:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -131,10 +131,7 @@ export async function DELETE(request: NextRequest) {
     const customFieldId = url.searchParams.get("id");
 
     if (!customFieldId) {
-      return NextResponse.json(
-        { error: "Custom field ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Custom field ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -148,10 +145,7 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (fetchError || !field) {
-      return NextResponse.json(
-        { error: "Custom field not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Custom field not found" }, { status: 404 });
     }
 
     // Delete the custom field
@@ -171,7 +165,7 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error deleting custom field:", error);
+      logger.error("Error deleting custom field:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

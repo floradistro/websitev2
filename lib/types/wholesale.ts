@@ -2,11 +2,7 @@
 
 export type VendorType = "standard" | "distributor" | "both";
 
-export type WholesaleApplicationStatus =
-  | "none"
-  | "pending"
-  | "approved"
-  | "rejected";
+export type WholesaleApplicationStatus = "none" | "pending" | "approved" | "rejected";
 
 export interface WholesaleCustomer {
   id: string;

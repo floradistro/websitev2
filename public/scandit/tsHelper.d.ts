@@ -1,8 +1,5 @@
 /// <reference types="emscripten" />
-declare function assert(
-  condition: unknown,
-  message?: string,
-): asserts condition;
+declare function assert(condition: unknown, message?: string): asserts condition;
 declare function assertUnreachable(_: never): void;
 declare function assertUnreachableThrowException(_: never): never;
 type Mutable<T> = {

@@ -43,9 +43,7 @@ declare class SingleImageUploaderView implements View {
   onBeforeFileRead(listener: (event: Event) => Promise<void> | void): void;
   onImageLoadError(listener: EventListener): void;
   onFileReaderError(listener: EventListener): void;
-  onCaptureReady(
-    listener: (capture: SingleImageUploaderViewCapture) => void,
-  ): void;
+  onCaptureReady(listener: (capture: SingleImageUploaderViewCapture) => void): void;
   onAfterImageProcessed(): void;
   private setLoading;
   private getResizedImageDimensions;
@@ -54,8 +52,4 @@ declare class SingleImageUploaderView implements View {
   private onFileUpload;
 }
 
-export {
-  type ImageDimensions,
-  SingleImageUploaderView,
-  type SingleImageUploaderViewCapture,
-};
+export { type ImageDimensions, SingleImageUploaderView, type SingleImageUploaderViewCapture };

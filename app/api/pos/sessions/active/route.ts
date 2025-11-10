@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -12,10 +13,7 @@ export async function GET(request: NextRequest) {
     const registerId = searchParams.get("registerId");
 
     if (!locationId) {
-      return NextResponse.json(
-        { error: "Missing locationId parameter" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing locationId parameter" }, { status: 400 });
     }
 
     // Build query
@@ -52,7 +50,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching active session:", error);
+        logger.error("Error fetching active session:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -60,7 +58,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ session });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in active session endpoint:", error);
+      logger.error("Error in active session endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

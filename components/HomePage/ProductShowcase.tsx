@@ -49,10 +49,7 @@ export function ProductShowcase() {
   ];
 
   return (
-    <div
-      ref={ref}
-      className="relative py-20 sm:py-32 px-4 sm:px-6 overflow-hidden"
-    >
+    <div ref={ref} className="relative py-20 sm:py-32 px-4 sm:px-6 overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent pointer-events-none" />
 
@@ -167,9 +164,7 @@ export function ProductShowcase() {
         {/* Central Connection Animation */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={
-            isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }
-          }
+          animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
           transition={{
             duration: 1,
             delay: 0.6,

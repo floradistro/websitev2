@@ -1,8 +1,5 @@
 /// <reference types="emscripten" />
-import {
-  G as GetAppInfoResponse,
-  a as GetLicenseKeyResponse,
-} from "../common-4FJYEFaM.js";
+import { G as GetAppInfoResponse, a as GetLicenseKeyResponse } from "../common-4FJYEFaM.js";
 
 /**
  * Check if is an electron app.
@@ -14,9 +11,7 @@ declare function isElectron(): boolean;
  * Get the appId and if app is packaged from the hybrid desktop platform layer
  * @hidden
  */
-declare function getAppInfo(): Promise<
-  GetAppInfoResponse["payload"] | undefined
->;
+declare function getAppInfo(): Promise<GetAppInfoResponse["payload"] | undefined>;
 /**
  * Get the key from the hybrid desktop platform layer
  * @hidden

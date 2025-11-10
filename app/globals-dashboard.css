@@ -123,12 +123,7 @@ main {
 }
 
 .luxury-border {
-  border-image: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.1),
-      rgba(255, 255, 255, 0.03)
-    )
-    1;
+  border-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)) 1;
 }
 
 /* === FORM ELEMENTS === */

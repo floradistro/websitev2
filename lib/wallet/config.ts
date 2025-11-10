@@ -3,8 +3,7 @@
 
 export const WALLET_CONFIG = {
   // Apple Developer Configuration
-  passTypeIdentifier:
-    process.env.APPLE_PASS_TYPE_ID || "pass.com.whaletools.wallet",
+  passTypeIdentifier: process.env.APPLE_PASS_TYPE_ID || "pass.com.whaletools.wallet",
   teamIdentifier: process.env.APPLE_TEAM_ID || "Y9Q7L7SGR3",
 
   // Certificate Paths (relative to project root)

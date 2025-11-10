@@ -7,10 +7,7 @@ async function s(e, o) {
   try {
     (await b(a$1, 250, 4e3, (n) => {
       (a.log(a.Level.Warn, n),
-        a.log(
-          a.Level.Warn,
-          `Couldn't retrieve Scandit Data Capture library at ${e}, retrying...`,
-        ));
+        a.log(a.Level.Warn, `Couldn't retrieve Scandit Data Capture library at ${e}, retrying...`));
     }),
       (self.Module.mainScriptUrlOrBlob = e));
     let t = globalThis.SDC_WASM_JS_VERSION;

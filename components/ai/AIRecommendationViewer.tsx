@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { logger } from "@/lib/logger";
 import {
   X,
   Sparkles,
@@ -31,15 +32,12 @@ export default function AIRecommendationViewer({
   onApply,
 }: AIRecommendationViewerProps) {
   const [applying, setApplying] = useState(false);
-  const [selectedAlternative, setSelectedAlternative] = useState<number | null>(
-    null,
-  );
+  const [selectedAlternative, setSelectedAlternative] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen || !recommendation) return null;
 
-  const { layout, reasoning, alternatives, customizationTips, confidence } =
-    recommendation;
+  const { layout, reasoning, alternatives, customizationTips, confidence } = recommendation;
 
   const handleApply = async (layoutToApply?: any) => {
     setApplying(true);
@@ -65,7 +63,7 @@ export default function AIRecommendationViewer({
       onApply();
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error applying layout:", err);
+        logger.error("Error applying layout:", err);
       }
       setError(err.message || "Failed to apply layout");
     } finally {
@@ -108,10 +106,7 @@ export default function AIRecommendationViewer({
                 <Sparkles size={24} className="text-white" />
               </div>
               <div>
-                <h2
-                  className="text-2xl font-black text-white"
-                  style={{ fontWeight: 900 }}
-                >
+                <h2 className="text-2xl font-black text-white" style={{ fontWeight: 900 }}>
                   AI Recommendation
                 </h2>
                 <p className="text-white/40 text-sm mt-1">{deviceName}</p>
@@ -129,9 +124,7 @@ export default function AIRecommendationViewer({
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
               <span className="text-white/60 text-sm">Confidence</span>
-              <span
-                className={`text-lg font-bold ${getConfidenceColor(confidence)}`}
-              >
+              <span className={`text-lg font-bold ${getConfidenceColor(confidence)}`}>
                 {confidence}%
               </span>
             </div>
@@ -155,9 +148,7 @@ export default function AIRecommendationViewer({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-black/50 rounded-lg p-4">
                 <div className="text-white/40 text-xs mb-1">Display Mode</div>
-                <div className="text-white font-bold capitalize">
-                  {layout.displayMode}
-                </div>
+                <div className="text-white font-bold capitalize">{layout.displayMode}</div>
               </div>
               <div className="bg-black/50 rounded-lg p-4">
                 <div className="text-white/40 text-xs mb-1">Grid</div>
@@ -167,15 +158,11 @@ export default function AIRecommendationViewer({
               </div>
               <div className="bg-black/50 rounded-lg p-4">
                 <div className="text-white/40 text-xs mb-1">Products/Page</div>
-                <div className="text-white font-bold">
-                  {layout.productsPerPage}
-                </div>
+                <div className="text-white font-bold">{layout.productsPerPage}</div>
               </div>
               <div className="bg-black/50 rounded-lg p-4">
                 <div className="text-white/40 text-xs mb-1">Price Font</div>
-                <div className="text-white font-bold">
-                  {layout.typography?.priceSize}px
-                </div>
+                <div className="text-white font-bold">{layout.typography?.priceSize}px</div>
               </div>
             </div>
           </div>
@@ -196,10 +183,7 @@ export default function AIRecommendationViewer({
                     transition={{ delay: index * 0.1 }}
                     className="flex items-start gap-3 text-white/70 text-sm"
                   >
-                    <Check
-                      size={16}
-                      className="text-green-400 mt-0.5 flex-shrink-0"
-                    />
+                    <Check size={16} className="text-green-400 mt-0.5 flex-shrink-0" />
                     <span>{reason}</span>
                   </motion.div>
                 ))}
@@ -219,9 +203,7 @@ export default function AIRecommendationViewer({
                   <motion.button
                     key={index}
                     onClick={() =>
-                      setSelectedAlternative(
-                        selectedAlternative === index ? null : index,
-                      )
+                      setSelectedAlternative(selectedAlternative === index ? null : index)
                     }
                     className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
                       selectedAlternative === index
@@ -233,12 +215,8 @@ export default function AIRecommendationViewer({
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <div className="text-white font-bold mb-1">
-                          {alt.name}
-                        </div>
-                        <div className="text-white/60 text-sm">
-                          {alt.description}
-                        </div>
+                        <div className="text-white font-bold mb-1">{alt.name}</div>
+                        <div className="text-white/60 text-sm">{alt.description}</div>
                       </div>
                       {selectedAlternative === index && (
                         <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center flex-shrink-0">
@@ -262,14 +240,8 @@ export default function AIRecommendationViewer({
               <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-4">
                 <div className="space-y-2">
                   {customizationTips.map((tip: string, index: number) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-3 text-white/80 text-sm"
-                    >
-                      <TrendingUp
-                        size={16}
-                        className="text-purple-400 mt-0.5 flex-shrink-0"
-                      />
+                    <div key={index} className="flex items-start gap-3 text-white/80 text-sm">
+                      <TrendingUp size={16} className="text-purple-400 mt-0.5 flex-shrink-0" />
                       <span>{tip}</span>
                     </div>
                   ))}
@@ -297,9 +269,7 @@ export default function AIRecommendationViewer({
             <button
               onClick={() =>
                 handleApply(
-                  selectedAlternative !== null
-                    ? alternatives[selectedAlternative].layout
-                    : null,
+                  selectedAlternative !== null ? alternatives[selectedAlternative].layout : null,
                 )
               }
               disabled={applying}
@@ -310,9 +280,7 @@ export default function AIRecommendationViewer({
               ) : (
                 <>
                   <Check size={18} />
-                  {selectedAlternative !== null
-                    ? "Apply Alternative"
-                    : "Apply Layout"}
+                  {selectedAlternative !== null ? "Apply Alternative" : "Apply Layout"}
                 </>
               )}
             </button>

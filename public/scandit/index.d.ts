@@ -107,10 +107,7 @@ export {
   DataCaptureContextSettings,
   DataCaptureContextSettingsJSON,
 } from "./DataCaptureContextSettings.js";
-export {
-  DataCaptureError,
-  DataCaptureErrorDetails,
-} from "./DataCaptureError.js";
+export { DataCaptureError, DataCaptureErrorDetails } from "./DataCaptureError.js";
 export { DataCaptureVersion } from "./DataCaptureVersion.js";
 export {
   FocusGesture,
@@ -124,11 +121,7 @@ export {
 export { Feedback, FeedbackJSON } from "./Feedback.js";
 export { ImageFrameSource, ImageFrameSourceJSON } from "./ImageFrameSource.js";
 export { LaserlineViewfinder } from "./LaserlineViewfinder.js";
-export {
-  Localization,
-  LocalizationSubscriber,
-  LocalizationSubscription,
-} from "./Localization.js";
+export { Localization, LocalizationSubscriber, LocalizationSubscription } from "./Localization.js";
 export {
   LocationSelection,
   LocationSelectionJSON,
@@ -185,10 +178,7 @@ export {
 } from "./ViewfinderPlusRelated.js";
 export { BrowserCompatibility, Feature } from "./browserCompatibility.js";
 export { BrowserHelper } from "./browserHelper.js";
-export {
-  AnchorPositions,
-  AnchorPositionsJSON,
-} from "./private/AnchorPositions.js";
+export { AnchorPositions, AnchorPositionsJSON } from "./private/AnchorPositions.js";
 export { ScanditHTMLElement } from "./private/utils/ScanditHTMLElement.js";
 export { Translations } from "./translations.js";
 import "./private/Serializable.js";
@@ -201,11 +191,7 @@ import "./private/HtmlElementState.js";
 import "./private/ui/atoms/SvgIcon.js";
 import "csstype";
 
-type PrivateCaptureModuleName =
-  | "BarcodeCapture"
-  | "IdCapture"
-  | "Parser"
-  | "LabelCapture";
+type PrivateCaptureModuleName = "BarcodeCapture" | "IdCapture" | "Parser" | "LabelCapture";
 interface ModuleLoader {
   moduleName: string;
   load(options: ConfigureOptions): Promise<any>;
@@ -228,10 +214,7 @@ declare function configure(options: ConfigureOptions): Promise<void>;
  * @hidden
  * Used by tests.
  */
-declare function __setConfigurePhase(
-  phase: ConfigurePhase,
-  newLoader?: DataCaptureLoader,
-): void;
+declare function __setConfigurePhase(phase: ConfigurePhase, newLoader?: DataCaptureLoader): void;
 
 export {
   type ConfigureOptions,

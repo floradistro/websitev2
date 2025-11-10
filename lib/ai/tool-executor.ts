@@ -8,6 +8,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { withTimeout, retryWithBackoff, parallelWithTimeouts } from "./utils";
 import { sessionManager, PendingTool } from "./session-manager";
 
+import { logger } from "@/lib/logger";
 // Tool timeout configurations (in milliseconds)
 const TOOL_TIMEOUTS = {
   web_search: 15000, // 15 seconds for web search
@@ -35,10 +36,7 @@ export interface ToolExecutionOptions {
 /**
  * Web Search Tool
  */
-async function executeWebSearch(
-  query: string,
-  options: ToolExecutionOptions,
-): Promise<any> {
+async function executeWebSearch(query: string, options: ToolExecutionOptions): Promise<any> {
   const exa = new Exa(process.env.EXA_API_KEY || "");
 
   if (!process.env.EXA_API_KEY) {
@@ -62,7 +60,7 @@ async function executeWebSearch(
       baseDelay: 1000,
       onRetry: (attempt, error) => {
         if (process.env.NODE_ENV === "development") {
-          console.warn(`Web search retry ${attempt + 1}:`, error.message);
+          logger.warn(`Web search retry ${attempt + 1}`, { error: error.message });
         }
         options.onProgress?.("web_search", "retrying", {
           attempt: attempt + 1,
@@ -182,9 +180,7 @@ async function executeApplyEdit(
     if (normalizeContent(currentContent) !== normalizeContent(oldContent)) {
       // Content has changed - potential conflict
       if (process.env.NODE_ENV === "development") {
-        console.warn(
-          `⚠️  Content mismatch for ${filePath}. Applying anyway but may cause issues.`,
-        );
+        logger.warn(`⚠️  Content mismatch for ${filePath}. Applying anyway but may cause issues.`);
       }
     }
 
@@ -256,33 +252,20 @@ export async function executeTool(
     input: toolUse.input,
   });
 
-  await sessionManager.updateToolStatus(
-    options.sessionId,
-    toolUse.id,
-    "running",
-  );
+  await sessionManager.updateToolStatus(options.sessionId, toolUse.id, "running");
 
   try {
     const timeout =
-      TOOL_TIMEOUTS[toolUse.name as keyof typeof TOOL_TIMEOUTS] ||
-      TOOL_TIMEOUTS.default;
+      TOOL_TIMEOUTS[toolUse.name as keyof typeof TOOL_TIMEOUTS] || TOOL_TIMEOUTS.default;
 
     let result: any;
 
     // Execute tool with timeout
     if (toolUse.name === "web_search") {
-      result = await withTimeout(
-        executeWebSearch(toolUse.input.query, options),
-        timeout,
-      );
+      result = await withTimeout(executeWebSearch(toolUse.input.query, options), timeout);
     } else if (toolUse.name === "get_current_code") {
       result = await withTimeout(
-        executeGetCurrentCode(
-          toolUse.input.file_path,
-          options.appId,
-          options.vendorId,
-          options,
-        ),
+        executeGetCurrentCode(toolUse.input.file_path, options.appId, options.vendorId, options),
         timeout,
       );
     } else if (toolUse.name === "apply_edit") {
@@ -304,12 +287,7 @@ export async function executeTool(
     const executionTime = Date.now() - startTime;
 
     // Mark as completed
-    await sessionManager.updateToolStatus(
-      options.sessionId,
-      toolUse.id,
-      "completed",
-      result,
-    );
+    await sessionManager.updateToolStatus(options.sessionId, toolUse.id, "completed", result);
 
     options.onProgress?.(toolUse.id, "completed", result);
 
@@ -335,7 +313,7 @@ export async function executeTool(
     options.onProgress?.(toolUse.id, "failed", { error: error.message });
 
     if (process.env.NODE_ENV === "development") {
-      console.error(`Tool execution failed [${toolUse.name}]:`, error);
+      logger.error(`Tool execution failed [${toolUse.name}]:`, error);
     }
     return {
       toolUseId: toolUse.id,

@@ -39,20 +39,14 @@ var t = class t extends a {
       (a$4(this.fadeOutAnimation),
       a$4(this.fadeInAnimation),
       (this.style.display = "block"),
-      (this.fadeInAnimation = this.animate(
-        this.fadeInKeyframes,
-        this.animationOptions,
-      )),
+      (this.fadeInAnimation = this.animate(this.fadeInKeyframes, this.animationOptions)),
       await b(this.fadeInAnimation));
   }
   async hide() {
     this.style.display !== "none" &&
       (a$4(this.fadeInAnimation),
       a$4(this.fadeOutAnimation),
-      (this.fadeOutAnimation = this.animate(
-        this.fadeOutKeyframes,
-        this.animationOptions,
-      )),
+      (this.fadeOutAnimation = this.animate(this.fadeOutKeyframes, this.animationOptions)),
       await b(this.fadeOutAnimation),
       (this.style.display = "none"));
   }

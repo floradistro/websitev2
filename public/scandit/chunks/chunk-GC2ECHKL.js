@@ -8,9 +8,7 @@ async function a(l) {
         : a$2.debug(
             "Web Animation API not fully supported, you might need to add https://www.npmjs.com/package/web-animations-js polyfill to see some animations.",
           );
-      let { polyfill: o } = await import(
-        "../private/utils/AnimationSimplePolyfill.js"
-      );
+      let { polyfill: o } = await import("../private/utils/AnimationSimplePolyfill.js");
       o();
     } catch (o) {
       a$2.warn(
@@ -24,9 +22,7 @@ async function f(l) {
     try {
       l
         ? a$2.debug("Force loading structuredClone polyfill as requested.")
-        : a$2.debug(
-            "structuredClone API not supported, loading polyfill for older browsers.",
-          );
+        : a$2.debug("structuredClone API not supported, loading polyfill for older browsers.");
       let { structuredClonePolyfill: o } = await import(
         "../private/utils/structuredClonePolyfill.js"
       );

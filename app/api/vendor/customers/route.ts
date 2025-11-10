@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 import { withErrorHandler } from "@/lib/api-handler";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -61,7 +62,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("[Customer API] Error:", error);
+        logger.error("[Customer API] Error:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -105,12 +106,10 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
       avgPoints:
         statsData && statsData.length > 0
           ? Math.round(
-              statsData.reduce((sum, c) => sum + (c.loyalty_points || 0), 0) /
-                statsData.length,
+              statsData.reduce((sum, c) => sum + (c.loyalty_points || 0), 0) / statsData.length,
             )
           : 0,
-      totalLifetimeValue:
-        statsData?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0,
+      totalLifetimeValue: statsData?.reduce((sum, c) => sum + (c.total_spent || 0), 0) || 0,
     };
 
     return NextResponse.json({
@@ -125,7 +124,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("[Customer API] Error:", error);
+      logger.error("[Customer API] Error:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", message: error.message },

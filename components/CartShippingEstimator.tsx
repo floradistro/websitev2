@@ -111,9 +111,8 @@ export default function CartShippingEstimator({
 
         // Auto-select cheapest shipping by default
         if (data.rates.length > 0) {
-          const cheapest = data.rates.reduce(
-            (prev: ShippingRate, current: ShippingRate) =>
-              current.cost < prev.cost ? current : prev,
+          const cheapest = data.rates.reduce((prev: ShippingRate, current: ShippingRate) =>
+            current.cost < prev.cost ? current : prev,
           );
           setSelectedRate(cheapest);
           if (onShippingSelect) {
@@ -208,9 +207,7 @@ export default function CartShippingEstimator({
       {autoCalculated && zipCode && (
         <div className="flex items-center gap-2 text-xs text-white/60">
           <div className="w-1 h-3 bg-white/30" />
-          <span className="uppercase tracking-wider">
-            Delivering to {zipCode}
-          </span>
+          <span className="uppercase tracking-wider">Delivering to {zipCode}</span>
         </div>
       )}
 
@@ -260,9 +257,7 @@ export default function CartShippingEstimator({
                     </div>
                   </div>
 
-                  <div className="text-sm font-medium text-white">
-                    ${rate.cost.toFixed(2)}
-                  </div>
+                  <div className="text-sm font-medium text-white">${rate.cost.toFixed(2)}</div>
                 </div>
               </button>
             ))}
@@ -277,9 +272,7 @@ export default function CartShippingEstimator({
             <span className="text-xs uppercase tracking-wider text-white/50">
               Free Shipping Progress
             </span>
-            <span className="text-xs text-white/60">
-              ${amountUntilFree.toFixed(2)} away
-            </span>
+            <span className="text-xs text-white/60">${amountUntilFree.toFixed(2)} away</span>
           </div>
           <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div

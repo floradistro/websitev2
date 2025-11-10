@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 import OpenAI from "openai";
 
+import { logger } from "@/lib/logger";
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -56,7 +57,7 @@ Respond with ONLY the JSON.`,
     return JSON.parse(jsonMatch[0]);
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("AI analysis error:", error.message);
+      logger.error("AI analysis error:", error.message);
     }
     return null;
   }
@@ -104,14 +105,10 @@ export async function POST(request: NextRequest) {
       .select("file_name")
       .eq("vendor_id", vendorId);
 
-    const existingFileNames = new Set(
-      existingRecords?.map((r) => r.file_name) || [],
-    );
+    const existingFileNames = new Set(existingRecords?.map((r) => r.file_name) || []);
 
     // 3. Filter files that need migration
-    const filesToMigrate = storageFiles.filter(
-      (f) => !existingFileNames.has(f.name),
-    );
+    const filesToMigrate = storageFiles.filter((f) => !existingFileNames.has(f.name));
 
     if (filesToMigrate.length === 0) {
       return NextResponse.json({
@@ -208,32 +205,27 @@ export async function POST(request: NextRequest) {
           }
 
           // Insert into database
-          const { error: insertError } = await supabase
-            .from("vendor_media")
-            .insert({
-              vendor_id: vendorId,
-              file_name: file.name,
-              file_path: `${vendorId}/${file.name}`,
-              file_url: publicUrl,
-              file_size: file.metadata?.size || 0,
-              file_type: file.metadata?.mimetype || "image/jpeg",
-              category: category,
-              ai_tags: aiAnalysis?.tags || [],
-              ai_description: aiAnalysis?.description,
-              dominant_colors: aiAnalysis?.colors || [],
-              quality_score: aiAnalysis?.quality_score,
-              linked_product_ids: linkedProductIds,
-              status: "active",
-              created_at: file.created_at,
-              updated_at: file.updated_at,
-            });
+          const { error: insertError } = await supabase.from("vendor_media").insert({
+            vendor_id: vendorId,
+            file_name: file.name,
+            file_path: `${vendorId}/${file.name}`,
+            file_url: publicUrl,
+            file_size: file.metadata?.size || 0,
+            file_type: file.metadata?.mimetype || "image/jpeg",
+            category: category,
+            ai_tags: aiAnalysis?.tags || [],
+            ai_description: aiAnalysis?.description,
+            dominant_colors: aiAnalysis?.colors || [],
+            quality_score: aiAnalysis?.quality_score,
+            linked_product_ids: linkedProductIds,
+            status: "active",
+            created_at: file.created_at,
+            updated_at: file.updated_at,
+          });
 
           if (insertError) {
             if (process.env.NODE_ENV === "development") {
-              console.error(
-                `❌ Failed to migrate ${file.name}:`,
-                insertError.message,
-              );
+              logger.error(`❌ Failed to migrate ${file.name}:`, insertError.message);
             }
             results.failed++;
             results.errors.push(`${file.name}: ${insertError.message}`);
@@ -246,7 +238,7 @@ export async function POST(request: NextRequest) {
           }
         } catch (error: any) {
           if (process.env.NODE_ENV === "development") {
-            console.error(`❌ Error migrating ${file.name}:`, error.message);
+            logger.error(`❌ Error migrating ${file.name}:`, error.message);
           }
           results.failed++;
           results.errors.push(`${file.name}: ${error.message}`);
@@ -262,7 +254,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Migration error:", error);
+      logger.error("Migration error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

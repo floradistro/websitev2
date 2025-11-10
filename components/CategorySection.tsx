@@ -19,9 +19,7 @@ export default function CategorySection({ categories }: CategorySectionProps) {
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-white/80 uppercase tracking-wider">
-        Categories
-      </h3>
+      <h3 className="text-sm font-medium text-white/80 uppercase tracking-wider">Categories</h3>
       <div className="flex flex-wrap gap-2">
         {categories.map((category) => (
           <Link

@@ -28,9 +28,7 @@ export default function FloraFields({ fields, metaData }: FloraFieldsProps) {
             key={key}
             className="flex justify-between p-3 bg-white/5 border border-white/10 rounded-lg"
           >
-            <span className="text-white/60 capitalize">
-              {key.replace(/_/g, " ")}
-            </span>
+            <span className="text-white/60 capitalize">{key.replace(/_/g, " ")}</span>
             <span className="text-white font-medium">{String(value)}</span>
           </div>
         ))}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -33,9 +34,7 @@ export async function GET(request: NextRequest) {
         .from("orders")
         .select("id, order_number, customer_name, status")
         .eq("vendor_id", vendorId)
-        .or(
-          `order_number.ilike.${searchTerm},customer_name.ilike.${searchTerm}`,
-        )
+        .or(`order_number.ilike.${searchTerm},customer_name.ilike.${searchTerm}`)
         .limit(5);
       orders = data || [];
     }
@@ -47,9 +46,7 @@ export async function GET(request: NextRequest) {
         .from("customers")
         .select("id, name, email, phone")
         .eq("vendor_id", vendorId)
-        .or(
-          `name.ilike.${searchTerm},email.ilike.${searchTerm},phone.ilike.${searchTerm}`,
-        )
+        .or(`name.ilike.${searchTerm},email.ilike.${searchTerm},phone.ilike.${searchTerm}`)
         .limit(5);
       customers = data || [];
     }
@@ -102,11 +99,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, results });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Search error:", error);
+      logger.error("Search error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: "Search failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "Search failed" }, { status: 500 });
   }
 }

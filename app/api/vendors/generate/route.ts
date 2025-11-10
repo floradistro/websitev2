@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 /**
  * POST - Trigger AI storefront generation
  * Calls the Agent SDK server to generate complete storefront
@@ -19,8 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     const agentUrl = process.env.MCP_AGENT_URL || "http://localhost:3001";
-    const agentSecret =
-      process.env.MCP_AGENT_SECRET || "yacht-club-secret-2025";
+    const agentSecret = process.env.MCP_AGENT_SECRET || "yacht-club-secret-2025";
 
     // Call AI Agent server
     const response = await fetch(`${agentUrl}/api/generate-storefront`, {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     if (!response.ok) {
       const error = await response.text();
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Agent server error:", response.status, error);
+        logger.error("Agent server error", new Error(error), { status: response.status });
       }
       throw new Error(`Agent server error: ${response.status}`);
     }
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Generation trigger error:", error);
+      logger.error("Generation trigger error:", error);
     }
     return NextResponse.json(
       {

@@ -24,17 +24,11 @@ import "../license/OpenSourceSoftwareLicenseInfo.js";
 import "./HtmlElementState.js";
 import "../worker/OverrideState.js";
 
-declare class CoreModuleLicenseTextProvider
-  implements ModuleLicenseTextProvider
-{
+declare class CoreModuleLicenseTextProvider implements ModuleLicenseTextProvider {
   private sdk;
   private logger;
   private fetch;
-  constructor(
-    sdk?: PartialSDKGlobals,
-    logger?: typeof Logger,
-    fetch?: typeof globalThis.fetch,
-  );
+  constructor(sdk?: PartialSDKGlobals, logger?: typeof Logger, fetch?: typeof globalThis.fetch);
   private get workerCommand();
   getLicenseText(): Promise<string>;
   private fetchWebLicenseText;

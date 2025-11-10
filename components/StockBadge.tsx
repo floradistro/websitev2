@@ -31,8 +31,6 @@ export default function StockBadge({
   const status = getStockStatus();
 
   return (
-    <span className={`text-xs font-light ${status.textColor} ${className}`}>
-      {status.text}
-    </span>
+    <span className={`text-xs font-light ${status.textColor} ${className}`}>{status.text}</span>
   );
 }

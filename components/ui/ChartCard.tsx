@@ -35,11 +35,7 @@ export function ChartCard({
           <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">
             {title}
           </h2>
-          {subtitle && (
-            <p className="text-white/30 text-[10px] font-light uppercase">
-              {subtitle}
-            </p>
-          )}
+          {subtitle && <p className="text-white/30 text-[10px] font-light uppercase">{subtitle}</p>}
         </div>
         {trend && (
           <div className="flex items-center gap-2">

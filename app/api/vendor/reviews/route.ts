@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * Get vendor reviews from real database
  */
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching reviews:", error);
+        logger.error("Error fetching reviews:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -48,9 +49,7 @@ export async function GET(request: NextRequest) {
       id: r.id,
       productId: r.product_id,
       productName: r.product?.name || "Unknown Product",
-      customerName: r.customer
-        ? `${r.customer.first_name} ${r.customer.last_name}`
-        : "Anonymous",
+      customerName: r.customer ? `${r.customer.first_name} ${r.customer.last_name}` : "Anonymous",
       rating: r.rating,
       date: r.created_at,
       comment: r.comment || "",
@@ -65,7 +64,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Reviews API error:", error);
+      logger.error("Reviews API error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to fetch reviews" },
@@ -87,10 +86,7 @@ export async function POST(request: NextRequest) {
     const { reviewId, response } = await request.json();
 
     if (!reviewId || !response) {
-      return NextResponse.json(
-        { error: "Review ID and response required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Review ID and response required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -108,7 +104,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error updating review:", error);
+        logger.error("Error updating review:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -119,7 +115,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Review response error:", error);
+      logger.error("Review response error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to submit response" },

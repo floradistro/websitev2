@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Get customer by ID
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = getServiceSupabase();
     const { id: customerId } = await params;
@@ -28,7 +26,7 @@ export async function GET(
     return NextResponse.json({ customer });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get customer error:", error);
+      logger.error("Get customer error:", error);
     }
     return NextResponse.json(
       { error: "Failed to get customer", details: error.message },

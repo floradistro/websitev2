@@ -48,13 +48,9 @@ export default function OrderTracking({
         status: "processing",
         label: "Confirmed",
         timestamp:
-          orderStatus === "processing" || orderStatus === "completed"
-            ? dateCreated
-            : undefined,
+          orderStatus === "processing" || orderStatus === "completed" ? dateCreated : undefined,
         completed:
-          orderStatus === "processing" ||
-          orderStatus === "completed" ||
-          orderStatus === "on-hold",
+          orderStatus === "processing" || orderStatus === "completed" || orderStatus === "on-hold",
       },
     ];
 
@@ -64,8 +60,7 @@ export default function OrderTracking({
           status: "shipped",
           label: "Shipped",
           timestamp: dateShipped,
-          completed:
-            orderStatus === "completed" || (dateShipped ? true : false),
+          completed: orderStatus === "completed" || (dateShipped ? true : false),
         },
         {
           status: "completed",
@@ -80,9 +75,7 @@ export default function OrderTracking({
           status: "ready",
           label: "Ready for Pickup",
           timestamp:
-            orderStatus === "completed" || orderStatus === "on-hold"
-              ? dateCreated
-              : undefined,
+            orderStatus === "completed" || orderStatus === "on-hold" ? dateCreated : undefined,
           completed: orderStatus === "completed" || orderStatus === "on-hold",
         },
         {
@@ -175,11 +168,7 @@ export default function OrderTracking({
   };
 
   // Handle cancelled, failed, or refunded orders
-  if (
-    orderStatus === "cancelled" ||
-    orderStatus === "failed" ||
-    orderStatus === "refunded"
-  ) {
+  if (orderStatus === "cancelled" || orderStatus === "failed" || orderStatus === "refunded") {
     return (
       <div className="bg-[#2a2a2a] border border-white/10 p-8">
         <div className="flex items-center gap-3 mb-6">
@@ -214,8 +203,7 @@ export default function OrderTracking({
 
   const stages = getTrackingStages();
   const currentStageIndex = stages.findIndex((s) => !s.completed);
-  const activeIndex =
-    currentStageIndex === -1 ? stages.length - 1 : currentStageIndex;
+  const activeIndex = currentStageIndex === -1 ? stages.length - 1 : currentStageIndex;
 
   return (
     <div className="bg-[#2a2a2a] border border-white/10 p-8">
@@ -316,9 +304,7 @@ export default function OrderTracking({
               <Clock size={16} className="text-blue-400 mt-0.5" />
               <div>
                 <p className="text-xs text-white/80 mb-1 font-medium">
-                  {orderType === "delivery"
-                    ? "Estimated Delivery"
-                    : "Estimated Ready Time"}
+                  {orderType === "delivery" ? "Estimated Delivery" : "Estimated Ready Time"}
                 </p>
                 <p className="text-[10px] text-white/60">
                   {orderType === "delivery"

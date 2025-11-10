@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Apply AI Layout Recommendation to Menu
  *
@@ -38,9 +39,7 @@ export async function POST(request: NextRequest) {
     const layout = recommendation.recommended_layout;
 
     // 2. Apply modifications if provided
-    const finalLayout = modifications
-      ? { ...layout, ...modifications }
-      : layout;
+    const finalLayout = modifications ? { ...layout, ...modifications } : layout;
 
     // 3. Update menu with AI-optimized layout
     const { data: updatedMenu, error: menuError } = await supabase
@@ -67,12 +66,9 @@ export async function POST(request: NextRequest) {
 
     if (menuError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to update menu:", menuError);
+        logger.error("Failed to update menu:", menuError);
       }
-      return NextResponse.json(
-        { success: false, error: menuError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: menuError.message }, { status: 500 });
     }
 
     // 4. Mark recommendation as applied
@@ -93,11 +89,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Apply layout error:", error);
+      logger.error("Apply layout error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

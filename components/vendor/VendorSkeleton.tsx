@@ -71,11 +71,7 @@ export function ChartSkeleton() {
       </div>
       <div className="h-64 flex items-end justify-between gap-2">
         {barHeights.map((height, i) => (
-          <div
-            key={i}
-            className="flex-1 bg-white/5 rounded"
-            style={{ height: `${height}%` }}
-          ></div>
+          <div key={i} className="flex-1 bg-white/5 rounded" style={{ height: `${height}%` }}></div>
         ))}
       </div>
     </div>

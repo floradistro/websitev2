@@ -91,10 +91,7 @@ export function KPIWidget({
         </div>
 
         <div className="flex items-end justify-between mb-2">
-          <div
-            className="text-5xl font-black text-white"
-            style={{ fontWeight: 900 }}
-          >
+          <div className="text-5xl font-black text-white" style={{ fontWeight: 900 }}>
             {value}
           </div>
 
@@ -102,11 +99,7 @@ export function KPIWidget({
             <div
               className={`flex items-center gap-1 text-sm font-medium ${change >= 0 ? "text-green-400" : "text-red-400"}`}
             >
-              {change >= 0 ? (
-                <TrendingUp size={16} />
-              ) : (
-                <TrendingDown size={16} />
-              )}
+              {change >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
               <span>{Math.abs(change)}%</span>
             </div>
           )}
@@ -114,9 +107,7 @@ export function KPIWidget({
 
         {subtitle && <div className="text-white/40 text-sm">{subtitle}</div>}
 
-        {changeLabel && (
-          <div className="text-white/40 text-xs mt-1">{changeLabel}</div>
-        )}
+        {changeLabel && <div className="text-white/40 text-xs mt-1">{changeLabel}</div>}
       </div>
 
       {/* Visualization Area */}
@@ -144,10 +135,7 @@ export function KPIWidget({
           {visualization === "list" && (
             <div className="space-y-2">
               {data.slice(0, 5).map((item: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="flex justify-between items-center text-sm"
-                >
+                <div key={idx} className="flex justify-between items-center text-sm">
                   <span className="text-white/80">{item.label}</span>
                   <span className="text-white font-medium">{item.value}</span>
                 </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, Sparkles, Wand2, Loader2, CheckCircle } from "lucide-react";
 import Image from "next/image";
 
+import { logger } from "@/lib/logger";
 interface AIReimaginModalProps {
   vendorId: string;
   files: Array<{ url: string; name: string }>;
@@ -18,9 +19,7 @@ export default function AIReimaginModal({
   onComplete,
 }: AIReimaginModalProps) {
   const [instructions, setInstructions] = useState("");
-  const [size, setSize] = useState<"1024x1024" | "1024x1792" | "1792x1024">(
-    "1024x1024",
-  );
+  const [size, setSize] = useState<"1024x1024" | "1024x1792" | "1792x1024">("1024x1024");
   const [quality, setQuality] = useState<"standard" | "hd">("standard");
   const [style, setStyle] = useState<"vivid" | "natural">("vivid");
   const [processing, setProcessing] = useState(false);
@@ -79,9 +78,7 @@ export default function AIReimaginModal({
       }
 
       setResults(data.results || []);
-      setProgress(
-        `✅ Complete: ${data.processed} processed, ${data.failed} failed`,
-      );
+      setProgress(`✅ Complete: ${data.processed} processed, ${data.failed} failed`);
 
       window.dispatchEvent(
         new CustomEvent("ai-autofill-progress", {
@@ -99,7 +96,7 @@ export default function AIReimaginModal({
       }, 2000);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Re-imagine error:", err);
+        logger.error("Re-imagine error:", err);
       }
       setError(err.message);
       window.dispatchEvent(
@@ -139,8 +136,7 @@ export default function AIReimaginModal({
                 Re-imagine with AI
               </h2>
               <p className="text-white/40 text-xs">
-                {files.length} image{files.length !== 1 ? "s" : ""} • GPT-4
-                Vision + DALL-E 3
+                {files.length} image{files.length !== 1 ? "s" : ""} • GPT-4 Vision + DALL-E 3
               </p>
             </div>
           </div>
@@ -167,20 +163,12 @@ export default function AIReimaginModal({
                   key={idx}
                   className="relative aspect-square bg-black border border-white/10 rounded-xl overflow-hidden"
                 >
-                  <Image
-                    src={file.url}
-                    alt={file.name}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
+                  <Image src={file.url} alt={file.name} fill className="object-cover" unoptimized />
                 </div>
               ))}
               {files.length > 8 && (
                 <div className="aspect-square bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
-                  <span className="text-white/60 text-xs font-bold">
-                    +{files.length - 8} more
-                  </span>
+                  <span className="text-white/60 text-xs font-bold">+{files.length - 8} more</span>
                 </div>
               )}
             </div>
@@ -199,8 +187,7 @@ export default function AIReimaginModal({
               <div className="flex items-center gap-2 text-green-500 mb-2">
                 <CheckCircle className="w-4 h-4" />
                 <span className="text-xs uppercase tracking-[0.15em] font-bold">
-                  {results.length} image{results.length !== 1 ? "s" : ""}{" "}
-                  reimagined
+                  {results.length} image{results.length !== 1 ? "s" : ""} reimagined
                 </span>
               </div>
             </div>

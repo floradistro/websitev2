@@ -78,19 +78,13 @@ export function ProductsPagination({
         aria-live="polite"
         aria-atomic="true"
       >
-        Showing{" "}
-        <span className={cn(ds.typography.weight.medium)}>{startItem}</span> to{" "}
+        Showing <span className={cn(ds.typography.weight.medium)}>{startItem}</span> to{" "}
         <span className={cn(ds.typography.weight.medium)}>{endItem}</span> of{" "}
-        <span className={cn(ds.typography.weight.medium)}>{total}</span>{" "}
-        products
+        <span className={cn(ds.typography.weight.medium)}>{total}</span> products
       </div>
 
       {/* Pagination Controls */}
-      <div
-        className="flex items-center gap-2"
-        role="group"
-        aria-label="Pagination controls"
-      >
+      <div className="flex items-center gap-2" role="group" aria-label="Pagination controls">
         {/* Previous Button */}
         <Button
           onClick={() => onPageChange(currentPage - 1)}
@@ -100,20 +94,12 @@ export function ProductsPagination({
           className="flex items-center gap-1"
           aria-label="Go to previous page"
         >
-          <ChevronLeft
-            className="w-4 h-4"
-            strokeWidth={1.5}
-            aria-hidden="true"
-          />
+          <ChevronLeft className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
           Previous
         </Button>
 
         {/* Page Numbers */}
-        <div
-          className="hidden sm:flex items-center gap-1"
-          role="list"
-          aria-label="Page numbers"
-        >
+        <div className="hidden sm:flex items-center gap-1" role="list" aria-label="Page numbers">
           {pageNumbers.map((page, index) => {
             if (page === "...") {
               return (
@@ -139,17 +125,9 @@ export function ProductsPagination({
                   ds.typography.weight.medium,
                   isCurrent
                     ? cn(ds.colors.bg.active, "text-white")
-                    : cn(
-                        ds.colors.text.tertiary,
-                        ds.colors.bg.hover,
-                        "hover:text-white/80",
-                      ),
+                    : cn(ds.colors.text.tertiary, ds.colors.bg.hover, "hover:text-white/80"),
                 )}
-                aria-label={
-                  isCurrent
-                    ? `Current page, page ${page}`
-                    : `Go to page ${page}`
-                }
+                aria-label={isCurrent ? `Current page, page ${page}` : `Go to page ${page}`}
                 aria-current={isCurrent ? "page" : undefined}
               >
                 {page}
@@ -168,11 +146,7 @@ export function ProductsPagination({
           aria-label="Go to next page"
         >
           Next
-          <ChevronRight
-            className="w-4 h-4"
-            strokeWidth={1.5}
-            aria-hidden="true"
-          />
+          <ChevronRight className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
         </Button>
       </div>
     </nav>

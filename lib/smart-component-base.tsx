@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 
+import { logger } from "@/lib/logger";
 /**
  * Base props that all smart components should extend
  */
@@ -39,11 +40,7 @@ export function useScrollAnimation(options?: {
 /**
  * Hook for fetching vendor-specific data
  */
-export function useVendorData<T>(
-  endpoint: string,
-  vendorId?: string,
-  dependencies: any[] = [],
-) {
+export function useVendorData<T>(endpoint: string, vendorId?: string, dependencies: any[] = []) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -69,7 +66,7 @@ export function useVendorData<T>(
       } catch (err) {
         setError(err instanceof Error ? err : new Error("Unknown error"));
         if (process.env.NODE_ENV === "development") {
-          console.error("Error fetching vendor data:", err);
+          logger.error("Error fetching vendor data:", err);
         }
       } finally {
         setLoading(false);
@@ -159,9 +156,7 @@ export function SmartComponentWrapper({
   const { ref, inView } = useScrollAnimation();
 
   if (loading) {
-    return (
-      <SmartComponentSkeleton className={className} lines={skeletonLines} />
-    );
+    return <SmartComponentSkeleton className={className} lines={skeletonLines} />;
   }
 
   if (error) {
@@ -189,13 +184,7 @@ export function SmartComponentWrapper({
  * Typography helpers for consistent styling
  */
 export const SmartTypography = {
-  Headline: ({
-    children,
-    className = "",
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
+  Headline: ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
     <h2
       className={`text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-white mb-8 ${className}`}
       style={{ fontWeight: 900 }}
@@ -211,37 +200,17 @@ export const SmartTypography = {
     children: React.ReactNode;
     className?: string;
   }) => (
-    <p
-      className={`text-base sm:text-lg text-white/60 uppercase tracking-wide ${className}`}
-    >
+    <p className={`text-base sm:text-lg text-white/60 uppercase tracking-wide ${className}`}>
       {children}
     </p>
   ),
 
-  Body: ({
-    children,
-    className = "",
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <p
-      className={`text-sm sm:text-base text-white/60 leading-relaxed ${className}`}
-    >
-      {children}
-    </p>
+  Body: ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+    <p className={`text-sm sm:text-base text-white/60 leading-relaxed ${className}`}>{children}</p>
   ),
 
-  Label: ({
-    children,
-    className = "",
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <span
-      className={`text-white/40 uppercase tracking-[0.15em] font-black text-xs ${className}`}
-    >
+  Label: ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+    <span className={`text-white/40 uppercase tracking-[0.15em] font-black text-xs ${className}`}>
       {children}
     </span>
   ),
@@ -251,23 +220,13 @@ export const SmartTypography = {
  * Container helpers for consistent layouts
  */
 export const SmartContainers = {
-  Section: ({
-    children,
-    className = "",
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
+  Section: ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
     <div className={`py-16 sm:py-20 px-4 sm:px-6 ${className}`}>{children}</div>
   ),
 
-  MaxWidth: ({
-    children,
-    className = "",
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => <div className={`max-w-7xl mx-auto ${className}`}>{children}</div>,
+  MaxWidth: ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
+    <div className={`max-w-7xl mx-auto ${className}`}>{children}</div>
+  ),
 
   Card: ({
     children,
@@ -325,8 +284,7 @@ export function SmartButton({
 
   const variants = {
     primary: "bg-white text-black hover:bg-white/90",
-    secondary:
-      "bg-white/10 text-white border border-white/20 hover:bg-white/20",
+    secondary: "bg-white/10 text-white border border-white/20 hover:bg-white/20",
     ghost: "text-white hover:bg-white/10",
   };
 

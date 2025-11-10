@@ -41,9 +41,7 @@ export default function PageHeader({
               {title}
             </h1>
             {subtitle && (
-              <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
-                {subtitle}
-              </p>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">{subtitle}</p>
             )}
           </div>
         </div>
@@ -76,9 +74,7 @@ export function SectionHeader({
           {title}
         </h2>
         {subtitle && (
-          <p className="text-[10px] text-white/40 uppercase tracking-[0.15em] mt-1">
-            {subtitle}
-          </p>
+          <p className="text-[10px] text-white/40 uppercase tracking-[0.15em] mt-1">{subtitle}</p>
         )}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
@@ -97,9 +93,7 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div
-      className={`bg-white/5 border border-white/10 rounded-2xl p-4 ${className}`}
-    >
+    <div className={`bg-white/5 border border-white/10 rounded-2xl p-4 ${className}`}>
       {children}
     </div>
   );
@@ -119,14 +113,10 @@ export function FieldRow({
 }) {
   return (
     <div className="space-y-2">
-      <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] block">
-        {label}
-      </label>
+      <label className="text-white/40 text-[10px] uppercase tracking-[0.15em] block">{label}</label>
       {children}
       {description && (
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.15em]">
-          {description}
-        </p>
+        <p className="text-white/30 text-[10px] uppercase tracking-[0.15em]">{description}</p>
       )}
     </div>
   );
@@ -202,11 +192,7 @@ export function Select({
           viewBox="0 0 24 24"
           strokeWidth={2.5}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M19 9l-7 7-7-7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </div>
     </div>
@@ -234,8 +220,7 @@ export function Button({
 
   const variantClasses = {
     primary: "bg-white text-black hover:bg-white/90",
-    secondary:
-      "bg-white/10 border border-white/20 text-white hover:bg-white/20",
+    secondary: "bg-white/10 border border-white/20 text-white hover:bg-white/20",
     ghost: "text-white/40 hover:text-white",
   };
 

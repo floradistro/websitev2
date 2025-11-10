@@ -31,15 +31,11 @@ export function useProducts(searchParams?: Record<string, any>) {
 
 // Vendors hook
 export function useVendors() {
-  const { data, error, isLoading, mutate } = useSWR(
-    "/api/admin/vendors",
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      dedupingInterval: 2000,
-    },
-  );
+  const { data, error, isLoading, mutate } = useSWR("/api/admin/vendors", fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+    dedupingInterval: 2000,
+  });
 
   return {
     vendors: data?.vendors || [],
@@ -51,15 +47,11 @@ export function useVendors() {
 
 // Users hook
 export function useUsers() {
-  const { data, error, isLoading, mutate } = useSWR(
-    "/api/admin/users",
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      dedupingInterval: 2000,
-    },
-  );
+  const { data, error, isLoading, mutate } = useSWR("/api/admin/users", fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+    dedupingInterval: 2000,
+  });
 
   return {
     users: data?.users || [],
@@ -95,15 +87,11 @@ export function useOrders(page: number = 1, filters?: Record<string, string>) {
 
 // Dashboard stats hook
 export function useDashboardStats() {
-  const { data, error, isLoading } = useSWR(
-    "/api/admin/dashboard-stats",
-    fetcher,
-    {
-      refreshInterval: 30000, // Refresh every 30s
-      revalidateOnFocus: true,
-      dedupingInterval: 5000,
-    },
-  );
+  const { data, error, isLoading } = useSWR("/api/admin/dashboard-stats", fetcher, {
+    refreshInterval: 30000, // Refresh every 30s
+    revalidateOnFocus: true,
+    dedupingInterval: 5000,
+  });
 
   return {
     stats: data,

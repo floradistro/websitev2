@@ -68,10 +68,7 @@ export function getComparisonPeriod(range: TimeRange): DateRange {
 /**
  * Format date for display
  */
-export function formatDate(
-  date: string | Date,
-  format: "short" | "long" = "short",
-): string {
+export function formatDate(date: string | Date, format: "short" | "long" = "short"): string {
   const d = typeof date === "string" ? new Date(date) : date;
 
   if (format === "long") {
@@ -152,9 +149,7 @@ export function calculatePeriodGrowth(data: Array<{ amount: number }>): number {
   if (data.length < 2) return 0;
 
   const midpoint = Math.floor(data.length / 2);
-  const firstHalf = data
-    .slice(0, midpoint)
-    .reduce((sum, d) => sum + d.amount, 0);
+  const firstHalf = data.slice(0, midpoint).reduce((sum, d) => sum + d.amount, 0);
   const secondHalf = data.slice(midpoint).reduce((sum, d) => sum + d.amount, 0);
 
   return calculatePercentage(secondHalf - firstHalf, firstHalf);
@@ -308,9 +303,7 @@ export function fillMissingDates(
       filled.push(dataMap.get(dateStr)!);
     } else {
       // Create entry with default values
-      const keys = data[0]
-        ? Object.keys(data[0]).filter((k) => k !== "date")
-        : [];
+      const keys = data[0] ? Object.keys(data[0]).filter((k) => k !== "date") : [];
       const entry: any = { date: dateStr };
       keys.forEach((key) => {
         entry[key] = defaultValue;
@@ -327,10 +320,7 @@ export function fillMissingDates(
 /**
  * Calculate percentile
  */
-export function calculatePercentile(
-  values: number[],
-  percentile: number,
-): number {
+export function calculatePercentile(values: number[], percentile: number): number {
   if (values.length === 0) return 0;
 
   const sorted = [...values].sort((a, b) => a - b);
@@ -377,7 +367,6 @@ export function isValidTimeRange(range: string): range is TimeRange {
 export function isValidVendorId(id: string | null): boolean {
   if (!id) return false;
   // UUID v4 format
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(id);
 }

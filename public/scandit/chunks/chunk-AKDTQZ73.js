@@ -25,17 +25,11 @@ var s = { type: "none" },
     }
     static withWidthAndAspectRatio(t, i) {
       let e = new n();
-      return (
-        (e._sizeWithUnitAndAspect = l.sizeWithWidthAndAspectRatio(t, i)),
-        e
-      );
+      return ((e._sizeWithUnitAndAspect = l.sizeWithWidthAndAspectRatio(t, i)), e);
     }
     static withHeightAndAspectRatio(t, i) {
       let e = new n();
-      return (
-        (e._sizeWithUnitAndAspect = l.sizeWithHeightAndAspectRatio(t, i)),
-        e
-      );
+      return ((e._sizeWithUnitAndAspect = l.sizeWithHeightAndAspectRatio(t, i)), e);
     }
     toJSONObject() {
       return {

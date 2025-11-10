@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { withErrorHandler } from "@/lib/api-handler";
 
+import { logger } from "@/lib/logger";
 /**
  * Refresh vendor data from database (for updating logo, POS status, etc without re-login)
  */
@@ -11,10 +12,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     const { vendorId } = body;
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "Vendor ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Vendor ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -27,10 +25,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       .single();
 
     if (error || !vendor) {
-      return NextResponse.json(
-        { success: false, error: "Vendor not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ success: false, error: "Vendor not found" }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -48,7 +43,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Vendor refresh error:", error);
+      logger.error("Vendor refresh error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Failed to refresh vendor data" },

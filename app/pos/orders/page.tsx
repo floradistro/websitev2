@@ -28,16 +28,13 @@ export default function POSOrdersPage() {
   if (!mounted || !isAuthenticated) {
     return (
       <div className="h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-white/60 text-xs uppercase tracking-[0.15em]">
-          Loading...
-        </div>
+        <div className="text-white/60 text-xs uppercase tracking-[0.15em]">Loading...</div>
       </div>
     );
   }
 
   // Use Charlotte Central as default for now
-  const currentLocationId =
-    searchParams.get("location") || CHARLOTTE_CENTRAL_ID;
+  const currentLocationId = searchParams.get("location") || CHARLOTTE_CENTRAL_ID;
   const currentLocation = {
     id: currentLocationId,
     name: "Charlotte Central",

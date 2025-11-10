@@ -34,31 +34,20 @@ const shippingOptions = [
   {
     icon: Clock,
     title: "STANDARD DELIVERY",
-    description:
-      "1-2 business day delivery for all other orders. Perfect for planning ahead.",
-    details: [
-      "Free on orders over $50",
-      "Signature required",
-      "Real-time tracking",
-    ],
+    description: "1-2 business day delivery for all other orders. Perfect for planning ahead.",
+    details: ["Free on orders over $50", "Signature required", "Real-time tracking"],
   },
   {
     icon: MapPin,
     title: "DELIVERY ZONES",
-    description:
-      "We currently serve the greater Bay Area with plans to expand soon.",
+    description: "We currently serve the greater Bay Area with plans to expand soon.",
     details: ["San Francisco", "Oakland", "San Jose", "Surrounding areas"],
   },
   {
     icon: Shield,
     title: "DISCREET PACKAGING",
-    description:
-      "All orders ship in unmarked, odor-proof packaging for complete privacy.",
-    details: [
-      "No cannabis branding",
-      "Tamper-evident seals",
-      "Professional packaging",
-    ],
+    description: "All orders ship in unmarked, odor-proof packaging for complete privacy.",
+    details: ["No cannabis branding", "Tamper-evident seals", "Professional packaging"],
   },
 ];
 
@@ -74,11 +63,7 @@ export function SmartShipping({
   const { ref, inView } = useScrollAnimation();
 
   return (
-    <SmartComponentWrapper
-      animate={false}
-      componentName="Shipping"
-      className={className}
-    >
+    <SmartComponentWrapper animate={false} componentName="Shipping" className={className}>
       {/* Hero Section */}
       <section className="pt-32 sm:pt-40 pb-16 sm:pb-20 px-4 sm:px-6 bg-black">
         <SmartContainers.MaxWidth>
@@ -115,9 +100,7 @@ export function SmartShipping({
               </motion.div>
             )}
 
-            <SmartTypography.Headline className="mb-6">
-              {headline}
-            </SmartTypography.Headline>
+            <SmartTypography.Headline className="mb-6">{headline}</SmartTypography.Headline>
             <p className="text-xl sm:text-2xl text-white/60 uppercase tracking-wide">
               {subheadline}
             </p>
@@ -143,11 +126,7 @@ export function SmartShipping({
                 <SmartContainers.Card className="p-8 sm:p-10 h-full">
                   <div className="flex items-start gap-4 mb-6">
                     <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                      <option.icon
-                        size={24}
-                        className="text-white"
-                        strokeWidth={2.5}
-                      />
+                      <option.icon size={24} className="text-white" strokeWidth={2.5} />
                     </div>
                     <div className="flex-1">
                       <h3
@@ -156,9 +135,7 @@ export function SmartShipping({
                       >
                         {option.title}
                       </h3>
-                      <p className="text-sm text-white/60 leading-relaxed">
-                        {option.description}
-                      </p>
+                      <p className="text-sm text-white/60 leading-relaxed">{option.description}</p>
                     </div>
                   </div>
 
@@ -166,10 +143,7 @@ export function SmartShipping({
 
                   <ul className="space-y-2">
                     {option.details.map((detail, dIndex) => (
-                      <li
-                        key={dIndex}
-                        className="text-xs text-white/40 flex items-center gap-2"
-                      >
+                      <li key={dIndex} className="text-xs text-white/40 flex items-center gap-2">
                         <div className="w-1 h-1 rounded-full bg-white/40" />
                         {detail}
                       </li>
@@ -199,8 +173,7 @@ export function SmartShipping({
                 QUESTIONS ABOUT DELIVERY?
               </h3>
               <p className="text-sm sm:text-base text-white/60 mb-6">
-                Our support team is here to help with any shipping questions or
-                concerns.
+                Our support team is here to help with any shipping questions or concerns.
               </p>
               <a
                 href="/storefront/contact"
@@ -208,12 +181,7 @@ export function SmartShipping({
                 style={{ fontWeight: 900 }}
               >
                 CONTACT US
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

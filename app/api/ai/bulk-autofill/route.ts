@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import Exa from "exa-js";
 
+import { logger } from "@/lib/logger";
 // Increase timeout for bulk processing (can take 2-5 minutes for large batches)
 export const maxDuration = 300; // 5 minutes
 export const dynamic = "force-dynamic";
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Check for required API keys
     if (!process.env.ANTHROPIC_API_KEY) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Missing ANTHROPIC_API_KEY");
+        logger.error("❌ Missing ANTHROPIC_API_KEY");
       }
       return NextResponse.json(
         {
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     if (!process.env.EXASEARCH_API_KEY) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Missing EXASEARCH_API_KEY");
+        logger.error("❌ Missing EXASEARCH_API_KEY");
       }
       return NextResponse.json(
         {
@@ -83,10 +84,7 @@ export async function POST(request: NextRequest) {
     const { products, category } = await request.json();
 
     if (!products || !Array.isArray(products) || products.length === 0) {
-      return NextResponse.json(
-        { error: "Products array required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Products array required" }, { status: 400 });
     }
 
     // Process in batches of 5 for optimal performance
@@ -113,7 +111,7 @@ export async function POST(request: NextRequest) {
 
         if (!searchResults.results || searchResults.results.length === 0) {
           if (process.env.NODE_ENV === "development") {
-            console.warn(`⚠️ No search results for batch ${batchNum}`);
+            logger.warn(`⚠️ No search results for batch ${batchNum}`);
           }
           // Add null results for this batch
           batch.forEach((product: any) => {
@@ -127,9 +125,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Combine search results
-        const context = searchResults.results
-          .map((r) => `${r.title}\n${r.text}`)
-          .join("\n---\n");
+        const context = searchResults.results.map((r) => `${r.title}\n${r.text}`).join("\n---\n");
 
         // Claude extraction for entire batch
         const response = await anthropic.messages.create({
@@ -154,7 +150,7 @@ export async function POST(request: NextRequest) {
         const jsonMatch = claudeText.text.match(/\[[\s\S]*\]/);
         if (!jsonMatch) {
           if (process.env.NODE_ENV === "development") {
-            console.error(`❌ No JSON found in batch ${batchNum}`);
+            logger.error(`❌ No JSON found in batch ${batchNum}`);
           }
           batch.forEach((product: any) => {
             results.push({
@@ -174,12 +170,8 @@ export async function POST(request: NextRequest) {
             batchData[idx] ||
             batchData.find(
               (d: any) =>
-                d.product_name
-                  ?.toLowerCase()
-                  .includes(product.name.toLowerCase()) ||
-                product.name
-                  .toLowerCase()
-                  .includes(d.product_name?.toLowerCase()),
+                d.product_name?.toLowerCase().includes(product.name.toLowerCase()) ||
+                product.name.toLowerCase().includes(d.product_name?.toLowerCase()),
             );
 
           if (data) {
@@ -198,7 +190,7 @@ export async function POST(request: NextRequest) {
         });
       } catch (error: any) {
         if (process.env.NODE_ENV === "development") {
-          console.error(`❌ Error in batch ${batchNum}:`, error.message);
+          logger.error(`❌ Error in batch ${batchNum}:`, error.message);
         }
         // Add error results for this batch
         batch.forEach((product: any) => {
@@ -227,14 +219,13 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Bulk autofill error:", error);
+      logger.error("❌ Bulk autofill error:", error);
     }
     return NextResponse.json(
       {
         error: error.message || "Bulk autofill failed",
         results: [],
-        details:
-          process.env.NODE_ENV === "development" ? error.stack : undefined,
+        details: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 500 },
     );

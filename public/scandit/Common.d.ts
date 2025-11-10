@@ -28,12 +28,7 @@ declare class Quadrilateral implements Serializable<QuadrilateralJSON> {
   private readonly _topRight;
   private readonly _bottomRight;
   private readonly _bottomLeft;
-  constructor(
-    topLeft: Point,
-    topRight: Point,
-    bottomRight: Point,
-    bottomLeft: Point,
-  );
+  constructor(topLeft: Point, topRight: Point, bottomRight: Point, bottomLeft: Point);
   get topLeft(): Point;
   get topRight(): Point;
   get bottomRight(): Point;
@@ -142,9 +137,7 @@ interface SizeWithUnitAndAspectJSON {
   shorterDimension?: NumberWithUnitJSON;
   aspect?: number;
 }
-declare class SizeWithUnitAndAspect
-  implements Serializable<SizeWithUnitAndAspectJSON>
-{
+declare class SizeWithUnitAndAspect implements Serializable<SizeWithUnitAndAspectJSON> {
   private _widthAndHeight;
   private _widthAndAspectRatio;
   private _heightAndAspectRatio;
@@ -199,12 +192,7 @@ declare class Color implements StringSerializable {
   get blue(): number;
   get alpha(): number;
   static fromHex(hex: string): Color;
-  static fromRGBA(
-    red: number,
-    green: number,
-    blue: number,
-    alpha?: number,
-  ): Color;
+  static fromRGBA(red: number, green: number, blue: number, alpha?: number): Color;
   private static areEquals;
   private static hexToNumber;
   private static fromJSON;

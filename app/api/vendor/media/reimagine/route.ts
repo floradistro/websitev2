@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -36,10 +37,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     if (!imageUrl) {
-      return NextResponse.json(
-        { error: "Image URL required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Image URL required" }, { status: 400 });
     }
 
     // Step 1: Analyze the image with GPT-4 Vision to create a prompt
@@ -117,15 +115,13 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Upload error:", uploadError);
+        logger.error("❌ Upload error:", uploadError);
       }
       throw uploadError;
     }
 
     // Step 6: Get public URL
-    const { data: urlData } = supabase.storage
-      .from("vendor-product-images")
-      .getPublicUrl(filePath);
+    const { data: urlData } = supabase.storage.from("vendor-product-images").getPublicUrl(filePath);
 
     const publicUrl = urlData.publicUrl;
 
@@ -142,7 +138,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Reimagine error:", error);
+      logger.error("❌ Reimagine error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to reimagine image" },
@@ -160,19 +156,10 @@ export async function PUT(request: NextRequest) {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const {
-      files,
-      instructions,
-      size = "1024x1024",
-      quality = "standard",
-      style = "vivid",
-    } = body;
+    const { files, instructions, size = "1024x1024", quality = "standard", style = "vivid" } = body;
 
     if (!files || !Array.isArray(files) || files.length === 0) {
-      return NextResponse.json(
-        { error: "Files array required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Files array required" }, { status: 400 });
     }
 
     const results: any[] = [];
@@ -181,24 +168,21 @@ export async function PUT(request: NextRequest) {
     // Process sequentially to avoid rate limits
     for (const file of files) {
       try {
-        const response = await fetch(
-          `${request.nextUrl.origin}/api/vendor/media/reimagine`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-vendor-id": vendorId,
-            },
-            body: JSON.stringify({
-              imageUrl: file.url,
-              fileName: file.name,
-              instructions,
-              size,
-              quality,
-              style,
-            }),
+        const response = await fetch(`${request.nextUrl.origin}/api/vendor/media/reimagine`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-vendor-id": vendorId,
           },
-        );
+          body: JSON.stringify({
+            imageUrl: file.url,
+            fileName: file.name,
+            instructions,
+            size,
+            quality,
+            style,
+          }),
+        });
 
         const data = await response.json();
 
@@ -215,7 +199,7 @@ export async function PUT(request: NextRequest) {
         });
       } catch (err: any) {
         if (process.env.NODE_ENV === "development") {
-          console.error(`❌ Failed ${file.name}:`, err);
+          logger.error(`❌ Failed ${file.name}:`, err);
         }
         errors.push({
           fileName: file.name,
@@ -238,7 +222,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

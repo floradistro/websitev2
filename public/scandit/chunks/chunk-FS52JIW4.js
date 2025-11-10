@@ -1,15 +1,4 @@
-import {
-  f,
-  i as i$1,
-  h,
-  j,
-  d,
-  g,
-  a as a$2,
-  c,
-  b,
-  e,
-} from "./chunk-FGCJ3ZLG.js";
+import { f, i as i$1, h, j, d, g, a as a$2, c, b, e } from "./chunk-FGCJ3ZLG.js";
 import { a as a$1 } from "./chunk-UUD3OXOZ.js";
 var i = class {
     toJSONObject() {
@@ -31,16 +20,14 @@ var i = class {
     }
     set torchOffImage(t) {
       var e;
-      ((this.icon.off.idle = t),
-        (e = this.view) == null || e.controlsUpdated());
+      ((this.icon.off.idle = t), (e = this.view) == null || e.controlsUpdated());
     }
     get torchOffPressedImage() {
       return this.icon.off.pressed;
     }
     set torchOffPressedImage(t) {
       var e;
-      ((this.icon.off.pressed = t),
-        (e = this.view) == null || e.controlsUpdated());
+      ((this.icon.off.pressed = t), (e = this.view) == null || e.controlsUpdated());
     }
     get torchOnImage() {
       return this.icon.on.idle;
@@ -54,8 +41,7 @@ var i = class {
     }
     set torchOnPressedImage(t) {
       var e;
-      ((this.icon.on.pressed = t),
-        (e = this.view) == null || e.controlsUpdated());
+      ((this.icon.on.pressed = t), (e = this.view) == null || e.controlsUpdated());
     }
   };
 s.CLASS_NAME = a$1.TORCH_SWITCH_CONTROL_CLASS_NAME;
@@ -97,16 +83,14 @@ var a = class extends i {
   }
   set cameraFOVUltraWideImage(t) {
     var e;
-    ((this.icon.ultraWide.idle = t),
-      (e = this.view) == null || e.controlsUpdated());
+    ((this.icon.ultraWide.idle = t), (e = this.view) == null || e.controlsUpdated());
   }
   get cameraFOVUltraWidePressedImage() {
     return this.icon.ultraWide.pressed;
   }
   set cameraFOVUltraWidePressedImage(t) {
     var e;
-    ((this.icon.ultraWide.pressed = t),
-      (e = this.view) == null || e.controlsUpdated());
+    ((this.icon.ultraWide.pressed = t), (e = this.view) == null || e.controlsUpdated());
   }
   get cameraFOVWideImage() {
     return this.icon.wide.idle;
@@ -120,8 +104,7 @@ var a = class extends i {
   }
   set cameraFOVWidePressedImage(t) {
     var e;
-    ((this.icon.wide.pressed = t),
-      (e = this.view) == null || e.controlsUpdated());
+    ((this.icon.wide.pressed = t), (e = this.view) == null || e.controlsUpdated());
   }
 };
 a.CLASS_NAME = a$1.CAMERA_FOV_SWITCH_CONTROL_CLASS_NAME;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -10,10 +11,7 @@ export async function POST(request: NextRequest) {
     const { orderId, locationId } = await request.json();
 
     if (!orderId || !locationId) {
-      return NextResponse.json(
-        { error: "Missing orderId or locationId" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing orderId or locationId" }, { status: 400 });
     }
 
     // Get the order details
@@ -58,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error updating order status:", updateError);
+        logger.error("Error updating order status:", updateError);
       }
       return NextResponse.json(
         {
@@ -115,7 +113,7 @@ export async function POST(request: NextRequest) {
 
     if (transactionError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating POS transaction:", transactionError);
+        logger.error("Error creating POS transaction:", transactionError);
       }
       return NextResponse.json(
         {
@@ -133,7 +131,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in POS fulfill endpoint:", error);
+      logger.error("Error in POS fulfill endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

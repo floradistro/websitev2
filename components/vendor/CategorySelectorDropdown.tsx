@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface CategorySelectorDropdownProps {
   selectedCategoryIds: string[];
   onChange: (categoryIds: string[]) => void;
@@ -25,7 +26,7 @@ export function CategorySelectorDropdown({
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to load categories:", error);
+          logger.error("Failed to load categories:", error);
         }
       } finally {
         setLoading(false);
@@ -34,9 +35,7 @@ export function CategorySelectorDropdown({
     loadCategories();
   }, []);
 
-  const selectedCategories = categories.filter((c) =>
-    selectedCategoryIds.includes(c.id),
-  );
+  const selectedCategories = categories.filter((c) => selectedCategoryIds.includes(c.id));
 
   const toggleCategory = (categoryId: string) => {
     if (selectedCategoryIds.includes(categoryId)) {
@@ -71,13 +70,9 @@ export function CategorySelectorDropdown({
       {/* Category List */}
       <div className="max-h-48 overflow-y-auto border border-neutral-800 rounded bg-neutral-950">
         {loading ? (
-          <div className="p-4 text-center text-neutral-500 text-xs">
-            Loading...
-          </div>
+          <div className="p-4 text-center text-neutral-500 text-xs">Loading...</div>
         ) : categories.length === 0 ? (
-          <div className="p-4 text-center text-neutral-500 text-xs">
-            No categories found
-          </div>
+          <div className="p-4 text-center text-neutral-500 text-xs">No categories found</div>
         ) : (
           <div className="divide-y divide-neutral-800">
             {categories.map((category) => (
@@ -92,14 +87,8 @@ export function CategorySelectorDropdown({
                   className="rounded"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-white truncate">
-                    {category.name}
-                  </div>
-                  {category.slug && (
-                    <div className="text-xs text-neutral-500">
-                      {category.slug}
-                    </div>
-                  )}
+                  <div className="text-sm text-white truncate">{category.name}</div>
+                  {category.slug && <div className="text-xs text-neutral-500">{category.slug}</div>}
                 </div>
               </label>
             ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { logger } from "@/lib/logger";
 import {
   X,
   Plus,
@@ -42,9 +43,7 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<
-    "idle" | "saving" | "success" | "error"
-  >("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [error, setError] = useState("");
 
   // Form state
@@ -80,7 +79,7 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
     } catch (err: any) {
       setError("Failed to load agents");
       if (process.env.NODE_ENV === "development") {
-        console.error(err);
+        logger.error(err);
       }
     }
     setIsLoading(false);
@@ -125,8 +124,7 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
   };
 
   const deleteAgent = async (id: string) => {
-    if (!confirm("Delete this agent configuration? This cannot be undone."))
-      return;
+    if (!confirm("Delete this agent configuration? This cannot be undone.")) return;
 
     try {
       const res = await fetch(`/api/ai/agents?id=${id}`, { method: "DELETE" });
@@ -177,11 +175,7 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
         <div className="h-14 border-b border-white/5 flex items-center justify-between px-6 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-              <FlaskConical
-                size={16}
-                className="text-white/60"
-                strokeWidth={2}
-              />
+              <FlaskConical size={16} className="text-white/60" strokeWidth={2} />
             </div>
             <div>
               <h2
@@ -238,17 +232,9 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
                 </div>
               ) : agents.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                  <Sparkles
-                    size={24}
-                    className="text-white/20 mb-3"
-                    strokeWidth={1.5}
-                  />
-                  <p className="text-white/40 text-xs">
-                    No agents configured yet
-                  </p>
-                  <p className="text-white/20 text-[10px] mt-1">
-                    Create your first agent
-                  </p>
+                  <Sparkles size={24} className="text-white/20 mb-3" strokeWidth={1.5} />
+                  <p className="text-white/40 text-xs">No agents configured yet</p>
+                  <p className="text-white/20 text-[10px] mt-1">Create your first agent</p>
                 </div>
               ) : (
                 <div className="space-y-1">
@@ -305,11 +291,7 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
                     className="text-xs font-black uppercase tracking-tight text-white"
                     style={{ fontWeight: 900 }}
                   >
-                    {isEditing
-                      ? formData.id
-                        ? "Edit Agent"
-                        : "New Agent"
-                      : "Agent Details"}
+                    {isEditing ? (formData.id ? "Edit Agent" : "New Agent") : "Agent Details"}
                   </div>
                   <div className="flex items-center gap-2">
                     {!isEditing && (
@@ -375,11 +357,7 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
                 <div className="flex-1 overflow-y-auto p-6">
                   {error && (
                     <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-2">
-                      <AlertCircle
-                        size={14}
-                        className="text-red-400 mt-0.5"
-                        strokeWidth={2}
-                      />
+                      <AlertCircle size={14} className="text-red-400 mt-0.5" strokeWidth={2} />
                       <div className="text-red-400 text-xs">{error}</div>
                     </div>
                   )}
@@ -401,9 +379,7 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
                         <input
                           type="text"
                           value={formData.name || ""}
-                          onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
-                          }
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           disabled={!isEditing}
                           placeholder="e.g. Flora AI Assistant"
                           className="w-full bg-[#0a0a0a] border border-white/5 hover:border-white/10 focus:border-white/20 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/20 focus:outline-none transition-all disabled:opacity-50"
@@ -473,9 +449,7 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
                           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                             <button
                               type="button"
-                              onClick={() =>
-                                copyToClipboard(formData.api_key || "")
-                              }
+                              onClick={() => copyToClipboard(formData.api_key || "")}
                               className="p-1.5 hover:bg-white/5 text-white/40 hover:text-white rounded-lg transition-all"
                             >
                               <Copy size={12} strokeWidth={2} />
@@ -547,10 +521,7 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
-                                status: e.target.value as
-                                  | "active"
-                                  | "inactive"
-                                  | "testing",
+                                status: e.target.value as "active" | "inactive" | "testing",
                               })
                             }
                             disabled={!isEditing}
@@ -575,9 +546,7 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
                         </div>
                         <button
                           type="button"
-                          onClick={() =>
-                            copyToClipboard(formData.system_prompt || "")
-                          }
+                          onClick={() => copyToClipboard(formData.system_prompt || "")}
                           className="text-white/40 hover:text-white text-[10px] uppercase tracking-wide flex items-center gap-1 transition-all"
                         >
                           <Copy size={10} strokeWidth={2} />
@@ -605,14 +574,8 @@ export function AgentConfigPanel({ isOpen, onClose }: AgentConfigPanelProps) {
             ) : (
               <div className="flex-1 flex items-center justify-center">
                 <div className="text-center">
-                  <Settings
-                    size={48}
-                    className="text-white/10 mx-auto mb-4"
-                    strokeWidth={1.5}
-                  />
-                  <p className="text-white/40 text-sm">
-                    Select an agent or create a new one
-                  </p>
+                  <Settings size={48} className="text-white/10 mx-auto mb-4" strokeWidth={1.5} />
+                  <p className="text-white/40 text-sm">Select an agent or create a new one</p>
                 </div>
               </div>
             )}

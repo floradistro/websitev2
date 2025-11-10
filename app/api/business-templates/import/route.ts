@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
@@ -18,10 +19,7 @@ export async function POST(request: NextRequest) {
     const { template_id, import_categories, import_field_groups } = body;
 
     if (!template_id) {
-      return NextResponse.json(
-        { error: "Template ID is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Template ID is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -39,12 +37,11 @@ export async function POST(request: NextRequest) {
 
     // Import Categories
     if (import_categories) {
-      const { data: templateCategories, error: categoriesError } =
-        await supabase
-          .from("template_categories")
-          .select("*")
-          .eq("template_id", template_id)
-          .order("display_order", { ascending: true });
+      const { data: templateCategories, error: categoriesError } = await supabase
+        .from("template_categories")
+        .select("*")
+        .eq("template_id", template_id)
+        .order("display_order", { ascending: true });
 
       if (categoriesError) throw categoriesError;
 
@@ -97,7 +94,7 @@ export async function POST(request: NextRequest) {
 
         if (createError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error creating category:", createError);
+            logger.error("Error creating category:", createError);
           }
           continue;
         }
@@ -110,18 +107,12 @@ export async function POST(request: NextRequest) {
 
       // Handle parent relationships (for subcategories)
       for (const templateCat of templateCategories || []) {
-        if (
-          templateCat.parent_id &&
-          categoryMapping.has(templateCat.parent_id)
-        ) {
+        if (templateCat.parent_id && categoryMapping.has(templateCat.parent_id)) {
           const childId = categoryMapping.get(templateCat.id);
           const newParentId = categoryMapping.get(templateCat.parent_id);
 
           if (childId && newParentId) {
-            await supabase
-              .from("categories")
-              .update({ parent_id: newParentId })
-              .eq("id", childId);
+            await supabase.from("categories").update({ parent_id: newParentId }).eq("id", childId);
           }
         }
       }
@@ -129,13 +120,12 @@ export async function POST(request: NextRequest) {
 
     // Import Field Groups
     if (import_field_groups) {
-      const { data: templateFieldGroups, error: fieldGroupsError } =
-        await supabase
-          .from("template_field_groups")
-          .select("*")
-          .eq("template_id", template_id)
-          .eq("is_active", true)
-          .order("display_order", { ascending: true });
+      const { data: templateFieldGroups, error: fieldGroupsError } = await supabase
+        .from("template_field_groups")
+        .select("*")
+        .eq("template_id", template_id)
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
 
       if (fieldGroupsError) throw fieldGroupsError;
 
@@ -166,22 +156,20 @@ export async function POST(request: NextRequest) {
           finalSlug = `${baseSlug}-${Date.now()}`;
         }
 
-        const { error: createError } = await supabase
-          .from("vendor_product_fields")
-          .insert({
-            vendor_id: vendorId,
-            name: templateFieldGroup.name,
-            slug: finalSlug,
-            description: templateFieldGroup.description,
-            fields: templateFieldGroup.fields,
-            source_template_id: template_id,
-            source_template_field_group_id: templateFieldGroup.id,
-            is_active: true,
-          });
+        const { error: createError } = await supabase.from("vendor_product_fields").insert({
+          vendor_id: vendorId,
+          name: templateFieldGroup.name,
+          slug: finalSlug,
+          description: templateFieldGroup.description,
+          fields: templateFieldGroup.fields,
+          source_template_id: template_id,
+          source_template_field_group_id: templateFieldGroup.id,
+          is_active: true,
+        });
 
         if (createError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error creating field group:", createError);
+            logger.error("Error creating field group:", createError);
           }
           continue;
         }
@@ -217,7 +205,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Import template error:", error);
+      logger.error("Import template error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to import template" },

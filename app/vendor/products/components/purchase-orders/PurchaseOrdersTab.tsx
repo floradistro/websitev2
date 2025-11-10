@@ -12,6 +12,7 @@ import { CreatePOModal } from "./CreatePOModal";
 import axios from "axios";
 import type { PurchaseOrder } from "./types";
 
+import { logger } from "@/lib/logger";
 /**
  * PurchaseOrdersTab - Inbound purchase orders only
  * For purchasing inventory FROM suppliers
@@ -45,7 +46,7 @@ export function PurchaseOrdersTab() {
       setOrders(response.data.data || []);
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading POs:", error);
+        logger.error("Error loading POs:", error);
       }
     } finally {
       setLoading(false);
@@ -63,11 +64,7 @@ export function PurchaseOrdersTab() {
       if (statusFilter !== "all" && po.status !== statusFilter) return false;
 
       // Location filter
-      if (
-        locationFilter !== "all" &&
-        (po as any).location_id !== locationFilter
-      )
-        return false;
+      if (locationFilter !== "all" && (po as any).location_id !== locationFilter) return false;
 
       // Search filter
       if (search) {
@@ -90,10 +87,7 @@ export function PurchaseOrdersTab() {
       ["ordered", "confirmed", "shipped", "receiving"].includes(po.status),
     ).length;
     const completed = orders.filter((po) => po.status === "received").length;
-    const totalValue = orders.reduce(
-      (sum, po) => sum + parseFloat(po.total?.toString() || "0"),
-      0,
-    );
+    const totalValue = orders.reduce((sum, po) => sum + parseFloat(po.total?.toString() || "0"), 0);
 
     return { total, draft, active, completed, totalValue };
   }, [orders]);
@@ -125,11 +119,7 @@ export function PurchaseOrdersTab() {
         )}
       >
         <div className="flex items-start gap-3">
-          <Package
-            size={16}
-            className={cn(ds.colors.text.quaternary, "mt-0.5")}
-            strokeWidth={1}
-          />
+          <Package size={16} className={cn(ds.colors.text.quaternary, "mt-0.5")} strokeWidth={1} />
           <div>
             <p className={cn(ds.typography.size.xs, "text-white/80 mb-1")}>
               Purchase orders for buying inventory from suppliers
@@ -139,11 +129,7 @@ export function PurchaseOrdersTab() {
             </p>
           </div>
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => setShowCreateModal(true)}
-        >
+        <Button variant="primary" size="sm" onClick={() => setShowCreateModal(true)}>
           <Plus size={14} />
           Create PO
         </Button>

@@ -5,8 +5,7 @@ async function g(r) {
     .then(encodeURIComponent)
     .then((e) => `data:image/svg+xml;charset=utf-8,${e}`);
 }
-var l =
-    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8",
+var l = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8",
   n = (r, e, o) => {
     r.hasAttribute(e) && r.setAttribute(e, o);
   };
@@ -25,19 +24,15 @@ function d(r, e = l) {
   function a(t) {
     if (t.nodeType !== Node.ELEMENT_NODE) return;
     (t.localName === "img" && (n(t, "src", e), n(t, "srcset", e), (o = true)),
-      (t.localName === "picture" || t.localName === "source") &&
-        (n(t, "srcset", e), (o = true)),
-      t.localName === "image" &&
-        (n(t, "href", e), n(t, "xlink:href", e), (o = true)));
+      (t.localName === "picture" || t.localName === "source") && (n(t, "srcset", e), (o = true)),
+      t.localName === "image" && (n(t, "href", e), n(t, "xlink:href", e), (o = true)));
     let i = window.getComputedStyle(t);
     (t instanceof HTMLElement &&
       i.backgroundImage.includes("url(") &&
-      (t.style.setProperty("background-image", `url(${e})`, "important"),
-      (o = true)),
+      (t.style.setProperty("background-image", `url(${e})`, "important"), (o = true)),
       t instanceof HTMLElement &&
         i.background.includes("url(") &&
-        (t.style.setProperty("background", `url(${e})`, "important"),
-        (o = true)));
+        (t.style.setProperty("background", `url(${e})`, "important"), (o = true)));
     for (let c of [...t.children]) a(c);
   }
   return (a(r), o);

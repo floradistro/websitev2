@@ -58,9 +58,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [inWishlist, setInWishlist] = useState(false);
-  const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(
-    null,
-  );
+  const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddToCart, setShowAddToCart] = useState(false);
   const stockRef = useRef<HTMLDivElement>(null);
 
@@ -86,30 +84,19 @@ export function ProductCard({
   // Get stock status - simpler logic
   const getStockInfo = () => {
     // Primary check: product-level stock status
-    const inStock =
-      product.stock_status === "instock" || product.stock_status === "in_stock";
+    const inStock = product.stock_status === "instock" || product.stock_status === "in_stock";
 
     // If we have inventory AND locations, show detailed info
-    if (
-      product.inventory &&
-      product.inventory.length > 0 &&
-      locations.length > 0
-    ) {
+    if (product.inventory && product.inventory.length > 0 && locations.length > 0) {
       const activeLocations = locations.filter(
-        (loc: any) =>
-          loc.is_active === "1" ||
-          loc.is_active === 1 ||
-          loc.is_active === true,
+        (loc: any) => loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true,
       );
       const stockLocations: any[] = [];
 
       product.inventory.forEach((inv: any) => {
-        const qty = parseFloat(
-          inv.stock_quantity || inv.quantity || inv.stock || 0,
-        );
+        const qty = parseFloat(inv.stock_quantity || inv.quantity || inv.stock || 0);
         const status = inv.status?.toLowerCase();
-        const hasStock =
-          qty > 0 || status === "instock" || status === "in_stock";
+        const hasStock = qty > 0 || status === "instock" || status === "in_stock";
 
         if (hasStock) {
           const location = activeLocations.find(
@@ -167,8 +154,7 @@ export function ProductCard({
     if (selectedTierIndex === null || !tiers[selectedTierIndex]) return;
 
     const tier = tiers[selectedTierIndex];
-    const price =
-      typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
+    const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
 
     // Trigger onQuickAdd with tier info
     onQuickAdd?.(product.id);
@@ -183,8 +169,7 @@ export function ProductCard({
     // If tier is selected, show that price
     if (selectedTierIndex !== null && tiers[selectedTierIndex]) {
       const tier = tiers[selectedTierIndex];
-      const price =
-        typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
+      const price = typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
       return `$${price.toFixed(0)}`;
     }
 
@@ -248,8 +233,7 @@ export function ProductCard({
   // Check if product is new (created within last 7 days)
   const isNew =
     product.date_created &&
-    new Date(product.date_created).getTime() >
-      Date.now() - 7 * 24 * 60 * 60 * 1000;
+    new Date(product.date_created).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000;
 
   // Check if popular (>10 sales)
   const isPopular = product.total_sales && product.total_sales > 10;
@@ -312,11 +296,7 @@ export function ProductCard({
                 : "bg-black/60 border border-white/10 text-white hover:bg-black/80 hover:border-white/20"
             }`}
           >
-            <Heart
-              size={16}
-              className={inWishlist ? "fill-black" : "fill-none"}
-              strokeWidth={2}
-            />
+            <Heart size={16} className={inWishlist ? "fill-black" : "fill-none"} strokeWidth={2} />
           </button>
 
           {/* Badges - Top Left */}
@@ -370,8 +350,7 @@ export function ProductCard({
               style={{
                 fontSize: templateStyle.typography.product_card_name_mobile,
                 fontWeight: templateStyle.typography.product_card_name_weight,
-                letterSpacing:
-                  templateStyle.typography.product_card_name_tracking,
+                letterSpacing: templateStyle.typography.product_card_name_tracking,
               }}
             >
               {product.name}
@@ -380,9 +359,7 @@ export function ProductCard({
 
           {/* Price */}
           {showPrice && (
-            <p className="text-sm font-medium text-white tracking-wide">
-              {getPriceDisplay()}
-            </p>
+            <p className="text-sm font-medium text-white tracking-wide">{getPriceDisplay()}</p>
           )}
 
           {/* Multi-Location Stock Status */}
@@ -391,9 +368,7 @@ export function ProductCard({
               <div ref={stockRef} className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
                 <span className="text-[11px] uppercase tracking-wider text-white/60 truncate">
-                  {stockInfo.count === 1
-                    ? "In Stock"
-                    : `In Stock · ${stockInfo.count} locations`}
+                  {stockInfo.count === 1 ? "In Stock" : `In Stock · ${stockInfo.count} locations`}
                 </span>
               </div>
 
@@ -404,8 +379,7 @@ export function ProductCard({
                     .slice(0, 2)
                     .map((loc: any) => loc.name)
                     .join(", ")}
-                  {stockInfo.locations.length > 2 &&
-                    ` +${stockInfo.locations.length - 2} more`}
+                  {stockInfo.locations.length > 2 && ` +${stockInfo.locations.length - 2} more`}
                 </span>
               )}
             </div>
@@ -417,9 +391,7 @@ export function ProductCard({
                   Out of Stock
                 </span>
               </div>
-              <span className="text-[10px] text-white/30 ml-3.5">
-                Check back soon
-              </span>
+              <span className="text-[10px] text-white/30 ml-3.5">Check back soon</span>
             </div>
           )}
 
@@ -427,10 +399,7 @@ export function ProductCard({
           {displayFields.length > 0 && (
             <div className="space-y-1.5 pt-2 border-t border-white/10">
               {displayFields.map((field, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between gap-2"
-                >
+                <div key={idx} className="flex items-center justify-between gap-2">
                   <span className="uppercase tracking-[0.12em] font-medium text-white/60 text-[10px] whitespace-nowrap">
                     {field.label}
                   </span>
@@ -458,9 +427,7 @@ export function ProductCard({
                 </option>
                 {tiers.map((tier, index) => {
                   const price =
-                    typeof tier.price === "string"
-                      ? parseFloat(tier.price)
-                      : tier.price;
+                    typeof tier.price === "string" ? parseFloat(tier.price) : tier.price;
                   const tierLabel = getUnitLabel(tier);
                   const qty = tier.qty || tier.min_quantity || 1;
                   const pricePerUnit = tier.weight
@@ -483,11 +450,7 @@ export function ProductCard({
                   viewBox="0 0 24 24"
                   strokeWidth={2}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>

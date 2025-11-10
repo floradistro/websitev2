@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const authResult = await requireVendor(request);
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!productId || !mediaFilePath) {
       return NextResponse.json(
         { error: "Product ID and media file path required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,12 +33,9 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Link error:", updateError);
+        logger.error("❌ Link error:", updateError);
       }
-      return NextResponse.json(
-        { error: updateError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -46,7 +44,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -63,10 +61,7 @@ export async function DELETE(request: NextRequest) {
     const productId = searchParams.get("productId");
 
     if (!productId) {
-      return NextResponse.json(
-        { error: "Product ID required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Product ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -81,10 +76,7 @@ export async function DELETE(request: NextRequest) {
       .eq("vendor_id", vendorId);
 
     if (updateError) {
-      return NextResponse.json(
-        { error: updateError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
     return NextResponse.json({

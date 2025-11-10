@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Save or update display profile
  * POST /api/ai/display-profile
@@ -96,12 +97,9 @@ export async function POST(request: NextRequest) {
 
     if (result.error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error saving profile:", result.error);
+        logger.error("Error saving profile:", result.error);
       }
-      return NextResponse.json(
-        { success: false, error: result.error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: result.error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -111,12 +109,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Save profile error:", error);
+      logger.error("Save profile error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -130,10 +125,7 @@ export async function GET(request: NextRequest) {
     const deviceId = searchParams.get("deviceId");
 
     if (!deviceId) {
-      return NextResponse.json(
-        { success: false, error: "Device ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Device ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -158,11 +150,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get profile error:", error);
+      logger.error("Get profile error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

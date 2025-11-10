@@ -30,6 +30,7 @@ import { useBulkImportForm } from "./hooks/useBulkImportForm";
 import PricingPanel from "./components/PricingPanel";
 import axios from "axios";
 
+import { logger } from "@/lib/logger";
 interface Category {
   id: string;
   name: string;
@@ -87,15 +88,13 @@ export default function NewProductClient() {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const response = await axios.get(
-          "/api/supabase/categories?parent=null&active=true",
-        );
+        const response = await axios.get("/api/supabase/categories?parent=null&active=true");
         if (response.data.success) {
           setCategories(response.data.categories || []);
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to load categories:", error);
+          logger.error("Failed to load categories:", error);
         }
       }
     };
@@ -106,9 +105,7 @@ export default function NewProductClient() {
   useEffect(() => {
     const loadFields = async () => {
       const categoryId =
-        inputMode === "single"
-          ? singleForm.formData.category_id
-          : bulkForm.bulkCategory;
+        inputMode === "single" ? singleForm.formData.category_id : bulkForm.bulkCategory;
       if (!categoryId || !vendor?.id) {
         setDynamicFields([]);
         return;
@@ -116,26 +113,21 @@ export default function NewProductClient() {
 
       try {
         setLoadingFields(true);
-        const response = await axios.get(
-          `/api/vendor/product-fields?category_id=${categoryId}`,
-          {
-            headers: { "x-vendor-id": vendor.id },
-          },
-        );
+        const response = await axios.get(`/api/vendor/product-fields?category_id=${categoryId}`, {
+          headers: { "x-vendor-id": vendor.id },
+        });
 
         if (response.data.success) {
-          const fields = (response.data.merged || []).map(
-            (field: Record<string, unknown>) => ({
-              ...field,
-              label: (field.label || field.name) as string,
-              name: (field.slug || field.name) as string,
-            }),
-          );
+          const fields = (response.data.merged || []).map((field: Record<string, unknown>) => ({
+            ...field,
+            label: (field.label || field.name) as string,
+            name: (field.slug || field.name) as string,
+          }));
           setDynamicFields(fields);
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to load product fields:", error);
+          logger.error("Failed to load product fields:", error);
         }
       } finally {
         setLoadingFields(false);
@@ -143,12 +135,7 @@ export default function NewProductClient() {
     };
 
     loadFields();
-  }, [
-    singleForm.formData.category_id,
-    bulkForm.bulkCategory,
-    vendor?.id,
-    inputMode,
-  ]);
+  }, [singleForm.formData.category_id, bulkForm.bulkCategory, vendor?.id, inputMode]);
 
   // ===========================
   // DYNAMIC FIELD RENDERING
@@ -273,10 +260,7 @@ export default function NewProductClient() {
   // PRICING HANDLERS
   // ===========================
 
-  const handleNewTierChange = (
-    field: "weight" | "qty" | "price",
-    value: string,
-  ) => {
+  const handleNewTierChange = (field: "weight" | "qty" | "price", value: string) => {
     if (field === "weight") setNewTierWeight(value);
     else if (field === "qty") setNewTierQty(value);
     else if (field === "price") setNewTierPrice(value);
@@ -329,13 +313,7 @@ export default function NewProductClient() {
           >
             Add New Product
           </h1>
-          <p
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.quaternary,
-              "mt-1",
-            )}
-          >
+          <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mt-1")}>
             Create products individually or in bulk
           </p>
         </div>
@@ -405,11 +383,7 @@ export default function NewProductClient() {
               <div className="space-y-4">
                 <div>
                   <label
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                      "block mb-1.5",
-                    )}
+                    className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}
                   >
                     Product Name *
                   </label>
@@ -428,9 +402,7 @@ export default function NewProductClient() {
                     <Button
                       type="button"
                       onClick={singleForm.handleAIAutofill}
-                      disabled={
-                        singleForm.loadingAI || !singleForm.formData.name
-                      }
+                      disabled={singleForm.loadingAI || !singleForm.formData.name}
                       variant="secondary"
                     >
                       <Sparkles className="w-3 h-3 mr-1.5" strokeWidth={1.5} />
@@ -441,11 +413,7 @@ export default function NewProductClient() {
 
                 <div>
                   <label
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                      "block mb-1.5",
-                    )}
+                    className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}
                   >
                     Category *
                   </label>
@@ -477,11 +445,7 @@ export default function NewProductClient() {
 
                 <div>
                   <label
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                      "block mb-1.5",
-                    )}
+                    className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}
                   >
                     Description
                   </label>
@@ -578,10 +542,7 @@ export default function NewProductClient() {
                   )}
                 >
                   <ImageIcon
-                    className={cn(
-                      "w-8 h-8 mx-auto mb-2",
-                      ds.colors.text.quaternary,
-                    )}
+                    className={cn("w-8 h-8 mx-auto mb-2", ds.colors.text.quaternary)}
                     strokeWidth={1.5}
                   />
                   <input
@@ -592,15 +553,8 @@ export default function NewProductClient() {
                     className="hidden"
                     disabled={singleForm.uploadingImages}
                   />
-                  <p
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                    )}
-                  >
-                    {singleForm.uploadingImages
-                      ? "Uploading..."
-                      : "Click to upload images"}
+                  <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
+                    {singleForm.uploadingImages ? "Uploading..." : "Click to upload images"}
                   </p>
                 </label>
               </div>
@@ -615,12 +569,7 @@ export default function NewProductClient() {
                   ds.colors.border.default,
                 )}
               >
-                <p
-                  className={cn(
-                    ds.typography.size.xs,
-                    ds.colors.text.quaternary,
-                  )}
-                >
+                <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
                   Loading fields...
                 </p>
               </div>
@@ -647,13 +596,7 @@ export default function NewProductClient() {
                   {Object.entries(groupedFields).map(([groupName, fields]) => (
                     <div key={groupName} className="mb-6 last:mb-0">
                       {groupName !== "Other" && (
-                        <h3
-                          className={cn(
-                            ds.typography.size.xs,
-                            ds.colors.text.tertiary,
-                            "mb-3",
-                          )}
-                        >
+                        <h3 className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mb-3")}>
                           {groupName}
                         </h3>
                       )}
@@ -668,9 +611,7 @@ export default function NewProductClient() {
                               )}
                             >
                               {field.label}
-                              {field.required && (
-                                <span className="text-red-400/70 ml-1">*</span>
-                              )}
+                              {field.required && <span className="text-red-400/70 ml-1">*</span>}
                             </label>
                             {renderField(field)}
                             {field.description && (
@@ -714,17 +655,13 @@ export default function NewProductClient() {
                 </h2>
                 <div>
                   <label
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                      "block mb-1.5",
-                    )}
+                    className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}
                   >
                     Initial Quantity (grams)
                   </label>
                   <Input
                     type="number"
-                    step="0.1"
+                    step={0.1}
                     value={singleForm.formData.initial_quantity}
                     onChange={(e) =>
                       singleForm.setFormData({
@@ -832,21 +769,13 @@ export default function NewProductClient() {
                     >
                       Pricing Template (Optional)
                     </h2>
-                    <p
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.quaternary,
-                        "mb-4",
-                      )}
-                    >
+                    <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-4")}>
                       Apply a pricing template to all products
                     </p>
                     <div className="flex gap-2">
                       <select
                         value={bulkForm.selectedBulkTemplateId}
-                        onChange={(e) =>
-                          bulkForm.setSelectedBulkTemplateId(e.target.value)
-                        }
+                        onChange={(e) => bulkForm.setSelectedBulkTemplateId(e.target.value)}
                         className={cn(
                           "flex-1 px-3 py-2 rounded-lg border transition-colors",
                           ds.typography.size.xs,
@@ -860,8 +789,7 @@ export default function NewProductClient() {
                         {bulkForm.availableTemplates.map((template) => (
                           <option key={template.id} value={template.id}>
                             {template.name}
-                            {template.quality_tier &&
-                              ` (${template.quality_tier})`}
+                            {template.quality_tier && ` (${template.quality_tier})`}
                           </option>
                         ))}
                       </select>
@@ -896,13 +824,7 @@ export default function NewProductClient() {
                   >
                     Product List
                   </h2>
-                  <p
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.quaternary,
-                      "mb-4",
-                    )}
-                  >
+                  <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-4")}>
                     Enter one product per line: Name, Price, Cost (optional)
                   </p>
                   <Textarea
@@ -918,16 +840,12 @@ export default function NewProductClient() {
                   <Button
                     onClick={bulkForm.handleBulkAIEnrich}
                     disabled={
-                      bulkForm.loadingAI ||
-                      !bulkForm.bulkInput.trim() ||
-                      !bulkForm.bulkCategory
+                      bulkForm.loadingAI || !bulkForm.bulkInput.trim() || !bulkForm.bulkCategory
                     }
                     className="flex-1"
                   >
                     <Sparkles className="w-3 h-3 mr-1.5" strokeWidth={1.5} />
-                    {bulkForm.loadingAI
-                      ? "Enriching with AI..."
-                      : "Enrich with AI"}
+                    {bulkForm.loadingAI ? "Enriching with AI..." : "Enrich with AI"}
                   </Button>
                 </div>
               </>
@@ -970,10 +888,7 @@ export default function NewProductClient() {
                       </button>
                       <button
                         onClick={bulkForm.goToNextProduct}
-                        disabled={
-                          bulkForm.currentReviewIndex ===
-                          bulkForm.bulkProducts.length - 1
-                        }
+                        disabled={bulkForm.currentReviewIndex === bulkForm.bulkProducts.length - 1}
                         className={cn(
                           "p-2 rounded-lg border transition-colors",
                           ds.colors.bg.elevated,
@@ -1002,8 +917,7 @@ export default function NewProductClient() {
                         value={bulkForm.currentProduct?.name || ""}
                         onChange={(e) => {
                           const updated = [...bulkForm.bulkProducts];
-                          updated[bulkForm.currentReviewIndex].name =
-                            e.target.value;
+                          updated[bulkForm.currentReviewIndex].name = e.target.value;
                           bulkForm.setBulkProducts(updated);
                         }}
                       />
@@ -1022,12 +936,11 @@ export default function NewProductClient() {
                         </label>
                         <Input
                           type="number"
-                          step="0.01"
+                          step={0.01}
                           value={bulkForm.currentProduct?.price || ""}
                           onChange={(e) => {
                             const updated = [...bulkForm.bulkProducts];
-                            updated[bulkForm.currentReviewIndex].price =
-                              e.target.value;
+                            updated[bulkForm.currentReviewIndex].price = e.target.value;
                             bulkForm.setBulkProducts(updated);
                           }}
                         />
@@ -1044,12 +957,11 @@ export default function NewProductClient() {
                         </label>
                         <Input
                           type="number"
-                          step="0.01"
+                          step={0.01}
                           value={bulkForm.currentProduct?.cost_price || ""}
                           onChange={(e) => {
                             const updated = [...bulkForm.bulkProducts];
-                            updated[bulkForm.currentReviewIndex].cost_price =
-                              e.target.value;
+                            updated[bulkForm.currentReviewIndex].cost_price = e.target.value;
                             bulkForm.setBulkProducts(updated);
                           }}
                         />
@@ -1058,21 +970,14 @@ export default function NewProductClient() {
 
                     {/* Show AI-enriched fields */}
                     {bulkForm.currentProduct &&
-                      bulkForm.bulkEnrichedData[
-                        bulkForm.currentProduct.name
-                      ] && (
+                      bulkForm.bulkEnrichedData[bulkForm.currentProduct.name] && (
                         <div
                           className={cn(
                             "p-4 rounded-lg border border-white/10",
                             ds.colors.bg.primary,
                           )}
                         >
-                          <p
-                            className={cn(
-                              ds.typography.size.micro,
-                              "text-white/60 mb-2",
-                            )}
-                          >
+                          <p className={cn(ds.typography.size.micro, "text-white/60 mb-2")}>
                             AI-enriched data
                           </p>
                           <div
@@ -1082,16 +987,14 @@ export default function NewProductClient() {
                               ds.colors.text.tertiary,
                             )}
                           >
-                            {Object.entries(
-                              bulkForm.currentProduct.custom_fields || {},
-                            ).map(([key, value]) => (
-                              <div key={key}>
-                                <span className="text-white/40">{key}:</span>{" "}
-                                {Array.isArray(value)
-                                  ? value.join(", ")
-                                  : value}
-                              </div>
-                            ))}
+                            {Object.entries(bulkForm.currentProduct.custom_fields || {}).map(
+                              ([key, value]) => (
+                                <div key={key}>
+                                  <span className="text-white/40">{key}:</span>{" "}
+                                  {Array.isArray(value) ? value.join(", ") : value}
+                                </div>
+                              ),
+                            )}
                           </div>
                         </div>
                       )}
@@ -1100,9 +1003,7 @@ export default function NewProductClient() {
 
                 {/* Progress Indicator */}
                 {bulkForm.bulkProcessing && bulkForm.bulkProgress.total > 0 && (
-                  <div
-                    className={cn(ds.components.card, "p-4 rounded-xl mb-4")}
-                  >
+                  <div className={cn(ds.components.card, "p-4 rounded-xl mb-4")}>
                     <div className="space-y-2">
                       {/* Progress Bar */}
                       <div className="relative w-full h-2 bg-white/5 rounded-full overflow-hidden">
@@ -1123,8 +1024,7 @@ export default function NewProductClient() {
                           </span>
                         </span>
                         <span className="text-white/40">
-                          {bulkForm.bulkProgress.current} /{" "}
-                          {bulkForm.bulkProgress.total}
+                          {bulkForm.bulkProgress.current} / {bulkForm.bulkProgress.total}
                         </span>
                       </div>
 
@@ -1134,11 +1034,7 @@ export default function NewProductClient() {
                         <div className="flex items-center gap-3 text-[9px]">
                           {bulkForm.bulkProgress.successCount > 0 && (
                             <div className="flex items-center gap-1">
-                              <Sparkles
-                                size={12}
-                                strokeWidth={1.5}
-                                className="text-green-400"
-                              />
+                              <Sparkles size={12} strokeWidth={1.5} className="text-green-400" />
                               <span className="text-green-400">
                                 {bulkForm.bulkProgress.successCount} created
                               </span>
@@ -1146,11 +1042,7 @@ export default function NewProductClient() {
                           )}
                           {bulkForm.bulkProgress.failCount > 0 && (
                             <div className="flex items-center gap-1">
-                              <X
-                                size={12}
-                                strokeWidth={1.5}
-                                className="text-red-400"
-                              />
+                              <X size={12} strokeWidth={1.5} className="text-red-400" />
                               <span className="text-red-400">
                                 {bulkForm.bulkProgress.failCount} failed
                               </span>

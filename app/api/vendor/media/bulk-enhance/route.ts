@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import FormData from "form-data";
 import axios from "axios";
 
+import { logger } from "@/lib/logger";
 const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || "";
 
 // Process a single image with enhancements
@@ -129,9 +130,7 @@ export async function POST(request: NextRequest) {
     }
 
     for (const chunk of chunks) {
-      const promises = chunk.map((file) =>
-        enhanceImage(file, vendorId, options, 3),
-      );
+      const promises = chunk.map((file) => enhanceImage(file, vendorId, options, 3));
       const settled = await Promise.allSettled(promises);
 
       settled.forEach((result, index) => {
@@ -159,7 +158,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

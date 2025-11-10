@@ -13,9 +13,7 @@ export default function DashboardRedirect() {
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="text-white/60 text-sm uppercase tracking-wider animate-pulse">
-        Loading...
-      </div>
+      <div className="text-white/60 text-sm uppercase tracking-wider animate-pulse">Loading...</div>
     </div>
   );
 }

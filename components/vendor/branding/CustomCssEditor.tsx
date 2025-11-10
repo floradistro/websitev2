@@ -2,15 +2,7 @@
 
 import { useState } from "react";
 import Editor from "@monaco-editor/react";
-import {
-  Code,
-  Eye,
-  EyeOff,
-  AlertCircle,
-  CheckCircle,
-  Maximize2,
-  Minimize2,
-} from "lucide-react";
+import { Code, Eye, EyeOff, AlertCircle, CheckCircle, Maximize2, Minimize2 } from "lucide-react";
 import { ds, cn } from "@/lib/design-system";
 
 interface CustomCssEditorProps {
@@ -56,11 +48,7 @@ h1, h2, h3 {
  *
  * Monaco-powered CSS editor with validation and preview
  */
-export function CustomCssEditor({
-  value,
-  onChange,
-  maxLength = 10000,
-}: CustomCssEditorProps) {
+export function CustomCssEditor({ value, onChange, maxLength = 10000 }: CustomCssEditorProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -244,14 +232,7 @@ export function CustomCssEditor({
             <AlertCircle size={14} />
             <span>Validation Errors:</span>
           </div>
-          <ul
-            className={cn(
-              ds.typography.size.xs,
-              "text-red-400",
-              "space-y-0.5",
-              "ml-5",
-            )}
-          >
+          <ul className={cn(ds.typography.size.xs, "text-red-400", "space-y-0.5", "ml-5")}>
             {validationErrors.map((error, i) => (
               <li key={i}>• {error}</li>
             ))}
@@ -320,28 +301,17 @@ export function CustomCssEditor({
             CSS Preview
           </div>
 
-          <div
-            className={cn(
-              "p-4",
-              "bg-black/20",
-              ds.effects.radius.md,
-              "max-h-60 overflow-auto",
-            )}
-          >
+          <div className={cn("p-4", "bg-black/20", ds.effects.radius.md, "max-h-60 overflow-auto")}>
             <style dangerouslySetInnerHTML={{ __html: value }} />
 
             {/* Sample elements for preview */}
             <div className="space-y-4">
               <div className="product-card p-4 bg-white/5 border border-white/10">
                 <h3 className="text-white mb-2">Sample Product</h3>
-                <p className="text-white/60 text-sm">
-                  This is how your CSS affects product cards
-                </p>
+                <p className="text-white/60 text-sm">This is how your CSS affects product cards</p>
               </div>
 
-              <button className="btn-primary text-white px-4 py-2 rounded">
-                Sample Button
-              </button>
+              <button className="btn-primary text-white px-4 py-2 rounded">Sample Button</button>
 
               <div>
                 <h1 className="text-white text-2xl mb-2">Heading 1</h1>
@@ -363,13 +333,7 @@ export function CustomCssEditor({
           ds.effects.radius.lg,
         )}
       >
-        <div
-          className={cn(
-            ds.typography.size.micro,
-            ds.colors.text.quaternary,
-            "space-y-1",
-          )}
-        >
+        <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "space-y-1")}>
           <div>
             <strong>⚠️ Safety Guidelines:</strong>
           </div>

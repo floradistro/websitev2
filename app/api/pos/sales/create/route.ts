@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -61,14 +62,11 @@ export async function POST(request: NextRequest) {
 
   if (!hasServiceKey) {
     if (process.env.NODE_ENV === "development") {
-      console.error(
-        "🚨 CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing at request time!",
-      );
+      logger.error("🚨 CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing at request time!");
     }
     return NextResponse.json(
       {
-        error:
-          "Internal configuration error - service credentials not available",
+        error: "Internal configuration error - service credentials not available",
         hint: "Server environment variables are not properly configured",
       },
       { status: 500 },
@@ -86,11 +84,9 @@ export async function POST(request: NextRequest) {
 
   if (!isUsingServiceKey) {
     if (process.env.NODE_ENV === "development") {
-      console.error(
-        "🚨 CRITICAL: Supabase client is NOT using service role key!",
-      );
+      logger.error("🚨 CRITICAL: Supabase client is NOT using service role key!");
     }
-    console.error("Auth header:", authHeader.substring(0, 50));
+    logger.error("Auth header:", authHeader.substring(0, 50));
   }
 
   try {
@@ -125,18 +121,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (total <= 0) {
-      return NextResponse.json(
-        { error: "Invalid total amount" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid total amount" }, { status: 400 });
     }
 
     // Validate numbers are actually numbers
     if (isNaN(subtotal) || isNaN(taxAmount) || isNaN(total)) {
-      return NextResponse.json(
-        { error: "Invalid numeric values in request" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid numeric values in request" }, { status: 400 });
     }
 
     // ============================================================================
@@ -151,12 +141,9 @@ export async function POST(request: NextRequest) {
 
     if (invError || !inventoryRecords) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Inventory lookup failed:", invError);
+        logger.error("❌ Inventory lookup failed:", invError);
       }
-      return NextResponse.json(
-        { error: "Failed to verify inventory" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to verify inventory" }, { status: 500 });
     }
 
     // Build inventory map for quick lookup
@@ -193,8 +180,7 @@ export async function POST(request: NextRequest) {
       .eq("id", locationId)
       .single();
 
-    const locationCode =
-      locationData?.slug?.substring(0, 3).toUpperCase() || "POS";
+    const locationCode = locationData?.slug?.substring(0, 3).toUpperCase() || "POS";
     const dateCode = new Date().toISOString().split("T")[0].replace(/-/g, "");
     const sequence = Date.now().toString().slice(-6);
     const orderNumber = `${locationCode}-${dateCode}-${sequence}`;
@@ -232,18 +218,16 @@ export async function POST(request: NextRequest) {
 
     if (orderError || !order) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Order creation failed:", orderError);
+        logger.error("❌ Order creation failed:", orderError);
       }
       // Special handling for RLS errors
       if (orderError?.code === "42501") {
         if (process.env.NODE_ENV === "development") {
-          console.error(
-            "🚨 RLS POLICY VIOLATION - Service role should bypass this!",
-          );
+          logger.error("🚨 RLS POLICY VIOLATION - Service role should bypass this!");
         }
         if (process.env.NODE_ENV === "development") {
           if (process.env.NODE_ENV === "development") {
-            console.error("Order data attempted:", {
+            logger.error("Order data attempted:", {
               vendor_id: vendorId,
               customer_id: customerId || null,
               location_id: locationId,
@@ -283,13 +267,11 @@ export async function POST(request: NextRequest) {
       inventory_id: item.inventoryId,
     }));
 
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems);
+    const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
 
     if (itemsError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Order items failed:", itemsError);
+        logger.error("❌ Order items failed:", itemsError);
       }
       // Rollback order
       await supabase.from("orders").delete().eq("id", order.id);
@@ -305,17 +287,14 @@ export async function POST(request: NextRequest) {
     // ============================================================================
 
     for (const item of items) {
-      const { data: result, error: deductError } = await supabase.rpc(
-        "decrement_inventory",
-        {
-          p_inventory_id: item.inventoryId,
-          p_quantity: item.quantity,
-        },
-      );
+      const { data: result, error: deductError } = await supabase.rpc("decrement_inventory", {
+        p_inventory_id: item.inventoryId,
+        p_quantity: item.quantity,
+      });
 
       if (deductError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Inventory deduction failed:", deductError);
+          logger.error("❌ Inventory deduction failed:", deductError);
         }
         // CRITICAL: Inventory deduction failed
         // In production, this should trigger:
@@ -335,7 +314,7 @@ export async function POST(request: NextRequest) {
           .eq("id", order.id);
 
         if (process.env.NODE_ENV === "development") {
-          console.error("🚨 INVENTORY ERROR - Order flagged:", order.id);
+          logger.error("🚨 INVENTORY ERROR - Order flagged:", order.id);
         }
       } else {
       }
@@ -374,7 +353,7 @@ export async function POST(request: NextRequest) {
 
     if (txnError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("⚠️  Transaction record failed:", txnError);
+        logger.error("⚠️  Transaction record failed:", txnError);
       }
       // Non-critical - order is still valid
     } else {
@@ -386,18 +365,15 @@ export async function POST(request: NextRequest) {
     if (sessionId) {
       const txnType = customerId ? "pickup_orders_fulfilled" : "walk_in_sales";
 
-      const { error: sessionError } = await supabase.rpc(
-        "increment_session_counter",
-        {
-          p_session_id: sessionId,
-          p_counter_name: txnType,
-          p_amount: total,
-        },
-      );
+      const { error: sessionError } = await supabase.rpc("increment_session_counter", {
+        p_session_id: sessionId,
+        p_counter_name: txnType,
+        p_amount: total,
+      });
 
       if (sessionError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("⚠️  Session update failed:", sessionError);
+          logger.error("⚠️  Session update failed:", sessionError);
         }
         // Non-critical - session will be reconciled on close
       } else {
@@ -418,7 +394,7 @@ export async function POST(request: NextRequest) {
         orderId: order.id,
         orderNumber,
         total,
-      }).catch((err) => console.error("Background loyalty failed:", err));
+      }).catch((err) => logger.error("Background loyalty failed:", err));
 
       syncToMarketing(supabase, {
         vendorId,
@@ -429,7 +405,7 @@ export async function POST(request: NextRequest) {
         userId,
         items,
         total,
-      }).catch((err) => console.error("Background marketing failed:", err));
+      }).catch((err) => logger.error("Background marketing failed:", err));
     }
 
     // ============================================================================
@@ -455,7 +431,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("💥 SALE FAILED:", error);
+      logger.error("💥 SALE FAILED:", error);
     }
     return NextResponse.json(
       {

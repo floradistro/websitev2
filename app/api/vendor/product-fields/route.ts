@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/vendor/product-fields
  * Get all product fields for vendor with inheritance support
@@ -20,10 +21,7 @@ export async function GET(request: NextRequest) {
     const categoryId = searchParams.get("category_id");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { error: "Vendor ID required" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Vendor ID required" }, { status: 401 });
     }
 
     const supabase = getServiceSupabase();
@@ -175,7 +173,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching product fields:", error);
+      logger.error("Error fetching product fields:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -246,7 +244,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error adding product field:", error);
+      logger.error("Error adding product field:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -264,8 +262,7 @@ export async function PUT(request: NextRequest) {
     }
     const { vendorId } = authResult;
 
-    const { id, field_definition, category_id, is_active, sort_order } =
-      await request.json();
+    const { id, field_definition, category_id, is_active, sort_order } = await request.json();
 
     if (!id) {
       return NextResponse.json({ error: "Field ID required" }, { status: 400 });
@@ -275,8 +272,7 @@ export async function PUT(request: NextRequest) {
 
     // Build update data
     const updateData: any = {};
-    if (field_definition !== undefined)
-      updateData.field_definition = field_definition;
+    if (field_definition !== undefined) updateData.field_definition = field_definition;
     if (category_id !== undefined) updateData.category_id = category_id;
     if (is_active !== undefined) updateData.is_active = is_active;
     if (sort_order !== undefined) updateData.sort_order = sort_order;
@@ -307,7 +303,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating product field:", error);
+      logger.error("Error updating product field:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -326,10 +322,7 @@ export async function DELETE(request: NextRequest) {
     const fieldId = searchParams.get("id");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { error: "Vendor ID required" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Vendor ID required" }, { status: 401 });
     }
 
     if (!fieldId) {
@@ -352,7 +345,7 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error deleting product field:", error);
+      logger.error("Error deleting product field:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

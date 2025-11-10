@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function PATCH(request: NextRequest) {
   try {
     // Use secure middleware to get vendor_id from session
@@ -30,12 +31,9 @@ export async function PATCH(request: NextRequest) {
 
     if (fetchError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching product:", fetchError);
+        logger.error("Error fetching product:", fetchError);
       }
-      return NextResponse.json(
-        { success: false, error: "Database error" },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: "Database error" }, { status: 500 });
     }
 
     if (!product) {
@@ -46,10 +44,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (product.vendor_id !== vendorId) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 403 },
-      );
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 403 });
     }
 
     // Build update data
@@ -59,12 +54,9 @@ export async function PATCH(request: NextRequest) {
 
     if (updates.name !== undefined) updateData.name = updates.name;
     if (updates.sku !== undefined) updateData.sku = updates.sku;
-    if (updates.regular_price !== undefined)
-      updateData.regular_price = updates.regular_price;
-    if (updates.cost_price !== undefined)
-      updateData.cost_price = updates.cost_price;
-    if (updates.description !== undefined)
-      updateData.description = updates.description;
+    if (updates.regular_price !== undefined) updateData.regular_price = updates.regular_price;
+    if (updates.cost_price !== undefined) updateData.cost_price = updates.cost_price;
+    if (updates.description !== undefined) updateData.description = updates.description;
 
     // Handle custom_fields directly (NEW SYSTEM - object format)
     if (updates.custom_fields !== undefined) {
@@ -91,9 +83,7 @@ export async function PATCH(request: NextRequest) {
             type: "text",
             label:
               labelMap[field_name] ||
-              field_name
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, (l) => l.toUpperCase()),
+              field_name.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
             value: field_value,
           };
         })
@@ -116,25 +106,19 @@ export async function PATCH(request: NextRequest) {
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Update error:", updateError);
+        logger.error("Update error:", updateError);
       }
-      return NextResponse.json(
-        { success: false, error: updateError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: updateError.message }, { status: 500 });
     }
 
     if (!updated) {
       if (process.env.NODE_ENV === "development") {
-        console.error(
-          "❌ Product update affected 0 rows - product may have been deleted",
-        );
+        logger.error("❌ Product update affected 0 rows - product may have been deleted");
       }
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Product not found or was deleted during update. Please refresh the page.",
+          error: "Product not found or was deleted during update. Please refresh the page.",
           product_id,
         },
         { status: 404 },
@@ -147,7 +131,7 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Product update error:", error);
+      logger.error("Product update error:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Internal server error" },

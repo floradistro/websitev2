@@ -11,9 +11,7 @@ interface Viewfinder {
   };
   toJSONObject: () => ViewfinderJSON;
 }
-declare class NoneViewfinder
-  implements Viewfinder, Serializable<ViewfinderJSON>
-{
+declare class NoneViewfinder implements Viewfinder, Serializable<ViewfinderJSON> {
   private readonly type;
   toJSONObject(): ViewfinderJSON;
 }

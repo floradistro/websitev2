@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const authResult = await requireVendor(request);
@@ -17,7 +18,8 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("products")
-      .select(`
+      .select(
+        `
         id,
         name,
         sku,
@@ -28,7 +30,8 @@ export async function GET(request: NextRequest) {
           name,
           slug
         )
-      `)
+      `,
+      )
       .eq("vendor_id", vendorId)
       .order("name", { ascending: true });
 
@@ -52,7 +55,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Products fetch error:", error);
+        logger.error("❌ Products fetch error:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -80,7 +83,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -69,25 +69,14 @@ export default function AdminLoginPage() {
           >
             Admin Login
           </h1>
-          <p
-            className={cn(
-              ds.typography.size.sm,
-              ds.colors.text.tertiary,
-              "mt-2",
-            )}
-          >
+          <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary, "mt-2")}>
             Sign in to access the WhaleTools dashboard
           </p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div
-            className={cn(
-              "mb-6 p-4 rounded-lg",
-              "bg-red-500/10 border border-red-500/20",
-            )}
-          >
+          <div className={cn("mb-6 p-4 rounded-lg", "bg-red-500/10 border border-red-500/20")}>
             <p className={cn(ds.typography.size.sm, "text-red-400")}>{error}</p>
           </div>
         )}

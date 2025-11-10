@@ -46,19 +46,11 @@ export function LocationStock({
   };
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border p-4",
-        ds.colors.bg.secondary,
-        ds.colors.border.default,
-      )}
-    >
+    <div className={cn("rounded-2xl border p-4", ds.colors.bg.secondary, ds.colors.border.default)}>
       {/* Location Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <div
-            className={cn(ds.typography.size.sm, "text-white font-light mb-1")}
-          >
+          <div className={cn(ds.typography.size.sm, "text-white font-light mb-1")}>
             {locationName}
           </div>
           <div
@@ -73,12 +65,8 @@ export function LocationStock({
           </div>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-light text-white">
-            {quantity.toFixed(2)}
-          </div>
-          <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
-            grams
-          </div>
+          <div className="text-2xl font-light text-white">{quantity.toFixed(2)}</div>
+          <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>grams</div>
         </div>
       </div>
 

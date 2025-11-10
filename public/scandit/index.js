@@ -27,10 +27,7 @@ export {
   c as RectangularLocationSelection,
 } from "./chunks/chunk-AKDTQZ73.js";
 export { a as RectangularViewfinder } from "./chunks/chunk-6NVWG2LP.js";
-export {
-  b as ScanditIcon,
-  a as ScanditIconShape,
-} from "./chunks/chunk-27Z5CYJL.js";
+export { b as ScanditIcon, a as ScanditIconShape } from "./chunks/chunk-27Z5CYJL.js";
 export { a as DataCaptureVersion } from "./chunks/chunk-VBNI76IP.js";
 export { a as DataCaptureView } from "./chunks/chunk-BPNTTDTU.js";
 import { a as a$a } from "./chunks/chunk-N5YZEC56.js";
@@ -81,11 +78,7 @@ export {
   b as RectangularViewfinderLineStyle,
   a as RectangularViewfinderStyle,
 } from "./chunks/chunk-WGLHZXRT.js";
-export {
-  a as LogoStyle,
-  c as SwipeToZoom,
-  b as TapToFocus,
-} from "./chunks/chunk-GX4YCYCH.js";
+export { a as LogoStyle, c as SwipeToZoom, b as TapToFocus } from "./chunks/chunk-GX4YCYCH.js";
 export {
   q as Anchor,
   n as Color,
@@ -105,10 +98,7 @@ export {
   l as SizeWithUnitAndAspect,
   k as SizingMode,
 } from "./chunks/chunk-TPQTY3KB.js";
-export {
-  a as ContextStatus,
-  b as PrivateMirrorAxis,
-} from "./chunks/chunk-WUHKODFA.js";
+export { a as ContextStatus, b as PrivateMirrorAxis } from "./chunks/chunk-WUHKODFA.js";
 a$1();
 var a = a$2;
 async function A() {
@@ -131,8 +121,7 @@ function B() {
     [o = "auto", s = "auto", n = false] = [
       (i = r.get("pthreads")) == null ? void 0 : i.toLowerCase(),
       (u = r.get("simd")) == null ? void 0 : u.toLowerCase(),
-      ((f = r.get("forceAllPolyfills")) == null ? void 0 : f.toLowerCase()) ===
-        "true",
+      ((f = r.get("forceAllPolyfills")) == null ? void 0 : f.toLowerCase()) === "true",
     ];
   return {
     overrideThreadsSupport: e(o) ? o : "auto",
@@ -183,17 +172,12 @@ async function z(e, r) {
   return o;
 }
 async function nr(e) {
-  if (a.configurePhase !== "unconfigured" && a.configurePromise != null)
-    return a.configurePromise;
+  if (a.configurePhase !== "unconfigured" && a.configurePromise != null) return a.configurePromise;
   a$3.getInstance().updateIfMissing(a$4);
   async function r() {
     var f;
     a$2.configurePhase = "started";
-    let {
-      forceAllPolyfills: o,
-      overrideThreadsSupport: s,
-      overrideSimdSupport: n,
-    } = B();
+    let { forceAllPolyfills: o, overrideThreadsSupport: s, overrideSimdSupport: n } = B();
     (await a$5({ forceAllPolyfills: o }), await I(e));
     let i = {
       overrideThreadsSupport: s,
@@ -232,8 +216,7 @@ https://docs.scandit.com/system-requirements#web-sdk`,
 function mr(e, r) {
   switch (((a.configurePhase = e), e)) {
     case "done":
-      (r && (a.mainDataCaptureLoader = r),
-        (a.configurePromise = Promise.resolve()));
+      (r && (a.mainDataCaptureLoader = r), (a.configurePromise = Promise.resolve()));
       break;
     case "unconfigured":
       a.configurePromise = null;

@@ -59,12 +59,7 @@ export function InventoryStats({
                 </span>
                 <Icon size={14} className="text-white/20" strokeWidth={1} />
               </div>
-              <div
-                className={cn(
-                  "text-2xl font-light text-white",
-                  isLoading && "animate-pulse",
-                )}
-              >
+              <div className={cn("text-2xl font-light text-white", isLoading && "animate-pulse")}>
                 {isLoading ? "—" : stat.value}
               </div>
             </div>

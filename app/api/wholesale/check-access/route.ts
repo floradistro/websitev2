@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Check if user has wholesale access
  * Only vendors and wholesale-approved customers have access
@@ -39,9 +40,7 @@ export async function GET(request: NextRequest) {
     // Check if user is a wholesale-approved customer
     const { data: customer, error: customerError } = await supabase
       .from("customers")
-      .select(
-        "id, is_wholesale_approved, wholesale_business_name, wholesale_application_status",
-      )
+      .select("id, is_wholesale_approved, wholesale_business_name, wholesale_application_status")
       .eq("auth_user_id", userId)
       .single();
 
@@ -70,7 +69,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Check wholesale access error:", error);
+      logger.error("Check wholesale access error:", error);
     }
     return NextResponse.json(
       { error: "Failed to check access", details: error.message },

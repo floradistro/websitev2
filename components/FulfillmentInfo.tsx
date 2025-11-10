@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Store,
-  MapPin,
-  Truck,
-  Package,
-  Clock,
-  CheckCircle,
-} from "lucide-react";
+import { Store, MapPin, Truck, Package, Clock, CheckCircle } from "lucide-react";
 import { useState } from "react";
 
 interface FulfillmentInfoProps {
@@ -74,9 +67,7 @@ export default function FulfillmentInfo({
         <div className="flex items-start gap-3">
           <Store size={18} className="text-white/60 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <div className="text-white/80 text-sm font-medium mb-1">
-              Sold by {vendor.name}
-            </div>
+            <div className="text-white/80 text-sm font-medium mb-1">Sold by {vendor.name}</div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-white/60">
               <div className="flex items-center gap-1">
                 <MapPin size={12} />
@@ -113,9 +104,7 @@ export default function FulfillmentInfo({
 
     return (
       <div className="bg-white/5 border border-white/10 p-4">
-        <div className="text-white/80 text-sm font-medium mb-3">
-          📍 Select Pickup Location
-        </div>
+        <div className="text-white/80 text-sm font-medium mb-3">📍 Select Pickup Location</div>
         <select
           value={selectedLocation || ""}
           onChange={(e) => handleLocationChange(parseInt(e.target.value))}
@@ -128,9 +117,7 @@ export default function FulfillmentInfo({
             </option>
           ))}
         </select>
-        <div className="mt-2 text-xs text-white/60">
-          Free same-day pickup • Ships next-day
-        </div>
+        <div className="mt-2 text-xs text-white/60">Free same-day pickup • Ships next-day</div>
       </div>
     );
   }
@@ -144,12 +131,8 @@ export default function FulfillmentInfo({
           <div className="bg-white/5 border border-white/10 p-4">
             <div className="flex items-center gap-2 mb-3">
               <Package size={16} className="text-green-500" />
-              <div className="text-white/80 text-sm font-medium">
-                Available at Our Locations
-              </div>
-              <span className="ml-auto text-xs text-green-500 font-medium">
-                FASTEST
-              </span>
+              <div className="text-white/80 text-sm font-medium">Available at Our Locations</div>
+              <span className="ml-auto text-xs text-green-500 font-medium">FASTEST</span>
             </div>
             <select
               value={selectedLocation || ""}
@@ -174,9 +157,7 @@ export default function FulfillmentInfo({
           <div className="bg-white/5 border border-white/10 p-4">
             <div className="flex items-center gap-2 mb-2">
               <Store size={16} className="text-blue-500" />
-              <div className="text-white/80 text-sm font-medium">
-                Or ships from {vendor.name}
-              </div>
+              <div className="text-white/80 text-sm font-medium">Or ships from {vendor.name}</div>
             </div>
             <div className="flex items-center gap-2 text-xs text-white/60">
               <MapPin size={12} />
@@ -185,9 +166,7 @@ export default function FulfillmentInfo({
               <Clock size={12} />
               <span>Ships in 2-3 days</span>
               <span>•</span>
-              <span>
-                {vendorLocationsWithStock[0].stock.toFixed(1)}g available
-              </span>
+              <span>{vendorLocationsWithStock[0].stock.toFixed(1)}g available</span>
             </div>
           </div>
         )}
@@ -199,9 +178,7 @@ export default function FulfillmentInfo({
   return (
     <div className="bg-red-500/10 border border-red-500/20 p-4">
       <div className="text-red-500 text-sm font-medium mb-1">Out of Stock</div>
-      <div className="text-red-500/80 text-xs">
-        Check back soon for availability
-      </div>
+      <div className="text-red-500/80 text-xs">Check back soon for availability</div>
     </div>
   );
 }

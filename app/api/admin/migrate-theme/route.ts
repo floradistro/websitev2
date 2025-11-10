@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient(
@@ -42,17 +43,14 @@ export async function POST(request: NextRequest) {
       ) {
         return NextResponse.json({
           success: false,
-          message:
-            "Column does not exist. Please run SQL manually in Supabase dashboard.",
+          message: "Column does not exist. Please run SQL manually in Supabase dashboard.",
           sql: "ALTER TABLE tv_menus ADD COLUMN IF NOT EXISTS theme VARCHAR(50) DEFAULT 'midnight-elegance';",
         });
       }
 
       if (!testError) {
         // Update menus without themes
-        const { data: allMenus } = await supabase
-          .from("tv_menus")
-          .select("id, name, theme");
+        const { data: allMenus } = await supabase.from("tv_menus").select("id, name, theme");
 
         const menusWithoutTheme = allMenus?.filter((m) => !m.theme) || [];
 
@@ -84,7 +82,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Migration error:", error);
+      logger.error("Migration error:", error);
     }
     return NextResponse.json(
       {

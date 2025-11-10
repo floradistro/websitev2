@@ -29,9 +29,7 @@ function POSLayoutInner({ children }: { children: React.ReactNode }) {
   if (!mounted) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-white/60 text-xs uppercase tracking-[0.15em]">
-          Loading POS...
-        </div>
+        <div className="text-white/60 text-xs uppercase tracking-[0.15em]">Loading POS...</div>
       </div>
     );
   }

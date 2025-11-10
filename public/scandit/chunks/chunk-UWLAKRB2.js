@@ -66,10 +66,7 @@ async function S(e, t, n) {
           ),
           "INVALID");
   } catch (r) {
-    return (
-      a.log(a.Level.Warn, "Wasm response could not be verified", r),
-      "NOT_VERIFIABLE"
-    );
+    return (a.log(a.Level.Warn, "Wasm response could not be verified", r), "NOT_VERIFIABLE");
   }
 }
 var d = new Map([
@@ -81,9 +78,7 @@ function I(e) {
   var r;
   let t = "content-encoding";
   if (e == null || e.get(t) == null) return d.get("none");
-  let n = new Set(
-    ((r = e.get(t)) != null ? r : "").split(",").map((a) => a.trim()),
-  );
+  let n = new Set(((r = e.get(t)) != null ? r : "").split(",").map((a) => a.trim()));
   for (let [a, o] of d) if (n.has(a)) return o;
   return d.get("none");
 }
@@ -126,12 +121,10 @@ function B(e, t, n, { onProgress: r, onError: a$1, onComplete: o }) {
             ((s += c.length),
               (u = Number(((s / f) * 100).toFixed(2))),
               f > 0 && c.length > 0 && u < 100
-                ? r == null ||
-                  r({ percentage: u, loadedBytes: s, privateUri: e })
+                ? r == null || r({ percentage: u, loadedBytes: s, privateUri: e })
                 : f === 0 &&
                   c.length > 0 &&
-                  (r == null ||
-                    r({ percentage: null, loadedBytes: s, privateUri: e })),
+                  (r == null || r({ percentage: null, loadedBytes: s, privateUri: e })),
               y.enqueue(c));
           } catch (m) {
             (y.error(m), a$1 == null || a$1({ error: m }));
@@ -166,8 +159,7 @@ async function W({
     referrerPolicy: "origin",
     referrer: f != null ? f : "",
   });
-  if (!s.ok)
-    throw new Error(`HTTP status code is not ok: ${s.status}, ${s.statusText}`);
+  if (!s.ok) throw new Error(`HTTP status code is not ok: ${s.status}, ${s.statusText}`);
   let [u, l] = B(e, s, n, { onProgress: r, onError: o, onComplete: a });
   return (l != null && S(v(l), t, e), u);
 }

@@ -62,28 +62,20 @@ export function useProduct(id: string | null) {
 
 // Categories
 export function useCategories() {
-  return useSWR(
-    cacheKeys.categories(),
-    () => fetcher(`${BASE_URL}/api/bulk/categories`),
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 60000, // 1 minute
-      keepPreviousData: true,
-    },
-  );
+  return useSWR(cacheKeys.categories(), () => fetcher(`${BASE_URL}/api/bulk/categories`), {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000, // 1 minute
+    keepPreviousData: true,
+  });
 }
 
 // Vendors
 export function useVendors() {
-  return useSWR(
-    cacheKeys.vendors(),
-    () => fetcher(`${BASE_URL}/api/admin/vendors`),
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 30000,
-      keepPreviousData: true,
-    },
-  );
+  return useSWR(cacheKeys.vendors(), () => fetcher(`${BASE_URL}/api/admin/vendors`), {
+    revalidateOnFocus: false,
+    dedupingInterval: 30000,
+    keepPreviousData: true,
+  });
 }
 
 export function useVendor(slug: string | null) {
@@ -131,15 +123,11 @@ export function useBulkInventory(productIds: number[]) {
 
 // Locations
 export function useLocations() {
-  return useSWR(
-    cacheKeys.locations(),
-    () => fetcher(`${BASE_URL}/api/supabase/locations`),
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 60000,
-      keepPreviousData: true,
-    },
-  );
+  return useSWR(cacheKeys.locations(), () => fetcher(`${BASE_URL}/api/supabase/locations`), {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+    keepPreviousData: true,
+  });
 }
 
 // Orders
@@ -147,9 +135,7 @@ export function useOrders(customerId?: string) {
   return useSWR(
     cacheKeys.orders(customerId),
     () =>
-      fetcher(
-        `${BASE_URL}/api/supabase/orders${customerId ? `?customer_id=${customerId}` : ""}`,
-      ),
+      fetcher(`${BASE_URL}/api/supabase/orders${customerId ? `?customer_id=${customerId}` : ""}`),
     {
       revalidateOnFocus: false,
       keepPreviousData: true,
@@ -215,11 +201,7 @@ export async function createReview(reviewData: any) {
   });
 }
 
-export async function validateCoupon(
-  code: string,
-  cartTotal: number,
-  customerId?: string,
-) {
+export async function validateCoupon(code: string, cartTotal: number, customerId?: string) {
   return fetcher(`${BASE_URL}/api/supabase/coupons/validate`, {
     method: "POST",
     body: JSON.stringify({

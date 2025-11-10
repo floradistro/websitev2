@@ -31,19 +31,10 @@ interface SVGData {
 declare function svgToDataURL(svg: SVGElement): Promise<SVGData["data"]>;
 declare const placeholderImage =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8";
-declare function removeElementsBySelector(
-  selector: string,
-  element: HTMLElement,
-): boolean;
+declare function removeElementsBySelector(selector: string, element: HTMLElement): boolean;
 declare function removeUnwantedHTMLElement(element: HTMLElement): boolean;
-declare function replaceImages(
-  element: HTMLElement | SVGElement,
-  placeholder?: string,
-): boolean;
-declare function stripImagesFromViewAndWarnUser(
-  strip: boolean,
-  view: Optional<HTMLElement>,
-): void;
+declare function replaceImages(element: HTMLElement | SVGElement, placeholder?: string): boolean;
+declare function stripImagesFromViewAndWarnUser(strip: boolean, view: Optional<HTMLElement>): void;
 
 export {
   type SVGData,

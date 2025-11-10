@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { MapPin, ChevronDown, Check } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 export interface SmartShopControlsProps {
   vendorId: string;
   onCategoryChange?: (category: string | null) => void;
@@ -41,9 +42,7 @@ export function SmartShopControls({
           const result = await res.json();
           if (result.success) {
             const products = result.data.products || [];
-            const vendorProducts = products.filter(
-              (p: any) => p.vendor_id === vendorId,
-            );
+            const vendorProducts = products.filter((p: any) => p.vendor_id === vendorId);
             setAllProducts(vendorProducts);
 
             // Extract categories
@@ -62,9 +61,7 @@ export function SmartShopControls({
               }
             });
             setCategories(
-              Array.from(categoryMap.values()).sort((a, b) =>
-                a.name.localeCompare(b.name),
-              ),
+              Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
             );
 
             // Get locations - ONLY for this vendor (CRITICAL)
@@ -85,9 +82,7 @@ export function SmartShopControls({
             // Filter to only active locations that this vendor actually uses
             const vendorLocations = allLocations.filter((loc: any) => {
               const isActive =
-                loc.is_active === "1" ||
-                loc.is_active === 1 ||
-                loc.is_active === true;
+                loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true;
               const isVendorLocation = vendorLocationIds.has(loc.id.toString());
               return isActive && isVendorLocation;
             });
@@ -97,7 +92,7 @@ export function SmartShopControls({
         }
       } catch (err) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to load shop data:", err);
+          logger.error("Failed to load shop data:", err);
         }
       }
     }
@@ -135,9 +130,7 @@ export function SmartShopControls({
     onLocationChange?.(locationId);
   };
 
-  const selectedLocationData = locations.find(
-    (loc) => loc.id?.toString() === selectedLocation,
-  );
+  const selectedLocationData = locations.find((loc) => loc.id?.toString() === selectedLocation);
 
   return (
     <div className={`space-y-3 ${className}`}>
@@ -189,9 +182,7 @@ export function SmartShopControls({
               <div className="flex items-center gap-2 truncate">
                 <MapPin size={14} className="flex-shrink-0 text-white/60" />
                 <span className="truncate">
-                  {selectedLocationData
-                    ? selectedLocationData.name
-                    : "All Locations"}
+                  {selectedLocationData ? selectedLocationData.name : "All Locations"}
                 </span>
               </div>
               <ChevronDown
@@ -221,9 +212,7 @@ export function SmartShopControls({
                   {locations.map((location: any) => (
                     <button
                       key={location.id}
-                      onClick={() =>
-                        handleLocationSelect(location.id.toString())
-                      }
+                      onClick={() => handleLocationSelect(location.id.toString())}
                       className="w-full px-4 py-3 text-left hover:bg-white/5 transition-colors flex items-center justify-between"
                     >
                       <div className="flex items-center gap-3">
@@ -242,11 +231,7 @@ export function SmartShopControls({
                         </div>
                       </div>
                       {selectedLocation === location.id.toString() && (
-                        <Check
-                          size={14}
-                          strokeWidth={2}
-                          className="text-white"
-                        />
+                        <Check size={14} strokeWidth={2} className="text-white" />
                       )}
                     </button>
                   ))}

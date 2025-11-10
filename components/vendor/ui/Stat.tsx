@@ -12,14 +12,7 @@ interface StatProps {
   className?: string;
 }
 
-export function VendorStat({
-  label,
-  value,
-  sublabel,
-  icon: Icon,
-  delay,
-  className,
-}: StatProps) {
+export function VendorStat({ label, value, sublabel, icon: Icon, delay, className }: StatProps) {
   return (
     <div className={tw(vendorTheme.components.stat, className)}>
       <div className="flex items-center justify-between mb-4">
@@ -33,9 +26,7 @@ export function VendorStat({
         )}
       </div>
       <div className={vendorTheme.typography.stat}>{value}</div>
-      {sublabel && (
-        <div className={vendorTheme.typography.sublabel}>{sublabel}</div>
-      )}
+      {sublabel && <div className={vendorTheme.typography.sublabel}>{sublabel}</div>}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { geolocation } from "@vercel/edge";
 
+import { logger } from "@/lib/logger";
 export const runtime = "edge";
 
 export async function GET(request: NextRequest) {
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Geolocation error:", error);
+      logger.error("Geolocation error:", error);
     }
     // Return Charlotte default on any error
     return NextResponse.json({

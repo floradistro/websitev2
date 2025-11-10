@@ -18,9 +18,7 @@ function n(l, e, t) {
       return a$3.configurePhase === "done" && a$3.mainDataCaptureLoader != null
         ? r.apply(this, s)
         : Promise.reject(
-            new Error(
-              `Please await the call to configure() before calling ${String(e)}`,
-            ),
+            new Error(`Please await the call to configure() before calling ${String(e)}`),
           );
     }),
     t
@@ -40,10 +38,8 @@ var N,
       this.framework = "web";
       this.runtimeEnvironment = {
         deviceOS: (N = a$1.getUserAgentInfo().getOS().name) != null ? N : "",
-        browser:
-          (E = a$1.getUserAgentInfo().getBrowser().name) != null ? E : "",
-        browserVersion:
-          (R = a$1.getUserAgentInfo().getBrowser().version) != null ? R : "",
+        browser: (E = a$1.getUserAgentInfo().getBrowser().name) != null ? E : "",
+        browserVersion: (R = a$1.getUserAgentInfo().getBrowser().version) != null ? R : "",
         get deviceModelName() {
           let { model: e, vendor: t } = a$1.getUserAgentInfo().getDevice();
           return (
@@ -60,8 +56,7 @@ var N,
       this.components = [];
       this.listeners = [];
       this.updateListeners = new Set();
-      this.cameraPropertiesReportListener =
-        this.reportCameraProperties.bind(this);
+      this.cameraPropertiesReportListener = this.reportCameraProperties.bind(this);
       this.cameraAccessErrorListener = this.onCameraAccessError.bind(this);
       this.onWorkerMessageListener = this.onWorkerMessage.bind(this);
       this.onVisibilityChangeListener = this.onVisibilityChange.bind(this);
@@ -72,29 +67,19 @@ var N,
       this._useSynchronousFrameFlow = false;
     }
     static get sharedInstance() {
-      return (
-        a._sharedInstance == null && (a._sharedInstance = new a()),
-        a._sharedInstance
-      );
+      return (a._sharedInstance == null && (a._sharedInstance = new a()), a._sharedInstance);
     }
     async initializeWithOptions(e, t = a$3) {
       var r, s, o, m, f, y, w, S, b;
-      ((this.licenseKey =
-        (s = (r = e.licenseKey) != null ? r : t.userLicenseKey) != null
-          ? s
-          : ""),
+      ((this.licenseKey = (s = (r = e.licenseKey) != null ? r : t.userLicenseKey) != null ? s : ""),
         (this.deviceName = (o = e.deviceName) != null ? o : ""),
         (this.dataCaptureInstance =
           (m = e.dataCaptureInstance) != null ? m : t.mainDataCaptureLoader),
-        (this.delayedRegistration =
-          (f = e.delayedRegistration) != null ? f : false),
+        (this.delayedRegistration = (f = e.delayedRegistration) != null ? f : false),
         e.settings != null && (this.settings = e.settings),
         (this.highEndBlurryRecognition =
           (b =
-            (S =
-              (y = e.dataCaptureInstance) == null
-                ? void 0
-                : y.highEndBlurryRecognition) != null
+            (S = (y = e.dataCaptureInstance) == null ? void 0 : y.highEndBlurryRecognition) != null
               ? S
               : (w = t.mainDataCaptureLoader) == null
                 ? void 0
@@ -112,12 +97,8 @@ var N,
     }
     get workerCommand() {
       if (this.dataCaptureInstance == null)
-        throw new Error(
-          "Cannot call workerCommand before dataCaptureInstance is set",
-        );
-      return this.dataCaptureInstance.workerCommand.bind(
-        this.dataCaptureInstance,
-      );
+        throw new Error("Cannot call workerCommand before dataCaptureInstance is set");
+      return this.dataCaptureInstance.workerCommand.bind(this.dataCaptureInstance);
     }
     static async create() {
       return a.createWithOptions({});
@@ -151,14 +132,11 @@ var N,
             mirrorAxis: this.getMirrorAxisForFrameSource(e),
             isCameraFrameSource: f(e),
           })),
-        await this.update([
-          { type: "frameSourceState", newValue: this.frameSource },
-        ]),
+        await this.update([{ type: "frameSourceState", newValue: this.frameSource }]),
         t)
       )
         for (let r of this.listeners)
-          r.didChangeFrameSource &&
-            r.didChangeFrameSource(this, this._frameSource);
+          r.didChangeFrameSource && r.didChangeFrameSource(this, this._frameSource);
     }
     addListener(e) {
       this.listeners.includes(e) || this.listeners.push(e);
@@ -167,8 +145,7 @@ var N,
       await this.workerCommand("flushAnalytics", {});
     }
     removeListener(e) {
-      this.listeners.includes(e) &&
-        this.listeners.splice(this.listeners.indexOf(e), 1);
+      this.listeners.includes(e) && this.listeners.splice(this.listeners.indexOf(e), 1);
     }
     async addMode(e) {
       (this.modes.add(e),
@@ -198,15 +175,8 @@ var N,
       for (let e of this.modes) await this.removeMode(e);
     }
     async dispose() {
-      (d
-        .instance()
-        .removeListener(
-          "cameraProperties",
-          this.cameraPropertiesReportListener,
-        ),
-        d
-          .instance()
-          .removeListener("cameraAccessError", this.cameraAccessErrorListener),
+      (d.instance().removeListener("cameraProperties", this.cameraPropertiesReportListener),
+        d.instance().removeListener("cameraAccessError", this.cameraAccessErrorListener),
         this.unsubscribeToVisibilityChange(this.onVisibilityChangeListener),
         await this.removeAllModes(),
         this.dataCaptureInstance && (await this.workerCommand("dispose", {})),
@@ -219,8 +189,7 @@ var N,
         (this.delayedRegistration = false),
         (this.highEndBlurryRecognition = false),
         (this._frameHandlers.length = 0),
-        this.frameSource &&
-          ((this.frameSource.context = null), (this._frameSource = null)),
+        this.frameSource && ((this.frameSource.context = null), (this._frameSource = null)),
         this._view && (this._view.setContext(null), (this._view = null)),
         (this.licenseKey = ""),
         (this.deviceName = ""));
@@ -235,26 +204,18 @@ var N,
         framework: this.framework,
         deviceName: this.deviceName,
         ...this.runtimeEnvironment,
-        modes: [...this.modes]
-          .filter((r) => !g(r))
-          .map((r) => r.toJSONObject()),
+        modes: [...this.modes].filter((r) => !g(r)).map((r) => r.toJSONObject()),
         components: this.components.map((r) => r.toJSONObject()),
         frameSource: this.frameSource ? this.frameSource.toJSONObject() : null,
         settings: this.settings.toJSONObject(),
-        view:
-          (t = (e = this._view) == null ? void 0 : e.toJSONObject()) != null
-            ? t
-            : null,
+        view: (t = (e = this._view) == null ? void 0 : e.toJSONObject()) != null ? t : null,
       };
     }
     getView() {
       return this._view;
     }
     async setView(e) {
-      return (
-        (this._view = e),
-        this.update([{ type: "viewSet", newValue: e }])
-      );
+      return ((this._view = e), this.update([{ type: "viewSet", newValue: e }]));
     }
     async getAppName() {
       let e = null;
@@ -280,10 +241,7 @@ var N,
       let e = "";
       return (
         parent !== window &&
-          (e ||
-            (e = this.urlToHostname(
-              (t = location.ancestorOrigins) == null ? void 0 : t[0],
-            )),
+          (e || (e = this.urlToHostname((t = location.ancestorOrigins) == null ? void 0 : t[0])),
           e || (e = this.urlToHostname(document.referrer)),
           e || (e = "")),
         e.startsWith("[") && e.endsWith("]") && (e = e.slice(1, -1)),
@@ -304,8 +262,7 @@ var N,
           (this.subscribeToCameraManagerEvents(),
           this.subscribeToVisibilityChange(this.onVisibilityChangeListener)),
         this._view != null && (await this.setView(this._view)),
-        this.frameSource != null &&
-          (await this.setFrameSource(this.frameSource)));
+        this.frameSource != null && (await this.setFrameSource(this.frameSource)));
     }
     subscribeToVisibilityChange(e) {
       document.addEventListener("visibilitychange", e);
@@ -322,17 +279,11 @@ var N,
         performance.mark(e);
     }
     async sendFrameToProcessor(e) {
-      let t =
-          e instanceof ImageData
-            ? { data: e.data, width: e.width, height: e.height }
-            : e,
+      let t = e instanceof ImageData ? { data: e.data, width: e.width, height: e.height } : e,
         r = await this.sendFrameToHandlers(t);
       return (
         (t.data = r.capture.data),
-        r.skip
-          ? r.capture
-          : (this.performanceMark("processFrameBeforeSDC"),
-            this.sendFrameToSDC(t))
+        r.skip ? r.capture : (this.performanceMark("processFrameBeforeSDC"), this.sendFrameToSDC(t))
       );
     }
     async sendFrameToHandlers(e) {
@@ -364,16 +315,11 @@ var N,
       if (e.type === "didStartObservingContext")
         for (let t of this.listeners)
           t.didStartObservingContext && t.didStartObservingContext(this);
-      e.type === "onFrameProcessingFinished" &&
-        this.performanceMark("processFrameAfterSDC");
+      e.type === "onFrameProcessingFinished" && this.performanceMark("processFrameAfterSDC");
     }
     subscribeToCameraManagerEvents() {
-      (d
-        .instance()
-        .addListener("cameraProperties", this.cameraPropertiesReportListener),
-        d
-          .instance()
-          .addListener("cameraAccessError", this.cameraAccessErrorListener));
+      (d.instance().addListener("cameraProperties", this.cameraPropertiesReportListener),
+        d.instance().addListener("cameraAccessError", this.cameraAccessErrorListener));
     }
     async reportCameraProperties(e) {
       return this.workerCommand("reportCameraProperties", e);
@@ -399,14 +345,11 @@ var N,
       for (let o of e) {
         switch (o.type) {
           case "frameSourceState": {
-            await ((r = this._view) == null
-              ? void 0
-              : r.onFrameSourceChange(this.frameSource));
+            await ((r = this._view) == null ? void 0 : r.onFrameSourceChange(this.frameSource));
             break;
           }
           case "singleImageModeUploaderSettings": {
-            (s = this._view) == null ||
-              s.onSingleImageUploaderSettingsChange(o.newValue);
+            (s = this._view) == null || s.onSingleImageUploaderSettingsChange(o.newValue);
             break;
           }
           case "addOverlay": {
@@ -465,8 +408,7 @@ var N,
         : this.pendingWorkerMessageListeners.add(e);
     }
     unsubscribeToWorkerMessages(e) {
-      (this.dataCaptureInstance &&
-        this.dataCaptureInstance.removeWorkerListener(e),
+      (this.dataCaptureInstance && this.dataCaptureInstance.removeWorkerListener(e),
         this.pendingWorkerMessageListeners.delete(e));
     }
     hasEnabledMode() {
@@ -477,8 +419,7 @@ var N,
       d.instance().setFrameHandling(e);
     }
     async isFeatureSupported(e) {
-      return (await this.workerCommand("isFeatureSupported", { feature: e }))
-        .supported;
+      return (await this.workerCommand("isFeatureSupported", { feature: e })).supported;
     }
   };
 ((a.deviceID = a$1.getDeviceId()),

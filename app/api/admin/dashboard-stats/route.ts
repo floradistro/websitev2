@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -29,9 +30,7 @@ export async function GET() {
       supabase.from("customers").select("id", { count: "exact", head: true }),
 
       // Orders with revenue
-      supabase
-        .from("orders")
-        .select("id, total_amount, created_at, status, payment_status"),
+      supabase.from("orders").select("id, total_amount, created_at, status, payment_status"),
 
       // Vendors
       supabase.from("vendors").select("id, status"),
@@ -43,17 +42,11 @@ export async function GET() {
       supabase
         .from("orders")
         .select("total_amount, created_at")
-        .gte(
-          "created_at",
-          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        )
+        .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
         .order("created_at", { ascending: true }),
 
       // Wholesale applications
-      supabase
-        .from("wholesale_applications")
-        .select("id")
-        .eq("status", "pending"),
+      supabase.from("wholesale_applications").select("id").eq("status", "pending"),
     ]);
 
     const orders = ordersData.data || [];
@@ -73,11 +66,7 @@ export async function GET() {
     const revenueByDay = last7Days.map((date) => {
       const dayRevenue = (recentOrders.data || [])
         .filter((order: any) => order.created_at?.startsWith(date))
-        .reduce(
-          (sum: number, order: any) =>
-            sum + parseFloat(order.total_amount || "0"),
-          0,
-        );
+        .reduce((sum: number, order: any) => sum + parseFloat(order.total_amount || "0"), 0);
 
       return {
         date: new Date(date).toLocaleDateString("en-US", {
@@ -111,9 +100,7 @@ export async function GET() {
           totalOrders: ordersData.count || 0,
           totalRevenue: totalRevenue,
           pendingProducts: pendingProductsData.data?.length || 0,
-          activeVendors:
-            vendorsData.data?.filter((v: any) => v.status === "active")
-              .length || 0,
+          activeVendors: vendorsData.data?.filter((v: any) => v.status === "active").length || 0,
           pendingWholesaleApplications: wholesaleApps.data?.length || 0,
         },
         charts: {
@@ -130,7 +117,7 @@ export async function GET() {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Dashboard stats error:", error);
+      logger.error("Dashboard stats error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to load dashboard stats" },

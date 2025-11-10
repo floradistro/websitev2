@@ -31,8 +31,7 @@ var l = "--position",
         !CSS.supports("mask-image", "linear-gradient(black, white)"))
       ) {
         let a = document.createElement("div");
-        ((a.innerHTML =
-          '<div class="fade top"></div><div class="fade bottom"></div>'),
+        ((a.innerHTML = '<div class="fade top"></div><div class="fade bottom"></div>'),
           a.classList.add("fade-layer"),
           t.prepend(a));
       }
@@ -66,15 +65,13 @@ var l = "--position",
     connectedCallback() {
       var t;
       (this.addEventListener("click", this.onCardClickHandler),
-        (t = this.root) == null ||
-          t.addEventListener("scroll", this.updateFadeMaskHandler),
+        (t = this.root) == null || t.addEventListener("scroll", this.updateFadeMaskHandler),
         this.updateFadeMaskHandler());
     }
     disconnectedCallback() {
       var t;
       (this.removeEventListener("click", this.onCardClickHandler),
-        (t = this.root) == null ||
-          t.removeEventListener("scroll", this.updateFadeMaskHandler));
+        (t = this.root) == null || t.removeEventListener("scroll", this.updateFadeMaskHandler));
     }
     attributeChangedCallback(t, e, a) {
       t === "collapsed" && this._handleStateChange();
@@ -84,17 +81,13 @@ var l = "--position",
       let t = this.collapsed ? "willcollapse" : "willexpand",
         e = this.collapsed ? "collapsed" : "expanded";
       (this.dispatchEvent(new CustomEvent(t)),
-        this.collapsed &&
-          ((o = this.root) == null ||
-            o.scrollTo({ behavior: "instant", top: 0 })));
+        this.collapsed && ((o = this.root) == null || o.scrollTo({ behavior: "instant", top: 0 })));
       let a = [];
       for (let [n, i] of Object.entries(this.items))
         (Number(n) !== 0 && a.push(a$5(i, "transform")),
           this.collapsed || i.style.removeProperty("opacity"),
           i.style.setProperty(l, n));
-      (await Promise.all(a),
-        this.dispatchEvent(new CustomEvent(e)),
-        this.updateFadeMaskHandler());
+      (await Promise.all(a), this.dispatchEvent(new CustomEvent(e)), this.updateFadeMaskHandler());
     }
     async expand() {
       return this.collapsed
@@ -113,9 +106,7 @@ var l = "--position",
     renderCards(t) {
       let e = document.createDocumentFragment();
       for (let [a, o] of Object.entries(t))
-        ((o.dataset.position = `${a}`),
-          o.style.setProperty(l, a.toString()),
-          e.append(o));
+        ((o.dataset.position = `${a}`), o.style.setProperty(l, a.toString()), e.append(o));
       (this.append(e), this.updateListHeight(t));
     }
     clearCards() {
@@ -123,8 +114,7 @@ var l = "--position",
       this.updateListHeight([]);
     }
     async unshift(t) {
-      if (t.dataset.position === "0" && t.style.getPropertyValue(l) === "0")
-        return;
+      if (t.dataset.position === "0" && t.style.getPropertyValue(l) === "0") return;
       let e = new Animation(
         new KeyframeEffect(
           t,
@@ -138,9 +128,7 @@ var l = "--position",
       (t.remove(), (t.dataset.position = "0"), t.style.setProperty(l, "0"));
       let a = "0";
       for (let [o, n] of Object.entries(this.items))
-        ((a = `${Number(o) + 1}`),
-          (n.dataset.position = a),
-          n.style.setProperty(l, a));
+        ((a = `${Number(o) + 1}`), (n.dataset.position = a), n.style.setProperty(l, a));
       (this.prepend(t), e.play(), await b(e));
     }
     onCardClick(t) {
@@ -164,16 +152,11 @@ var l = "--position",
         n = a - o,
         i = Math.round((e / n) * 100);
       if (Number.isNaN(i)) return;
-      ((m = this.root) == null ||
-        m.style.setProperty("--end-top-mask", `${Math.min(i, 5)}%`),
+      ((m = this.root) == null || m.style.setProperty("--end-top-mask", `${Math.min(i, 5)}%`),
         (u = this.root) == null ||
           u.style.setProperty("--start-bottom-mask", `${Math.max(i, 95)}%`));
-      let c =
-          (v = this.shadowRoot) == null ? void 0 : v.querySelector(".fade.top"),
-        p =
-          (f = this.shadowRoot) == null
-            ? void 0
-            : f.querySelector(".fade.bottom");
+      let c = (v = this.shadowRoot) == null ? void 0 : v.querySelector(".fade.top"),
+        p = (f = this.shadowRoot) == null ? void 0 : f.querySelector(".fade.bottom");
       c != null &&
         p != null &&
         (c.style.setProperty("opacity", `${i / 100}`),

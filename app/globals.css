@@ -51,6 +51,26 @@
   }
 }
 
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+.logo-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.logo-glow {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+  animation: glow-pulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
 @keyframes pulse-water {
   0%,
   100% {
@@ -93,13 +113,11 @@
   0%,
   100% {
     filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.08))
-      drop-shadow(0 0 8px rgba(147, 197, 253, 0.06))
-      drop-shadow(0 0 12px rgba(59, 130, 246, 0.04));
+      drop-shadow(0 0 8px rgba(147, 197, 253, 0.06)) drop-shadow(0 0 12px rgba(59, 130, 246, 0.04));
   }
   50% {
     filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.12))
-      drop-shadow(0 0 12px rgba(147, 197, 253, 0.08))
-      drop-shadow(0 0 18px rgba(59, 130, 246, 0.06));
+      drop-shadow(0 0 12px rgba(147, 197, 253, 0.08)) drop-shadow(0 0 18px rgba(59, 130, 246, 0.06));
   }
 }
 
@@ -165,8 +183,7 @@ body {
   position: relative;
   background: #1a1a1a;
   color: var(--foreground);
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   letter-spacing: -0.01em;
   /* Allow normal touch interactions */
   touch-action: manipulation;
@@ -232,15 +249,11 @@ body {
 
   /* Height adjustments for fullscreen layouts */
   .h-screen-safe {
-    height: calc(
-      100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
-    );
+    height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   }
 
   .min-h-screen-safe {
-    min-height: calc(
-      100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
-    );
+    min-height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   }
 
   /* Top positioning with safe area */
@@ -892,12 +905,7 @@ a {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.1),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
     transition: left 0.5s ease;
     pointer-events: none;
   }
@@ -1165,8 +1173,7 @@ textarea {
 /* Syntax highlighting for code blocks - Cursor style */
 .prose code {
   font-family:
-    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New",
-    monospace;
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
 }
 
 /* JSON syntax highlighting */
@@ -1433,11 +1440,7 @@ iframe::-webkit-scrollbar-track {
 .icon-container {
   width: 40px;
   height: 40px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.05)
-  );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   display: flex;

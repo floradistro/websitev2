@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -24,8 +25,7 @@ export async function POST(request: NextRequest) {
       hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
       urlValue: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      serviceKeyPrefix:
-        process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20) + "...",
+      serviceKeyPrefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20) + "...",
     };
 
     if (!envCheck.hasServiceKey) {
@@ -59,8 +59,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "CRITICAL: Service role client has an auth session! This should NEVER happen.",
+          error: "CRITICAL: Service role client has an auth session! This should NEVER happen.",
           session: {
             user: session.user?.email,
             role: session.user?.role,
@@ -101,18 +100,15 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ INSERT failed:", insertError);
+        logger.error("❌ INSERT failed:", insertError);
       }
       // Get the RLS policies for orders table
-      const { data: policies } = await supabase
-        .rpc("pg_policies")
-        .or("tablename.eq.orders");
+      const { data: policies } = await supabase.rpc("pg_policies").or("tablename.eq.orders");
 
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Failed to insert test order - RLS policy is blocking service role!",
+          error: "Failed to insert test order - RLS policy is blocking service role!",
           insertError: {
             code: insertError.code,
             message: insertError.message,
@@ -148,9 +144,7 @@ export async function POST(request: NextRequest) {
     const failedTests = rapidTests.filter((t) => !t.success);
 
     // Clean up all test orders
-    const testIds = rapidTests
-      .filter((t) => t.success && t.orderId)
-      .map((t) => t.orderId);
+    const testIds = rapidTests.filter((t) => t.success && t.orderId).map((t) => t.orderId);
     if (testIds.length > 0) {
       await supabase.from("orders").delete().in("id", testIds);
     }
@@ -181,7 +175,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("💥 Diagnostic failed:", error);
+      logger.error("💥 Diagnostic failed:", error);
     }
     return NextResponse.json(
       {
@@ -195,11 +189,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function createTestOrder(
-  supabase: any,
-  paymentMethod: string,
-  sequence: number,
-) {
+async function createTestOrder(supabase: any, paymentMethod: string, sequence: number) {
   const orderData = {
     order_number: `RLS-RAPID-${Date.now()}-${sequence}`,
     vendor_id: "cd2e1122-d511-4edb-be5d-98ef274b4baf",
@@ -221,11 +211,7 @@ async function createTestOrder(
     },
   };
 
-  const { data, error } = await supabase
-    .from("orders")
-    .insert(orderData)
-    .select("id")
-    .single();
+  const { data, error } = await supabase.from("orders").insert(orderData).select("id").single();
 
   return {
     success: !error,

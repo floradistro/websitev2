@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Get admin analytics from real database
  */
@@ -28,14 +29,13 @@ export async function GET(request: NextRequest) {
 
     if (ordersError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching orders:", ordersError);
+        logger.error("Error fetching orders:", ordersError);
       }
     }
 
     const totalOrders = orders?.length || 0;
     const totalRevenue =
-      orders?.reduce((sum, o) => sum + parseFloat(o.total_amount || "0"), 0) ||
-      0;
+      orders?.reduce((sum, o) => sum + parseFloat(o.total_amount || "0"), 0) || 0;
     const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
     // Group revenue by week
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Analytics API error:", error);
+      logger.error("Analytics API error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to fetch analytics" },

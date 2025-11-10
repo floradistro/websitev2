@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -87,12 +88,9 @@ export async function POST(request: NextRequest) {
 
     if (customerError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating customer:", customerError);
+        logger.error("Error creating customer:", customerError);
       }
-      return NextResponse.json(
-        { error: customerError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: customerError.message }, { status: 500 });
     }
 
     // Return formatted customer
@@ -114,7 +112,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in create customer endpoint:", error);
+      logger.error("Error in create customer endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

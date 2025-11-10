@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Reject wholesale application
  * Admin only
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = getServiceSupabase();
     const body = await request.json();
@@ -38,7 +36,7 @@ export async function POST(
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Update application error:", updateError);
+        logger.error("Update application error:", updateError);
       }
       return NextResponse.json(
         { error: "Failed to reject application", details: updateError.message },
@@ -60,7 +58,7 @@ export async function POST(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Reject wholesale application error:", error);
+      logger.error("Reject wholesale application error:", error);
     }
     return NextResponse.json(
       { error: "Failed to reject application", details: error.message },

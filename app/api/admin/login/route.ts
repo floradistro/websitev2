@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import * as bcrypt from "bcryptjs";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -39,9 +40,7 @@ function getAdminUsers(): AdminUser[] {
   }
 
   if (users.length === 0) {
-    throw new Error(
-      "No admin users configured. Please set environment variables.",
-    );
+    throw new Error("No admin users configured. Please set environment variables.");
   }
 
   return users;
@@ -53,10 +52,7 @@ export async function POST(request: NextRequest) {
 
     // Validate input
     if (!username || !password) {
-      return NextResponse.json(
-        { error: "Username and password are required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
     }
 
     // Get admin users from environment
@@ -64,10 +60,7 @@ export async function POST(request: NextRequest) {
     try {
       adminUsers = getAdminUsers();
     } catch (error) {
-      return NextResponse.json(
-        { error: "Admin authentication not configured" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Admin authentication not configured" }, { status: 500 });
     }
 
     // Find user by username
@@ -76,20 +69,14 @@ export async function POST(request: NextRequest) {
     if (!user) {
       // Use timing-safe comparison by still comparing hash even if user not found
       await bcrypt.compare(password, "$2a$10$invalidhashtopreventtimingattack");
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
     // Verify password using bcrypt
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
     // Generate secure session token
@@ -115,7 +102,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     // Don't log the actual error details in production for security
     if (process.env.NODE_ENV === "development") {
-      console.error("Admin login error:", error);
+      logger.error("Admin login error:", error);
     }
     return NextResponse.json({ error: "Login failed" }, { status: 500 });
   }

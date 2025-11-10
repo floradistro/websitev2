@@ -57,9 +57,7 @@ export function Badge({
     },
   };
 
-  const selectedVariant = outline
-    ? variantClasses[variant].outline
-    : variantClasses[variant].solid;
+  const selectedVariant = outline ? variantClasses[variant].outline : variantClasses[variant].solid;
 
   const baseClasses = [
     "inline-flex items-center justify-center",

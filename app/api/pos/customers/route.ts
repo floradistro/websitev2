@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -12,10 +13,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search") || "";
 
     if (!vendorId) {
-      return NextResponse.json(
-        { error: "Missing vendorId parameter" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing vendorId parameter" }, { status: 400 });
     }
 
     // Get total count
@@ -62,7 +60,7 @@ export async function GET(request: NextRequest) {
 
         if (chunkError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error fetching chunk:", chunkError);
+            logger.error("Error fetching chunk:", chunkError);
           }
           break;
         }
@@ -106,29 +104,21 @@ export async function GET(request: NextRequest) {
 
       if (batchError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error fetching customers:", batchError);
+          logger.error("Error fetching customers:", batchError);
         }
-        return NextResponse.json(
-          { error: batchError.message },
-          { status: 500 },
-        );
+        return NextResponse.json({ error: batchError.message }, { status: 500 });
       }
 
       // Sort alphabetically in-memory, filtering out customers without names
       data = (firstBatch || [])
-        .filter(
-          (vc: any) =>
-            vc.customers && (vc.customers.first_name || vc.customers.last_name),
-        )
+        .filter((vc: any) => vc.customers && (vc.customers.first_name || vc.customers.last_name))
         .sort((a: any, b: any) => {
-          const nameA =
-            `${a.customers?.first_name || ""} ${a.customers?.last_name || ""}`
-              .trim()
-              .toLowerCase();
-          const nameB =
-            `${b.customers?.first_name || ""} ${b.customers?.last_name || ""}`
-              .trim()
-              .toLowerCase();
+          const nameA = `${a.customers?.first_name || ""} ${a.customers?.last_name || ""}`
+            .trim()
+            .toLowerCase();
+          const nameB = `${b.customers?.first_name || ""} ${b.customers?.last_name || ""}`
+            .trim()
+            .toLowerCase();
           return nameA.localeCompare(nameB);
         })
         .slice(0, 1000); // Take first 1000 after sorting
@@ -166,9 +156,7 @@ export async function GET(request: NextRequest) {
         const displayName = (customer.display_name || "").toLowerCase();
         const email = (customer.email || "").toLowerCase();
         const phone = (customer.phone || "").replace(/\D/g, "");
-        const customerNumber = (
-          customer.vendor_customer_number || ""
-        ).toLowerCase();
+        const customerNumber = (customer.vendor_customer_number || "").toLowerCase();
 
         let score = 0;
         let matchesAll = true;
@@ -249,7 +237,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ customers, total: totalCount || 0 });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in customers endpoint:", error);
+      logger.error("Error in customers endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

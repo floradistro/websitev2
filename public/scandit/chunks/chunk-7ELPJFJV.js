@@ -12,18 +12,10 @@ var u = ((o) => (
     o
   ))(u || {}),
   c = ((t) => ((t.On = "on"), (t.Off = "off"), t))(c || {}),
-  m = ((t) => (
-    (t.WorldFacing = "worldFacing"),
-    (t.UserFacing = "userFacing"),
-    t
-  ))(m || {}),
-  p = ((r) => (
-    (r.Auto = "auto"),
-    (r.HD = "hd"),
-    (r.FullHD = "fullHd"),
-    (r.UHD4K = "uhd4k"),
-    r
-  ))(p || {}),
+  m = ((t) => ((t.WorldFacing = "worldFacing"), (t.UserFacing = "userFacing"), t))(m || {}),
+  p = ((r) => ((r.Auto = "auto"), (r.HD = "hd"), (r.FullHD = "fullHd"), (r.UHD4K = "uhd4k"), r))(
+    p || {},
+  ),
   g = ((r) => (
     (r.None = "none"),
     (r.Manual = "manual"),
@@ -33,10 +25,7 @@ var u = ((o) => (
   ))(g || {});
 function f(a) {
   var e;
-  return (
-    ((e = a == null ? void 0 : a.toJSONObject()) == null ? void 0 : e.type) ===
-    "camera"
-  );
+  return ((e = a == null ? void 0 : a.toJSONObject()) == null ? void 0 : e.type) === "camera";
 }
 var i = class a {
   constructor(e) {
@@ -79,8 +68,7 @@ var i = class a {
       },
       t = {};
     for (let n of Object.keys(this))
-      [...Object.keys(e), "focusGestureStrategy"].includes(n) ||
-        (t[n] = this[n]);
+      [...Object.keys(e), "focusGestureStrategy"].includes(n) || (t[n] = this[n]);
     return { ...e, ...t };
   }
 };

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 /**
  * AI Component Suggestions - Phase 4
  * Analyzes components and provides AI-powered optimization suggestions
@@ -7,13 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
  */
 export async function POST(request: NextRequest) {
   try {
-    const {
-      vendorId,
-      componentKey,
-      currentProps,
-      pageType,
-      sectionComponents,
-    } = await request.json();
+    const { vendorId, componentKey, currentProps, pageType, sectionComponents } =
+      await request.json();
 
     if (!vendorId || !componentKey) {
       return NextResponse.json(
@@ -36,7 +32,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("AI suggestions error:", error);
+      logger.error("AI suggestions error:", error);
     }
     return NextResponse.json(
       {
@@ -86,11 +82,7 @@ function generateSuggestions(
       });
     }
 
-    if (
-      currentProps.content &&
-      currentProps.content.length > 200 &&
-      currentProps.size === "lg"
-    ) {
+    if (currentProps.content && currentProps.content.length > 200 && currentProps.size === "lg") {
       suggestions.push({
         id: "text-readability",
         type: "UX",
@@ -111,8 +103,7 @@ function generateSuggestions(
         type: "Conversion",
         impact: "High",
         title: "Use Primary Button for Homepage CTA",
-        description:
-          "Homepage CTAs should be highly visible to drive conversions",
+        description: "Homepage CTAs should be highly visible to drive conversions",
         proposedProps: { variant: "primary", size: "lg" },
         reason: "Primary buttons increase click-through rates by 30-50%",
       });
@@ -168,8 +159,7 @@ function generateSuggestions(
         type: "UX",
         impact: "Medium",
         title: "Optimize Grid Columns",
-        description:
-          "5 columns can feel cramped on most screens. 3-4 columns work better.",
+        description: "5 columns can feel cramped on most screens. 3-4 columns work better.",
         proposedProps: { columns: 3 },
         reason: "Provides better visual spacing and product focus",
       });
@@ -205,9 +195,7 @@ function generateSuggestions(
   // Layout suggestions based on section context
   if (sectionComponents.length > 0) {
     // If section has multiple text components
-    const textComponentCount = sectionComponents.filter(
-      (c) => c === "text",
-    ).length;
+    const textComponentCount = sectionComponents.filter((c) => c === "text").length;
     if (textComponentCount > 5 && componentKey === "text") {
       suggestions.push({
         id: "layout-spacing",

@@ -46,14 +46,8 @@ interface QuickActionsGridProps {
   className?: string;
 }
 
-export function QuickActionsGrid({
-  children,
-  cols = 6,
-  className = "",
-}: QuickActionsGridProps) {
+export function QuickActionsGrid({ children, cols = 6, className = "" }: QuickActionsGridProps) {
   return (
-    <div className={`grid grid-cols-2 lg:grid-cols-${cols} gap-3 ${className}`}>
-      {children}
-    </div>
+    <div className={`grid grid-cols-2 lg:grid-cols-${cols} gap-3 ${className}`}>{children}</div>
   );
 }

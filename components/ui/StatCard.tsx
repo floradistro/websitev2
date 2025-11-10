@@ -47,9 +47,7 @@ export function StatCard({
           strokeWidth={1.5}
         />
       </div>
-      <div className="text-xl md:text-3xl font-light text-white/90 mb-1 md:mb-2">
-        {value}
-      </div>
+      <div className="text-xl md:text-3xl font-light text-white/90 mb-1 md:mb-2">{value}</div>
       <div className="flex items-center justify-between">
         <div className="text-sublabel text-[8px] md:text-[9px]">{sublabel}</div>
         {trend && (

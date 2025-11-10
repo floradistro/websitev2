@@ -52,9 +52,7 @@ function v({
         b((r == null ? void 0 : r.bodyUsed) === true ? void 0 : r));
     }
   }
-  typeof globalThis.WebAssembly.instantiateStreaming == "function"
-    ? f$1()
-    : b();
+  typeof globalThis.WebAssembly.instantiateStreaming == "function" ? f$1() : b();
 }
 async function d(e, t, l, o) {
   return new Promise((a, n) => {
@@ -78,9 +76,7 @@ function w(e) {
   let t = "unknown";
   if ((o = e.href) != null && o.startsWith("blob:null/")) t = "localhost";
   else {
-    let n =
-      ((a = e.pathname) == null ? void 0 : a.length) > 1 &&
-      !e.pathname.startsWith("/");
+    let n = ((a = e.pathname) == null ? void 0 : a.length) > 1 && !e.pathname.startsWith("/");
     t = new URL(n ? e.pathname : e.origin).hostname;
   }
   return t.startsWith("[") && t.endsWith("]")

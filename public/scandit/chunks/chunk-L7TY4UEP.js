@@ -1,21 +1,11 @@
 var n = ((a) => ((a.Body = "body"), (a.Footnote = "footnote"), a))(n || {}),
-  o = ((t) => ((t.Start = "start"), (t.Center = "center"), (t.End = "end"), t))(
-    o || {},
-  ),
-  s = ((t) => (
-    (t.Normal = "normal"),
-    (t.Wider = "wider"),
-    (t.FitText = "fitText"),
-    t
-  ))(s || {}),
+  o = ((t) => ((t.Start = "start"), (t.Center = "center"), (t.End = "end"), t))(o || {}),
+  s = ((t) => ((t.Normal = "normal"), (t.Wider = "wider"), (t.FitText = "fitText"), t))(s || {}),
   i = ((a) => ((a.Normal = "normal"), (a.Taller = "taller"), a))(i || {}),
   p = ((a) => ((a.Square = "square"), (a.Rounded = "rounded"), a))(p || {}),
-  d = ((t) => (
-    (t.None = "none"),
-    (t.Check = "check"),
-    (t.ExclamationMark = "exclamationMark"),
-    t
-  ))(d || {}),
+  d = ((t) => ((t.None = "none"), (t.Check = "check"), (t.ExclamationMark = "exclamationMark"), t))(
+    d || {},
+  ),
   c = ((t) => (
     (t.Top = "top"),
     (t.AboveViewFinder = "aboveViewFinder"),
@@ -75,16 +65,4 @@ var n = ((a) => ((a.Body = "body"), (a.Footnote = "footnote"), a))(n || {}),
     (e[(e.BarcodeArFull = 38)] = "BarcodeArFull"),
     e
   ))(C || {});
-export {
-  n as a,
-  o as b,
-  s as c,
-  i as d,
-  p as e,
-  d as f,
-  c as g,
-  l as h,
-  m as i,
-  u as j,
-  C as k,
-};
+export { n as a, o as b, s as c, i as d, p as e, d as f, c as g, l as h, m as i, u as j, C as k };

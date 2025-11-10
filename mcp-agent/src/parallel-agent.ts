@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import Exa from "exa-js";
 import type { VendorData } from "./validator";
 
+import { logger } from "@/lib/logger";
 const PAGE_GROUPS = {
   group1: ["home", "shop"],
   group2: ["product", "about", "contact"],
@@ -31,8 +32,7 @@ function getAnthropicClient() {
 }
 
 function getSupabaseClient() {
-  const supabaseUrl =
-    process.env.SUPABASE_URL || "https://uaednwpxursknmwdeejn.supabase.co";
+  const supabaseUrl = process.env.SUPABASE_URL || "https://uaednwpxursknmwdeejn.supabase.co";
   const supabaseServiceKey =
     process.env.SUPABASE_SERVICE_KEY ||
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZWRud3B4dXJza25td2RlZWpuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk5NzIzMywiZXhwIjoyMDc2NTczMjMzfQ.l0NvBbS2JQWPObtWeVD2M2LD866A2tgLmModARYNnbI";
@@ -57,7 +57,7 @@ async function generatePageGroup(
   const anthropic = getAnthropicClient();
 
   try {
-    console.log(`⚡ [${groupName}] Generating ${pages.join(", ")}...`);
+    logger.debug(`⚡ [${groupName}] Generating ${pages.join(", ")}...`);
 
     const prompt = `Generate ONLY these pages: ${pages.join(", ")}
 
@@ -112,7 +112,7 @@ Return ONLY JSON:
 
     const result = JSON.parse(text);
 
-    console.log(
+    logger.debug(
       `✅ [${groupName}] Generated ${result.sections.length} sections, ${result.components.length} components`,
     );
 
@@ -123,7 +123,7 @@ Return ONLY JSON:
       success: true,
     };
   } catch (error: any) {
-    console.error(`❌ [${groupName}] Failed:`, error.message);
+    logger.error(`❌ [${groupName}] Failed:`, error.message);
     return {
       groupName,
       sections: [],
@@ -203,10 +203,7 @@ export async function generateStorefrontParallel(
       const key = `${section.page_type}:${section.section_key}`;
 
       // For header/footer, only add once
-      if (
-        section.section_key === "header" ||
-        section.section_key === "footer"
-      ) {
+      if (section.section_key === "header" || section.section_key === "footer") {
         if (!seenHeaderFooter.has(section.section_key)) {
           allSections.push(section);
           seenHeaderFooter.add(section.section_key);
@@ -229,9 +226,7 @@ export async function generateStorefrontParallel(
     });
   });
 
-  logs.push(
-    `✅ Merged: ${allSections.length} sections, ${allComponents.length} components`,
-  );
+  logs.push(`✅ Merged: ${allSections.length} sections, ${allComponents.length} components`);
 
   return {
     success: failed.length === 0,

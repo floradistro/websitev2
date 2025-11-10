@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -9,10 +10,7 @@ const supabase = createClient(
 interface ProductWithCategory {
   id: string;
   name: string;
-  primary_category:
-    | { id: string; name: string }
-    | { id: string; name: string }[]
-    | null;
+  primary_category: { id: string; name: string } | { id: string; name: string }[] | null;
 }
 
 // GET - Get category pricing assignments for a vendor
@@ -22,10 +20,7 @@ export async function GET(request: NextRequest) {
     const vendorId = searchParams.get("vendor_id");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id is required" }, { status: 400 });
     }
 
     // Get all products for the vendor with their categories
@@ -106,12 +101,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching category pricing assignments:", error);
+      logger.error("Error fetching category pricing assignments:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -178,9 +170,7 @@ export async function POST(request: NextRequest) {
       if (existingError) throw existingError;
 
       const existingProductIds = existing?.map((e) => e.product_id) || [];
-      const newProductIds = productIds.filter(
-        (id) => !existingProductIds.includes(id),
-      );
+      const newProductIds = productIds.filter((id) => !existingProductIds.includes(id));
 
       if (newProductIds.length > 0) {
         const assignments = newProductIds.map((product_id) => ({
@@ -223,11 +213,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating category pricing assignments:", error);
+      logger.error("Error updating category pricing assignments:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { DollarSign, TrendingUp, Package, AlertTriangle } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface ProfitStats {
   total_products_with_cost: number;
   average_margin: number;
@@ -38,7 +39,7 @@ export default function VendorProfitWidget() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to load profit stats:", error);
+        logger.error("Failed to load profit stats:", error);
       }
     } finally {
       setLoading(false);
@@ -68,8 +69,7 @@ export default function VendorProfitWidget() {
           </div>
         </div>
         <p className="text-white/60 text-sm">
-          Add cost prices to your products to track profit margins and inventory
-          value.
+          Add cost prices to your products to track profit margins and inventory value.
         </p>
       </div>
     );
@@ -86,9 +86,7 @@ export default function VendorProfitWidget() {
           <h3 className="text-white text-sm font-medium uppercase tracking-wider">
             Profit Overview
           </h3>
-          <p className="text-white/40 text-xs">
-            {stats.total_products_with_cost} products tracked
-          </p>
+          <p className="text-white/40 text-xs">{stats.total_products_with_cost} products tracked</p>
         </div>
       </div>
 
@@ -107,9 +105,7 @@ export default function VendorProfitWidget() {
                     : "text-red-400"
               }
             />
-            <div className="text-white/60 text-xs uppercase tracking-wider">
-              Avg Margin
-            </div>
+            <div className="text-white/60 text-xs uppercase tracking-wider">Avg Margin</div>
           </div>
           <div
             className={`text-2xl font-light ${
@@ -128,9 +124,7 @@ export default function VendorProfitWidget() {
         <div className="bg-white/5 border border-white/10 p-4">
           <div className="flex items-center gap-2 mb-2">
             <Package size={14} className="text-blue-400" />
-            <div className="text-white/60 text-xs uppercase tracking-wider">
-              Inventory Cost
-            </div>
+            <div className="text-white/60 text-xs uppercase tracking-wider">Inventory Cost</div>
           </div>
           <div className="text-2xl font-light text-blue-400">
             ${stats.total_inventory_cost.toLocaleString()}
@@ -140,15 +134,11 @@ export default function VendorProfitWidget() {
 
       {/* Potential Profit */}
       <div className="bg-gradient-to-br from-green-500/10 to-green-600/5 border border-green-500/20 p-4 mb-4">
-        <div className="text-white/60 text-xs uppercase tracking-wider mb-2">
-          Potential Profit
-        </div>
+        <div className="text-white/60 text-xs uppercase tracking-wider mb-2">Potential Profit</div>
         <div className="text-3xl font-light text-green-400">
           ${stats.total_potential_profit.toLocaleString()}
         </div>
-        <p className="text-white/40 text-xs mt-2">
-          If all inventory sells at current prices
-        </p>
+        <p className="text-white/40 text-xs mt-2">If all inventory sells at current prices</p>
       </div>
 
       {/* Alerts */}
@@ -158,8 +148,7 @@ export default function VendorProfitWidget() {
             <AlertTriangle size={14} className="text-red-400" />
             <div className="text-xs text-red-400">
               {stats.low_margin_products} product
-              {stats.low_margin_products !== 1 ? "s" : ""} with low margins
-              (&lt;25%)
+              {stats.low_margin_products !== 1 ? "s" : ""} with low margins (&lt;25%)
             </div>
           </div>
         )}
@@ -169,8 +158,7 @@ export default function VendorProfitWidget() {
             <TrendingUp size={14} className="text-green-400" />
             <div className="text-xs text-green-400">
               {stats.high_margin_products} product
-              {stats.high_margin_products !== 1 ? "s" : ""} with high margins
-              (≥40%)
+              {stats.high_margin_products !== 1 ? "s" : ""} with high margins (≥40%)
             </div>
           </div>
         )}

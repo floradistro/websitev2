@@ -7,10 +7,7 @@ var r = class {
     return this[t];
   }
   toJSONObject() {
-    return Object.keys(this).reduce(
-      (t, e) => ((t[e] = this.getProperty(e)), t),
-      {},
-    );
+    return Object.keys(this).reduce((t, e) => ((t[e] = this.getProperty(e)), t), {});
   }
 };
 export { r as a };

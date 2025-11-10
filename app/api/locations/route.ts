@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 // Cache for 60 seconds, stale-while-revalidate for 120 seconds
 export const revalidate = 60;
 
@@ -14,16 +15,10 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const vendorId = searchParams.get("vendor_id");
-    const locationIds = searchParams
-      .get("location_ids")
-      ?.split(",")
-      .filter(Boolean);
+    const locationIds = searchParams.get("location_ids")?.split(",").filter(Boolean);
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -61,7 +56,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Locations API error:", error);
+      logger.error("Locations API error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Failed to fetch locations" },

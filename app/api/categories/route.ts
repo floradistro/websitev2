@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Categories API error:", error);
+      logger.error("Categories API error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Failed to fetch categories" },
@@ -67,10 +68,7 @@ export async function POST(request: NextRequest) {
     const { name, slug, description, icon, image_url, parent_id } = body;
 
     if (!name) {
-      return NextResponse.json(
-        { error: "Category name is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Category name is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -115,7 +113,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Create category error:", error);
+      logger.error("Create category error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to create category" },
@@ -136,10 +134,7 @@ export async function PUT(request: NextRequest) {
     const { id, name, description, icon, image_url, field_visibility } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Category ID is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -158,14 +153,10 @@ export async function PUT(request: NextRequest) {
     const isOwnCategory = existing.vendor_id === vendorId;
     const isGlobalCategory = existing.vendor_id === null;
     const onlyUpdatingFieldVisibility =
-      Object.keys(body).filter((k) => k !== "id" && k !== "field_visibility")
-        .length === 0;
+      Object.keys(body).filter((k) => k !== "id" && k !== "field_visibility").length === 0;
 
     if (!isOwnCategory && !(isGlobalCategory && onlyUpdatingFieldVisibility)) {
-      return NextResponse.json(
-        { error: "Not authorized to edit this category" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "Not authorized to edit this category" }, { status: 403 });
     }
 
     const updateData: any = {};
@@ -173,15 +164,11 @@ export async function PUT(request: NextRequest) {
     if (description !== undefined) updateData.description = description;
     if (icon !== undefined) updateData.icon = icon;
     if (image_url !== undefined) updateData.image_url = image_url;
-    if (field_visibility !== undefined)
-      updateData.field_visibility = field_visibility;
+    if (field_visibility !== undefined) updateData.field_visibility = field_visibility;
 
     // Ensure we have something to update
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: "No fields provided to update" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "No fields provided to update" }, { status: 400 });
     }
 
     const { data: category, error } = await supabase
@@ -199,7 +186,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Update category error:", error);
+      logger.error("Update category error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to update category" },
@@ -220,10 +207,7 @@ export async function DELETE(request: NextRequest) {
     const categoryId = searchParams.get("id");
 
     if (!categoryId) {
-      return NextResponse.json(
-        { error: "Category ID is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -258,10 +242,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const { error } = await supabase
-      .from("categories")
-      .delete()
-      .eq("id", categoryId);
+    const { error } = await supabase.from("categories").delete().eq("id", categoryId);
 
     if (error) throw error;
 
@@ -271,7 +252,7 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Delete category error:", error);
+      logger.error("Delete category error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to delete category" },

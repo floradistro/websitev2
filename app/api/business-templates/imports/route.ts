@@ -6,16 +6,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get("vendor_id");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { error: "Vendor ID is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Vendor ID is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -34,7 +32,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get template imports error:", error);
+      logger.error("Get template imports error:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Failed to fetch imports" },

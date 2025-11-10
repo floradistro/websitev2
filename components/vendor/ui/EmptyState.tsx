@@ -24,9 +24,7 @@ export function VendorEmptyState({
       <Icon size={64} className="text-white/20 mx-auto mb-6" />
       <p className={tw(vendorTheme.typography.body, "text-lg mb-2")}>{title}</p>
       {description && (
-        <p className={tw(vendorTheme.colors.text.muted, "text-sm mb-4")}>
-          {description}
-        </p>
+        <p className={tw(vendorTheme.colors.text.muted, "text-sm mb-4")}>{description}</p>
       )}
       {action && <div className="mt-4">{action}</div>}
     </div>

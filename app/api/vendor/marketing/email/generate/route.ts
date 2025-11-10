@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createEmailGenerator } from "@/lib/marketing/email-generator";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -21,13 +22,7 @@ export async function POST(request: NextRequest) {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const {
-      campaignType,
-      productData,
-      discountData,
-      customerSegment,
-      additionalContext,
-    } = body;
+    const { campaignType, productData, discountData, customerSegment, additionalContext } = body;
 
     // Get vendor info
     const { data: vendor, error: vendorError } = await supabase
@@ -67,7 +62,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Email generation error:", error);
+      logger.error("Email generation error:", error);
     }
     return NextResponse.json(
       {

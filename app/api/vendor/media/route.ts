@@ -4,6 +4,7 @@ import { withErrorHandler } from "@/lib/api-handler";
 import { requireVendor } from "@/lib/auth/middleware";
 import OpenAI from "openai";
 
+import { logger } from "@/lib/logger";
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -43,7 +44,7 @@ async function analyzeImageWithAI(imageUrl: string) {
 }
 
 Categories:
-- "product_photos": Product photography, cannabis flowers, edibles, product shots
+- "product_photos": Product photography, product shots, packaged items
 - "social_media": Instagram posts, Facebook ads, Stories, social media graphics
 - "print_marketing": Flyers, posters, print ads, physical marketing materials
 - "promotional": Promotional graphics, deals, event materials, special offers
@@ -78,7 +79,7 @@ Respond with ONLY the JSON, no other text.`,
     return analysis;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ AI analysis error:", error.message);
+      logger.error("❌ AI analysis error:", error.message);
     }
     return null;
   }
@@ -131,7 +132,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error listing files:", error);
+        logger.error("❌ Error listing files:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -150,7 +151,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -233,7 +234,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     if (uploadError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Upload error:", uploadError);
+        logger.error("❌ Upload error:", uploadError);
       }
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
@@ -241,9 +242,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     // Get public URL
     const {
       data: { publicUrl },
-    } = supabase.storage
-      .from("vendor-product-images")
-      .getPublicUrl(finalFilePath);
+    } = supabase.storage.from("vendor-product-images").getPublicUrl(finalFilePath);
 
     // AI Analysis (optional, can be skipped for speed)
     let aiAnalysis = null;
@@ -274,7 +273,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     if (dbError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Database error:", dbError);
+        logger.error("❌ Database error:", dbError);
       }
       // Still return success since file was uploaded
       return NextResponse.json({
@@ -303,7 +302,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -318,15 +317,7 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const {
-      id,
-      category,
-      custom_tags,
-      title,
-      alt_text,
-      notes,
-      linked_product_ids,
-    } = body;
+    const { id, category, custom_tags, title, alt_text, notes, linked_product_ids } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Media ID required" }, { status: 400 });
@@ -352,7 +343,7 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Update error:", error);
+        logger.error("❌ Update error:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -363,7 +354,7 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -382,19 +373,13 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
     const fileName = searchParams.get("file");
 
     if (!id && !fileName) {
-      return NextResponse.json(
-        { error: "Media ID or file name required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Media ID or file name required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
 
     // Get file info from database
-    let query = supabase
-      .from("vendor_media")
-      .select("*")
-      .eq("vendor_id", vendorId);
+    let query = supabase.from("vendor_media").select("*").eq("vendor_id", vendorId);
 
     if (id) {
       query = query.eq("id", id);
@@ -415,19 +400,16 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
 
     if (storageError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Storage delete error:", storageError);
+        logger.error("❌ Storage delete error:", storageError);
       }
     }
 
     // Delete from database
-    const { error: dbError } = await supabase
-      .from("vendor_media")
-      .delete()
-      .eq("id", mediaFile.id);
+    const { error: dbError } = await supabase.from("vendor_media").delete().eq("id", mediaFile.id);
 
     if (dbError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Database delete error:", dbError);
+        logger.error("❌ Database delete error:", dbError);
       }
       return NextResponse.json({ error: dbError.message }, { status: 500 });
     }
@@ -438,7 +420,7 @@ export const DELETE = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

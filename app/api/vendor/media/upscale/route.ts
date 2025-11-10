@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import axios from "axios";
 import sharp from "sharp";
 
+import { logger } from "@/lib/logger";
 const REPLICATE_API_KEY = process.env.REPLICATE_API_KEY || "";
 
 // Real-ESRGAN model for 4x upscaling
@@ -14,20 +15,14 @@ const REAL_ESRGAN_MODEL =
 const MAX_INPUT_PIXELS = 2000000; // 2 megapixels safe limit
 
 // Poll prediction status
-async function pollPrediction(
-  predictionId: string,
-  maxAttempts = 60,
-): Promise<any> {
+async function pollPrediction(predictionId: string, maxAttempts = 60): Promise<any> {
   for (let i = 0; i < maxAttempts; i++) {
-    const response = await axios.get(
-      `https://api.replicate.com/v1/predictions/${predictionId}`,
-      {
-        headers: {
-          Authorization: `Token ${REPLICATE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
+    const response = await axios.get(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+      headers: {
+        Authorization: `Token ${REPLICATE_API_KEY}`,
+        "Content-Type": "application/json",
       },
-    );
+    });
 
     const prediction = response.data;
 
@@ -99,13 +94,11 @@ export async function POST(request: NextRequest) {
       const tempFileName = `temp-resize-${Date.now()}.png`;
       const tempPath = `${vendorId}/${tempFileName}`;
 
-      await supabase.storage
-        .from("vendor-product-images")
-        .upload(tempPath, resizedBuffer, {
-          contentType: "image/png",
-          cacheControl: "60",
-          upsert: true,
-        });
+      await supabase.storage.from("vendor-product-images").upload(tempPath, resizedBuffer, {
+        contentType: "image/png",
+        cacheControl: "60",
+        upsert: true,
+      });
 
       const {
         data: { publicUrl },
@@ -161,9 +154,7 @@ export async function POST(request: NextRequest) {
 
     // Delete original file (SAME AS REMOVE.BG)
     const originalFilePath = `${vendorId}/${fileName}`;
-    await supabase.storage
-      .from("vendor-product-images")
-      .remove([originalFilePath]);
+    await supabase.storage.from("vendor-product-images").remove([originalFilePath]);
 
     // Upload upscaled version with same filename
     const fileNameWithoutExt = fileName.replace(/\.[^/.]+$/, "");
@@ -180,7 +171,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Upload error:", uploadError);
+        logger.error("❌ Upload error:", uploadError);
       }
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
@@ -200,7 +191,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Upscale error:", error.response?.data || error.message);
+      logger.error("❌ Upscale error:", error.response?.data || error.message);
     }
     return NextResponse.json(
       {
@@ -273,19 +264,15 @@ export async function PUT(request: NextRequest) {
             const tempFileName = `temp-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
             const tempPath = `${vendorId}/${tempFileName}`;
 
-            await supabase.storage
-              .from("vendor-product-images")
-              .upload(tempPath, resizedBuffer, {
-                contentType: "image/png",
-                cacheControl: "60",
-                upsert: true,
-              });
+            await supabase.storage.from("vendor-product-images").upload(tempPath, resizedBuffer, {
+              contentType: "image/png",
+              cacheControl: "60",
+              upsert: true,
+            });
 
             const {
               data: { publicUrl },
-            } = supabase.storage
-              .from("vendor-product-images")
-              .getPublicUrl(tempPath);
+            } = supabase.storage.from("vendor-product-images").getPublicUrl(tempPath);
 
             processImageUrl = publicUrl;
           }
@@ -324,9 +311,7 @@ export async function PUT(request: NextRequest) {
             wasResized: processImageUrl !== file.url,
           };
         } catch (error: any) {
-          throw new Error(
-            `Failed to start prediction for ${file.name}: ${error.message}`,
-          );
+          throw new Error(`Failed to start prediction for ${file.name}: ${error.message}`);
         }
       });
 
@@ -359,17 +344,13 @@ export async function PUT(request: NextRequest) {
           // Clean up temp file if one was created
           if (p.value.tempPath) {
             try {
-              await supabase.storage
-                .from("vendor-product-images")
-                .remove([p.value.tempPath]);
+              await supabase.storage.from("vendor-product-images").remove([p.value.tempPath]);
             } catch (cleanupError) {}
           }
 
           // Delete original (SAME AS REMOVE.BG RULE)
           const originalFilePath = `${vendorId}/${p.value.file.name}`;
-          await supabase.storage
-            .from("vendor-product-images")
-            .remove([originalFilePath]);
+          await supabase.storage.from("vendor-product-images").remove([originalFilePath]);
 
           // Upload upscaled with same name (SAME AS REMOVE.BG RULE)
           const fileNameWithoutExt = p.value.file.name.replace(/\.[^/.]+$/, "");
@@ -386,9 +367,7 @@ export async function PUT(request: NextRequest) {
 
           const {
             data: { publicUrl },
-          } = supabase.storage
-            .from("vendor-product-images")
-            .getPublicUrl(filePath);
+          } = supabase.storage.from("vendor-product-images").getPublicUrl(filePath);
 
           return {
             success: true,
@@ -401,10 +380,7 @@ export async function PUT(request: NextRequest) {
           };
         } catch (error: any) {
           if (process.env.NODE_ENV === "development") {
-            console.error(
-              `❌ Upscale failed for ${chunk[index].name}:`,
-              error.message,
-            );
+            logger.error(`❌ Upscale failed for ${chunk[index].name}:`, error.message);
           }
           return {
             success: false,
@@ -420,18 +396,15 @@ export async function PUT(request: NextRequest) {
         if (result.status === "fulfilled" && result.value.success) {
           results.push(result.value.result);
         } else {
-          const file =
-            result.status === "fulfilled" ? result.value.file : chunk[index];
+          const file = result.status === "fulfilled" ? result.value.file : chunk[index];
           const errorMsg =
-            result.status === "fulfilled"
-              ? result.value.error
-              : result.reason?.message;
+            result.status === "fulfilled" ? result.value.error : result.reason?.message;
           errors.push({
             fileName: file.name,
             error: errorMsg,
           });
           if (process.env.NODE_ENV === "development") {
-            console.error(`❌ Failed: ${file.name} - ${errorMsg}`);
+            logger.error(`❌ Failed: ${file.name} - ${errorMsg}`);
           }
         }
       });
@@ -451,7 +424,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

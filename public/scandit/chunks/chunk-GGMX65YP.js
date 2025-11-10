@@ -43,13 +43,9 @@ function i(t) {
         ...m,
         hintIcon: n,
         backgroundColor:
-          (c = (f = t.backgroundColor) == null ? void 0 : f.toJSON()) != null
-            ? c
-            : o,
-        textColor:
-          (s = (a = t.textColor) == null ? void 0 : a.toJSON()) != null ? s : e,
-        iconColor:
-          (x = (l = t.textColor) == null ? void 0 : l.toJSON()) != null ? x : e,
+          (c = (f = t.backgroundColor) == null ? void 0 : f.toJSON()) != null ? c : o,
+        textColor: (s = (a = t.textColor) == null ? void 0 : a.toJSON()) != null ? s : e,
+        iconColor: (x = (l = t.textColor) == null ? void 0 : l.toJSON()) != null ? x : e,
       },
       tag: t.tag,
       text: t.message,

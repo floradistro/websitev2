@@ -9,6 +9,7 @@ import React, { useState, useEffect } from "react";
 import { Text } from "../atomic/Text";
 import { Badge } from "../atomic/Badge";
 
+import { logger } from "@/lib/logger";
 export interface SmartCategoryNavProps {
   vendorId: string;
 
@@ -49,7 +50,7 @@ export function SmartCategoryNav({
         setCategories(data.categories || []);
       } catch (err) {
         if (process.env.NODE_ENV === "development") {
-          console.error("SmartCategoryNav fetch error:", err);
+          logger.error("SmartCategoryNav fetch error:", err);
         }
       } finally {
         setLoading(false);
@@ -64,10 +65,7 @@ export function SmartCategoryNav({
       <div className={`py-4 ${className}`}>
         <div className="animate-pulse flex gap-2">
           {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="h-10 bg-neutral-800 rounded-full w-24"
-            ></div>
+            <div key={i} className="h-10 bg-neutral-800 rounded-full w-24"></div>
           ))}
         </div>
       </div>

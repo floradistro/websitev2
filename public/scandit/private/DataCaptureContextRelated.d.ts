@@ -23,14 +23,8 @@ import "../logger.js";
 import "../LoadingStatus.js";
 
 interface DataCaptureContextFrameListener {
-  onFrameProcessingStarted?: (
-    context: DataCaptureContext,
-    frameData: FrameData,
-  ) => void;
-  onFrameProcessingFinished?: (
-    context: DataCaptureContext,
-    frameData: FrameData,
-  ) => void;
+  onFrameProcessingStarted?: (context: DataCaptureContext, frameData: FrameData) => void;
+  onFrameProcessingFinished?: (context: DataCaptureContext, frameData: FrameData) => void;
   onFrameSkipped?: (context: DataCaptureContext, frameData: FrameData) => void;
 }
 

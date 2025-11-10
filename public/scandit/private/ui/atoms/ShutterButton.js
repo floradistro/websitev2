@@ -78,29 +78,24 @@ var d = { default: "default", play: "play", pause: "pause" },
         this._button &&
           (this.refreshButtonWidth(),
           this._button.classList.add(this.variant),
-          (e = this._mainSVGCircle) == null ||
-            e.setAttribute("mask", `url(#${this.variant})`));
+          (e = this._mainSVGCircle) == null || e.setAttribute("mask", `url(#${this.variant})`));
       }
       (t === "pulse" &&
         (this.refreshButtonWidth(),
         (n = this._button) == null || n.classList.toggle("pulse", this.pulse)),
         t === "rotating" &&
-          ((s = this._button) == null ||
-            s.classList.toggle("rotating", this.rotating)));
+          ((s = this._button) == null || s.classList.toggle("rotating", this.rotating)));
     }
     checkVariant(t) {
       return this.isValidState(t)
         ? true
-        : (a$3.warn(
-            `Invalid variant: "${t}". Must be one of ${Object.values(d).toString()}`,
-          ),
+        : (a$3.warn(`Invalid variant: "${t}". Must be one of ${Object.values(d).toString()}`),
           false);
     }
     refreshButtonWidth() {
       var e;
       let { width: t } = this.getBoundingClientRect();
-      (e = this._button) == null ||
-        e.style.setProperty("--button-width", `${t}px`);
+      (e = this._button) == null || e.style.setProperty("--button-width", `${t}px`);
     }
     connectedCallback() {
       var t;
@@ -114,8 +109,7 @@ var d = { default: "default", play: "play", pause: "pause" },
           this.shadowRoot.append(this._button),
           this.appendStyle(),
           (this._mainSVGCircle = this._button.querySelector("#main-circle")),
-          (t = this._mainSVGCircle) == null ||
-            t.setAttribute("mask", `url(#${this.variant})`),
+          (t = this._mainSVGCircle) == null || t.setAttribute("mask", `url(#${this.variant})`),
           this.refreshButtonWidth()));
     }
     isValidState(t) {
@@ -124,8 +118,7 @@ var d = { default: "default", play: "play", pause: "pause" },
     appendStyle() {
       var t;
       (this.shadowRoot.append(f().cloneNode(true)),
-        (t = this.shadowRoot.querySelector("svg")) == null ||
-          t.prepend(g().cloneNode(true)));
+        (t = this.shadowRoot.querySelector("svg")) == null || t.prepend(g().cloneNode(true)));
     }
   };
 i.tag = "scandit-shutter-button";

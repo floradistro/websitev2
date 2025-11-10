@@ -3,13 +3,8 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
-import {
-  Wallet,
-  Download,
-  Smartphone,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { logger } from "@/lib/logger";
+import { Wallet, Download, Smartphone, CheckCircle2, AlertCircle } from "lucide-react";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -68,7 +63,7 @@ function CustomerWalletContent() {
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to load data:", err);
+        logger.error("Failed to load data:", err);
       }
       setError("Failed to load page");
     } finally {
@@ -85,9 +80,7 @@ function CustomerWalletContent() {
     try {
       // If no customer ID, show error
       if (!customerId) {
-        setError(
-          "Customer ID required. Please use the link from your email or text message.",
-        );
+        setError("Customer ID required. Please use the link from your email or text message.");
         setDownloading(false);
         return;
       }
@@ -111,7 +104,7 @@ function CustomerWalletContent() {
       window.URL.revokeObjectURL(downloadUrl);
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Download failed:", err);
+        logger.error("Download failed:", err);
       }
       setError("Failed to download wallet pass. Please try again.");
     } finally {
@@ -171,12 +164,10 @@ function CustomerWalletContent() {
               <Wallet className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-medium text-white mb-2">
-                Digital Loyalty Card
-              </h2>
+              <h2 className="text-lg font-medium text-white mb-2">Digital Loyalty Card</h2>
               <p className="text-sm text-white/60 leading-relaxed">
-                Add your loyalty card to Apple Wallet for easy access. Your
-                points will automatically update when you make purchases.
+                Add your loyalty card to Apple Wallet for easy access. Your points will
+                automatically update when you make purchases.
               </p>
             </div>
           </div>
@@ -185,9 +176,7 @@ function CustomerWalletContent() {
             <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-6 mb-8">
               <div className="flex items-center gap-3 mb-4">
                 <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span className="text-sm font-medium text-white">
-                  Customer Details
-                </span>
+                <span className="text-sm font-medium text-white">Customer Details</span>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -198,15 +187,11 @@ function CustomerWalletContent() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/40">Points</span>
-                  <span className="text-white font-medium">
-                    {customer.loyalty_points || 0}
-                  </span>
+                  <span className="text-white font-medium">{customer.loyalty_points || 0}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-white/40">Tier</span>
-                  <span className="text-white">
-                    {customer.loyalty_tier || "Bronze"}
-                  </span>
+                  <span className="text-white">{customer.loyalty_tier || "Bronze"}</span>
                 </div>
               </div>
             </div>
@@ -243,8 +228,8 @@ function CustomerWalletContent() {
             <div className="mt-4 flex items-start gap-3 p-4 bg-white/[0.02] border border-white/10 rounded-xl">
               <AlertCircle className="w-4 h-4 text-white/40 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-white/60">
-                This link requires a customer ID. Please use the personalized
-                link sent to you via email or text message.
+                This link requires a customer ID. Please use the personalized link sent to you via
+                email or text message.
               </p>
             </div>
           )}
@@ -252,18 +237,14 @@ function CustomerWalletContent() {
 
         {/* How It Works */}
         <div className="space-y-6">
-          <h3 className="text-sm font-medium text-white/80 mb-6">
-            How It Works
-          </h3>
+          <h3 className="text-sm font-medium text-white/80 mb-6">How It Works</h3>
 
           <div className="flex gap-4">
             <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-full flex items-center justify-center text-sm font-medium text-white flex-shrink-0">
               1
             </div>
             <div>
-              <div className="text-sm font-medium text-white mb-1">
-                Download Your Pass
-              </div>
+              <div className="text-sm font-medium text-white mb-1">Download Your Pass</div>
               <div className="text-xs text-white/40 leading-relaxed">
                 Tap the button above to download your .pkpass file
               </div>
@@ -275,12 +256,9 @@ function CustomerWalletContent() {
               2
             </div>
             <div>
-              <div className="text-sm font-medium text-white mb-1">
-                Open in Wallet
-              </div>
+              <div className="text-sm font-medium text-white mb-1">Open in Wallet</div>
               <div className="text-xs text-white/40 leading-relaxed">
-                The pass will automatically open in Apple Wallet. Tap "Add" to
-                save it.
+                The pass will automatically open in Apple Wallet. Tap "Add" to save it.
               </div>
             </div>
           </div>
@@ -290,12 +268,9 @@ function CustomerWalletContent() {
               3
             </div>
             <div>
-              <div className="text-sm font-medium text-white mb-1">
-                Use at Checkout
-              </div>
+              <div className="text-sm font-medium text-white mb-1">Use at Checkout</div>
               <div className="text-xs text-white/40 leading-relaxed">
-                Show your pass at checkout to earn and redeem points. Updates
-                automatically!
+                Show your pass at checkout to earn and redeem points. Updates automatically!
               </div>
             </div>
           </div>
@@ -305,11 +280,9 @@ function CustomerWalletContent() {
         <div className="mt-12 flex items-start gap-3 p-6 bg-white/[0.02] border border-white/10 rounded-2xl">
           <Smartphone className="w-5 h-5 text-white/40 flex-shrink-0 mt-0.5" />
           <div className="text-xs text-white/60 leading-relaxed">
-            <strong className="text-white">
-              Compatible with iPhone & Apple Watch.
-            </strong>{" "}
-            Make sure you have the latest version of iOS for the best
-            experience. Your pass will sync across all your Apple devices.
+            <strong className="text-white">Compatible with iPhone & Apple Watch.</strong> Make sure
+            you have the latest version of iOS for the best experience. Your pass will sync across
+            all your Apple devices.
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import crypto from "crypto";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -61,9 +62,7 @@ export async function POST(request: NextRequest) {
       // because phone numbers are stored with various formatting
       const result = await supabase
         .from("customers")
-        .select(
-          "id, email, phone, first_name, last_name, loyalty_points, auth_user_id, vendor_id",
-        )
+        .select("id, email, phone, first_name, last_name, loyalty_points, auth_user_id, vendor_id")
         .not("phone", "is", null);
 
       if (result.data) {
@@ -81,9 +80,7 @@ export async function POST(request: NextRequest) {
       // Only search by email if phone is not provided
       const result = await supabase
         .from("customers")
-        .select(
-          "id, email, phone, first_name, last_name, loyalty_points, auth_user_id, vendor_id",
-        )
+        .select("id, email, phone, first_name, last_name, loyalty_points, auth_user_id, vendor_id")
         .eq("email", email.toLowerCase().trim());
       customers = result.data;
       customerError = result.error;
@@ -103,9 +100,7 @@ export async function POST(request: NextRequest) {
     const customer =
       customers.length > 1
         ? customers.reduce((prev, current) =>
-            (current.loyalty_points || 0) > (prev.loyalty_points || 0)
-              ? current
-              : prev,
+            (current.loyalty_points || 0) > (prev.loyalty_points || 0) ? current : prev,
           )
         : customers[0];
 
@@ -172,31 +167,28 @@ export async function POST(request: NextRequest) {
 
     // Step 3: Customer exists but no auth account - create one
     // Generate a secure temporary password
-    const tempPassword =
-      crypto.randomBytes(16).toString("base64").slice(0, 12) + "!Aa1";
+    const tempPassword = crypto.randomBytes(16).toString("base64").slice(0, 12) + "!Aa1";
 
-    const { data: authData, error: authError } =
-      await supabase.auth.admin.createUser({
-        email: customer.email,
-        password: tempPassword,
-        email_confirm: true, // Auto-confirm email
-        user_metadata: {
-          first_name: customer.first_name || "",
-          last_name: customer.last_name || "",
-          phone: customer.phone || "",
-          migrated: true,
-          claimed_at: new Date().toISOString(),
-        },
-      });
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: customer.email,
+      password: tempPassword,
+      email_confirm: true, // Auto-confirm email
+      user_metadata: {
+        first_name: customer.first_name || "",
+        last_name: customer.last_name || "",
+        phone: customer.phone || "",
+        migrated: true,
+        claimed_at: new Date().toISOString(),
+      },
+    });
 
     if (authError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating auth user:", authError);
+        logger.error("Error creating auth user:", authError);
       }
       return NextResponse.json(
         {
-          error:
-            "Failed to create auth account. Please try again or contact support.",
+          error: "Failed to create auth account. Please try again or contact support.",
         },
         { status: 500, headers: corsHeaders },
       );
@@ -210,7 +202,7 @@ export async function POST(request: NextRequest) {
 
     if (linkError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error linking auth to customer:", linkError);
+        logger.error("Error linking auth to customer:", linkError);
       }
       // Rollback - delete the auth user we just created
       await supabase.auth.admin.deleteUser(authData.user.id);
@@ -222,18 +214,14 @@ export async function POST(request: NextRequest) {
 
     // Step 5: Send password reset email
     const resetRedirectUrl =
-      redirectTo ||
-      `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/reset-password`;
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      customer.email,
-      {
-        redirectTo: resetRedirectUrl,
-      },
-    );
+      redirectTo || `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/reset-password`;
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(customer.email, {
+      redirectTo: resetRedirectUrl,
+    });
 
     if (resetError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error sending reset email:", resetError);
+        logger.error("Error sending reset email:", resetError);
       }
       return NextResponse.json(
         {
@@ -257,7 +245,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in claim account:", error);
+      logger.error("Error in claim account:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

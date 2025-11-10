@@ -67,9 +67,7 @@ export default function OrderTimeline({
   if (status === "cancelled" || status === "refunded" || status === "failed") {
     return (
       <div className="bg-red-500/10 border border-red-500/30 p-6">
-        <p className="text-red-400 text-sm uppercase tracking-wider">
-          Order {status}
-        </p>
+        <p className="text-red-400 text-sm uppercase tracking-wider">Order {status}</p>
         <p className="text-white/60 text-xs mt-2">
           {status === "cancelled" && "This order has been cancelled."}
           {status === "refunded" && "This order has been refunded."}
@@ -103,11 +101,7 @@ export default function OrderTimeline({
                       : "bg-[#3a3a3a] border-white/20 text-white/40"
                 }`}
               >
-                {step.completed ? (
-                  <Check size={20} strokeWidth={2.5} />
-                ) : (
-                  <step.icon size={20} />
-                )}
+                {step.completed ? <Check size={20} strokeWidth={2.5} /> : <step.icon size={20} />}
               </div>
 
               {/* Content */}
@@ -148,24 +142,19 @@ export default function OrderTimeline({
                     <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">
                       Tracking Number
                     </p>
-                    <p className="text-xs text-white/80 font-mono">
-                      {trackingNumber}
-                    </p>
+                    <p className="text-xs text-white/80 font-mono">{trackingNumber}</p>
                   </div>
                 )}
 
-                {step.id === "shipped" &&
-                  estimatedDelivery &&
-                  !step.completed &&
-                  step.current && (
-                    <p className="text-xs text-white/60 mt-1">
-                      Est. delivery:{" "}
-                      {new Date(estimatedDelivery).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </p>
-                  )}
+                {step.id === "shipped" && estimatedDelivery && !step.completed && step.current && (
+                  <p className="text-xs text-white/60 mt-1">
+                    Est. delivery:{" "}
+                    {new Date(estimatedDelivery).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </p>
+                )}
               </div>
             </div>
           ))}

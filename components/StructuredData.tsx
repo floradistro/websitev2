@@ -47,8 +47,7 @@ interface ProductSchemaProps {
 
 export function ProductSchema({ product }: ProductSchemaProps) {
   const price = product.price ? parseFloat(product.price) : 0;
-  const image =
-    product.images?.[0]?.src || "https://floradistro.com/yacht-club-logo.png";
+  const image = product.images?.[0]?.src || "https://floradistro.com/yacht-club-logo.png";
   const category = product.categories?.[0]?.name || "Products";
 
   const schema: any = {
@@ -115,15 +114,7 @@ export function LocalBusinessSchema({ location }: LocalBusinessSchemaProps) {
     },
     openingHoursSpecification: {
       "@type": "OpeningHoursSpecification",
-      dayOfWeek: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-      ],
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
       opens: "11:00",
       closes: "21:00",
     },

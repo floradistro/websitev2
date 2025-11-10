@@ -14,8 +14,7 @@ function n(e) {
     return t;
   }
   let r = {};
-  for (let t in e)
-    Object.prototype.hasOwnProperty.call(e, t) && (r[t] = n(e[t]));
+  for (let t in e) Object.prototype.hasOwnProperty.call(e, t) && (r[t] = n(e[t]));
   return r;
 }
 function a() {

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
-import {
-  rateLimiter,
-  RateLimitConfigs,
-  getIdentifier,
-} from "@/lib/rate-limiter";
+import { logger } from "@/lib/logger";
+import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
 
 /**
  * Customer registration endpoint
@@ -16,10 +13,7 @@ export async function POST(request: NextRequest) {
     const allowed = rateLimiter.check(identifier, RateLimitConfigs.auth);
 
     if (!allowed) {
-      const resetTime = rateLimiter.getResetTime(
-        identifier,
-        RateLimitConfigs.auth,
-      );
+      const resetTime = rateLimiter.getResetTime(identifier, RateLimitConfigs.auth);
       return NextResponse.json(
         {
           success: false,
@@ -39,10 +33,7 @@ export async function POST(request: NextRequest) {
     const { email, password, firstName, lastName } = body;
 
     if (!email || !password || !firstName || !lastName) {
-      return NextResponse.json(
-        { success: false, error: "All fields required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "All fields required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -83,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     if (customerError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Customer creation error:", customerError);
+        logger.error("Customer creation error:", customerError);
       }
       // If customer creation fails, we should clean up the auth user
       await supabase.auth.admin.deleteUser(authData.user.id);
@@ -111,7 +102,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Registration error:", error);
+      logger.error("Registration error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Registration failed. Please try again." },

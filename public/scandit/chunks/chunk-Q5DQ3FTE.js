@@ -52,9 +52,7 @@ var g = class n {
   }
   set context(e) {
     ((this._context = e),
-      this._context &&
-        this.currentState === "on" &&
-        this.startSendingCapturesToWorker());
+      this._context && this.currentState === "on" && this.startSendingCapturesToWorker());
   }
   get currentState() {
     return this._currentState;
@@ -73,13 +71,10 @@ var g = class n {
   async switchToDesiredState(e) {
     var t, i;
     return (
-      this.currentTransitionStrategyPromise &&
-        (await this.currentTransitionStrategyPromise),
+      this.currentTransitionStrategyPromise && (await this.currentTransitionStrategyPromise),
       (this.currentTransitionStrategyPromise =
-        (i =
-          (t = this.stateTransitionStrategyMap[this.currentState]) == null
-            ? void 0
-            : t[e]) == null
+        (i = (t = this.stateTransitionStrategyMap[this.currentState]) == null ? void 0 : t[e]) ==
+        null
           ? void 0
           : i.call(t).catch((r) => {
               if (
@@ -99,9 +94,7 @@ var g = class n {
   }
   async setDesiredTorchState(e) {
     ((this._desiredTorchState = e),
-      await this.cameraManager.setTorchEnabled(
-        this._desiredTorchState === "on",
-      ),
+      await this.cameraManager.setTorchEnabled(this._desiredTorchState === "on"),
       await this.notifyContext({
         type: "torchState",
         newValue: this._desiredTorchState,
@@ -114,9 +107,7 @@ var g = class n {
     e != null && (this.listeners.includes(e) || this.listeners.push(e));
   }
   removeListener(e) {
-    e != null &&
-      this.listeners.includes(e) &&
-      this.listeners.splice(this.listeners.indexOf(e), 1);
+    e != null && this.listeners.includes(e) && this.listeners.splice(this.listeners.indexOf(e), 1);
   }
   async applySettings(e) {
     var i;
@@ -127,8 +118,7 @@ var g = class n {
       this.currentState === "on" || this.currentState === "standby")
     ) {
       let r = this.cameraManager.activeCameraSettings;
-      ((r == null ? void 0 : r.preferredResolution) !==
-        this.settings.preferredResolution &&
+      ((r == null ? void 0 : r.preferredResolution) !== this.settings.preferredResolution &&
         (await this.cameraManager.applyCameraSettings(this.settings),
         (i = this.cameraManager.activeCamera) != null &&
           i.currentResolution &&
@@ -139,8 +129,7 @@ var g = class n {
         await this.cameraManager.setZoom(this.settings.zoomFactor));
       let o = this.settings.getProperty("minFrameRate"),
         c = this.settings.getProperty("maxFrameRate");
-      (o != null || c != null) &&
-        (await this.cameraManager.setFrameRate({ min: o, max: c }));
+      (o != null || c != null) && (await this.cameraManager.setFrameRate({ min: o, max: c }));
       let m = this.settings.getProperty("manualLensPosition");
       m != null && (await this.cameraManager.setFocus(m));
       let u = this.settings.getProperty("exposureTargetBias"),
@@ -191,26 +180,18 @@ var g = class n {
     }
   }
   async setupCamera() {
-    if (
-      (this.cameraManager.setSelectedCameraSettings(this.settings),
-      this.deviceId === "")
-    )
+    if ((this.cameraManager.setSelectedCameraSettings(this.settings), this.deviceId === ""))
       (this.cameraManager.setSelectedCamera(),
         this.cameraManager.setInitialCameraPosition(this.position));
     else {
-      let t = (await a$1.getCameras()).find(
-        (i) => i.deviceId === this.deviceId,
-      );
+      let t = (await a$1.getCameras()).find((i) => i.deviceId === this.deviceId);
       t &&
         (this.cameraManager.setInitialCameraPosition(t.position),
         this.cameraManager.setSelectedCamera(t));
     }
     (await this.cameraManager.setupCameras(),
       typeof this._desiredMirrorImageEnabled == "boolean"
-        ? this.cameraManager.setMirrorImageEnabled(
-            this._desiredMirrorImageEnabled,
-            true,
-          )
+        ? this.cameraManager.setMirrorImageEnabled(this._desiredMirrorImageEnabled, true)
         : this.cameraManager.setMirrorImageEnabled(
             this.cameraManager.isMirrorImageEnabled(),
             false,
@@ -220,28 +201,28 @@ var g = class n {
         ((this.label = this.cameraManager.activeCamera.label),
         (this.position = this.cameraManager.activeCamera.position),
         (this.deviceId = this.cameraManager.activeCamera.deviceId),
-        (this._currentResolution =
-          this.cameraManager.activeCamera.currentResolution)));
+        (this._currentResolution = this.cameraManager.activeCamera.currentResolution)));
   }
   async notifyContext(e) {
     if (this.context) return this.context.update([e]);
   }
   notifyListeners() {
-    for (let e of this.listeners)
-      e.didChangeState && e.didChangeState(this, this.currentState);
+    for (let e of this.listeners) e.didChangeState && e.didChangeState(this, this.currentState);
   }
   updateCanvasVideoImage() {
     this.currentState === "on" &&
       this.context &&
       (this.cameraManager.updateCanvasVideoImage(),
-      (this._lastCanvasVideoPreviewAnimationFrame =
-        this.cameraManager.requestVideoFrame(this.updateCanvasVideoImage)));
+      (this._lastCanvasVideoPreviewAnimationFrame = this.cameraManager.requestVideoFrame(
+        this.updateCanvasVideoImage,
+      )));
   }
   async captureAndSend() {
     if (this.currentState !== "on" || !this.context) return;
     if (!this.context.hasEnabledMode()) {
-      this._lastCaptureRequestAnimationFrame =
-        this.cameraManager.requestVideoFrame(this.captureAndSend);
+      this._lastCaptureRequestAnimationFrame = this.cameraManager.requestVideoFrame(
+        this.captureAndSend,
+      );
       return;
     }
     let e = null;
@@ -261,8 +242,9 @@ var g = class n {
             .catch((t) => {
               a.warn("error while recycling uint8array", t);
             });
-      this._lastCaptureRequestAnimationFrame =
-        this.cameraManager.requestVideoFrame(this.captureAndSend);
+      this._lastCaptureRequestAnimationFrame = this.cameraManager.requestVideoFrame(
+        this.captureAndSend,
+      );
     }
   }
   startSendingCapturesToWorker() {
@@ -270,13 +252,9 @@ var g = class n {
   }
   stopSendingCapturesToWorker() {
     (this._lastCanvasVideoPreviewAnimationFrame != null &&
-      this.cameraManager.cancelVideoFrame(
-        this._lastCanvasVideoPreviewAnimationFrame,
-      ),
+      this.cameraManager.cancelVideoFrame(this._lastCanvasVideoPreviewAnimationFrame),
       this._lastCaptureRequestAnimationFrame != null &&
-        this.cameraManager.cancelVideoFrame(
-          this._lastCaptureRequestAnimationFrame,
-        ));
+        this.cameraManager.cancelVideoFrame(this._lastCaptureRequestAnimationFrame));
   }
   async transitionFromStateOffToOn() {
     if (
@@ -310,8 +288,7 @@ var g = class n {
           await this.transitionFromStateOffToOn());
         return;
       }
-      ((this._desiredState = "standby"),
-        await this.setCurrentState("bootingUp"));
+      ((this._desiredState = "standby"), await this.setCurrentState("bootingUp"));
       try {
         (await this.setupCamera(),
           this.cameraManager.pauseStream(),
@@ -319,8 +296,7 @@ var g = class n {
       } catch (e) {
         throw (a.log(a.Level.Error, e), await this.setCurrentState("off"), e);
       }
-      (await this.setCurrentState("standby"),
-        await this.setDesiredTorchState("off"));
+      (await this.setCurrentState("standby"), await this.setDesiredTorchState("off"));
     }
   }
   async transitionFromStateOnToOff() {
@@ -375,18 +351,13 @@ var g = class n {
   }
   async isAndroidWebView() {
     return (
-      this._isAndroidWebView == null &&
-        (this._isAndroidWebView = await a$2.isAndroidWebView()),
+      this._isAndroidWebView == null && (this._isAndroidWebView = await a$2.isAndroidWebView()),
       this._isAndroidWebView
     );
   }
   isZoomAvailable() {
     var e;
-    return (
-      ((e = this.cameraManager.mediaTrackCapabilities) == null
-        ? void 0
-        : e.zoom) != null
-    );
+    return ((e = this.cameraManager.mediaTrackCapabilities) == null ? void 0 : e.zoom) != null;
   }
 };
 export { g as a };

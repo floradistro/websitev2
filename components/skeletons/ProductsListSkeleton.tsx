@@ -60,11 +60,7 @@ export function ProductStatsSkeleton() {
  */
 export function FiltersSkeleton() {
   return (
-    <div
-      className="flex items-center gap-4 mb-4"
-      role="status"
-      aria-label="Loading filters"
-    >
+    <div className="flex items-center gap-4 mb-4" role="status" aria-label="Loading filters">
       {/* Search */}
       <div className="flex-1 h-10 bg-white/5 rounded-lg animate-pulse" />
 

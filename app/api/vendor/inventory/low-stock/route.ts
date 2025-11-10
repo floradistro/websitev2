@@ -1,6 +1,7 @@
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/vendor/inventory/low-stock
  * Returns products with inventory below reorder threshold
@@ -80,9 +81,7 @@ export async function GET(request: NextRequest) {
         ?.filter((item) => {
           const reorderPoint = item.reorder_point || threshold;
           return (
-            item.available_quantity <= reorderPoint &&
-            item.products &&
-            item.products.length > 0
+            item.available_quantity <= reorderPoint && item.products && item.products.length > 0
           );
         })
         .map((item) => ({
@@ -134,7 +133,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching low stock items:", error);
+      logger.error("Error fetching low stock items:", error);
     }
     return NextResponse.json(
       {
@@ -209,7 +208,7 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating reorder point:", error);
+      logger.error("Error updating reorder point:", error);
     }
     return NextResponse.json(
       {

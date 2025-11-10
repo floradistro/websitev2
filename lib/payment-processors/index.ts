@@ -23,9 +23,7 @@ import {
 /**
  * Get payment processor for a location
  */
-async function getPaymentProcessor(
-  locationId: string,
-): Promise<IPaymentProcessor> {
+async function getPaymentProcessor(locationId: string): Promise<IPaymentProcessor> {
   const supabase = getServiceSupabase();
 
   // Get default active processor for location
@@ -38,9 +36,7 @@ async function getPaymentProcessor(
     .single();
 
   if (error || !processor) {
-    throw new Error(
-      `No active payment processor found for location ${locationId}`,
-    );
+    throw new Error(`No active payment processor found for location ${locationId}`);
   }
 
   return createProcessorInstance(processor);
@@ -49,9 +45,7 @@ async function getPaymentProcessor(
 /**
  * Get payment processor by ID
  */
-async function getPaymentProcessorById(
-  processorId: string,
-): Promise<IPaymentProcessor> {
+async function getPaymentProcessorById(processorId: string): Promise<IPaymentProcessor> {
   const supabase = getServiceSupabase();
 
   const { data: processor, error } = await supabase
@@ -70,9 +64,7 @@ async function getPaymentProcessorById(
 /**
  * Get payment processor for a register
  */
-async function getPaymentProcessorForRegister(
-  registerId: string,
-): Promise<IPaymentProcessor> {
+async function getPaymentProcessorForRegister(registerId: string): Promise<IPaymentProcessor> {
   const supabase = getServiceSupabase();
 
   // Get register with processor info
@@ -198,9 +190,7 @@ class DejavooPaymentProcessor implements IPaymentProcessor {
         card_last_four: response.CardLast4,
         card_bin: response.CardBin,
         cardholder_name: response.CardholderName,
-        receipt_data: response.ReceiptData
-          ? { text: response.ReceiptData }
-          : undefined,
+        receipt_data: response.ReceiptData ? { text: response.ReceiptData } : undefined,
         processed_at: new Date().toISOString(),
         retry_count: 0,
       };
@@ -304,9 +294,7 @@ class DejavooPaymentProcessor implements IPaymentProcessor {
           amount: refundAmount,
         },
         response_data: response as any,
-        receipt_data: response.ReceiptData
-          ? { text: response.ReceiptData }
-          : undefined,
+        receipt_data: response.ReceiptData ? { text: response.ReceiptData } : undefined,
         processed_at: new Date().toISOString(),
         retry_count: 0,
       };
@@ -338,9 +326,7 @@ class DejavooPaymentProcessor implements IPaymentProcessor {
     }
   }
 
-  async voidTransaction(
-    request: VoidTransactionRequest,
-  ): Promise<PaymentResult> {
+  async voidTransaction(request: VoidTransactionRequest): Promise<PaymentResult> {
     const supabase = getServiceSupabase();
 
     // Get original transaction

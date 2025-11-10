@@ -24,9 +24,7 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         const send = (data: any) => {
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
-          );
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
         };
 
         try {
@@ -91,9 +89,7 @@ export async function POST(request: NextRequest) {
 
                 const {
                   data: { publicUrl },
-                } = supabase.storage
-                  .from("vendor-product-images")
-                  .getPublicUrl(filePath);
+                } = supabase.storage.from("vendor-product-images").getPublicUrl(filePath);
 
                 const endTime = Date.now();
                 completedCount++;

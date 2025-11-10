@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 // Get base URL for internal API calls
 const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -11,10 +12,7 @@ const getBaseUrl = () => {
   return "http://localhost:3000";
 };
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -64,7 +62,7 @@ export async function GET(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Order detail error:", error);
+      logger.error("Order detail error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

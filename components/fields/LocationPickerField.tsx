@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { MapPin, Check } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface Location {
   id: string;
   name: string;
@@ -39,13 +40,11 @@ export function LocationPickerField({
   async function loadLocations() {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/vendor/locations?vendor_id=${vendorId}`,
-      );
+      const response = await fetch(`/api/vendor/locations?vendor_id=${vendorId}`);
 
       if (!response.ok) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to fetch locations:", response.status);
+          logger.error("Failed to fetch locations:", response.status);
         }
         setLoading(false);
         return;
@@ -54,7 +53,7 @@ export function LocationPickerField({
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Locations API returned non-JSON response");
+          logger.error("Locations API returned non-JSON response");
         }
         setLoading(false);
         return;
@@ -74,7 +73,7 @@ export function LocationPickerField({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading locations:", error);
+        logger.error("Error loading locations:", error);
       }
     } finally {
       setLoading(false);
@@ -98,13 +97,9 @@ export function LocationPickerField({
       <label className="block text-white/80 text-sm mb-2">{label}</label>
 
       {loading ? (
-        <div className="text-white/40 text-xs py-4 text-center">
-          Loading locations...
-        </div>
+        <div className="text-white/40 text-xs py-4 text-center">Loading locations...</div>
       ) : locations.length === 0 ? (
-        <div className="text-white/40 text-xs py-4 text-center">
-          No locations found
-        </div>
+        <div className="text-white/40 text-xs py-4 text-center">No locations found</div>
       ) : (
         <div className="space-y-1 max-h-64 overflow-y-auto bg-black/50 border border-white/20 rounded p-2">
           {locations.map((location) => {
@@ -114,16 +109,12 @@ export function LocationPickerField({
                 key={location.id}
                 onClick={() => toggleLocation(location.id)}
                 className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
-                  isSelected
-                    ? "bg-purple-500/20 border border-purple-500/40"
-                    : "hover:bg-white/5"
+                  isSelected ? "bg-purple-500/20 border border-purple-500/40" : "hover:bg-white/5"
                 }`}
               >
                 <div
                   className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${
-                    isSelected
-                      ? "bg-purple-500 border-purple-500"
-                      : "border-white/20"
+                    isSelected ? "bg-purple-500 border-purple-500" : "border-white/20"
                   }`}
                 >
                   {isSelected && <Check size={12} className="text-white" />}

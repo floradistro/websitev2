@@ -6,6 +6,7 @@ import { useAppAuth } from "@/context/AppAuthContext";
 import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 
+import { logger } from "@/lib/logger";
 export default function SettingsPage() {
   const { vendor } = useAppAuth();
   const [loading, setLoading] = useState(false);
@@ -57,7 +58,7 @@ export default function SettingsPage() {
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading settings:", err);
+        logger.error("Error loading settings:", err);
       }
     }
   }
@@ -90,7 +91,7 @@ export default function SettingsPage() {
       setTimeout(() => setSaved(false), 3000);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error saving settings:", err);
+        logger.error("Error saving settings:", err);
       }
       alert(err.message || "Failed to save settings");
     } finally {
@@ -103,9 +104,7 @@ export default function SettingsPage() {
     <div className="w-full min-h-screen p-8">
       {/* Header */}
       <div className="mb-12">
-        <h1 className="text-white/70 text-2xl tracking-tight mb-1 font-light">
-          Settings
-        </h1>
+        <h1 className="text-white/70 text-2xl tracking-tight mb-1 font-light">Settings</h1>
         <p className="text-white/25 text-[11px] uppercase tracking-[0.2em] font-light">
           Business Configuration
         </p>
@@ -123,9 +122,7 @@ export default function SettingsPage() {
             </div>
             <div className="text-white/80 text-sm font-light">Locations</div>
           </div>
-          <p className="text-white/40 text-[11px] font-light">
-            Manage store locations & addresses
-          </p>
+          <p className="text-white/40 text-[11px] font-light">Manage store locations & addresses</p>
         </Link>
 
         <Link
@@ -138,9 +135,7 @@ export default function SettingsPage() {
             </div>
             <div className="text-white/80 text-sm font-light">Team</div>
           </div>
-          <p className="text-white/40 text-[11px] font-light">
-            Employee management & permissions
-          </p>
+          <p className="text-white/40 text-[11px] font-light">Employee management & permissions</p>
         </Link>
       </div>
 
@@ -163,9 +158,7 @@ export default function SettingsPage() {
               <input
                 type="text"
                 value={settings.companyName}
-                onChange={(e) =>
-                  setSettings({ ...settings, companyName: e.target.value })
-                }
+                onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="Your Company LLC"
               />
@@ -178,9 +171,7 @@ export default function SettingsPage() {
               <input
                 type="text"
                 value={settings.contactName}
-                onChange={(e) =>
-                  setSettings({ ...settings, contactName: e.target.value })
-                }
+                onChange={(e) => setSettings({ ...settings, contactName: e.target.value })}
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="John Doe"
               />
@@ -193,9 +184,7 @@ export default function SettingsPage() {
               <input
                 type="email"
                 value={settings.email}
-                onChange={(e) =>
-                  setSettings({ ...settings, email: e.target.value })
-                }
+                onChange={(e) => setSettings({ ...settings, email: e.target.value })}
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="contact@company.com"
               />
@@ -208,9 +197,7 @@ export default function SettingsPage() {
               <input
                 type="tel"
                 value={settings.phone}
-                onChange={(e) =>
-                  setSettings({ ...settings, phone: e.target.value })
-                }
+                onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="(555) 123-4567"
               />
@@ -223,9 +210,7 @@ export default function SettingsPage() {
               <input
                 type="text"
                 value={settings.taxId}
-                onChange={(e) =>
-                  setSettings({ ...settings, taxId: e.target.value })
-                }
+                onChange={(e) => setSettings({ ...settings, taxId: e.target.value })}
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="XX-XXXXXXX"
               />
@@ -250,9 +235,7 @@ export default function SettingsPage() {
               <input
                 type="text"
                 value={settings.address}
-                onChange={(e) =>
-                  setSettings({ ...settings, address: e.target.value })
-                }
+                onChange={(e) => setSettings({ ...settings, address: e.target.value })}
                 className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                 placeholder="123 Main St"
               />
@@ -266,9 +249,7 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   value={settings.city}
-                  onChange={(e) =>
-                    setSettings({ ...settings, city: e.target.value })
-                  }
+                  onChange={(e) => setSettings({ ...settings, city: e.target.value })}
                   className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                   placeholder="Charlotte"
                 />
@@ -281,9 +262,7 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   value={settings.state}
-                  onChange={(e) =>
-                    setSettings({ ...settings, state: e.target.value })
-                  }
+                  onChange={(e) => setSettings({ ...settings, state: e.target.value })}
                   className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                   placeholder="NC"
                 />
@@ -296,9 +275,7 @@ export default function SettingsPage() {
                 <input
                   type="text"
                   value={settings.zip}
-                  onChange={(e) =>
-                    setSettings({ ...settings, zip: e.target.value })
-                  }
+                  onChange={(e) => setSettings({ ...settings, zip: e.target.value })}
                   className="w-full bg-white/[0.04] border border-white/[0.06] focus:border-white/[0.12] rounded-xl px-4 py-3 text-white/80 text-sm font-light transition-all focus:outline-none"
                   placeholder="28202"
                 />
@@ -322,9 +299,7 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-white/70 text-sm font-light mb-1">
-                Hide Storefront
-              </div>
+              <div className="text-white/70 text-sm font-light mb-1">Hide Storefront</div>
               <p className="text-white/40 text-[11px] font-light">
                 Show a coming soon page instead of your products
               </p>
@@ -332,9 +307,7 @@ export default function SettingsPage() {
 
             <button
               type="button"
-              onClick={() =>
-                setSettings({ ...settings, siteHidden: !settings.siteHidden })
-              }
+              onClick={() => setSettings({ ...settings, siteHidden: !settings.siteHidden })}
               className={`relative w-14 h-8 rounded-full transition-all ${
                 settings.siteHidden ? "bg-white/[0.12]" : "bg-white/[0.06]"
               }`}

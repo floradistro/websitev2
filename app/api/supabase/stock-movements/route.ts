@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
@@ -53,13 +54,11 @@ export async function GET(request: NextRequest) {
       query = query.eq("movement_type", movementType);
     }
 
-    const { data, error } = await query
-      .order("movement_date", { ascending: false })
-      .limit(limit);
+    const { data, error } = await query.order("movement_date", { ascending: false }).limit(limit);
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching stock movements:", error);
+        logger.error("Error fetching stock movements:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -70,7 +69,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -98,16 +97,10 @@ export async function POST(request: NextRequest) {
       notes,
     } = body;
 
-    if (
-      !inventory_id ||
-      !product_id ||
-      !movement_type ||
-      quantity === undefined
-    ) {
+    if (!inventory_id || !product_id || !movement_type || quantity === undefined) {
       return NextResponse.json(
         {
-          error:
-            "Missing required fields: inventory_id, product_id, movement_type, quantity",
+          error: "Missing required fields: inventory_id, product_id, movement_type, quantity",
         },
         { status: 400 },
       );
@@ -129,11 +122,7 @@ export async function POST(request: NextRequest) {
     let newQty = currentQty;
     if (["purchase", "return", "found", "adjustment"].includes(movement_type)) {
       newQty = currentQty + qtyChange;
-    } else if (
-      ["sale", "damage", "loss", "pos_sale", "online_order"].includes(
-        movement_type,
-      )
-    ) {
+    } else if (["sale", "damage", "loss", "pos_sale", "online_order"].includes(movement_type)) {
       newQty = currentQty - qtyChange;
     }
 
@@ -150,9 +139,7 @@ export async function POST(request: NextRequest) {
         from_location_id,
         to_location_id,
         cost_per_unit: cost_per_unit ? parseFloat(cost_per_unit) : null,
-        total_cost: cost_per_unit
-          ? parseFloat(cost_per_unit) * qtyChange
-          : null,
+        total_cost: cost_per_unit ? parseFloat(cost_per_unit) * qtyChange : null,
         reference_type,
         reference_id,
         reason,
@@ -163,19 +150,13 @@ export async function POST(request: NextRequest) {
 
     if (movementError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating stock movement:", movementError);
+        logger.error("Error creating stock movement:", movementError);
       }
-      return NextResponse.json(
-        { error: movementError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: movementError.message }, { status: 500 });
     }
 
     // Update inventory quantity
-    await supabase
-      .from("inventory")
-      .update({ quantity: newQty })
-      .eq("id", inventory_id);
+    await supabase.from("inventory").update({ quantity: newQty }).eq("id", inventory_id);
 
     return NextResponse.json({
       success: true,
@@ -183,7 +164,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

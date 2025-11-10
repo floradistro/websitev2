@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+import { logger } from "@/lib/logger";
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     // SECURITY: Require vendor authentication (Phase 2)
@@ -17,10 +15,7 @@ export async function POST(
     const { response } = body;
 
     if (!response) {
-      return NextResponse.json(
-        { error: "Response text required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Response text required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -74,7 +69,7 @@ export async function POST(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -9,10 +9,8 @@ var t = class t {
     try {
       "PointerEvent" in window
         ? (this.hasApi = true)
-        : "msPointerEnabled" in navigator &&
-          ((this.hasApi = true), (this.requiresPrefix = true));
-      let o =
-        (e = navigator.msMaxTouchPoints) != null ? e : navigator.maxTouchPoints;
+        : "msPointerEnabled" in navigator && ((this.hasApi = true), (this.requiresPrefix = true));
+      let o = (e = navigator.msMaxTouchPoints) != null ? e : navigator.maxTouchPoints;
       this.hasTouch = o > 0;
     } catch (o) {}
   }

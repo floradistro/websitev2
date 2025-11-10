@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 /**
  * Supabase API Client
  * SECURITY: All fetch calls include credentials to send HTTP-only cookies
@@ -12,8 +14,7 @@ function getBaseUrl() {
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
 
   // Vercel preview
-  if (process.env.NEXT_PUBLIC_VERCEL_URL)
-    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 
   // Local development
   return "http://localhost:3000";
@@ -62,9 +63,7 @@ export async function getProducts(params?: {
     });
   }
 
-  const response = await apiFetch(
-    `${BASE_URL}/api/supabase/products?${queryParams}`,
-  );
+  const response = await apiFetch(`${BASE_URL}/api/supabase/products?${queryParams}`);
   return response.json();
 }
 
@@ -76,7 +75,7 @@ export async function getProduct(id: string) {
 
     if (!response.ok) {
       if (process.env.NODE_ENV === "development") {
-        console.error(`Product API returned ${response.status} for ${id}`);
+        logger.error(`Product API returned ${response.status} for ${id}`);
       }
       return { success: false, product: null };
     }
@@ -85,7 +84,7 @@ export async function getProduct(id: string) {
     return data.success ? data.data : { success: false, product: null };
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error(`Error fetching product ${id}:`, error);
+      logger.error(`Error fetching product ${id}:`, error);
     }
     return { success: false, product: null };
   }
@@ -120,9 +119,7 @@ export async function updateCustomer(id: string, data: any) {
 // ============================================================================
 
 export async function getCustomerOrders(customerId: string) {
-  const response = await apiFetch(
-    `${BASE_URL}/api/supabase/orders?customer_id=${customerId}`,
-  );
+  const response = await apiFetch(`${BASE_URL}/api/supabase/orders?customer_id=${customerId}`);
   const data = await response.json();
   return data.orders || [];
 }
@@ -146,9 +143,7 @@ export async function createOrder(orderData: any) {
 // ============================================================================
 
 export async function getProductInventory(productId: number) {
-  const response = await apiFetch(
-    `${BASE_URL}/api/supabase/inventory?product_id=${productId}`,
-  );
+  const response = await apiFetch(`${BASE_URL}/api/supabase/inventory?product_id=${productId}`);
   const data = await response.json();
   return data.inventory || [];
 }
@@ -164,9 +159,7 @@ export async function getLocations() {
 // ============================================================================
 
 export async function getProductReviews(productId: string) {
-  const response = await apiFetch(
-    `${BASE_URL}/api/supabase/reviews?product_id=${productId}`,
-  );
+  const response = await apiFetch(`${BASE_URL}/api/supabase/reviews?product_id=${productId}`);
   const data = await response.json();
   return data.reviews || [];
 }
@@ -184,11 +177,7 @@ export async function createReview(reviewData: any) {
 // COUPONS
 // ============================================================================
 
-export async function validateCoupon(
-  code: string,
-  cartTotal: number,
-  customerId?: string,
-) {
+export async function validateCoupon(code: string, cartTotal: number, customerId?: string) {
   const response = await apiFetch(`${BASE_URL}/api/supabase/coupons/validate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -224,9 +213,7 @@ export async function getVendorProducts(vendorSlug: string) {
   if (!vendor) return [];
 
   // Get vendor's products
-  const response = await apiFetch(
-    `${BASE_URL}/api/supabase/products?vendor_id=${vendor.id}`,
-  );
+  const response = await apiFetch(`${BASE_URL}/api/supabase/products?vendor_id=${vendor.id}`);
   const data = await response.json();
   return data.products || [];
 }
@@ -249,12 +236,9 @@ export async function getVendorPayouts(vendorId?: string) {
 }
 
 export async function getVendorAnalytics(vendorId: string, days: number = 30) {
-  const response = await apiFetch(
-    `${BASE_URL}/api/supabase/vendor/analytics?days=${days}`,
-    {
-      headers: { "x-vendor-id": vendorId },
-    },
-  );
+  const response = await apiFetch(`${BASE_URL}/api/supabase/vendor/analytics?days=${days}`, {
+    headers: { "x-vendor-id": vendorId },
+  });
   return response.json();
 }
 
@@ -265,10 +249,7 @@ export async function getVendorBranding(vendorId: string) {
   return response.json();
 }
 
-export async function updateVendorBranding(
-  vendorId: string,
-  brandingData: any,
-) {
+export async function updateVendorBranding(vendorId: string, brandingData: any) {
   const response = await apiFetch(`${BASE_URL}/api/supabase/vendor/branding`, {
     method: "PUT",
     headers: {

@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 /**
  * WhaleTools API Client for Vendor Storefronts
  *
@@ -5,15 +7,12 @@
  * to fetch their product data from the WhaleTools API.
  */
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_WHALETOOLS_API_URL || "https://whaletools.dev/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_WHALETOOLS_API_URL || "https://whaletools.dev/api";
 const VENDOR_ID = process.env.NEXT_PUBLIC_WHALETOOLS_VENDOR_ID;
 
 if (!VENDOR_ID && typeof window !== "undefined") {
   if (process.env.NODE_ENV === "development") {
-    console.warn(
-      "⚠️  NEXT_PUBLIC_WHALETOOLS_VENDOR_ID is not set. API calls may fail.",
-    );
+    logger.warn("⚠️  NEXT_PUBLIC_WHALETOOLS_VENDOR_ID is not set. API calls may fail.");
   }
 }
 
@@ -41,10 +40,7 @@ function buildUrl(endpoint: string, params?: Record<string, string>): string {
 /**
  * Fetch wrapper with error handling
  */
-async function fetchAPI<T>(
-  endpoint: string,
-  options?: RequestInit,
-): Promise<T> {
+async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = buildUrl(endpoint);
 
   try {
@@ -63,7 +59,7 @@ async function fetchAPI<T>(
     return await response.json();
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error(`Failed to fetch ${endpoint}:`, error);
+      logger.error(`Failed to fetch ${endpoint}:`, error);
     }
     throw error;
   }

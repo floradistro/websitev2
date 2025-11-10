@@ -6,12 +6,9 @@ import { a as a$6 } from "./chunk-3A4KLILV.js";
 import { a as a$4 } from "./chunk-MU6SADSF.js";
 import { a as a$1 } from "./chunk-EV4OEANA.js";
 import { a as a$5 } from "./chunk-LSZZVJ6B.js";
-var E = ((e) => (
-    (e.DidShow = "didshow"),
-    (e.DidHide = "didhide"),
-    (e.WillShow = "willshow"),
-    e
-  ))(E || {}),
+var E = ((e) => ((e.DidShow = "didshow"), (e.DidHide = "didhide"), (e.WillShow = "willshow"), e))(
+    E || {},
+  ),
   o = "--text-size",
   s = "--text-color",
   n = "--text-alignment",
@@ -105,10 +102,7 @@ var E = ((e) => (
         this.currentAnimation.playState === "running") ||
         (this.currentAnimation && a$7(this.currentAnimation),
         (this.animationDuration =
-          (d = (m = this.hintStyle) == null ? void 0 : m.isAnimatedToView) ==
-            null || d
-            ? 250
-            : 0),
+          (d = (m = this.hintStyle) == null ? void 0 : m.isAnimatedToView) == null || d ? 250 : 0),
         (this._currentAnimationDirection = e),
         (this.currentAnimation = t ? this.showAnimation : this.hideAnimation),
         t && this.dispatchEvent(new CustomEvent("willshow", { bubbles: true })),
@@ -133,23 +127,16 @@ var E = ((e) => (
           this.toast.style.setProperty(n, this.hintStyle.textAlignment),
           this.toast.style.setProperty(a, `${this.hintStyle.lineHeight / 14}`),
           this.toast.style.setProperty(l, `#${this.hintStyle.backgroundColor}`),
-          this.toast.style.setProperty(
-            c,
-            `${this.hintStyle.cornerRadius / 10}rem`,
-          ),
+          this.toast.style.setProperty(c, `${this.hintStyle.cornerRadius / 10}rem`),
           this.toast.style.setProperty(h, this.hintStyle.maxLines.toString()));
         for (let e of this.querySelectorAll("[slot=icon]")) e.remove();
         this._customIcon
           ? (this._customIcon.setAttribute("slot", "icon"),
             this.append(this._customIcon),
             this.toast.classList.remove("icon-none"))
-          : (this.toast.classList.toggle(
-              "icon-none",
-              this.hintStyle.hintIcon === "none",
-            ),
+          : (this.toast.classList.toggle("icon-none", this.hintStyle.hintIcon === "none"),
             this.hintStyle.hintIcon === "check"
-              ? (this._checkIcon.setAttribute("slot", "icon"),
-                this.append(this._checkIcon))
+              ? (this._checkIcon.setAttribute("slot", "icon"), this.append(this._checkIcon))
               : this.hintStyle.hintIcon === "exclamationMark" &&
                 (this._exclamationIcon.setAttribute("slot", "icon"),
                 this.append(this._exclamationIcon)),

@@ -6,6 +6,7 @@
 import { headers } from "next/headers";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export interface VendorStorefront {
   id: string;
   slug: string;
@@ -42,20 +43,14 @@ export async function getVendorFromHeaders(): Promise<string | null> {
 /**
  * Get vendor storefront data from database
  */
-export async function getVendorStorefront(
-  vendorId: string,
-): Promise<VendorStorefront | null> {
+export async function getVendorStorefront(vendorId: string): Promise<VendorStorefront | null> {
   const supabase = getServiceSupabase();
 
-  const { data, error } = await supabase
-    .from("vendors")
-    .select("*")
-    .eq("id", vendorId)
-    .single();
+  const { data, error } = await supabase.from("vendors").select("*").eq("id", vendorId).single();
 
   if (error || !data) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching vendor:", error);
+      logger.error("Error fetching vendor:", error);
     }
     return null;
   }

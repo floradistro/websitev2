@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
@@ -13,10 +14,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (vendorError || !vendor) {
-      return NextResponse.json(
-        { error: "Flora Distro vendor not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Flora Distro vendor not found" }, { status: 404 });
     }
 
     // 2. List all images in Flora Distro's media library
@@ -28,10 +26,7 @@ export async function POST(request: NextRequest) {
       });
 
     if (imagesError || !imageFiles) {
-      return NextResponse.json(
-        { error: "Error listing images" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Error listing images" }, { status: 500 });
     }
 
     // 3. Get flower category ID
@@ -50,10 +45,7 @@ export async function POST(request: NextRequest) {
       .order("name");
 
     if (productsError) {
-      return NextResponse.json(
-        { error: "Error fetching products" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Error fetching products" }, { status: 500 });
     }
 
     // 5. Match images to products
@@ -63,20 +55,14 @@ export async function POST(request: NextRequest) {
 
     for (const imageFile of imageFiles) {
       const imageName = imageFile.name.replace(/\.[^/.]+$/, ""); // Remove extension
-      const imageNameClean = imageName
-        .replace(/[_-]/g, " ")
-        .toLowerCase()
-        .trim();
+      const imageNameClean = imageName.replace(/[_-]/g, " ").toLowerCase().trim();
 
       let bestMatch: any = null;
       let bestScore = 0;
 
       // Try to find matching product
       for (const product of products || []) {
-        const productNameClean = product.name
-          .toLowerCase()
-          .replace(/[_-]/g, " ")
-          .trim();
+        const productNameClean = product.name.toLowerCase().replace(/[_-]/g, " ").trim();
 
         // Exact match
         if (imageNameClean === productNameClean) {
@@ -98,19 +84,11 @@ export async function POST(request: NextRequest) {
         }
 
         // Word overlap
-        const imageWords = imageNameClean
-          .split(" ")
-          .filter((w: string) => w.length > 2);
-        const productWords = productNameClean
-          .split(" ")
-          .filter((w: string) => w.length > 2);
-        const overlap = imageWords.filter((w: string) =>
-          productWords.includes(w),
-        ).length;
+        const imageWords = imageNameClean.split(" ").filter((w: string) => w.length > 2);
+        const productWords = productNameClean.split(" ").filter((w: string) => w.length > 2);
+        const overlap = imageWords.filter((w: string) => productWords.includes(w)).length;
         const score =
-          overlap > 0
-            ? (overlap / Math.max(imageWords.length, productWords.length)) * 60
-            : 0;
+          overlap > 0 ? (overlap / Math.max(imageWords.length, productWords.length)) * 60 : 0;
 
         if (score > bestScore && score > 30) {
           bestMatch = product;
@@ -136,9 +114,7 @@ export async function POST(request: NextRequest) {
 
           if (updateError) {
             if (process.env.NODE_ENV === "development") {
-              console.error(
-                `❌ Failed to attach ${imageFile.name} to ${bestMatch.name}`,
-              );
+              logger.error(`❌ Failed to attach ${imageFile.name} to ${bestMatch.name}`);
             }
             unmatched.push({
               image: imageFile.name,
@@ -190,7 +166,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

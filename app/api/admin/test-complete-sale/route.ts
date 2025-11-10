@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -73,9 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     const product = products[0];
-    const inventory = Array.isArray(product.inventory)
-      ? product.inventory[0]
-      : product.inventory;
+    const inventory = Array.isArray(product.inventory) ? product.inventory[0] : product.inventory;
 
     if (session) {
     } else {
@@ -110,14 +109,11 @@ export async function POST(request: NextRequest) {
     };
 
     // Call the sales endpoint
-    const saleResponse = await fetch(
-      "http://localhost:3000/api/pos/sales/create",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(saleData),
-      },
-    );
+    const saleResponse = await fetch("http://localhost:3000/api/pos/sales/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(saleData),
+    });
 
     const saleResult = await saleResponse.json();
 
@@ -156,18 +152,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Clean up - delete test order
-    await supabase
-      .from("order_items")
-      .delete()
-      .eq("order_id", saleResult.order.id);
+    await supabase.from("order_items").delete().eq("order_id", saleResult.order.id);
 
     await supabase.from("orders").delete().eq("id", saleResult.order.id);
 
     if (saleResult.transaction?.id) {
-      await supabase
-        .from("pos_transactions")
-        .delete()
-        .eq("id", saleResult.transaction.id);
+      await supabase.from("pos_transactions").delete().eq("id", saleResult.transaction.id);
     }
 
     // Restore session counters (if we have a session)
@@ -209,13 +199,12 @@ export async function POST(request: NextRequest) {
               updated_correctly: sessionUpdated,
             }
           : null,
-        cleanup:
-          "Test order deleted" + (session ? ", session counters restored" : ""),
+        cleanup: "Test order deleted" + (session ? ", session counters restored" : ""),
       },
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Test failed:", error);
+      logger.error("❌ Test failed:", error);
     }
     return NextResponse.json(
       {

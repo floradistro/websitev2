@@ -41,9 +41,7 @@ export function POSModal({
 
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
-      <div
-        className={`bg-[#0a0a0a] border ${borderColors[type]} rounded-2xl p-6 max-w-md w-full`}
-      >
+      <div className={`bg-[#0a0a0a] border ${borderColors[type]} rounded-2xl p-6 max-w-md w-full`}>
         <div className="flex items-start gap-4 mb-6">
           <div className="flex-shrink-0">{icons[type]}</div>
           <div className="flex-1">

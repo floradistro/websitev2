@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -122,7 +123,7 @@ $function$;
     if (error) {
       // If exec_sql doesn't exist, log the SQL for manual execution
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Could not execute via RPC:", error);
+        logger.error("❌ Could not execute via RPC:", error);
       }
       return NextResponse.json(
         {
@@ -142,7 +143,7 @@ $function$;
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error fixing function:", error);
+      logger.error("❌ Error fixing function:", error);
     }
     return NextResponse.json(
       {

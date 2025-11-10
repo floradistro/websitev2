@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/compliance?type=faq&template_id=xxx
  * Fetch compliance content from database
@@ -9,8 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const contentType = searchParams.get("type");
-    const templateId =
-      searchParams.get("template_id") || "b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0";
+    const templateId = searchParams.get("template_id") || "b17045df-9bf8-4abe-8d5b-bfd09ed3ccd0";
 
     const supabase = getServiceSupabase();
 
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, content: data || [] });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching compliance content:", error);
+      logger.error("Error fetching compliance content:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

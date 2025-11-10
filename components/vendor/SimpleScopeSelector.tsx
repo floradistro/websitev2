@@ -7,16 +7,10 @@
 
 interface SimpleScopeSelectorProps {
   value: { type: "section_type" | "page" | "global"; value: string };
-  onChange: (scope: {
-    type: "section_type" | "page" | "global";
-    value: string;
-  }) => void;
+  onChange: (scope: { type: "section_type" | "page" | "global"; value: string }) => void;
 }
 
-export function SimpleScopeSelector({
-  value,
-  onChange,
-}: SimpleScopeSelectorProps) {
+export function SimpleScopeSelector({ value, onChange }: SimpleScopeSelectorProps) {
   const scopeType = value.type || "section_type";
   const scopeValue = value.value || "hero";
 
@@ -45,14 +39,10 @@ export function SimpleScopeSelector({
       {/* Section Type Selection */}
       {scopeType === "section_type" && (
         <div>
-          <label className="block text-[#cccccc] text-xs mb-1.5">
-            Which Section
-          </label>
+          <label className="block text-[#cccccc] text-xs mb-1.5">Which Section</label>
           <select
             value={scopeValue}
-            onChange={(e) =>
-              onChange({ type: scopeType, value: e.target.value })
-            }
+            onChange={(e) => onChange({ type: scopeType, value: e.target.value })}
             className="w-full bg-[#1e1e1e] border border-[#3e3e3e] text-[#cccccc] px-3 py-1.5 rounded text-sm hover:border-[#505050] focus:border-[#007acc] focus:outline-none transition-colors"
           >
             <option value="hero">Hero</option>
@@ -72,14 +62,10 @@ export function SimpleScopeSelector({
       {/* Page Selection */}
       {scopeType === "page" && (
         <div>
-          <label className="block text-[#cccccc] text-xs mb-1.5">
-            Which Page
-          </label>
+          <label className="block text-[#cccccc] text-xs mb-1.5">Which Page</label>
           <select
             value={scopeValue}
-            onChange={(e) =>
-              onChange({ type: scopeType, value: e.target.value })
-            }
+            onChange={(e) => onChange({ type: scopeType, value: e.target.value })}
             className="w-full bg-[#1e1e1e] border border-[#3e3e3e] text-[#cccccc] px-3 py-1.5 rounded text-sm hover:border-[#505050] focus:border-[#007acc] focus:outline-none transition-colors"
           >
             <option value="home">Home Page</option>
@@ -98,13 +84,11 @@ export function SimpleScopeSelector({
       {scopeType === "global" && (
         <div className="bg-[#1e1e1e] border border-[#3e3e3e] rounded p-3">
           <p className="text-[#cccccc] text-xs leading-relaxed">
-            This field will appear in{" "}
-            <span className="text-[#4fc1ff]">every section</span> on{" "}
+            This field will appear in <span className="text-[#4fc1ff]">every section</span> on{" "}
             <span className="text-[#4fc1ff]">every page</span>.
           </p>
           <p className="text-[#858585] text-[10px] mt-2">
-            Use for site-wide settings like brand colors, tracking codes, or
-            universal badges.
+            Use for site-wide settings like brand colors, tracking codes, or universal badges.
           </p>
         </div>
       )}

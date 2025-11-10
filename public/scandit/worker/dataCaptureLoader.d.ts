@@ -1,9 +1,6 @@
 /// <reference types="emscripten" />
 import "./OverrideState.js";
-export {
-  D as DataCaptureLoader,
-  S as DataCaptureLoaderOptions,
-} from "../Camera-C_4xOv5n.js";
+export { D as DataCaptureLoader, S as DataCaptureLoaderOptions } from "../Camera-C_4xOv5n.js";
 import "../logger.js";
 import "../LoadingStatus.js";
 import "../ScanditIcon.js";

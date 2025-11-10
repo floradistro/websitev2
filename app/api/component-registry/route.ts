@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
@@ -107,7 +108,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Failed to fetch component registry:", error);
+      logger.error("Failed to fetch component registry:", error);
     }
     return NextResponse.json(
       { success: false, error: "Failed to fetch component registry" },

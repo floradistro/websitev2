@@ -48,9 +48,7 @@ export function MinimalProductCard({
     customFieldsToShow && customFieldsToShow.length > 0
       ? customFieldsToShow
           .map((fieldName) => ({
-            name: fieldName
-              .replace(/_/g, " ")
-              .replace(/\b\w/g, (l) => l.toUpperCase()),
+            name: fieldName.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
             value: getFieldValue(fieldName),
             // Global setting takes precedence: if hideAllFieldLabels is true, hide all
             // Otherwise, check individual field config (default to showing)
@@ -73,10 +71,7 @@ export function MinimalProductCard({
       : priceBreaks
           .filter((pb: any) => {
             // Must have a price AND be in the visible list
-            return (
-              pricing_tiers[pb.break_id]?.price &&
-              visiblePriceBreaks.includes(pb.break_id)
-            );
+            return pricing_tiers[pb.break_id]?.price && visiblePriceBreaks.includes(pb.break_id);
           })
           .map((pb: any) => ({
             label: pb.display || pb.break_id,
@@ -146,10 +141,7 @@ export function MinimalProductCard({
             key={idx}
             className="font-bold uppercase overflow-hidden"
             style={{
-              color:
-                idx === 0
-                  ? theme.styles.productDescription.color
-                  : theme.styles.price.color,
+              color: idx === 0 ? theme.styles.productDescription.color : theme.styles.price.color,
               opacity: 0.85,
               letterSpacing: "0.02em",
               fontSize: "clamp(0.65rem, 1.5vw, 2rem)",

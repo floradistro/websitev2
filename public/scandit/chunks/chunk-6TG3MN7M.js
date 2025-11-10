@@ -32,18 +32,10 @@ var h = ((t) => (
     t
   ))(h || {}),
   l = {
-    arrowDown: import("../private/ui/atoms/ArrowDownSvgIcon.js").then(
-      (o) => o.ArrowDownSvgIcon,
-    ),
-    arrowLeft: import("../private/ui/atoms/ArrowLeftSvgIcon.js").then(
-      (o) => o.ArrowLeftSvgIcon,
-    ),
-    arrowRight: import("../private/ui/atoms/ArrowRightSvgIcon.js").then(
-      (o) => o.ArrowRightSvgIcon,
-    ),
-    arrowUp: import("../private/ui/atoms/ArrowUpSvgIcon.js").then(
-      (o) => o.ArrowUpSvgIcon,
-    ),
+    arrowDown: import("../private/ui/atoms/ArrowDownSvgIcon.js").then((o) => o.ArrowDownSvgIcon),
+    arrowLeft: import("../private/ui/atoms/ArrowLeftSvgIcon.js").then((o) => o.ArrowLeftSvgIcon),
+    arrowRight: import("../private/ui/atoms/ArrowRightSvgIcon.js").then((o) => o.ArrowRightSvgIcon),
+    arrowUp: import("../private/ui/atoms/ArrowUpSvgIcon.js").then((o) => o.ArrowUpSvgIcon),
     chevronRight: import("../private/ui/atoms/ChevronRightSvgIcon.js").then(
       (o) => o.ChevronRightSvgIcon,
     ),
@@ -53,69 +45,41 @@ var h = ((t) => (
     chevronDown: import("../private/ui/atoms/ChevronDownSvgIcon.js").then(
       (o) => o.ChevronDownSvgIcon,
     ),
-    chevronUp: import("../private/ui/atoms/ChevronUpSvgIcon.js").then(
-      (o) => o.ChevronUpSvgIcon,
-    ),
-    toPick: import("../private/ui/atoms/ToPickSvgIcon.js").then(
-      (o) => o.ToPickSvgIcon,
-    ),
-    xMark: import("../private/ui/atoms/CrossSvgIcon.js").then(
-      (o) => o.CrossSvgIcon,
-    ),
-    checkMark: import("../private/ui/atoms/CheckSvgIcon.js").then(
-      (o) => o.CheckSvgIcon,
-    ),
+    chevronUp: import("../private/ui/atoms/ChevronUpSvgIcon.js").then((o) => o.ChevronUpSvgIcon),
+    toPick: import("../private/ui/atoms/ToPickSvgIcon.js").then((o) => o.ToPickSvgIcon),
+    xMark: import("../private/ui/atoms/CrossSvgIcon.js").then((o) => o.CrossSvgIcon),
+    checkMark: import("../private/ui/atoms/CheckSvgIcon.js").then((o) => o.CheckSvgIcon),
     questionMark: import("../private/ui/atoms/QuestionMarkSvgIcon.js").then(
       (o) => o.QuestionMarkSvgIcon,
     ),
-    exclamationMark: import(
-      "../private/ui/atoms/ExclamationMarkSvgIcon.js"
-    ).then((o) => o.ExclamationMarkSvgIcon),
-    lowStock: import("../private/ui/atoms/LowStockSvgIcon.js").then(
-      (o) => o.LowStockSvgIcon,
+    exclamationMark: import("../private/ui/atoms/ExclamationMarkSvgIcon.js").then(
+      (o) => o.ExclamationMarkSvgIcon,
     ),
+    lowStock: import("../private/ui/atoms/LowStockSvgIcon.js").then((o) => o.LowStockSvgIcon),
     inspectItem: import("../private/ui/atoms/HandLensCheckSvgIcon.js").then(
       (o) => o.HandLensCheckSvgIcon,
     ),
-    expiredItem: import(
-      "../private/ui/atoms/CalendarExclamationMarkSvgIcon.js"
-    ).then((o) => o.CalendarExclamationMarkSvgIcon),
-    wrongItem: import("../private/ui/atoms/WrongItemSvgIcon.js").then(
-      (o) => o.WrongItemSvgIcon,
+    expiredItem: import("../private/ui/atoms/CalendarExclamationMarkSvgIcon.js").then(
+      (o) => o.CalendarExclamationMarkSvgIcon,
     ),
-    fragileItem: import("../private/ui/atoms/GlassSvgIcon.js").then(
-      (o) => o.GlassSvgIcon,
-    ),
+    wrongItem: import("../private/ui/atoms/WrongItemSvgIcon.js").then((o) => o.WrongItemSvgIcon),
+    fragileItem: import("../private/ui/atoms/GlassSvgIcon.js").then((o) => o.GlassSvgIcon),
     starOutlined: import("../private/ui/atoms/StarOutlinedSvgIcon.js").then(
       (o) => o.StarOutlinedSvgIcon,
     ),
-    starFilled: import("../private/ui/atoms/StarFilledSvgIcon.js").then(
-      (o) => o.StarFilledSvgIcon,
-    ),
+    starFilled: import("../private/ui/atoms/StarFilledSvgIcon.js").then((o) => o.StarFilledSvgIcon),
     starHalfFilled: import("../private/ui/atoms/StarHalfFilledSvgIcon.js").then(
       (o) => o.StarHalfFilledSvgIcon,
     ),
-    print: import("../private/ui/atoms/PrinterSvgIcon.js").then(
-      (o) => o.PrinterSvgIcon,
-    ),
+    print: import("../private/ui/atoms/PrinterSvgIcon.js").then((o) => o.PrinterSvgIcon),
     cameraSwitch: import("../private/ui/atoms/CameraSwitchSvgIcon.js").then(
       (o) => o.CameraSwitchSvgIcon,
     ),
-    oneX: import("../private/ui/atoms/OnexSvgIcon.js").then(
-      (o) => o.OnexSvgIcon,
-    ),
-    twoX: import("../private/ui/atoms/TwoxSvgIcon.js").then(
-      (o) => o.TwoxSvgIcon,
-    ),
-    dotFiveX: import("../private/ui/atoms/Dot5xSvgIcon.js").then(
-      (o) => o.Dot5xSvgIcon,
-    ),
-    restart: import("../private/ui/atoms/RestartSvgIcon.js").then(
-      (o) => o.RestartSvgIcon,
-    ),
-    keyboard: import("../private/ui/atoms/KeyboardSvgIcon.js").then(
-      (o) => o.KeyboardSvgIcon,
-    ),
+    oneX: import("../private/ui/atoms/OnexSvgIcon.js").then((o) => o.OnexSvgIcon),
+    twoX: import("../private/ui/atoms/TwoxSvgIcon.js").then((o) => o.TwoxSvgIcon),
+    dotFiveX: import("../private/ui/atoms/Dot5xSvgIcon.js").then((o) => o.Dot5xSvgIcon),
+    restart: import("../private/ui/atoms/RestartSvgIcon.js").then((o) => o.RestartSvgIcon),
+    keyboard: import("../private/ui/atoms/KeyboardSvgIcon.js").then((o) => o.KeyboardSvgIcon),
   },
   a = class {
     constructor() {
@@ -149,8 +113,7 @@ var h = ((t) => (
       let r = b.create();
       ((r.backgroundStrokeWidth = this.backgroundStrokeWidth),
         (r.backgroundShape = this.backgroundShape),
-        this.backgroundColor != null &&
-          (r.backgroundColor = this.backgroundColor),
+        this.backgroundColor != null && (r.backgroundColor = this.backgroundColor),
         this.backgroundStrokeColor != null &&
           (r.backgroundStrokeColor = this.backgroundStrokeColor));
       let n = null;

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { readFileSync } from "fs";
 import { join } from "path";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
           const directResult = await supabase.from("_raw").select("*").limit(0);
           // If that fails, log and continue
           if (process.env.NODE_ENV === "development") {
-            console.error(`Statement ${i + 1} error:`, error.message);
+            logger.error(`Statement ${i + 1} error:`, error.message);
           }
           errors.push({ statement: i + 1, error: error.message });
         } else {
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
         }
       } catch (err: any) {
         if (process.env.NODE_ENV === "development") {
-          console.error(`Statement ${i + 1} exception:`, err.message);
+          logger.error(`Statement ${i + 1} exception:`, err.message);
         }
         errors.push({ statement: i + 1, error: err.message });
       }
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Migration error:", error);
+      logger.error("Migration error:", error);
     }
     return NextResponse.json(
       {

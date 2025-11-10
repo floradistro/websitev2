@@ -28,8 +28,7 @@ var s = class {
           : i.call(this, "getOpenSourceSoftwareLicenseInfo", {}),
         this.fetchWebLicenseText(t.toString()),
       ]);
-    return [e == null ? void 0 : e.licenseText, r].filter((l) => l != null)
-      .join(`
+    return [e == null ? void 0 : e.licenseText, r].filter((l) => l != null).join(`
 `);
   }
   async fetchWebLicenseText(t) {
@@ -42,14 +41,7 @@ var s = class {
         if (!e.ok) throw new Error(`${e.status} ${e.statusText}`);
         return e.text();
       })
-      .catch(
-        (e) => (
-          this.logger.warn(
-            `Failed to fetch license from ${t}: ${e.toString()}`,
-          ),
-          null
-        ),
-      );
+      .catch((e) => (this.logger.warn(`Failed to fetch license from ${t}: ${e.toString()}`), null));
   }
 };
 export { s as a };

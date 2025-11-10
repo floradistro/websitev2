@@ -1,8 +1,6 @@
 var t = class r extends Error {
   constructor(e) {
-    (super(e.message),
-      Object.setPrototypeOf(this, r.prototype),
-      (this.name = e.name));
+    (super(e.message), Object.setPrototypeOf(this, r.prototype), (this.name = e.name));
   }
   toString() {
     return `${this.name}: ${this.message}`;

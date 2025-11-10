@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -17,8 +18,7 @@ export async function GET(request: NextRequest) {
       query = query.eq("id", vendorId);
     }
 
-    const { data, error } =
-      slug || vendorId ? await query.single() : await query;
+    const { data, error } = slug || vendorId ? await query.single() : await query;
 
     if (error) throw error;
 
@@ -29,11 +29,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching vendors:", error);
+      logger.error("Error fetching vendors:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

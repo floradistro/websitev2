@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireCustomer } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     // SECURITY: Require customer authentication (Phase 3)
@@ -53,15 +54,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Pagination & sorting
-    query = query
-      .order("order_date", { ascending: false })
-      .range(offset, offset + perPage - 1);
+    query = query.order("order_date", { ascending: false }).range(offset, offset + perPage - 1);
 
     const { data, error, count } = await query;
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching orders:", error);
+        logger.error("Error fetching orders:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -78,7 +77,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -120,8 +119,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate totals
     const subtotal = items.reduce(
-      (sum: number, item: any) =>
-        sum + parseFloat(item.unit_price) * parseFloat(item.quantity),
+      (sum: number, item: any) => sum + parseFloat(item.unit_price) * parseFloat(item.quantity),
       0,
     );
 
@@ -165,7 +163,7 @@ export async function POST(request: NextRequest) {
 
     if (orderError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating order:", orderError);
+        logger.error("Error creating order:", orderError);
       }
       return NextResponse.json({ error: orderError.message }, { status: 500 });
     }
@@ -180,9 +178,7 @@ export async function POST(request: NextRequest) {
       unit_price: parseFloat(item.unit_price),
       quantity: parseFloat(item.quantity),
       line_subtotal: parseFloat(item.unit_price) * parseFloat(item.quantity),
-      line_total: parseFloat(
-        item.line_total || item.unit_price * item.quantity,
-      ),
+      line_total: parseFloat(item.line_total || item.unit_price * item.quantity),
       tax_amount: parseFloat(item.tax_amount || 0),
       vendor_id: item.vendor_id,
       order_type: item.order_type,
@@ -194,13 +190,11 @@ export async function POST(request: NextRequest) {
       meta_data: item.meta_data || {},
     }));
 
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems);
+    const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
 
     if (itemsError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating order items:", itemsError);
+        logger.error("Error creating order items:", itemsError);
       }
       // Rollback order
       await supabase.from("orders").delete().eq("id", order.id);
@@ -220,7 +214,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

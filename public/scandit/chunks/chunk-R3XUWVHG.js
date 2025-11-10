@@ -27,9 +27,7 @@ var d = "scandit-loading-overlay",
     }
     get message() {
       var e, r;
-      return (r = (e = this._label) == null ? void 0 : e.textContent) != null
-        ? r
-        : "";
+      return (r = (e = this._label) == null ? void 0 : e.textContent) != null ? r : "";
     }
     static create() {
       return document.createElement(t.tag);
@@ -42,10 +40,8 @@ var d = "scandit-loading-overlay",
     }
     connectedCallback() {
       var e, r;
-      ((this._progressBar =
-        (e = this.shadowRoot) == null ? void 0 : e.querySelector(a$4.tag)),
-        (this._label =
-          (r = this.shadowRoot) == null ? void 0 : r.querySelector("label")),
+      ((this._progressBar = (e = this.shadowRoot) == null ? void 0 : e.querySelector(a$4.tag)),
+        (this._label = (r = this.shadowRoot) == null ? void 0 : r.querySelector("label")),
         (this.message = a$6.getInstance().get("core.view.loading")));
     }
     show() {

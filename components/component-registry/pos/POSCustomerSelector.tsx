@@ -5,6 +5,7 @@ import { Search, X, User, Plus, Scan } from "lucide-react";
 import { NewCustomerForm } from "./POSNewCustomerForm";
 import { POSIDScanner } from "./POSIDScanner";
 
+import { logger } from "@/lib/logger";
 interface Customer {
   id: string;
   first_name: string;
@@ -65,10 +66,7 @@ export function POSCustomerSelector({
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
@@ -92,7 +90,7 @@ export function POSCustomerSelector({
       setCustomers(data.customers || []);
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading customers:", error);
+        logger.error("Error loading customers:", error);
       }
       setCustomers([]);
     } finally {

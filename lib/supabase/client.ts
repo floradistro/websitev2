@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 // Use Supabase connection pooler for better scalability
 // Pooler endpoint: Add .pooler suffix to project host for transaction mode
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -23,7 +24,7 @@ function createSupabaseClient() {
   clientInstanceCount++;
 
   if (clientInstanceCount > 1) {
-    console.error("❌ MULTIPLE CLIENT INSTANCES DETECTED!", new Error().stack);
+    logger.error("❌ MULTIPLE CLIENT INSTANCES DETECTED!", new Error().stack);
   }
 
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -86,7 +87,7 @@ export function getServiceSupabase() {
   serviceInstanceCount++;
 
   if (serviceInstanceCount > 1) {
-    console.error("❌ MULTIPLE SERVICE INSTANCES DETECTED!", new Error().stack);
+    logger.error("❌ MULTIPLE SERVICE INSTANCES DETECTED!", new Error().stack);
   }
 
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

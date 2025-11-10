@@ -90,9 +90,7 @@ class RemoveBgRateLimiter {
     const timeUntilReset = this.state.reset - Date.now();
     const safeMargin = 0.8; // Use 80% of quota for safety
 
-    const availableInWindow = Math.floor(
-      (this.state.remaining * safeMargin) / creditMultiplier,
-    );
+    const availableInWindow = Math.floor((this.state.remaining * safeMargin) / creditMultiplier);
 
     return Math.min(availableInWindow, this.maxConcurrency);
   }
@@ -117,11 +115,7 @@ class RemoveBgRateLimiter {
   /**
    * Queue a request with priority
    */
-  async enqueue<T>(
-    id: string,
-    execute: () => Promise<T>,
-    priority: number = 0,
-  ): Promise<T> {
+  async enqueue<T>(id: string, execute: () => Promise<T>, priority: number = 0): Promise<T> {
     return new Promise((resolve, reject) => {
       this.queue.push({
         id,
@@ -204,10 +198,7 @@ class RemoveBgRateLimiter {
       request.resolve(result);
     } catch (error: any) {
       // Check if it's a rate limit error (429)
-      if (
-        error.response?.status === 429 ||
-        error.message.includes("rate limit")
-      ) {
+      if (error.response?.status === 429 || error.message.includes("rate limit")) {
         if (request.retries < 5) {
           // Update state from headers
           if (error.response?.headers) {
@@ -222,9 +213,7 @@ class RemoveBgRateLimiter {
           request.priority += 10;
           this.queue.unshift(request); // Add to front
         } else {
-          request.reject(
-            new Error(`Rate limit exceeded after ${request.retries} retries`),
-          );
+          request.reject(new Error(`Rate limit exceeded after ${request.retries} retries`));
         }
       } else {
         // Other error - reject
@@ -243,10 +232,7 @@ class RemoveBgRateLimiter {
       maxConcurrency: this.maxConcurrency,
       remaining: this.state.remaining,
       limit: this.state.limit,
-      quotaPercentage: (
-        (this.state.remaining / this.state.limit) *
-        100
-      ).toFixed(1),
+      quotaPercentage: ((this.state.remaining / this.state.limit) * 100).toFixed(1),
     };
   }
 

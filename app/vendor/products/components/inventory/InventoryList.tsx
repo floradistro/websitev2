@@ -32,12 +32,7 @@ interface InventoryListProps {
   isAdjusting: Record<string, boolean>;
 }
 
-export function InventoryList({
-  products,
-  isLoading,
-  onAdjust,
-  isAdjusting,
-}: InventoryListProps) {
+export function InventoryList({ products, isLoading, onAdjust, isAdjusting }: InventoryListProps) {
   if (isLoading) {
     return (
       <div
@@ -71,14 +66,8 @@ export function InventoryList({
           ds.colors.border.default,
         )}
       >
-        <Package
-          size={48}
-          className="text-white/10 mx-auto mb-4"
-          strokeWidth={1}
-        />
-        <p className={cn(ds.typography.size.sm, "text-white/60 mb-2")}>
-          No inventory found
-        </p>
+        <Package size={48} className="text-white/10 mx-auto mb-4" strokeWidth={1} />
+        <p className={cn(ds.typography.size.sm, "text-white/60 mb-2")}>No inventory found</p>
         <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
           Try adjusting your filters
         </p>

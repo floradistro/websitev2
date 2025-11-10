@@ -141,9 +141,7 @@ declare namespace BrowserHelper {
    * @returns The vibration method supported by the current browser and device, if any.
    * @hidden
    */
-  export function getSupportedVibrationMethod():
-    | typeof navigator.vibrate
-    | undefined;
+  export function getSupportedVibrationMethod(): typeof navigator.vibrate | undefined;
   /**
    * Check if vibration is supported by the current browser and device.
    * @returns Whether vibration is supported by the current browser and device.

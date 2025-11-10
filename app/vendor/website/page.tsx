@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/Button";
 import { DomainSetup } from "./components/DomainSetup";
 import axios from "axios";
 
+import { logger } from "@/lib/logger";
 interface WebsiteStatus {
   hasGithub: boolean;
   githubUsername?: string;
@@ -69,7 +70,7 @@ export default function VendorWebsitePage() {
       setTimeout(() => fetchStatus(), 500);
     } else if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ GitHub connection error:", error);
+        logger.error("❌ GitHub connection error:", error);
       }
       alert(`GitHub connection failed: ${error}`);
     }
@@ -98,18 +99,18 @@ export default function VendorWebsitePage() {
       setStatus(data);
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching website status:", error);
+        logger.error("Error fetching website status:", error);
       }
       if (process.env.NODE_ENV === "development") {
-        console.error("Status code:", error.response?.status);
+        logger.error("Status code:", error.response?.status);
       }
       if (process.env.NODE_ENV === "development") {
-        console.error("Error data:", error.response?.data);
+        logger.error("Error data:", error.response?.data);
       }
       // If unauthorized, user needs to log in first
       if (error.response?.status === 401 || error.response?.status === 403) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Authentication required - please log in first");
+          logger.error("Authentication required - please log in first");
         }
       }
     } finally {
@@ -120,12 +121,9 @@ export default function VendorWebsitePage() {
   const fetchDeployments = async () => {
     try {
       // Fetch actual Vercel deployments
-      const { data } = await axios.get(
-        "/api/vendor/website/vercel-deployments",
-        {
-          withCredentials: true,
-        },
-      );
+      const { data } = await axios.get("/api/vendor/website/vercel-deployments", {
+        withCredentials: true,
+      });
       if (data.success) {
         const vercelDeployments = data.deployments || [];
         // Map Vercel format to our format
@@ -147,27 +145,22 @@ export default function VendorWebsitePage() {
         );
         if (building) {
           setStatus((prev) =>
-            prev
-              ? { ...prev, deploymentStatus: building.state.toLowerCase() }
-              : null,
+            prev ? { ...prev, deploymentStatus: building.state.toLowerCase() } : null,
           );
         }
       }
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching deployments:", error);
+        logger.error("Error fetching deployments:", error);
       }
     }
   };
 
   const fetchDeploymentStatus = async (deploymentId: string) => {
     try {
-      const { data } = await axios.get(
-        `/api/vendor/website/deploy?deploymentId=${deploymentId}`,
-        {
-          withCredentials: true,
-        },
-      );
+      const { data } = await axios.get(`/api/vendor/website/deploy?deploymentId=${deploymentId}`, {
+        withCredentials: true,
+      });
 
       if (data.success) {
         setCurrentDeployment(data);
@@ -181,7 +174,7 @@ export default function VendorWebsitePage() {
       }
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching deployment status:", error);
+        logger.error("Error fetching deployment status:", error);
       }
     }
   };
@@ -207,9 +200,7 @@ export default function VendorWebsitePage() {
             `🎉 Storefront Created!\n\n` +
               `Your site is deploying now...\n` +
               `URL: ${data.project.url}\n\n` +
-              (data.customDomain
-                ? `Custom domain: ${data.customDomain}\n`
-                : "") +
+              (data.customDomain ? `Custom domain: ${data.customDomain}\n` : "") +
               `Push to your GitHub repo to update!`,
           );
 
@@ -226,10 +217,9 @@ export default function VendorWebsitePage() {
       }
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error deploying:", error);
+        logger.error("Error deploying:", error);
       }
-      const errorMsg =
-        error.response?.data?.error || error.message || "Unknown error";
+      const errorMsg = error.response?.data?.error || error.message || "Unknown error";
       alert(`Deploy failed: ${errorMsg}`);
     } finally {
       setDeploying(false);
@@ -251,7 +241,7 @@ export default function VendorWebsitePage() {
         vendorId = appUser.vendor_id;
       } catch (e) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to parse app_user:", e);
+          logger.error("Failed to parse app_user:", e);
         }
       }
     }
@@ -265,7 +255,7 @@ export default function VendorWebsitePage() {
           vendorId = floraUser.vendor_id || floraUser.vendorId;
         } catch (e) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Failed to parse flora-user:", e);
+            logger.error("Failed to parse flora-user:", e);
           }
         }
       }
@@ -320,9 +310,7 @@ export default function VendorWebsitePage() {
           withCredentials: true,
         },
       );
-      alert(
-        `Template pushed successfully! ${data.filesCount} files committed to your repository.`,
-      );
+      alert(`Template pushed successfully! ${data.filesCount} files committed to your repository.`);
     } catch (error: any) {
       alert(error.response?.data?.error || "Failed to push template");
     } finally {
@@ -333,31 +321,15 @@ export default function VendorWebsitePage() {
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case "ready":
-        return cn(
-          "text-white/90",
-          ds.colors.bg.elevated,
-          "border border-white/10",
-        );
+        return cn("text-white/90", ds.colors.bg.elevated, "border border-white/10");
       case "building":
       case "queued":
-        return cn(
-          "text-white/70",
-          ds.colors.bg.elevated,
-          "border border-white/5",
-        );
+        return cn("text-white/70", ds.colors.bg.elevated, "border border-white/5");
       case "error":
       case "canceled":
-        return cn(
-          "text-red-400/90",
-          ds.colors.bg.elevated,
-          "border border-red-500/20",
-        );
+        return cn("text-red-400/90", ds.colors.bg.elevated, "border border-red-500/20");
       default:
-        return cn(
-          "text-white/50",
-          ds.colors.bg.elevated,
-          "border border-white/5",
-        );
+        return cn("text-white/50", ds.colors.bg.elevated, "border border-white/5");
     }
   };
 
@@ -392,9 +364,7 @@ export default function VendorWebsitePage() {
   return (
     <div className={cn("min-h-screen p-8", ds.colors.bg.primary)}>
       <div className="max-w-4xl mx-auto">
-        <h1 className={cn("text-3xl font-bold mb-2", ds.colors.text.primary)}>
-          Your Website
-        </h1>
+        <h1 className={cn("text-3xl font-bold mb-2", ds.colors.text.primary)}>Your Website</h1>
         <p className={cn("mb-8", ds.colors.text.secondary)}>
           Manage your storefront repository and deployments
         </p>
@@ -403,21 +373,13 @@ export default function VendorWebsitePage() {
         <div className={cn("rounded-2xl p-6 mb-6", ds.components.card)}>
           <div className="flex items-start justify-between">
             <div>
-              <h2
-                className={cn(
-                  "text-xl font-semibold mb-2",
-                  ds.colors.text.primary,
-                )}
-              >
+              <h2 className={cn("text-xl font-semibold mb-2", ds.colors.text.primary)}>
                 <Github className="inline mr-2" size={24} />
                 GitHub Connection
               </h2>
               {status?.hasGithub ? (
                 <p className={cn(ds.colors.text.secondary)}>
-                  Connected as{" "}
-                  <span className="text-green-400">
-                    @{status.githubUsername}
-                  </span>
+                  Connected as <span className="text-green-400">@{status.githubUsername}</span>
                 </p>
               ) : (
                 <p className={cn(ds.colors.text.secondary)}>
@@ -425,9 +387,7 @@ export default function VendorWebsitePage() {
                 </p>
               )}
             </div>
-            {!status?.hasGithub && (
-              <Button onClick={connectGithub}>Connect GitHub</Button>
-            )}
+            {!status?.hasGithub && <Button onClick={connectGithub}>Connect GitHub</Button>}
           </div>
         </div>
 
@@ -435,19 +395,13 @@ export default function VendorWebsitePage() {
         {status?.hasGithub && status.hasRepo && (
           <div className={cn("rounded-2xl p-6 mb-6", ds.components.card)}>
             <div className="flex items-center justify-between mb-6">
-              <h2
-                className={cn("text-xl font-semibold", ds.colors.text.primary)}
-              >
+              <h2 className={cn("text-xl font-semibold", ds.colors.text.primary)}>
                 <Rocket className="inline mr-2" size={24} />
                 Deployment
               </h2>
 
               <Button onClick={handleDeploy} disabled={deploying} size="sm">
-                {deploying
-                  ? "Deploying..."
-                  : status?.vercelProjectId
-                    ? "Redeploy"
-                    : "Deploy Now"}
+                {deploying ? "Deploying..." : status?.vercelProjectId ? "Redeploy" : "Deploy Now"}
               </Button>
             </div>
 
@@ -466,44 +420,33 @@ export default function VendorWebsitePage() {
 
                   {status.lastDeploymentAt && (
                     <span className={cn("text-sm", ds.colors.text.quaternary)}>
-                      Last deployed{" "}
-                      {new Date(status.lastDeploymentAt).toLocaleString()}
+                      Last deployed {new Date(status.lastDeploymentAt).toLocaleString()}
                     </span>
                   )}
                 </div>
 
-                {status.deploymentUrl &&
-                  status.deploymentStatus === "ready" && (
-                    <div>
-                      <p
-                        className={cn("text-sm mb-2", ds.colors.text.tertiary)}
-                      >
-                        Live URL
-                      </p>
-                      <a
-                        href={status.deploymentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={cn(
-                          "text-blue-400 hover:underline flex items-center gap-2",
-                          ds.colors.text.primary,
-                        )}
-                      >
-                        {status.deploymentUrl}
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                    </div>
-                  )}
+                {status.deploymentUrl && status.deploymentStatus === "ready" && (
+                  <div>
+                    <p className={cn("text-sm mb-2", ds.colors.text.tertiary)}>Live URL</p>
+                    <a
+                      href={status.deploymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        "text-blue-400 hover:underline flex items-center gap-2",
+                        ds.colors.text.primary,
+                      )}
+                    >
+                      {status.deploymentUrl}
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                )}
 
                 {/* Build Logs */}
                 {status?.deploymentStatus === "building" && logs.length > 0 && (
                   <div>
-                    <p
-                      className={cn(
-                        "text-sm font-medium mb-2",
-                        ds.colors.text.tertiary,
-                      )}
-                    >
+                    <p className={cn("text-sm font-medium mb-2", ds.colors.text.tertiary)}>
                       Build Logs
                     </p>
                     <div
@@ -517,9 +460,7 @@ export default function VendorWebsitePage() {
                           <span className={cn(ds.colors.text.quaternary)}>
                             {new Date(log.timestamp).toLocaleTimeString()}
                           </span>{" "}
-                          <span className={cn(ds.colors.text.tertiary)}>
-                            {log.message}
-                          </span>
+                          <span className={cn(ds.colors.text.tertiary)}>{log.message}</span>
                         </div>
                       ))}
                     </div>
@@ -543,10 +484,7 @@ export default function VendorWebsitePage() {
         {/* Show Custom Domain if configured */}
         {status?.hasCustomDomain && status?.customDomain && (
           <div
-            className={cn(
-              "rounded-2xl p-6 mb-6 border-2 border-green-500/20",
-              ds.components.card,
-            )}
+            className={cn("rounded-2xl p-6 mb-6 border-2 border-green-500/20", ds.components.card)}
           >
             <div className="flex items-center gap-3">
               <Globe className="w-6 h-6 text-green-500" />
@@ -558,9 +496,7 @@ export default function VendorWebsitePage() {
                   href={`https://${status.customDomain}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={cn(
-                    "text-green-400 hover:underline flex items-center gap-2 mt-1",
-                  )}
+                  className={cn("text-green-400 hover:underline flex items-center gap-2 mt-1")}
                 >
                   {status.customDomain}
                   <ExternalLink className="w-4 h-4" />
@@ -572,120 +508,94 @@ export default function VendorWebsitePage() {
         )}
 
         {/* Deployment History */}
-        {status?.hasGithub &&
-          status.hasRepo &&
-          recentDeployments.length > 0 && (
-            <div className={cn("rounded-2xl p-6 mb-6", ds.components.card)}>
-              <h2
-                className={cn(
-                  "text-xl font-semibold mb-4",
-                  ds.colors.text.primary,
-                )}
-              >
-                Deployment History
-              </h2>
+        {status?.hasGithub && status.hasRepo && recentDeployments.length > 0 && (
+          <div className={cn("rounded-2xl p-6 mb-6", ds.components.card)}>
+            <h2 className={cn("text-xl font-semibold mb-4", ds.colors.text.primary)}>
+              Deployment History
+            </h2>
 
-              <div className="space-y-3">
-                {recentDeployments.slice(0, 10).map((deployment) => (
-                  <div
-                    key={deployment.id}
-                    className={cn(
-                      "flex items-center justify-between py-3 border-b last:border-0",
-                      ds.colors.border.default,
-                    )}
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-1">
-                        <span
-                          className={cn(
-                            "px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1",
-                            getStatusColor(deployment.status),
-                          )}
-                        >
-                          {getStatusIcon(deployment.status)} {deployment.status}
-                        </span>
-
-                        {deployment.commit_message && (
-                          <span
-                            className={cn(
-                              "text-sm truncate max-w-md",
-                              ds.colors.text.tertiary,
-                            )}
-                          >
-                            {deployment.commit_message}
-                          </span>
-                        )}
-                      </div>
-
-                      <div
+            <div className="space-y-3">
+              {recentDeployments.slice(0, 10).map((deployment) => (
+                <div
+                  key={deployment.id}
+                  className={cn(
+                    "flex items-center justify-between py-3 border-b last:border-0",
+                    ds.colors.border.default,
+                  )}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-1">
+                      <span
                         className={cn(
-                          "flex items-center space-x-4 text-xs",
-                          ds.colors.text.quaternary,
+                          "px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1",
+                          getStatusColor(deployment.status),
                         )}
                       >
-                        {deployment.commit_sha && (
-                          <span className="font-mono">
-                            {deployment.commit_sha.substring(0, 7)}
-                          </span>
-                        )}
-                        <span>
-                          {new Date(deployment.started_at).toLocaleString()}
+                        {getStatusIcon(deployment.status)} {deployment.status}
+                      </span>
+
+                      {deployment.commit_message && (
+                        <span className={cn("text-sm truncate max-w-md", ds.colors.text.tertiary)}>
+                          {deployment.commit_message}
                         </span>
-                        {deployment.completed_at && (
-                          <span>
-                            Duration:{" "}
-                            {Math.round(
-                              (new Date(deployment.completed_at).getTime() -
-                                new Date(deployment.started_at).getTime()) /
-                                1000,
-                            )}
-                            s
-                          </span>
-                        )}
-                      </div>
+                      )}
                     </div>
 
-                    {deployment.deployment_url &&
-                      deployment.status === "ready" && (
-                        <a
-                          href={deployment.deployment_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={cn(
-                            "text-sm text-blue-400 hover:underline ml-4",
-                            ds.colors.text.primary,
-                          )}
-                        >
-                          View →
-                        </a>
+                    <div
+                      className={cn(
+                        "flex items-center space-x-4 text-xs",
+                        ds.colors.text.quaternary,
                       )}
+                    >
+                      {deployment.commit_sha && (
+                        <span className="font-mono">{deployment.commit_sha.substring(0, 7)}</span>
+                      )}
+                      <span>{new Date(deployment.started_at).toLocaleString()}</span>
+                      {deployment.completed_at && (
+                        <span>
+                          Duration:{" "}
+                          {Math.round(
+                            (new Date(deployment.completed_at).getTime() -
+                              new Date(deployment.started_at).getTime()) /
+                              1000,
+                          )}
+                          s
+                        </span>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
+
+                  {deployment.deployment_url && deployment.status === "ready" && (
+                    <a
+                      href={deployment.deployment_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        "text-sm text-blue-400 hover:underline ml-4",
+                        ds.colors.text.primary,
+                      )}
+                    >
+                      View →
+                    </a>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
+          </div>
+        )}
 
         {/* Website Repository */}
         {status?.hasGithub && (
           <div className={cn("rounded-2xl p-6", ds.components.card)}>
             {status.hasRepo ? (
               <div>
-                <h2
-                  className={cn(
-                    "text-xl font-semibold mb-4",
-                    ds.colors.text.primary,
-                  )}
-                >
+                <h2 className={cn("text-xl font-semibold mb-4", ds.colors.text.primary)}>
                   <Globe className="inline mr-2" size={24} />
                   Your Website Repository
                 </h2>
 
-                <div
-                  className={cn("rounded-xl p-4 mb-4", ds.colors.bg.elevated)}
-                >
-                  <p className={cn("text-sm mb-2", ds.colors.text.quaternary)}>
-                    Repository
-                  </p>
+                <div className={cn("rounded-xl p-4 mb-4", ds.colors.bg.elevated)}>
+                  <p className={cn("text-sm mb-2", ds.colors.text.quaternary)}>Repository</p>
                   <a
                     href={status.repoUrl}
                     target="_blank"
@@ -712,9 +622,7 @@ export default function VendorWebsitePage() {
                   >
                     <Code2 size={24} />
                     <div>
-                      <p className={cn("font-medium", ds.colors.text.primary)}>
-                        Open in VS Code
-                      </p>
+                      <p className={cn("font-medium", ds.colors.text.primary)}>Open in VS Code</p>
                       <p className={cn("text-xs", ds.colors.text.quaternary)}>
                         Clone and edit locally
                       </p>
@@ -732,12 +640,8 @@ export default function VendorWebsitePage() {
                   >
                     <Code2 size={24} />
                     <div>
-                      <p className={cn("font-medium", ds.colors.text.primary)}>
-                        Open in Cursor
-                      </p>
-                      <p className={cn("text-xs", ds.colors.text.quaternary)}>
-                        AI-powered coding
-                      </p>
+                      <p className={cn("font-medium", ds.colors.text.primary)}>Open in Cursor</p>
+                      <p className={cn("text-xs", ds.colors.text.quaternary)}>AI-powered coding</p>
                     </div>
                   </a>
 
@@ -754,9 +658,7 @@ export default function VendorWebsitePage() {
                   >
                     <Github size={24} />
                     <div>
-                      <p className={cn("font-medium", ds.colors.text.primary)}>
-                        View on GitHub
-                      </p>
+                      <p className={cn("font-medium", ds.colors.text.primary)}>View on GitHub</p>
                       <p className={cn("text-xs", ds.colors.text.quaternary)}>
                         Browse files online
                       </p>
@@ -776,9 +678,7 @@ export default function VendorWebsitePage() {
                   >
                     <Globe size={24} />
                     <div>
-                      <p className={cn("font-medium", ds.colors.text.primary)}>
-                        Deploy to Vercel
-                      </p>
+                      <p className={cn("font-medium", ds.colors.text.primary)}>Deploy to Vercel</p>
                       <p className={cn("text-xs", ds.colors.text.quaternary)}>
                         One-click deployment
                       </p>
@@ -786,72 +686,41 @@ export default function VendorWebsitePage() {
                   </a>
                 </div>
 
-                <div
-                  className={cn("mt-6 p-4 rounded-xl", ds.colors.bg.elevated)}
-                >
+                <div className={cn("mt-6 p-4 rounded-xl", ds.colors.bg.elevated)}>
                   <div className="flex items-center justify-between mb-4">
-                    <h3
-                      className={cn("font-semibold", ds.colors.text.secondary)}
-                    >
+                    <h3 className={cn("font-semibold", ds.colors.text.secondary)}>
                       Storefront Template
                     </h3>
-                    <Button
-                      onClick={pushTemplate}
-                      disabled={creating}
-                      size="sm"
-                    >
+                    <Button onClick={pushTemplate} disabled={creating} size="sm">
                       {creating ? "Pushing..." : "Push Template to Repo"}
                     </Button>
                   </div>
                   <p className={cn("text-sm mb-4", ds.colors.text.quaternary)}>
-                    Push the WhaleTools storefront template to your repository.
-                    This includes a fully working Next.js storefront with your
-                    branding.
+                    Push the WhaleTools storefront template to your repository. This includes a
+                    fully working Next.js storefront with your branding.
                   </p>
                 </div>
 
-                <div
-                  className={cn("mt-6 p-4 rounded-xl", ds.colors.bg.elevated)}
-                >
-                  <h3
-                    className={cn(
-                      "font-semibold mb-2",
-                      ds.colors.text.secondary,
-                    )}
-                  >
-                    Next Steps
-                  </h3>
+                <div className={cn("mt-6 p-4 rounded-xl", ds.colors.bg.elevated)}>
+                  <h3 className={cn("font-semibold mb-2", ds.colors.text.secondary)}>Next Steps</h3>
                   <ol
                     className={cn(
                       "list-decimal list-inside space-y-2 text-sm",
                       ds.colors.text.quaternary,
                     )}
                   >
-                    <li>
-                      Click "Push Template to Repo" to add storefront files
-                    </li>
-                    <li>
-                      Clone your repository using one of the buttons above
-                    </li>
-                    <li>
-                      Customize your storefront using your favorite code editor
-                    </li>
+                    <li>Click "Push Template to Repo" to add storefront files</li>
+                    <li>Clone your repository using one of the buttons above</li>
+                    <li>Customize your storefront using your favorite code editor</li>
                     <li>Push changes to GitHub</li>
                     <li>Deploy to Vercel for free hosting</li>
-                    <li>
-                      Your products will automatically sync from this dashboard
-                    </li>
+                    <li>Your products will automatically sync from this dashboard</li>
                   </ol>
                 </div>
               </div>
             ) : (
               <div className="text-center py-8">
-                <h2
-                  className={cn(
-                    "text-2xl font-semibold mb-4",
-                    ds.colors.text.primary,
-                  )}
-                >
+                <h2 className={cn("text-2xl font-semibold mb-4", ds.colors.text.primary)}>
                   Create Your Website
                 </h2>
                 <p className={cn("mb-6", ds.colors.text.secondary)}>

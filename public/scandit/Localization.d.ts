@@ -28,10 +28,7 @@ declare class Localization {
   /**
    * @returns An object containing all the translations
    */
-  getAll<K extends object = Translations>(): Record<
-    DistributiveKeyOf<K>,
-    string
-  >;
+  getAll<K extends object = Translations>(): Record<DistributiveKeyOf<K>, string>;
   /**
    * @description Update the translations with the given object.
    * @param {object} translations An object containing all or a subset of all translations
@@ -50,8 +47,4 @@ declare class Localization {
   private subscribe;
 }
 
-export {
-  Localization,
-  type LocalizationSubscriber,
-  type LocalizationSubscription,
-};
+export { Localization, type LocalizationSubscriber, type LocalizationSubscription };

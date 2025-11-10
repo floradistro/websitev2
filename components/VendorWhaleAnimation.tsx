@@ -128,20 +128,9 @@ function VendorWhaleAnimation() {
           // Draw wavy connections between nearby bubbles
           for (let i = 0; i < bubbles.length; i++) {
             for (let j = i + 1; j < bubbles.length; j++) {
-              let d = p.dist(
-                bubbles[i].x,
-                bubbles[i].y,
-                bubbles[j].x,
-                bubbles[j].y,
-              );
+              let d = p.dist(bubbles[i].x, bubbles[i].y, bubbles[j].x, bubbles[j].y);
               if (d < connectionDistance) {
-                let alpha = p.map(
-                  d,
-                  0,
-                  connectionDistance,
-                  isMobile ? 3 : 6,
-                  0,
-                );
+                let alpha = p.map(d, 0, connectionDistance, isMobile ? 3 : 6, 0);
                 p.stroke(255, 255, 255, alpha * (isMobile ? 0.2 : 1));
                 p.strokeWeight(isMobile ? 3 : 0.5);
                 p.noFill();
@@ -151,8 +140,7 @@ function VendorWhaleAnimation() {
                 for (let t = 0; t <= 1; t += 0.1) {
                   let x = p.lerp(bubbles[i].x, bubbles[j].x, t);
                   let y = p.lerp(bubbles[i].y, bubbles[j].y, t);
-                  let wave =
-                    p.sin(t * p.PI * 3 + time * 2) * (isMobile ? 8 : 5);
+                  let wave = p.sin(t * p.PI * 3 + time * 2) * (isMobile ? 8 : 5);
                   p.vertex(x + wave, y);
                 }
                 p.endShape();

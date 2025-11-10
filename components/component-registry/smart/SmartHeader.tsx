@@ -14,6 +14,7 @@ import { useCart } from "@/context/CartContext";
 import CartDrawer from "@/components/CartDrawer";
 import SearchModal from "@/components/SearchModal";
 
+import { logger } from "@/lib/logger";
 interface SmartHeaderProps {
   vendorId: string;
   vendorSlug: string;
@@ -106,9 +107,7 @@ export function SmartHeader({
 
         if (result.success) {
           const products = result.data.products || [];
-          const vendorProducts = products.filter(
-            (p: any) => p.vendor_id === vendorId,
-          );
+          const vendorProducts = products.filter((p: any) => p.vendor_id === vendorId);
 
           const categoryMap = new Map();
           vendorProducts.forEach((product: any) => {
@@ -125,15 +124,15 @@ export function SmartHeader({
             }
           });
 
-          const uniqueCategories = Array.from(categoryMap.values()).sort(
-            (a, b) => a.name.localeCompare(b.name),
+          const uniqueCategories = Array.from(categoryMap.values()).sort((a, b) =>
+            a.name.localeCompare(b.name),
           );
 
           setCategories(uniqueCategories);
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error fetching categories:", error);
+          logger.error("Error fetching categories:", error);
         }
       }
     };
@@ -226,12 +225,8 @@ export function SmartHeader({
                   <div
                     key={index}
                     className={isShopLink ? "relative group" : ""}
-                    onMouseEnter={() =>
-                      isShopLink && setProductsDropdownOpen(true)
-                    }
-                    onMouseLeave={() =>
-                      isShopLink && setProductsDropdownOpen(false)
-                    }
+                    onMouseEnter={() => isShopLink && setProductsDropdownOpen(true)}
+                    onMouseLeave={() => isShopLink && setProductsDropdownOpen(false)}
                   >
                     <Link
                       href={getHref(link.href)}
@@ -267,9 +262,7 @@ export function SmartHeader({
                                     href={categoryHref}
                                     className="flex items-center gap-3 px-4 py-3 text-neutral-400 hover:text-white hover:bg-white/10 transition-all rounded-[16px]"
                                   >
-                                    <div className="text-sm font-semibold">
-                                      {category.name}
-                                    </div>
+                                    <div className="text-sm font-semibold">{category.name}</div>
                                   </Link>
                                 );
                               })}
@@ -340,11 +333,7 @@ export function SmartHeader({
                 <X size={20} />
               </button>
 
-              <Link
-                href={getHref("/")}
-                className="block"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <Link href={getHref("/")} className="block" onClick={() => setMobileMenuOpen(false)}>
                 <div className="flex items-center gap-3 mb-2">
                   {logoUrl ? (
                     <div className="w-12 h-12 rounded-[20px] overflow-hidden border border-white/20">
@@ -358,9 +347,7 @@ export function SmartHeader({
                     </div>
                   ) : (
                     <div className="w-12 h-12 bg-white/10 rounded-[20px] flex items-center justify-center border border-white/20">
-                      <span className="text-white text-sm font-semibold">
-                        {vendorName[0]}
-                      </span>
+                      <span className="text-white text-sm font-semibold">{vendorName[0]}</span>
                     </div>
                   )}
                   <div>
@@ -381,9 +368,7 @@ export function SmartHeader({
                     className="group block py-3.5 px-4 text-white hover:bg-white/10 transition-all rounded-[16px]"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <span className="text-base font-semibold">
-                      {link.label}
-                    </span>
+                    <span className="text-base font-semibold">{link.label}</span>
                   </Link>
                 ))}
               </div>
@@ -399,17 +384,11 @@ export function SmartHeader({
       )}
 
       {/* Cart Drawer */}
-      {showCart && (
-        <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
-      )}
+      {showCart && <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />}
 
       {/* Search Modal */}
       {showSearch && (
-        <SearchModal
-          isOpen={searchOpen}
-          onClose={() => setSearchOpen(false)}
-          vendorId={vendorId}
-        />
+        <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} vendorId={vendorId} />
       )}
     </>
   );

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const revalidate = 30; // Cache for 30 seconds
 
@@ -20,23 +21,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading users:", error);
+        logger.error("Error loading users:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, users: data || [] });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in users API:", error);
+      logger.error("Error in users API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -75,21 +70,20 @@ export async function POST(request: NextRequest) {
           Math.random().toString(36).slice(-10).toUpperCase() +
           "!123";
 
-        const { data: authUser, error: authError } =
-          await supabase.auth.admin.createUser({
-            email,
-            password: tempPassword,
-            email_confirm: true,
-            user_metadata: {
-              first_name,
-              last_name,
-              role,
-            },
-          });
+        const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+          email,
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: {
+            first_name,
+            last_name,
+            role,
+          },
+        });
 
         if (authError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error creating auth user:", authError);
+            logger.error("Error creating auth user:", authError);
           }
           return NextResponse.json(
             {
@@ -120,7 +114,7 @@ export async function POST(request: NextRequest) {
 
         if (dbError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error creating user in database:", dbError);
+            logger.error("Error creating user in database:", dbError);
           }
           // Cleanup: delete auth user if database insert fails
           await supabase.auth.admin.deleteUser(authUser.user.id);
@@ -134,16 +128,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Step 3: Send password reset email so they can set their own password
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-          email,
-          {
-            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/reset-password`,
-          },
-        );
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/reset-password`,
+        });
 
         if (resetError) {
           if (process.env.NODE_ENV === "development") {
-            console.warn("Failed to send password reset email:", resetError);
+            logger.warn("Failed to send password reset email:", resetError);
           }
           // Don't fail the whole operation if email fails
         }
@@ -155,7 +146,7 @@ export async function POST(request: NextRequest) {
         });
       } catch (error: any) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error in user creation:", error);
+          logger.error("Error in user creation:", error);
         }
         return NextResponse.json(
           {
@@ -168,15 +159,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "update") {
-      const {
-        user_id,
-        first_name,
-        last_name,
-        phone,
-        role,
-        employee_id,
-        vendor_id,
-      } = data;
+      const { user_id, first_name, last_name, phone, role, employee_id, vendor_id } = data;
 
       if (!user_id) {
         return NextResponse.json(
@@ -196,19 +179,13 @@ export async function POST(request: NextRequest) {
       if (employee_id !== undefined) updatePayload.employee_id = employee_id;
       if (vendor_id !== undefined) updatePayload.vendor_id = vendor_id;
 
-      const { error } = await supabase
-        .from("users")
-        .update(updatePayload)
-        .eq("id", user_id);
+      const { error } = await supabase.from("users").update(updatePayload).eq("id", user_id);
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error updating user:", error);
+          logger.error("Error updating user:", error);
         }
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -236,10 +213,7 @@ export async function POST(request: NextRequest) {
         .eq("id", user_id);
 
       if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -265,12 +239,9 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error deleting user:", error);
+          logger.error("Error deleting user:", error);
         }
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -282,18 +253,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error:
-          "Invalid action. Valid actions: create, update, toggle_status, delete",
+        error: "Invalid action. Valid actions: create, update, toggle_status, delete",
       },
       { status: 400 },
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in users API:", error);
+      logger.error("Error in users API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

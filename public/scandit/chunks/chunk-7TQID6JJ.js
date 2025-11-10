@@ -45,22 +45,14 @@ var z = {
           onTap: (i, o) => {
             var s, e;
             let l = (s = o.target.dataset.identifier) != null ? s : "";
-            l !== "" &&
-              ((e = this.listener) == null ||
-                e.didTapView(Number.parseInt(l, 10)));
+            l !== "" && ((e = this.listener) == null || e.didTapView(Number.parseInt(l, 10)));
           },
         }),
         (this.resizeObserver = new ResizeObserver(([i$1]) => {
-          this._cachedSize = new i(
-            i$1.contentRect.width,
-            i$1.contentRect.height,
-          );
+          this._cachedSize = new i(i$1.contentRect.width, i$1.contentRect.height);
         })),
         this.resizeObserver.observe(this._htmlRoot),
-        (this._cachedSize = new i(
-          this._htmlRoot.clientWidth,
-          this._htmlRoot.clientHeight,
-        )),
+        (this._cachedSize = new i(this._htmlRoot.clientWidth, this._htmlRoot.clientHeight)),
         (this._mounted = true));
     }
     unmount() {
@@ -72,9 +64,8 @@ var z = {
         (n = this._htmlRoot) == null || n.remove(),
         (this._htmlRoot = null),
         (this.gestureRecognizer = null),
-        (i = document.head.querySelector(
-          `[data-component=${a.componentName}]`,
-        )) == null || i.remove(),
+        (i = document.head.querySelector(`[data-component=${a.componentName}]`)) == null ||
+          i.remove(),
         (this.listener = null),
         (this._mounted = false));
     }
@@ -88,8 +79,7 @@ var z = {
         (i =
           (n = this._htmlRoot) == null
             ? void 0
-            : n.querySelector(`#${a.elementSelectorPrefix}${e}`)) == null ||
-          i.remove();
+            : n.querySelector(`#${a.elementSelectorPrefix}${e}`)) == null || i.remove();
       let r = document.createDocumentFragment();
       for (let e of t.elements) {
         let c = `${a.elementSelectorPrefix}${e.identifier}`,
@@ -97,10 +87,7 @@ var z = {
           m = p;
         if (
           (p == null &&
-            ((m = new Image(
-              e.view.options.size.width,
-              e.view.options.size.height,
-            )),
+            ((m = new Image(e.view.options.size.width, e.view.options.size.height)),
             (m.id = c),
             (m.dataset.identifier = String(e.identifier)),
             r.append(m)),
@@ -153,8 +140,7 @@ var z = {
     }
     removeChildren() {
       var t;
-      for (; (t = this._htmlRoot) != null && t.firstChild; )
-        this._htmlRoot.firstChild.remove();
+      for (; (t = this._htmlRoot) != null && t.firstChild; ) this._htmlRoot.firstChild.remove();
     }
     adjustCoordinatesWithOffset(t, r) {
       let n = t,
@@ -163,13 +149,11 @@ var z = {
         s = t.y - i.height / 2;
       return (
         o.x.unit === "pixel" && (n = new a$3(l + o.x.value, s + o.y.value)),
-        o.x.unit === "fraction" &&
-          (n = new a$3(l + i.width * o.x.value, s + i.height * o.y.value)),
+        o.x.unit === "fraction" && (n = new a$3(l + i.width * o.x.value, s + i.height * o.y.value)),
         n
       );
     }
   };
-((a.componentName = "CustomLocationsView"),
-  (a.elementSelectorPrefix = "scandit-view-"));
+((a.componentName = "CustomLocationsView"), (a.elementSelectorPrefix = "scandit-view-"));
 var S = a;
 export { S as a };

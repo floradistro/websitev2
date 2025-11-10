@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -13,10 +14,7 @@ export async function GET(request: NextRequest) {
     const vendorId = searchParams.get("vendorId");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "Vendor ID is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Vendor ID is required" }, { status: 400 });
     }
 
     const { data: widgets, error } = await supabase
@@ -28,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching KPI widgets:", error);
+        logger.error("Error fetching KPI widgets:", error);
       }
       return NextResponse.json(
         { success: false, error: "Failed to fetch KPI widgets" },
@@ -42,12 +40,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in GET /api/kpi-widgets:", error);
+      logger.error("Error in GET /api/kpi-widgets:", error);
     }
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -73,9 +68,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     const nextPosition =
-      existingWidgets && existingWidgets.length > 0
-        ? existingWidgets[0].position + 1
-        : 0;
+      existingWidgets && existingWidgets.length > 0 ? existingWidgets[0].position + 1 : 0;
 
     // Insert the new widget
     const { data: newWidget, error } = await supabase
@@ -99,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error saving KPI widget:", error);
+        logger.error("Error saving KPI widget:", error);
       }
       return NextResponse.json(
         { success: false, error: "Failed to save KPI widget" },
@@ -113,12 +106,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in POST /api/kpi-widgets:", error);
+      logger.error("Error in POST /api/kpi-widgets:", error);
     }
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -129,20 +119,14 @@ export async function DELETE(request: NextRequest) {
     const widgetId = searchParams.get("id");
 
     if (!widgetId) {
-      return NextResponse.json(
-        { success: false, error: "Widget ID is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Widget ID is required" }, { status: 400 });
     }
 
-    const { error } = await supabase
-      .from("custom_kpi_widgets")
-      .delete()
-      .eq("id", widgetId);
+    const { error } = await supabase.from("custom_kpi_widgets").delete().eq("id", widgetId);
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error deleting KPI widget:", error);
+        logger.error("Error deleting KPI widget:", error);
       }
       return NextResponse.json(
         { success: false, error: "Failed to delete KPI widget" },
@@ -155,11 +139,8 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in DELETE /api/kpi-widgets:", error);
+      logger.error("Error in DELETE /api/kpi-widgets:", error);
     }
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

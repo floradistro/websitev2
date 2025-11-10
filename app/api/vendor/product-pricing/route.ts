@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -81,20 +82,15 @@ export async function GET(request: NextRequest) {
         .eq("is_active", true);
 
       // Filter by vendor_id in memory
-      assignments =
-        result.data?.filter((a: any) => a.product?.vendor_id === vendorId) ||
-        [];
+      assignments = result.data?.filter((a: any) => a.product?.vendor_id === vendorId) || [];
       error = result.error;
     }
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error(
-          "❌ Supabase error fetching product pricing assignments:",
-          error,
-        );
+        logger.error("❌ Supabase error fetching product pricing assignments:", error);
       }
-      console.error("Error details:", JSON.stringify(error, null, 2));
+      logger.error("Error details:", JSON.stringify(error, null, 2));
       // Return empty array instead of throwing to prevent modal crashes
       return NextResponse.json({
         success: true,
@@ -108,7 +104,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error fetching product pricing assignments:", error);
+      logger.error("❌ Error fetching product pricing assignments:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Failed to load pricing" },
@@ -164,9 +160,7 @@ export async function POST(request: NextRequest) {
 
     if (existingError) throw existingError;
 
-    const existingMap = new Map(
-      (existing || []).map((e) => [e.product_id, e.id]),
-    );
+    const existingMap = new Map((existing || []).map((e) => [e.product_id, e.id]));
     const toInsert: any[] = [];
     const toUpdate: string[] = [];
 
@@ -214,12 +208,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error assigning product pricing:", error);
+      logger.error("Error assigning product pricing:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -242,8 +233,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const updateData: any = {};
-    if (price_overrides !== undefined)
-      updateData.price_overrides = price_overrides;
+    if (price_overrides !== undefined) updateData.price_overrides = price_overrides;
     if (is_active !== undefined) updateData.is_active = is_active;
 
     const { data, error } = await supabase
@@ -261,12 +251,9 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating product pricing assignment:", error);
+      logger.error("Error updating product pricing assignment:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -293,16 +280,12 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    let query = supabase
-      .from("product_pricing_assignments")
-      .update({ is_active: false });
+    let query = supabase.from("product_pricing_assignments").update({ is_active: false });
 
     if (assignmentId) {
       query = query.eq("id", assignmentId);
     } else {
-      query = query
-        .eq("product_id", productId!)
-        .eq("blueprint_id", blueprintId!);
+      query = query.eq("product_id", productId!).eq("blueprint_id", blueprintId!);
     }
 
     const { error } = await query;
@@ -315,11 +298,8 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error removing product pricing assignment:", error);
+      logger.error("Error removing product pricing assignment:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

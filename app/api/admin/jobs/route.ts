@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jobQueue } from "@/lib/job-queue";
 
+import { logger } from "@/lib/logger";
 /**
  * Job Queue Management API
  * GET - Get job statistics and history
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Job API error:", error);
+      logger.error("Job API error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -89,10 +90,7 @@ export async function POST(request: NextRequest) {
       const success = jobQueue.retryJob(jobId);
 
       if (!success) {
-        return NextResponse.json(
-          { error: "Job not found or cannot be retried" },
-          { status: 404 },
-        );
+        return NextResponse.json({ error: "Job not found or cannot be retried" }, { status: 404 });
       }
 
       return NextResponse.json({
@@ -114,7 +112,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Job API error:", error);
+      logger.error("Job API error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

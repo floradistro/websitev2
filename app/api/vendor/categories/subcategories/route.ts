@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const runtime = "edge";
 
 /**
@@ -14,10 +15,7 @@ export async function GET(req: NextRequest) {
     const parentCategoriesParam = searchParams.get("parent_categories"); // Comma-separated
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id is required" }, { status: 400 });
     }
 
     if (!parentCategoriesParam) {
@@ -27,9 +25,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const parentCategories = parentCategoriesParam
-      .split(",")
-      .map((c) => c.trim());
+    const parentCategories = parentCategoriesParam.split(",").map((c) => c.trim());
 
     const supabase = getServiceSupabase();
 
@@ -43,12 +39,9 @@ export async function GET(req: NextRequest) {
 
     if (parentError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching parent categories:", parentError);
+        logger.error("Error fetching parent categories:", parentError);
       }
-      return NextResponse.json(
-        { success: false, error: parentError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: parentError.message }, { status: 500 });
     }
 
     if (!parentCats || parentCats.length === 0) {
@@ -71,12 +64,9 @@ export async function GET(req: NextRequest) {
 
     if (subError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching sub-categories:", subError);
+        logger.error("Error fetching sub-categories:", subError);
       }
-      return NextResponse.json(
-        { success: false, error: subError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: subError.message }, { status: 500 });
     }
 
     // Group sub-categories by parent category name
@@ -98,7 +88,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching sub-categories:", error);
+      logger.error("Error fetching sub-categories:", error);
     }
     return NextResponse.json(
       {

@@ -10,12 +10,7 @@ interface AnimatedSectionProps {
   id?: string;
 }
 
-export function AnimatedSection({
-  children,
-  delay = 0,
-  className = "",
-  id,
-}: AnimatedSectionProps) {
+export function AnimatedSection({ children, delay = 0, className = "", id }: AnimatedSectionProps) {
   return (
     <motion.div
       id={id}

@@ -7,8 +7,7 @@ var l = "scandit-arrows-up",
     constructor() {
       super();
       let a = this.attachShadow({ mode: "open" });
-      ((a.innerHTML = this.render()),
-        a.prepend(t.createStyleElement().cloneNode(true)));
+      ((a.innerHTML = this.render()), a.prepend(t.createStyleElement().cloneNode(true)));
     }
     static createStyleElement() {
       return a$1`${t.tag}{display:flex}${t.tag}[hidden]{display:none}.arrow{animation:blink 1.5s infinite;animation-duration:2s}.arrow-1{animation-delay:0s}.arrow-2{animation-delay:.5s}.arrow-3{animation-delay:1s}@keyframes blink{0%,to{opacity:0}50%{opacity:1}}`;

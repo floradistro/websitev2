@@ -11,12 +11,18 @@ import { z } from "zod";
 
 export const LoginSchema = z.object({
   email: z.string().email("Invalid email format").toLowerCase().trim(),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string().min(12, "Password must be at least 12 characters"),
 });
 
 export const RegisterSchema = z.object({
   email: z.string().email("Invalid email format").toLowerCase().trim(),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z
+    .string()
+    .min(12, "Password must be at least 12 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+    ),
   firstName: z.string().min(1, "First name required").max(100).trim(),
   lastName: z.string().min(1, "Last name required").max(100).trim(),
   phone: z.string().optional(),
@@ -32,18 +38,9 @@ export const ProductSchema = z.object({
   slug: z.string().max(255).optional(),
   price: z.number().positive("Price must be positive").finite(),
   compare_at_price: z.number().positive().finite().optional().nullable(),
-  cost: z
-    .number()
-    .nonnegative("Cost cannot be negative")
-    .finite()
-    .optional()
-    .nullable(),
+  cost: z.number().nonnegative("Cost cannot be negative").finite().optional().nullable(),
   category_id: z.string().uuid("Invalid category ID").optional().nullable(),
-  primary_category_id: z
-    .string()
-    .uuid("Invalid category ID")
-    .optional()
-    .nullable(),
+  primary_category_id: z.string().uuid("Invalid category ID").optional().nullable(),
   barcode: z.string().max(100).optional().nullable(),
   sku: z.string().max(100).optional().nullable(),
   weight: z.number().nonnegative().finite().optional().nullable(),
@@ -60,9 +57,7 @@ export const ProductSchema = z.object({
 });
 
 export const BulkProductUpdateSchema = z.object({
-  productIds: z
-    .array(z.string().uuid())
-    .min(1, "At least one product required"),
+  productIds: z.array(z.string().uuid()).min(1, "At least one product required"),
   updates: z
     .object({
       status: z.enum(["active", "draft", "archived"]).optional(),
@@ -70,10 +65,7 @@ export const BulkProductUpdateSchema = z.object({
       price: z.number().positive().finite().optional(),
       inventory_quantity: z.number().int().nonnegative().optional(),
     })
-    .refine(
-      (data) => Object.keys(data).length > 0,
-      "At least one update field required",
-    ),
+    .refine((data) => Object.keys(data).length > 0, "At least one update field required"),
 });
 
 // ============================================================================
@@ -116,9 +108,7 @@ export const OrderSchema = z.object({
 export const PaymentSchema = z.object({
   amount: z.number().positive("Amount must be positive").finite(),
   cardNumber: z.string().regex(/^\d{13,19}$/, "Invalid card number"),
-  expirationDate: z
-    .string()
-    .regex(/^\d{2}\/\d{2}$/, "Invalid expiration date (MM/YY)"),
+  expirationDate: z.string().regex(/^\d{2}\/\d{2}$/, "Invalid expiration date (MM/YY)"),
   cvv: z.string().regex(/^\d{3,4}$/, "Invalid CVV"),
   billing: AddressSchema,
   items: z.array(OrderItemSchema).min(1),
@@ -176,9 +166,7 @@ export function validateData<T>(
     return { success: true, data: validated };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const messages = error.issues.map(
-        (e: any) => `${e.path.join(".")}: ${e.message}`,
-      );
+      const messages = error.issues.map((e: any) => `${e.path.join(".")}: ${e.message}`);
       return { success: false, error: messages.join(", ") };
     }
     return { success: false, error: "Validation failed" };
@@ -199,11 +187,7 @@ export function parseNumber(value: any, defaultValue = 0): number {
 /**
  * Safe integer parsing with bounds checking
  */
-export function parseInteger(
-  value: any,
-  min = 0,
-  max = Number.MAX_SAFE_INTEGER,
-): number {
+export function parseInteger(value: any, min = 0, max = Number.MAX_SAFE_INTEGER): number {
   const num = parseInt(value, 10);
   if (isNaN(num)) {
     return min;

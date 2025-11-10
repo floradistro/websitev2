@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Check, ChevronDown, X, Search } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface Product {
   id: string;
   name: string;
@@ -45,7 +46,7 @@ export function ProductPickerFieldInline({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error:", error);
+        logger.error("Error:", error);
       }
     } finally {
       setLoading(false);
@@ -71,9 +72,7 @@ export function ProductPickerFieldInline({
             >
               {product.name}
               <button
-                onClick={() =>
-                  onChange(value.filter((id) => id !== product.id))
-                }
+                onClick={() => onChange(value.filter((id) => id !== product.id))}
                 className="hover:text-purple-100"
               >
                 <X size={10} />
@@ -90,9 +89,7 @@ export function ProductPickerFieldInline({
         className="w-full bg-black border border-white/10 text-white px-2 py-1.5 rounded text-xs flex items-center justify-between hover:border-white/30 transition-colors"
       >
         <span>
-          {selectedProducts.length > 0
-            ? `${selectedProducts.length} products`
-            : "Select products"}
+          {selectedProducts.length > 0 ? `${selectedProducts.length} products` : "Select products"}
         </span>
         <ChevronDown
           size={12}
@@ -121,13 +118,9 @@ export function ProductPickerFieldInline({
 
           <div className="max-h-48 overflow-y-auto">
             {loading ? (
-              <div className="p-3 text-center text-white/40 text-xs">
-                Loading products...
-              </div>
+              <div className="p-3 text-center text-white/40 text-xs">Loading products...</div>
             ) : filteredProducts.length === 0 ? (
-              <div className="p-3 text-center text-white/40 text-xs">
-                No products found
-              </div>
+              <div className="p-3 text-center text-white/40 text-xs">No products found</div>
             ) : (
               <div className="p-1">
                 {filteredProducts.slice(0, 50).map((product) => {
@@ -150,21 +143,13 @@ export function ProductPickerFieldInline({
                     >
                       <div
                         className={`w-3 h-3 rounded border flex items-center justify-center flex-shrink-0 ${
-                          isSelected
-                            ? "bg-[#007acc] border-[#007acc]"
-                            : "border-[#3e3e3e]"
+                          isSelected ? "bg-[#007acc] border-[#007acc]" : "border-[#3e3e3e]"
                         }`}
                       >
-                        {isSelected && (
-                          <Check size={8} className="text-white" />
-                        )}
+                        {isSelected && <Check size={8} className="text-white" />}
                       </div>
-                      <div className="flex-1 min-w-0 truncate">
-                        {product.name}
-                      </div>
-                      <div className="text-white/40 text-[10px]">
-                        ${product.price}
-                      </div>
+                      <div className="flex-1 min-w-0 truncate">{product.name}</div>
+                      <div className="text-white/40 text-[10px]">${product.price}</div>
                     </div>
                   );
                 })}

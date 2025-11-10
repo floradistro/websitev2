@@ -25,47 +25,29 @@ import {
 import { ds, cn } from "@/components/ds";
 import dynamic from "next/dynamic";
 
+import { logger } from "@/lib/logger";
 // Lazy load charts
-const LineChart = dynamic(
-  () => import("recharts").then((m) => ({ default: m.LineChart })),
-  { ssr: false },
-);
-const Line = dynamic(
-  () => import("recharts").then((m) => ({ default: m.Line })),
-  { ssr: false },
-);
-const AreaChart = dynamic(
-  () => import("recharts").then((m) => ({ default: m.AreaChart })),
-  { ssr: false },
-);
-const Area = dynamic(
-  () => import("recharts").then((m) => ({ default: m.Area })),
-  { ssr: false },
-);
-const BarChart = dynamic(
-  () => import("recharts").then((m) => ({ default: m.BarChart })),
-  { ssr: false },
-);
-const Bar = dynamic(
-  () => import("recharts").then((m) => ({ default: m.Bar })),
-  { ssr: false },
-);
-const XAxis = dynamic(
-  () => import("recharts").then((m) => ({ default: m.XAxis })),
-  { ssr: false },
-);
-const YAxis = dynamic(
-  () => import("recharts").then((m) => ({ default: m.YAxis })),
-  { ssr: false },
-);
+const LineChart = dynamic(() => import("recharts").then((m) => ({ default: m.LineChart })), {
+  ssr: false,
+});
+const Line = dynamic(() => import("recharts").then((m) => ({ default: m.Line })), { ssr: false });
+const AreaChart = dynamic(() => import("recharts").then((m) => ({ default: m.AreaChart })), {
+  ssr: false,
+});
+const Area = dynamic(() => import("recharts").then((m) => ({ default: m.Area })), { ssr: false });
+const BarChart = dynamic(() => import("recharts").then((m) => ({ default: m.BarChart })), {
+  ssr: false,
+});
+const Bar = dynamic(() => import("recharts").then((m) => ({ default: m.Bar })), { ssr: false });
+const XAxis = dynamic(() => import("recharts").then((m) => ({ default: m.XAxis })), { ssr: false });
+const YAxis = dynamic(() => import("recharts").then((m) => ({ default: m.YAxis })), { ssr: false });
 const CartesianGrid = dynamic(
   () => import("recharts").then((m) => ({ default: m.CartesianGrid })),
   { ssr: false },
 );
-const Tooltip = dynamic(
-  () => import("recharts").then((m) => ({ default: m.Tooltip })),
-  { ssr: false },
-);
+const Tooltip = dynamic(() => import("recharts").then((m) => ({ default: m.Tooltip })), {
+  ssr: false,
+});
 const ResponsiveContainer = dynamic(
   () => import("recharts").then((m) => ({ default: m.ResponsiveContainer })),
   { ssr: false },
@@ -192,7 +174,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to load metrics:", error);
+        logger.error("Failed to load metrics:", error);
       }
     } finally {
       setLoading(false);
@@ -223,7 +205,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to load customers:", error);
+        logger.error("Failed to load customers:", error);
       }
     }
   };
@@ -235,21 +217,10 @@ export default function AdminDashboard() {
 
   if (!isAuthenticated || loading) {
     return (
-      <div
-        className={cn(
-          ds.colors.bg.primary,
-          "min-h-screen flex items-center justify-center",
-        )}
-      >
+      <div className={cn(ds.colors.bg.primary, "min-h-screen flex items-center justify-center")}>
         <div className="text-center">
           <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-white/20 border-r-white mb-4"></div>
-          <p
-            className={cn(
-              ds.typography.size.lg,
-              ds.colors.text.primary,
-              "font-semibold",
-            )}
-          >
+          <p className={cn(ds.typography.size.lg, ds.colors.text.primary, "font-semibold")}>
             Loading Dashboard...
           </p>
           <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
@@ -260,9 +231,7 @@ export default function AdminDashboard() {
     );
   }
 
-  const topCustomers = customers
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, 5);
+  const topCustomers = customers.sort((a, b) => b.revenue - a.revenue).slice(0, 5);
 
   return (
     <div className={cn(ds.colors.bg.primary, "min-h-screen")}>
@@ -282,9 +251,7 @@ export default function AdminDashboard() {
                 >
                   WhaleTools Command Center
                 </h1>
-                <p
-                  className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}
-                >
+                <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
                   Real-time SaaS platform intelligence · Last updated{" "}
                   {new Date().toLocaleTimeString()}
                 </p>
@@ -306,12 +273,7 @@ export default function AdminDashboard() {
                       userRole === "admin" ? "bg-blue-400" : "bg-purple-400",
                     )}
                   />
-                  <span
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.typography.weight.medium,
-                    )}
-                  >
+                  <span className={cn(ds.typography.size.xs, ds.typography.weight.medium)}>
                     {userName}
                   </span>
                 </div>
@@ -332,11 +294,7 @@ export default function AdminDashboard() {
                         : "text-white/60 hover:text-white hover:bg-white/5",
                     )}
                   >
-                    {range === "7d"
-                      ? "7 Days"
-                      : range === "30d"
-                        ? "30 Days"
-                        : "90 Days"}
+                    {range === "7d" ? "7 Days" : range === "30d" ? "30 Days" : "90 Days"}
                   </button>
                 ))}
               </div>
@@ -358,14 +316,7 @@ export default function AdminDashboard() {
         {/* Hero Metrics - Revenue & Growth */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <div
-              className={cn(
-                "bg-[#0a0a0a]",
-                "border",
-                "border-white/10",
-                "rounded-2xl p-6",
-              )}
-            >
+            <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <p
@@ -397,30 +348,19 @@ export default function AdminDashboard() {
                       <span
                         className={cn(
                           "text-sm font-semibold",
-                          metrics.mrrGrowth >= 0
-                            ? "text-green-400"
-                            : "text-red-400",
+                          metrics.mrrGrowth >= 0 ? "text-green-400" : "text-red-400",
                         )}
                       >
                         {Math.abs(metrics.mrrGrowth)}%
                       </span>
                     </div>
                   </div>
-                  <p
-                    className={cn(
-                      ds.typography.size.sm,
-                      ds.colors.text.tertiary,
-                    )}
-                  >
-                    ${metrics.arr.toLocaleString()} ARR ·{" "}
-                    {metrics.totalCustomers} paying customers
+                  <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
+                    ${metrics.arr.toLocaleString()} ARR · {metrics.totalCustomers} paying customers
                   </p>
                 </div>
                 <div className="p-4 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/10">
-                  <DollarSign
-                    className="w-8 h-8 text-green-400"
-                    strokeWidth={2}
-                  />
+                  <DollarSign className="w-8 h-8 text-green-400" strokeWidth={2} />
                 </div>
               </div>
 
@@ -430,29 +370,12 @@ export default function AdminDashboard() {
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={metrics.revenueData}>
                       <defs>
-                        <linearGradient
-                          id="revenueGradient"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="0%"
-                            stopColor="#10b981"
-                            stopOpacity={0.3}
-                          />
-                          <stop
-                            offset="100%"
-                            stopColor="#10b981"
-                            stopOpacity={0}
-                          />
+                        <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#10b981" stopOpacity={0.3} />
+                          <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="rgba(255,255,255,0.05)"
-                      />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                       <XAxis
                         dataKey="date"
                         stroke="rgba(255,255,255,0.3)"
@@ -485,14 +408,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Customer Growth */}
-          <div
-            className={cn(
-              "bg-[#0a0a0a]",
-              "border",
-              "border-white/10",
-              "rounded-2xl p-6",
-            )}
-          >
+          <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p
@@ -524,9 +440,7 @@ export default function AdminDashboard() {
                     <span
                       className={cn(
                         "text-sm font-semibold",
-                        metrics.customerGrowth >= 0
-                          ? "text-blue-400"
-                          : "text-red-400",
+                        metrics.customerGrowth >= 0 ? "text-blue-400" : "text-red-400",
                       )}
                     >
                       {Math.abs(metrics.customerGrowth)}%
@@ -544,12 +458,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between py-3 border-t border-white/5">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                  <span
-                    className={cn(
-                      ds.typography.size.sm,
-                      ds.colors.text.tertiary,
-                    )}
-                  >
+                  <span className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
                     Active Trials
                   </span>
                 </div>
@@ -567,12 +476,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between py-3 border-t border-white/5">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-red-400"></div>
-                  <span
-                    className={cn(
-                      ds.typography.size.sm,
-                      ds.colors.text.tertiary,
-                    )}
-                  >
+                  <span className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
                     Churned (30d)
                   </span>
                 </div>
@@ -590,12 +494,7 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between py-3 border-t border-white/5">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                  <span
-                    className={cn(
-                      ds.typography.size.sm,
-                      ds.colors.text.tertiary,
-                    )}
-                  >
+                  <span className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
                     Churn Rate
                   </span>
                 </div>
@@ -607,10 +506,7 @@ export default function AdminDashboard() {
                   )}
                 >
                   {metrics.totalCustomers > 0
-                    ? (
-                        (metrics.churnedThisMonth / metrics.totalCustomers) *
-                        100
-                      ).toFixed(1)
+                    ? ((metrics.churnedThisMonth / metrics.totalCustomers) * 100).toFixed(1)
                     : 0}
                   %
                 </span>
@@ -657,14 +553,7 @@ export default function AdminDashboard() {
         {/* Activity Heatmap & Top Customers */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Activity by Hour */}
-          <div
-            className={cn(
-              "bg-[#0a0a0a]",
-              "border",
-              "border-white/10",
-              "rounded-2xl p-6",
-            )}
-          >
+          <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
             <h3
               className={cn(
                 ds.typography.size.md,
@@ -679,10 +568,7 @@ export default function AdminDashboard() {
               <div className="h-[250px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={metrics.activityData}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="rgba(255,255,255,0.05)"
-                    />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                     <XAxis
                       dataKey="hour"
                       stroke="rgba(255,255,255,0.3)"
@@ -708,14 +594,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Top Customers */}
-          <div
-            className={cn(
-              "bg-[#0a0a0a]",
-              "border",
-              "border-white/10",
-              "rounded-2xl p-6",
-            )}
-          >
+          <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
             <h3
               className={cn(
                 ds.typography.size.md,
@@ -729,15 +608,8 @@ export default function AdminDashboard() {
             <div className="space-y-3">
               {topCustomers.length === 0 ? (
                 <div className="text-center py-8">
-                  <Users
-                    className={cn("text-white/40", "w-10 h-10 mx-auto mb-3")}
-                  />
-                  <p
-                    className={cn(
-                      ds.typography.size.sm,
-                      ds.colors.text.tertiary,
-                    )}
-                  >
+                  <Users className={cn("text-white/40", "w-10 h-10 mx-auto mb-3")} />
+                  <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
                     No customers yet
                   </p>
                 </div>
@@ -775,12 +647,7 @@ export default function AdminDashboard() {
                         >
                           {customer.name || customer.email}
                         </p>
-                        <p
-                          className={cn(
-                            ds.typography.size.xs,
-                            ds.colors.text.tertiary,
-                          )}
-                        >
+                        <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                           {customer.productsCount} products
                         </p>
                       </div>
@@ -805,14 +672,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* All Customers Table */}
-        <div
-          className={cn(
-            "bg-[#0a0a0a]",
-            "border",
-            "border-white/10",
-            "rounded-2xl p-6",
-          )}
-        >
+        <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
           <h3
             className={cn(
               ds.typography.size.md,
@@ -826,9 +686,7 @@ export default function AdminDashboard() {
 
           {customers.length === 0 ? (
             <div className="text-center py-12">
-              <Users
-                className={cn("text-white/40", "w-16 h-16 mx-auto mb-4")}
-              />
+              <Users className={cn("text-white/40", "w-16 h-16 mx-auto mb-4")} />
               <p
                 className={cn(
                   ds.typography.size.lg,
@@ -887,24 +745,13 @@ export default function AdminDashboard() {
                       >
                         {customer.name || "Unnamed Customer"}
                       </p>
-                      <p
-                        className={cn(
-                          ds.typography.size.xs,
-                          ds.colors.text.tertiary,
-                        )}
-                      >
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                         {customer.email}
                       </p>
                     </div>
 
                     <div className="text-center px-4">
-                      <p
-                        className={cn(
-                          ds.typography.size.xs,
-                          ds.colors.text.tertiary,
-                          "mb-1",
-                        )}
-                      >
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mb-1")}>
                         Products
                       </p>
                       <p
@@ -919,13 +766,7 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="text-center px-4">
-                      <p
-                        className={cn(
-                          ds.typography.size.xs,
-                          ds.colors.text.tertiary,
-                          "mb-1",
-                        )}
-                      >
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mb-1")}>
                         Revenue
                       </p>
                       <p
@@ -940,41 +781,19 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="text-right px-4">
-                      <p
-                        className={cn(
-                          ds.typography.size.xs,
-                          ds.colors.text.tertiary,
-                          "mb-1",
-                        )}
-                      >
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mb-1")}>
                         Joined
                       </p>
-                      <p
-                        className={cn(
-                          ds.typography.size.xs,
-                          ds.colors.text.tertiary,
-                        )}
-                      >
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                         {new Date(customer.created_at).toLocaleDateString()}
                       </p>
                     </div>
 
                     <div className="text-right px-4">
-                      <p
-                        className={cn(
-                          ds.typography.size.xs,
-                          ds.colors.text.tertiary,
-                          "mb-1",
-                        )}
-                      >
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mb-1")}>
                         Last Active
                       </p>
-                      <p
-                        className={cn(
-                          ds.typography.size.xs,
-                          ds.colors.text.tertiary,
-                        )}
-                      >
+                      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                         {customer.last_active
                           ? new Date(customer.last_active).toLocaleDateString()
                           : "Never"}
@@ -1005,14 +824,7 @@ function EngagementCard({ title, value, subtitle, icon: Icon, color }: any) {
   const colorClass = colors[color as keyof typeof colors];
 
   return (
-    <div
-      className={cn(
-        "bg-[#0a0a0a]",
-        "border",
-        "border-white/10",
-        "rounded-2xl p-6",
-      )}
-    >
+    <div className={cn("bg-[#0a0a0a]", "border", "border-white/10", "rounded-2xl p-6")}>
       <div className="flex items-center justify-between mb-4">
         <p
           className={cn(
@@ -1037,9 +849,7 @@ function EngagementCard({ title, value, subtitle, icon: Icon, color }: any) {
       >
         {value}
       </p>
-      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
-        {subtitle}
-      </p>
+      <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>{subtitle}</p>
     </div>
   );
 }

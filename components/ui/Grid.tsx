@@ -7,12 +7,7 @@ interface GridProps {
   className?: string;
 }
 
-export function Grid({
-  children,
-  cols = 4,
-  gap = "md",
-  className = "",
-}: GridProps) {
+export function Grid({ children, cols = 4, gap = "md", className = "" }: GridProps) {
   const colsClass = {
     1: "grid-cols-1",
     2: "grid-cols-2",
@@ -28,9 +23,5 @@ export function Grid({
     lg: "gap-4",
   };
 
-  return (
-    <div className={`grid ${colsClass[cols]} ${gapClass[gap]} ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`grid ${colsClass[cols]} ${gapClass[gap]} ${className}`}>{children}</div>;
 }

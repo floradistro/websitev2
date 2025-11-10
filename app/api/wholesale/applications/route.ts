@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Submit wholesale application
  */
@@ -25,17 +26,8 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields
-    if (
-      !customerId ||
-      !businessName ||
-      !licenseNumber ||
-      !licenseExpiry ||
-      !taxId
-    ) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
-      );
+    if (!customerId || !businessName || !licenseNumber || !licenseExpiry || !taxId) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     // Check if customer already has an application
@@ -79,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Insert application error:", insertError);
+        logger.error("Insert application error:", insertError);
       }
       return NextResponse.json(
         { error: "Failed to create application", details: insertError.message },
@@ -99,7 +91,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Submit wholesale application error:", error);
+      logger.error("Submit wholesale application error:", error);
     }
     return NextResponse.json(
       { error: "Failed to submit application", details: error.message },
@@ -146,7 +138,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Get applications error:", error);
+        logger.error("Get applications error:", error);
       }
       return NextResponse.json(
         { error: "Failed to get applications", details: error.message },
@@ -157,7 +149,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ applications });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get wholesale applications error:", error);
+      logger.error("Get wholesale applications error:", error);
     }
     return NextResponse.json(
       { error: "Failed to get applications", details: error.message },

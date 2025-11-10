@@ -7,14 +7,9 @@ declare enum PathWinding {
 }
 declare abstract class CanvasDrawerAbstract {
   protected pathWinding: PathWinding;
-  protected abstract context:
-    | CanvasRenderingContext2D
-    | OffscreenCanvasRenderingContext2D;
+  protected abstract context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
   protected abstract draw(commands: Uint8Array): void;
-  protected drawSingleCommand(
-    commandType: DrawCommandEnum,
-    commandBuffer: DrawCommandBuffer,
-  ): void;
+  protected drawSingleCommand(commandType: DrawCommandEnum, commandBuffer: DrawCommandBuffer): void;
   private beginPath;
   private closePath;
   private setStrokeColor;

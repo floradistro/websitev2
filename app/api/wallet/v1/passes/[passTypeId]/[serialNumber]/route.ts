@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { walletPassGenerator } from "@/lib/wallet/pass-generator";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -36,10 +37,7 @@ export async function GET(request: NextRequest, segmentData: RouteParams) {
     const authToken = authHeader?.replace("ApplePass ", "");
 
     if (!authToken) {
-      return NextResponse.json(
-        { error: "Authorization token required" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Authorization token required" }, { status: 401 });
     }
 
     // Get pass with customer and vendor data
@@ -68,11 +66,7 @@ export async function GET(request: NextRequest, segmentData: RouteParams) {
     }
 
     // Generate updated pass
-    const buffer = await walletPassGenerator.generatePass(
-      pass.customers,
-      pass.vendors,
-      pass,
-    );
+    const buffer = await walletPassGenerator.generatePass(pass.customers, pass.vendors, pass);
 
     // Log event
     await supabase.from("wallet_pass_events").insert({
@@ -91,11 +85,8 @@ export async function GET(request: NextRequest, segmentData: RouteParams) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Pass retrieval error:", error);
+      logger.error("Pass retrieval error:", error);
     }
-    return NextResponse.json(
-      { error: "Failed to retrieve pass" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to retrieve pass" }, { status: 500 });
   }
 }

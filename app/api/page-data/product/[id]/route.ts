@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const params = await context.params;
   const startTime = Date.now();
 
@@ -48,10 +46,7 @@ export async function GET(
 
     if (productResult.error) throw productResult.error;
     if (!productResult.data) {
-      return NextResponse.json(
-        { success: false, error: "Product not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ success: false, error: "Product not found" }, { status: 404 });
     }
 
     const p = productResult.data;
@@ -116,8 +111,7 @@ export async function GET(
           // New format with label/value from our strain update
           if (field.label && field.value !== undefined) {
             const fieldId =
-              labelToFieldId[field.label] ||
-              field.label.toLowerCase().replace(/\s+/g, "_");
+              labelToFieldId[field.label] || field.label.toLowerCase().replace(/\s+/g, "_");
             fields[fieldId] = field.value;
           }
           // Old format: {field_name, field_value}
@@ -130,10 +124,7 @@ export async function GET(
           }
         }
       });
-    } else if (
-      typeof blueprintFields === "object" &&
-      blueprintFields !== null
-    ) {
+    } else if (typeof blueprintFields === "object" && blueprintFields !== null) {
       // New format: direct object
       Object.assign(fields, blueprintFields);
     }
@@ -159,8 +150,7 @@ export async function GET(
     if (blueprint?.price_breaks && pricingResult.data) {
       const basePrice = p.price ? parseFloat(p.price) : 0;
       pricingTiers = blueprint.price_breaks.map((priceBreak: any) => {
-        const overridePrice =
-          pricingResult.data?.price_overrides?.[priceBreak.break_id];
+        const overridePrice = pricingResult.data?.price_overrides?.[priceBreak.break_id];
 
         return {
           qty: priceBreak.qty,
@@ -174,10 +164,7 @@ export async function GET(
 
     // Calculate actual stock from inventory
     const totalStock =
-      p.inventory?.reduce(
-        (sum: number, inv: any) => sum + (inv.quantity || 0),
-        0,
-      ) || 0;
+      p.inventory?.reduce((sum: number, inv: any) => sum + (inv.quantity || 0), 0) || 0;
     const actualStockStatus = totalStock > 0 ? "instock" : "outofstock";
 
     // Build response
@@ -209,10 +196,7 @@ export async function GET(
     const relatedProducts = (relatedResult.data || []).map((rp: any) => {
       // Calculate actual stock from inventory
       const rpTotalStock =
-        rp.inventory?.reduce(
-          (sum: number, inv: any) => sum + (inv.quantity || 0),
-          0,
-        ) || 0;
+        rp.inventory?.reduce((sum: number, inv: any) => sum + (inv.quantity || 0), 0) || 0;
       const rpStockStatus = rpTotalStock > 0 ? "instock" : "outofstock";
 
       return {
@@ -252,7 +236,7 @@ export async function GET(
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error(`❌ Error in /api/page-data/product/${params.id}:`, error);
+      logger.error(`❌ Error in /api/page-data/product/${params.id}:`, error);
     }
     return NextResponse.json(
       {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/vendor/terminals
  * List all POS terminals/registers for vendor
@@ -49,23 +50,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching terminals:", error);
+        logger.error("Error fetching terminals:", error);
       }
-      return NextResponse.json(
-        { error: "Failed to fetch terminals" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch terminals" }, { status: 500 });
     }
 
     return NextResponse.json({ terminals });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Terminals API error:", error);
+      logger.error("Terminals API error:", error);
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -107,38 +102,23 @@ export async function POST(request: NextRequest) {
         return await createTerminal(supabase, userData.vendor_id, terminalData);
 
       case "update":
-        return await updateTerminal(
-          supabase,
-          userData.vendor_id,
-          id,
-          terminalData,
-        );
+        return await updateTerminal(supabase, userData.vendor_id, id, terminalData);
 
       case "delete":
         return await deleteTerminal(supabase, userData.vendor_id, id);
 
       case "activate":
-        return await setTerminalStatus(
-          supabase,
-          userData.vendor_id,
-          id,
-          "active",
-        );
+        return await setTerminalStatus(supabase, userData.vendor_id, id, "active");
 
       case "deactivate":
-        return await setTerminalStatus(
-          supabase,
-          userData.vendor_id,
-          id,
-          "inactive",
-        );
+        return await setTerminalStatus(supabase, userData.vendor_id, id, "inactive");
 
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Terminals API error:", error);
+      logger.error("Terminals API error:", error);
     }
     return NextResponse.json(
       {
@@ -171,10 +151,7 @@ async function createTerminal(supabase: any, vendorId: string, data: any) {
     .single();
 
   if (locationError || !location) {
-    return NextResponse.json(
-      { error: "Location not found or access denied" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Location not found or access denied" }, { status: 403 });
   }
 
   // Generate register number if not provided
@@ -243,12 +220,9 @@ async function createTerminal(supabase: any, vendorId: string, data: any) {
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error creating terminal:", error);
+      logger.error("Error creating terminal:", error);
     }
-    return NextResponse.json(
-      { error: "Failed to create terminal" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to create terminal" }, { status: 500 });
   }
 
   return NextResponse.json({
@@ -257,17 +231,9 @@ async function createTerminal(supabase: any, vendorId: string, data: any) {
   });
 }
 
-async function updateTerminal(
-  supabase: any,
-  vendorId: string,
-  id: string,
-  data: any,
-) {
+async function updateTerminal(supabase: any, vendorId: string, id: string, data: any) {
   if (!id) {
-    return NextResponse.json(
-      { error: "Terminal ID required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Terminal ID required" }, { status: 400 });
   }
 
   // Verify terminal belongs to vendor
@@ -279,10 +245,7 @@ async function updateTerminal(
     .single();
 
   if (checkError || !existing) {
-    return NextResponse.json(
-      { error: "Terminal not found or access denied" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Terminal not found or access denied" }, { status: 403 });
   }
 
   // Update terminal
@@ -327,12 +290,9 @@ async function updateTerminal(
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating terminal:", error);
+      logger.error("Error updating terminal:", error);
     }
-    return NextResponse.json(
-      { error: "Failed to update terminal" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to update terminal" }, { status: 500 });
   }
 
   return NextResponse.json({
@@ -343,10 +303,7 @@ async function updateTerminal(
 
 async function deleteTerminal(supabase: any, vendorId: string, id: string) {
   if (!id) {
-    return NextResponse.json(
-      { error: "Terminal ID required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Terminal ID required" }, { status: 400 });
   }
 
   // Verify terminal belongs to vendor
@@ -358,18 +315,14 @@ async function deleteTerminal(supabase: any, vendorId: string, id: string) {
     .single();
 
   if (checkError || !existing) {
-    return NextResponse.json(
-      { error: "Terminal not found or access denied" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Terminal not found or access denied" }, { status: 403 });
   }
 
   // Check if terminal has an active session
   if (existing.current_session_id) {
     return NextResponse.json(
       {
-        error:
-          "Cannot delete terminal with active session. Close the session first.",
+        error: "Cannot delete terminal with active session. Close the session first.",
       },
       { status: 400 },
     );
@@ -379,28 +332,17 @@ async function deleteTerminal(supabase: any, vendorId: string, id: string) {
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error deleting terminal:", error);
+      logger.error("Error deleting terminal:", error);
     }
-    return NextResponse.json(
-      { error: "Failed to delete terminal" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to delete terminal" }, { status: 500 });
   }
 
   return NextResponse.json({ message: "Terminal deleted successfully" });
 }
 
-async function setTerminalStatus(
-  supabase: any,
-  vendorId: string,
-  id: string,
-  status: string,
-) {
+async function setTerminalStatus(supabase: any, vendorId: string, id: string, status: string) {
   if (!id) {
-    return NextResponse.json(
-      { error: "Terminal ID required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Terminal ID required" }, { status: 400 });
   }
 
   // Verify terminal belongs to vendor
@@ -412,18 +354,14 @@ async function setTerminalStatus(
     .single();
 
   if (checkError || !existing) {
-    return NextResponse.json(
-      { error: "Terminal not found or access denied" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Terminal not found or access denied" }, { status: 403 });
   }
 
   // Don't allow deactivation if there's an active session
   if (status === "inactive" && existing.current_session_id) {
     return NextResponse.json(
       {
-        error:
-          "Cannot deactivate terminal with active session. Close the session first.",
+        error: "Cannot deactivate terminal with active session. Close the session first.",
       },
       { status: 400 },
     );
@@ -438,12 +376,9 @@ async function setTerminalStatus(
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating terminal status:", error);
+      logger.error("Error updating terminal status:", error);
     }
-    return NextResponse.json(
-      { error: "Failed to update terminal status" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to update terminal status" }, { status: 500 });
   }
 
   return NextResponse.json({

@@ -64,8 +64,7 @@ export function Button({
   const iconSize = { sm: 12, md: 14, lg: 16 }[size];
 
   const widthClass = fullWidth ? "w-full" : "";
-  const disabledClass =
-    disabled || loading ? "opacity-50 cursor-not-allowed" : "";
+  const disabledClass = disabled || loading ? "opacity-50 cursor-not-allowed" : "";
 
   return (
     <button
@@ -101,8 +100,7 @@ export function IconButton({
   "aria-label": ariaLabel,
   ...props
 }: Omit<ButtonProps, "children"> & { icon: ReactNode; "aria-label": string }) {
-  const baseClass =
-    "inline-flex items-center justify-center font-black transition-all rounded-lg";
+  const baseClass = "inline-flex items-center justify-center font-black transition-all rounded-lg";
 
   const variantClass = (() => {
     switch (variant) {
@@ -123,8 +121,7 @@ export function IconButton({
 
   const sizeClass = { sm: "p-2", md: "p-2.5", lg: "p-3" }[size];
   const iconSize = { sm: 14, md: 16, lg: 18 }[size];
-  const disabledClass =
-    disabled || loading ? "opacity-50 cursor-not-allowed" : "";
+  const disabledClass = disabled || loading ? "opacity-50 cursor-not-allowed" : "";
 
   return (
     <button

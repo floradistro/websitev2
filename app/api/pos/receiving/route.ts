@@ -2,6 +2,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { NextRequest, NextResponse } from "next/server";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 // GET /api/pos/receiving - Get purchase orders for a specific location (POS view)
 export async function GET(request: NextRequest) {
   try {
@@ -46,19 +47,14 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching POs for POS:", error);
+        logger.error("Error fetching POs for POS:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     // Filter out POs where all items are fully received
     const activePOs = purchaseOrders.filter((po) => {
-      const hasReceivableItems = po.items?.some(
-        (item: any) => (item.quantity_remaining || 0) > 0,
-      );
+      const hasReceivableItems = po.items?.some((item: any) => (item.quantity_remaining || 0) > 0);
       return hasReceivableItems;
     });
 
@@ -69,7 +65,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in POS receiving API:", error);
+      logger.error("Error in POS receiving API:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Internal server error" },

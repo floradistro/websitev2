@@ -49,10 +49,7 @@ var Ae = a((Y, ie) => {
       pe = " Browser",
       Te = function (d, p) {
         var b = {};
-        for (var v in d)
-          p[v] && p[v].length % 2 === 0
-            ? (b[v] = p[v].concat(d[v]))
-            : (b[v] = d[v]);
+        for (var v in d) p[v] && p[v].length % 2 === 0 ? (b[v] = p[v].concat(d[v])) : (b[v] = d[v]);
         return b;
       },
       Z = function (d) {
@@ -70,10 +67,7 @@ var Ae = a((Y, ie) => {
       },
       ae = function (d, p) {
         if (typeof d === O)
-          return (
-            (d = d.replace(/^\s\s*/, R)),
-            typeof p === g ? d : d.substring(0, X)
-          );
+          return ((d = d.replace(/^\s\s*/, R)), typeof p === g ? d : d.substring(0, X));
       },
       H = function (d, p) {
         for (var b = 0, v, B, U, f, s, M; b < p.length && !s; ) {
@@ -94,9 +88,7 @@ var Ae = a((Y, ie) => {
                           ? (this[f[0]] = M ? f[1].call(this, M, f[2]) : u)
                           : (this[f[0]] = M ? M.replace(f[1], f[2]) : u)
                         : f.length === 4 &&
-                          (this[f[0]] = M
-                            ? f[3].call(this, M.replace(f[1], f[2]))
-                            : u)
+                          (this[f[0]] = M ? f[3].call(this, M.replace(f[1], f[2])) : u)
                     : (this[f] = M || u));
           b += 2;
         }
@@ -104,8 +96,7 @@ var Ae = a((Y, ie) => {
       $ = function (d, p) {
         for (var b in p)
           if (typeof p[b] === C && p[b].length > 0) {
-            for (var v = 0; v < p[b].length; v++)
-              if (fe(p[b][v], d)) return b === h ? u : b;
+            for (var v = 0; v < p[b].length; v++) if (fe(p[b][v], d)) return b === h ? u : b;
           } else if (fe(p[b], d)) return b === h ? u : b;
         return p.hasOwnProperty("*") ? p["*"] : d;
       },
@@ -220,10 +211,7 @@ var Ae = a((Y, ie) => {
           [r, n],
           [/(lbbrowser|rekonq)/i, /\[(linkedin)app\]/i],
           [r],
-          [
-            /ome\/([\w\.]+) \w* ?(iron) saf/i,
-            /ome\/([\w\.]+).+qihu (360)[es]e/i,
-          ],
+          [/ome\/([\w\.]+) \w* ?(iron) saf/i, /ome\/([\w\.]+).+qihu (360)[es]e/i],
           [n, r],
           [/((?:fban\/fbios|fb_iab\/fb4a)(?!.+fbav)|;fbav\/([\w\.]+);)/i],
           [[r, ue], n],
@@ -301,9 +289,7 @@ var Ae = a((Y, ie) => {
           [[T, z]],
         ],
         device: [
-          [
-            /\b(sch-i[89]0\d|shw-m380s|sm-[ptx]\w{2,4}|gt-[pn]\d{2,4}|sgh-t8[56]9|nexus 10)/i,
-          ],
+          [/\b(sch-i[89]0\d|shw-m380s|sm-[ptx]\w{2,4}|gt-[pn]\d{2,4}|sgh-t8[56]9|nexus 10)/i],
           [e, [o, G], [i, w]],
           [
             /\b((?:s[cgp]h|gt|sm)-(?![lr])\w+|sc[g-]?[\d]+a?|galaxy nexus)/i,
@@ -406,10 +392,7 @@ var Ae = a((Y, ie) => {
             [o, K],
             [i, w],
           ],
-          [
-            / (kb2005|in20[12]5|be20[12][59])\b/i,
-            /(?:one)?(?:plus)? (a\d0\d\d)(?: b|\))/i,
-          ],
+          [/ (kb2005|in20[12]5|be20[12][59])\b/i, /(?:one)?(?:plus)? (a\d0\d\d)(?: b|\))/i],
           [e, [o, "OnePlus"], [i, l]],
           [
             /(alexa)webm/i,
@@ -427,9 +410,7 @@ var Ae = a((Y, ie) => {
           [e, o, [i, w]],
           [/\b((?:bb[a-f]|st[hv])100-\d)/i, /\(bb10; (\w+)/i],
           [e, [o, a], [i, l]],
-          [
-            /(?:\b|asus_)(transfo[prime ]{4,10} \w+|eeepc|slider \w+|nexus 7|padfone|p00[cj])/i,
-          ],
+          [/(?:\b|asus_)(transfo[prime ]{4,10} \w+|eeepc|slider \w+|nexus 7|padfone|p00[cj])/i],
           [e, [o, V], [i, w]],
           [/ (z[bes]6[027][012][km][ls]|zenfone \d\w?)\b/i],
           [e, [o, V], [i, l]],
@@ -687,9 +668,7 @@ var Ae = a((Y, ie) => {
           [n, [r, a]],
           [/(?:symbian ?os|symbos|s60(?=;)|series60)[-\/ ]?([\w\.]*)/i],
           [n, [r, "Symbian"]],
-          [
-            /mozilla\/[\d\.]+ \((?:mobile|tablet|tv|mobile; [\w ]+); rv:.+ gecko\/([\w\.]+)/i,
-          ],
+          [/mozilla\/[\d\.]+ \((?:mobile|tablet|tv|mobile; [\w ]+); rv:.+ gecko\/([\w\.]+)/i],
           [n, [r, y + " OS"]],
           [/web0s;.+rt(tv)/i, /\b(?:hp)?wos(?:browser)?\/([\w\.]+)/i],
           [n, [r, "webOS"]],
@@ -742,11 +721,7 @@ var Ae = a((Y, ie) => {
               (s[n] = u),
               H.call(s, v, U.browser),
               (s[k] = _e(s[n])),
-              f &&
-                b &&
-                b.brave &&
-                typeof b.brave.isBrave == E &&
-                (s[r] = "Brave"),
+              f && b && b.brave && typeof b.brave.isBrave == E && (s[r] = "Brave"),
               s
             );
           }),
@@ -787,9 +762,7 @@ var Ae = a((Y, ie) => {
                 B &&
                 B.platform &&
                 B.platform != "Unknown" &&
-                (s[r] = B.platform
-                  .replace(/chrome os/i, we)
-                  .replace(/macos/i, de)),
+                (s[r] = B.platform.replace(/chrome os/i, we).replace(/macos/i, de)),
               s
             );
           }),
@@ -819,8 +792,7 @@ var Ae = a((Y, ie) => {
       (A.DEVICE = Z([e, o, i, L, l, S, w, _, W])),
       (A.ENGINE = A.OS = Z([r, n])),
       typeof Y !== g
-        ? (typeof ie !== g && ie.exports && (Y = ie.exports = A),
-          (Y.UAParser = A))
+        ? (typeof ie !== g && ie.exports && (Y = ie.exports = A), (Y.UAParser = A))
         : typeof define === E && define.amd
           ? define(function () {
               return A;
@@ -866,25 +838,20 @@ function le(m, u) {
   function I(h, E, g) {
     if (!(typeof document > "u")) {
       ((g = ee({}, u, g)),
-        typeof g.expires == "number" &&
-          (g.expires = new Date(Date.now() + g.expires * 864e5)),
+        typeof g.expires == "number" && (g.expires = new Date(Date.now() + g.expires * 864e5)),
         g.expires && (g.expires = g.expires.toUTCString()),
         (h = encodeURIComponent(h)
           .replace(/%(2[346B]|5E|60|7C)/g, decodeURIComponent)
           .replace(/[()]/g, escape)));
       var C = "";
-      for (var O in g)
-        g[O] &&
-          ((C += "; " + O), g[O] !== true && (C += "=" + g[O].split(";")[0]));
+      for (var O in g) g[O] && ((C += "; " + O), g[O] !== true && (C += "=" + g[O].split(";")[0]));
       return (document.cookie = h + "=" + m.write(E, h) + C);
     }
   }
   function R(h) {
     if (!(typeof document > "u" || (arguments.length && !h))) {
       for (
-        var E = document.cookie ? document.cookie.split("; ") : [],
-          g = {},
-          C = 0;
+        var E = document.cookie ? document.cookie.split("; ") : [], g = {}, C = 0;
         C < E.length;
         C++
       ) {
@@ -952,16 +919,12 @@ var Ee;
   }
   V.isIOSDeviceWithExtendedCameraAccess = h;
   function E() {
-    return "document" in window
-      ? window.document.createElement("canvas")
-      : null;
+    return "document" in window ? window.document.createElement("canvas") : null;
   }
   V.getCanvas = E;
   function g(a) {
     return (
-      a.name === "iOS" &&
-      a.version != null &&
-      ["11.2.2", "11.2.5", "11.2.6"].includes(a.version)
+      a.name === "iOS" && a.version != null && ["11.2.2", "11.2.5", "11.2.6"].includes(a.version)
     );
   }
   async function C() {
@@ -978,8 +941,7 @@ var Ee;
       ? false
       : t.length === 1
         ? typeof x === c
-        : (typeof x == "function" || typeof x == "object") &&
-          k(x, t.slice(1), c);
+        : (typeof x == "function" || typeof x == "object") && k(x, t.slice(1), c);
   }
   function e$1() {
     var P;
@@ -994,8 +956,7 @@ var Ee;
         (c = V.getCanvas()),
         (x = t == null ? void 0 : t.getContext("webgl")),
         (y = c == null ? void 0 : c.getContext("experimental-webgl")),
-        !k(window, ["WebGLRenderingContext"], "function") ||
-          (x == null && y == null))
+        !k(window, ["WebGLRenderingContext"], "function") || (x == null && y == null))
       )
         throw new Error("WebGLRenderingContext is not supported");
     } catch (D) {
@@ -1003,8 +964,7 @@ var Ee;
     } finally {
       for (let D of [x, y])
         typeof (D == null ? void 0 : D.getExtension) == "function" &&
-          ((P = D.getExtension("WEBGL_lose_context")) == null ||
-            P.loseContext());
+          ((P = D.getExtension("WEBGL_lose_context")) == null || P.loseContext());
       ((x = null), (y = null), (t = null), (c = null));
     }
     return a;
@@ -1021,12 +981,9 @@ var Ee;
         !k(navigator, ["enumerateDevices"], "function") &&
         !k(window, ["MediaStreamTrack", "getSources"], "function") &&
         (c.add("mediaDevices"), (a = false)),
-      k(window, ["Worker"], "function") ||
-        (c.add("webWorkers"), (a = false), (t = false)),
-      k(window, ["WebAssembly"], "object") ||
-        (c.add("webAssembly"), (a = false), (t = false)),
-      k(window, ["Blob"], "function") ||
-        (c.add("blob"), (a = false), (t = false)),
+      k(window, ["Worker"], "function") || (c.add("webWorkers"), (a = false), (t = false)),
+      k(window, ["WebAssembly"], "object") || (c.add("webAssembly"), (a = false), (t = false)),
+      k(window, ["Blob"], "function") || (c.add("blob"), (a = false), (t = false)),
       k(window, ["URL", "createObjectURL"], "function") ||
         (c.add("urlObject"), (a = false), (t = false)),
       k(window, ["OffscreenCanvas"], "function") || c.add("offscreenCanvas"),
@@ -1075,19 +1032,14 @@ var Ee;
     var x, y;
     let a = u().getOS();
     if (a.name !== "iOS") return true;
-    let [t, c] =
-      (y = (x = a.version) == null ? void 0 : x.split(".").map(Number)) != null
-        ? y
-        : [];
+    let [t, c] = (y = (x = a.version) == null ? void 0 : x.split(".").map(Number)) != null ? y : [];
     return t > 14 || (t === 14 && c >= 6);
   }
   V.isSupportedIOSVersion = T;
   function L() {
     var a, t;
     return (t =
-      (a = u().getBrowser().name) == null
-        ? void 0
-        : a.toLowerCase().includes("safari")) != null
+      (a = u().getBrowser().name) == null ? void 0 : a.toLowerCase().includes("safari")) != null
       ? t
       : false;
   }
@@ -1096,25 +1048,20 @@ var Ee;
     var t, c;
     return (
       /iphone|ipod|ipad/.test(
-        (c = (t = u().getDevice().model) == null ? void 0 : t.toLowerCase()) !=
-          null
-          ? c
-          : "",
+        (c = (t = u().getDevice().model) == null ? void 0 : t.toLowerCase()) != null ? c : "",
       ) && !L()
     );
   }
   V.isIosWebView = l;
   async function w() {
     var t;
-    return ((t = u().getOS().name) == null ? void 0 : t.toLowerCase()) !==
-      "android"
+    return ((t = u().getOS().name) == null ? void 0 : t.toLowerCase()) !== "android"
       ? false
       : u().getUA().includes("wv")
         ? true
-        : [
-            ...(await fetch(document.location.toString(), { method: "HEAD" }))
-              .headers,
-          ].some(([c]) => c.toLowerCase() === "x-requested-with");
+        : [...(await fetch(document.location.toString(), { method: "HEAD" })).headers].some(
+            ([c]) => c.toLowerCase() === "x-requested-with",
+          );
   }
   V.isAndroidWebView = w;
   function S() {

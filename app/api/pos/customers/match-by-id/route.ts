@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     if (exactError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error searching for customer:", exactError);
+        logger.error("Error searching for customer:", exactError);
       }
       return NextResponse.json({ error: exactError.message }, { status: 500 });
     }
@@ -61,9 +62,7 @@ export async function POST(request: NextRequest) {
 
     // If we have multiple matches and a DOB, use it to narrow down
     if (matches.length > 1 && dateOfBirth) {
-      const dobMatches = matches.filter(
-        (vc: any) => vc.customers.date_of_birth === dateOfBirth,
-      );
+      const dobMatches = matches.filter((vc: any) => vc.customers.date_of_birth === dateOfBirth);
 
       if (dobMatches.length > 0) {
         matches = dobMatches;
@@ -130,7 +129,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in match-by-id endpoint:", error);
+      logger.error("Error in match-by-id endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

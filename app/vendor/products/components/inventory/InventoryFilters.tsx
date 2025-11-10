@@ -15,9 +15,7 @@ interface InventoryFiltersProps {
   categories: string[];
   locations: Location[];
   onSearchChange: (value: string) => void;
-  onStockFilterChange: (
-    value: "all" | "in_stock" | "low_stock" | "out_of_stock",
-  ) => void;
+  onStockFilterChange: (value: "all" | "in_stock" | "low_stock" | "out_of_stock") => void;
   onCategoryFilterChange: (value: string) => void;
   onLocationFilterChange: (value: string) => void;
 }
@@ -47,10 +45,7 @@ export function InventoryFilters({
         <div className="relative">
           <Search
             size={14}
-            className={cn(
-              "absolute left-3 top-1/2 -translate-y-1/2",
-              ds.colors.text.quaternary,
-            )}
+            className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.colors.text.quaternary)}
           />
           <Input
             type="text"

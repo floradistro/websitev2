@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 import { StoreRequirements, StoreRequirementsSchema } from "./schemas";
 
+import { logger } from "@/lib/logger";
 /**
  * NLP Processor - Converts natural language vendor requests into structured storefront specifications
  */
@@ -40,22 +41,13 @@ export class NLPProcessor {
 
     try {
       if (this.provider === "anthropic") {
-        return await this.processWithClaude(
-          systemPrompt,
-          userMessage,
-          conversationHistory,
-        );
+        return await this.processWithClaude(systemPrompt, userMessage, conversationHistory);
       } else {
-        return await this.processWithGPT(
-          systemPrompt,
-          userMessage,
-          conversationHistory,
-        );
+        return await this.processWithGPT(systemPrompt, userMessage, conversationHistory);
       }
     } catch (error) {
-      console.error("❌ NLP processing error:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
+      logger.error("❌ NLP processing error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
       throw new Error(`Failed to process vendor request: ${errorMessage}`);
     }
   }
@@ -141,8 +133,7 @@ export class NLPProcessor {
     confidence: number;
   } {
     // Extract JSON from response (AI should return JSON in a code block)
-    const jsonMatch =
-      text.match(/```json\n([\s\S]+?)\n```/) || text.match(/\{[\s\S]+\}/);
+    const jsonMatch = text.match(/```json\n([\s\S]+?)\n```/) || text.match(/\{[\s\S]+\}/);
 
     if (!jsonMatch) {
       throw new Error("No JSON found in AI response");

@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+import { logger } from "@/lib/logger";
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const supabase = getServiceSupabase();
@@ -27,10 +25,7 @@ export async function GET(
     }
 
     if (!data) {
-      return NextResponse.json(
-        { error: "Inventory not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Inventory not found" }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -39,16 +34,13 @@ export async function GET(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -71,10 +63,7 @@ export async function PUT(
       .single();
 
     if (!existing) {
-      return NextResponse.json(
-        { error: "Inventory not found or unauthorized" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Inventory not found or unauthorized" }, { status: 404 });
     }
 
     // Build update object
@@ -103,7 +92,7 @@ export async function PUT(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -132,17 +121,11 @@ export async function DELETE(
       .single();
 
     if (!existing) {
-      return NextResponse.json(
-        { error: "Inventory not found or unauthorized" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Inventory not found or unauthorized" }, { status: 404 });
     }
 
     // Delete inventory
-    const { error: deleteError } = await supabase
-      .from("inventory")
-      .delete()
-      .eq("id", id);
+    const { error: deleteError } = await supabase.from("inventory").delete().eq("id", id);
 
     if (deleteError) {
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
@@ -154,7 +137,7 @@ export async function DELETE(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -43,11 +43,7 @@ export function SmartLegalPage({
   const { ref, inView } = useScrollAnimation();
 
   return (
-    <SmartComponentWrapper
-      animate={false}
-      componentName="Legal Page"
-      className={className}
-    >
+    <SmartComponentWrapper animate={false} componentName="Legal Page" className={className}>
       {/* Hero Section */}
       <section className="pt-32 sm:pt-40 pb-16 sm:pb-20 px-4 sm:px-6 bg-black">
         <SmartContainers.MaxWidth>
@@ -84,12 +80,8 @@ export function SmartLegalPage({
               </motion.div>
             )}
 
-            <SmartTypography.Headline className="mb-6">
-              {headline}
-            </SmartTypography.Headline>
-            <p className="text-lg text-white/60 uppercase tracking-wide mb-4">
-              {subheadline}
-            </p>
+            <SmartTypography.Headline className="mb-6">{headline}</SmartTypography.Headline>
+            <p className="text-lg text-white/60 uppercase tracking-wide mb-4">{subheadline}</p>
             <p className="text-xs text-white/40 uppercase tracking-wider">
               Last Updated: {lastUpdated}
             </p>
@@ -130,9 +122,7 @@ export function SmartLegalPage({
                         </p>
                       ))}
                     </div>
-                    {index < sections.length - 1 && (
-                      <div className="h-[1px] bg-white/5 mt-12" />
-                    )}
+                    {index < sections.length - 1 && <div className="h-[1px] bg-white/5 mt-12" />}
                   </motion.div>
                 ))}
               </div>

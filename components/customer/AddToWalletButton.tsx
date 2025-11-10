@@ -1,14 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Wallet,
-  Smartphone,
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-  Download,
-} from "lucide-react";
+import { logger } from "@/lib/logger";
+import { Wallet, Smartphone, AlertCircle, CheckCircle2, Loader2, Download } from "lucide-react";
 
 interface AddToWalletButtonProps {
   customerId: string;
@@ -65,12 +59,9 @@ export default function AddToWalletButton({
       setTimeout(() => setSuccess(false), 5000);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to add to wallet:", err);
+        logger.error("Failed to add to wallet:", err);
       }
-      setError(
-        err.message ||
-          "Unable to generate wallet pass. Please try again later.",
-      );
+      setError(err.message || "Unable to generate wallet pass. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -114,8 +105,7 @@ export default function AddToWalletButton({
             Digital Loyalty Card
           </h3>
           <p className="text-[10px] uppercase tracking-[0.15em] text-white/60">
-            Add your loyalty card to Apple Wallet for easy access and automatic
-            updates
+            Add your loyalty card to Apple Wallet for easy access and automatic updates
           </p>
         </div>
       </div>
@@ -123,9 +113,7 @@ export default function AddToWalletButton({
       {error && (
         <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-xl flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
-          <p className="text-[10px] uppercase tracking-[0.15em] text-red-300">
-            {error}
-          </p>
+          <p className="text-[10px] uppercase tracking-[0.15em] text-red-300">{error}</p>
         </div>
       )}
 
@@ -140,8 +128,8 @@ export default function AddToWalletButton({
             </div>
           </div>
           <p className="text-[9px] uppercase tracking-[0.15em] text-green-300/70 mt-2">
-            Tap the downloaded file to add it to Apple Wallet. Your card will
-            update automatically when you earn points.
+            Tap the downloaded file to add it to Apple Wallet. Your card will update automatically
+            when you earn points.
           </p>
         </div>
       )}

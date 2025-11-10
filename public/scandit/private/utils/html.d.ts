@@ -1,7 +1,4 @@
 /// <reference types="emscripten" />
-declare function html(
-  strings: TemplateStringsArray,
-  ...parameters: unknown[]
-): string;
+declare function html(strings: TemplateStringsArray, ...parameters: unknown[]): string;
 
 export { html };

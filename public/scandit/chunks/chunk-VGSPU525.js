@@ -10,15 +10,11 @@ var d = class p {
     var r;
     ((this.libraryLocation = e.libraryLocation),
       (this.workerMessageListener = this.onWorkerMessage.bind(this)),
-      this.dataCaptureWorker.addEventListener(
-        "message",
-        this.workerMessageListener,
-      ),
+      this.dataCaptureWorker.addEventListener("message", this.workerMessageListener),
       (this.overrideThreadsSupport = e.overrideThreadsSupport),
       (this.overrideSimdSupport = e.overrideSimdSupport),
       (this.verifyResponseHash = e.verifyResponseHash),
-      (this.highEndBlurryRecognition =
-        (r = e.highEndBlurryRecognition) != null ? r : false),
+      (this.highEndBlurryRecognition = (r = e.highEndBlurryRecognition) != null ? r : false),
       typeof e.loadProgressNotifier == "function" &&
         this.addWorkerListener((a) => {
           var o;
@@ -57,9 +53,7 @@ var d = class p {
         locationPath: window.location.pathname,
         referredOrigin: window.location.origin,
         writableDataPathOverride:
-          (e = b.getItem("scanditWritableDataPathOverride")) != null
-            ? e
-            : void 0,
+          (e = b.getItem("scanditWritableDataPathOverride")) != null ? e : void 0,
         overrideThreadsSupport: this.overrideThreadsSupport,
         overrideSimdSupport: this.overrideSimdSupport,
         verifyResponseHash: this.verifyResponseHash,
@@ -74,10 +68,7 @@ var d = class p {
       )
         return (
           await this.terminateDataCaptureWorker(false),
-          this.dataCaptureWorker.addEventListener(
-            "message",
-            this.workerMessageListener,
-          ),
+          this.dataCaptureWorker.addEventListener("message", this.workerMessageListener),
           b.setItem(
             "scanditWritableDataPathOverride",
             `/scandit_sync_folder_${[...crypto.getRandomValues(new Uint32Array(2))].map((a) => a.toString(32)).join("")}`,

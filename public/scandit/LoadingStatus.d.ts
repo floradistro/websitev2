@@ -20,9 +20,4 @@ declare class LoadingStatus {
 }
 declare const loadingStatus: LoadingStatus;
 
-export {
-  LoadingStatus,
-  type LoadingStatusSubscriber,
-  type ProgressInfo,
-  loadingStatus as default,
-};
+export { LoadingStatus, type LoadingStatusSubscriber, type ProgressInfo, loadingStatus as default };

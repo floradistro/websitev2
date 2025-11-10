@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import Exa from "exa-js";
 
+import { logger } from "@/lib/logger";
 const SYSTEM_PROMPT = `Extract cannabis product data from web sources. Return ONLY JSON.
 
 RULES:
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     // Check for required API keys
     if (!process.env.ANTHROPIC_API_KEY) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Missing ANTHROPIC_API_KEY");
+        logger.error("❌ Missing ANTHROPIC_API_KEY");
       }
       return NextResponse.json(
         {
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     if (!process.env.EXASEARCH_API_KEY) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Missing EXASEARCH_API_KEY");
+        logger.error("❌ Missing EXASEARCH_API_KEY");
       }
       return NextResponse.json(
         {
@@ -61,14 +62,10 @@ export async function POST(request: NextRequest) {
     });
     const exa = new Exa(process.env.EXASEARCH_API_KEY);
 
-    const { productName, category, selectedFields, customPrompt } =
-      await request.json();
+    const { productName, category, selectedFields, customPrompt } = await request.json();
 
     if (!productName) {
-      return NextResponse.json(
-        { error: "Product name required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Product name required" }, { status: 400 });
     }
 
     // Quick web search
@@ -148,11 +145,11 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Quick autofill error:", error);
+      logger.error("❌ Quick autofill error:", error);
     }
     if (process.env.NODE_ENV === "development") {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error details:", {
+        logger.error("Error details:", {
           message: error.message,
           stack: error.stack,
           response: error.response?.data,
@@ -163,8 +160,7 @@ export async function POST(request: NextRequest) {
       {
         error: error.message || "AI autofill failed",
         suggestions: null,
-        details:
-          process.env.NODE_ENV === "development" ? error.stack : undefined,
+        details: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 500 },
     );

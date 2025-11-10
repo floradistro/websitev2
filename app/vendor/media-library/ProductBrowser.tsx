@@ -1,8 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Package, AlertCircle, CheckCircle2, Loader2, Sparkles, Square, CheckSquare } from "lucide-react";
+import {
+  Search,
+  Package,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  Sparkles,
+  Square,
+  CheckSquare,
+} from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface Product {
   id: string;
   name: string;
@@ -57,7 +67,7 @@ export default function ProductBrowser({
       const data = await response.json();
       setProducts(data.products || []);
     } catch (error) {
-      console.error("Error loading products:", error);
+      logger.error("Error loading products:", error);
     } finally {
       setLoading(false);
     }
@@ -89,7 +99,7 @@ export default function ProductBrowser({
         total: all.total || 0,
       });
     } catch (error) {
-      console.error("Error loading stats:", error);
+      logger.error("Error loading stats:", error);
     }
   };
 
@@ -157,9 +167,7 @@ export default function ProductBrowser({
           <button
             onClick={() => setFilter("all")}
             className={`flex-1 px-2 py-1.5 rounded transition-all text-[10px] font-medium ${
-              filter === "all"
-                ? "bg-white/[0.12] text-white"
-                : "text-white/60 hover:text-white/80"
+              filter === "all" ? "bg-white/[0.12] text-white" : "text-white/60 hover:text-white/80"
             }`}
           >
             All {stats.total}
@@ -217,10 +225,10 @@ export default function ProductBrowser({
                   selectionMode && selectedProducts.has(product.id)
                     ? "bg-purple-500/20 border-purple-500/50"
                     : dragOver === product.id
-                    ? "bg-purple-500/20 border-purple-500/50 scale-105"
-                    : product.has_image
-                    ? "bg-white/[0.02] border-white/[0.06] opacity-60"
-                    : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12]"
+                      ? "bg-purple-500/20 border-purple-500/50 scale-105"
+                      : product.has_image
+                        ? "bg-white/[0.02] border-white/[0.06] opacity-60"
+                        : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12]"
                 }`}
               >
                 <div className="flex items-start gap-2">
@@ -238,18 +246,12 @@ export default function ProductBrowser({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-white truncate">
-                      {product.name}
-                    </p>
+                    <p className="text-xs font-medium text-white truncate">{product.name}</p>
                     {product.sku && (
-                      <p className="text-[10px] text-white/40 truncate mt-0.5">
-                        {product.sku}
-                      </p>
+                      <p className="text-[10px] text-white/40 truncate mt-0.5">{product.sku}</p>
                     )}
                     {product.category && (
-                      <p className="text-[10px] text-white/30 mt-0.5">
-                        {product.category.name}
-                      </p>
+                      <p className="text-[10px] text-white/30 mt-0.5">{product.category.name}</p>
                     )}
                   </div>
                 </div>

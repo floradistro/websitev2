@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 import { withErrorHandler } from "@/lib/api-handler";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -70,9 +71,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
 
     // Map inventory to products
     const inventory = (products || []).flatMap((product) => {
-      const productInventory = (inventoryData || []).filter(
-        (inv) => inv.product_id === product.id,
-      );
+      const productInventory = (inventoryData || []).filter((inv) => inv.product_id === product.id);
 
       if (productInventory.length === 0) {
         return [];
@@ -90,8 +89,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         }
 
         // Determine stock status
-        let stock_status: "in_stock" | "low_stock" | "out_of_stock" =
-          "out_of_stock";
+        let stock_status: "in_stock" | "low_stock" | "out_of_stock" = "out_of_stock";
         if (inv.quantity > 10) stock_status = "in_stock";
         else if (inv.quantity > 0) stock_status = "low_stock";
 
@@ -101,17 +99,13 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
           product_name: product.name,
           sku: product.sku || "",
           quantity: parseFloat(inv.quantity) || 0,
-          category_name:
-            (product.primary_category as any)?.name || "Uncategorized",
+          category_name: (product.primary_category as any)?.name || "Uncategorized",
           price: parseFloat(product.price) || 0,
-          cost_price: product.cost_price
-            ? parseFloat(product.cost_price)
-            : undefined,
+          cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
           stock_status,
           location_id: inv.location_id || "",
           location_name: (inv.location as any)?.name || "Unknown",
-          flora_fields:
-            Object.keys(floraFields).length > 0 ? floraFields : undefined,
+          flora_fields: Object.keys(floraFields).length > 0 ? floraFields : undefined,
         };
       });
     });
@@ -124,7 +118,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Inventory API error:", error);
+      logger.error("Inventory API error:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Internal server error" },

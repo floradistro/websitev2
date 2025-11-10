@@ -74,10 +74,7 @@ declare namespace CameraAccess$1 {
   /**
    * Overrides for main camera for a given camera position on a desktop/laptop device, set when accessing an initial camera.
    */
-  const mainCameraForPositionOverridesOnDesktop: Map<
-    CameraPosition$1,
-    DeviceCamera$1
-  >;
+  const mainCameraForPositionOverridesOnDesktop: Map<CameraPosition$1, DeviceCamera$1>;
   /**
    *
    * To be accessed directly only for tests.
@@ -144,9 +141,7 @@ declare namespace CameraAccess$1 {
    * @param cameraPosition The preferred camera position.
    * @returns The sorted cameras.
    */
-  function sortCamerasForCameraPosition<
-    DeviceCameraLike extends DeviceCamera$1 = DeviceCamera$1,
-  >(
+  function sortCamerasForCameraPosition<DeviceCameraLike extends DeviceCamera$1 = DeviceCamera$1>(
     cameras: DeviceCameraLike[],
     cameraPosition: CameraPosition$1,
   ): DeviceCameraLike[];
@@ -157,10 +152,7 @@ declare namespace CameraAccess$1 {
    * @param mediaStream The currently active `MediaStream` object.
    * @param camera The currently active [[Camera]] object associated with the video stream.
    */
-  function adjustCameraFromMediaStream(
-    mediaStream: MediaStream,
-    camera: DeviceCamera$1,
-  ): void;
+  function adjustCameraFromMediaStream(mediaStream: MediaStream, camera: DeviceCamera$1): void;
   /**
    * Get a list of cameras (if any) available on the device, a camera access permission is requested to the user
    * the first time this method is called if needed.
@@ -279,10 +271,7 @@ declare enum FocusGestureStrategy {
   AutoOnLocation = "autoOnLocation",
 }
 interface FrameSourceListener {
-  didChangeState?: (
-    frameSource: FrameSource,
-    newState: FrameSourceState,
-  ) => void;
+  didChangeState?: (frameSource: FrameSource, newState: FrameSourceState) => void;
 }
 interface FrameSourceJSON {
   type: string;
@@ -310,9 +299,7 @@ interface CameraSettingsJSON extends CameraSettingsJSONBase {
   };
   [key: string]: any;
 }
-declare function isCameraFrameSource(
-  frameSource?: FrameSource | null,
-): frameSource is Camera;
+declare function isCameraFrameSource(frameSource?: FrameSource | null): frameSource is Camera;
 declare class CameraSettings implements Serializable<CameraSettingsJSON> {
   preferredResolution: VideoResolution;
   zoomFactor: number;
@@ -347,10 +334,7 @@ declare abstract class FrameReaderAbstract {
    * eliminating the need to wait for the engine to finish before capturing the next frame.
    */
   protected _framePool: Optional<WatermarkStack<Uint8ClampedArray>>;
-  constructor(
-    contextWebGL: WebGLRenderingContext,
-    options?: PoolCapacityOptions | undefined,
-  );
+  constructor(contextWebGL: WebGLRenderingContext, options?: PoolCapacityOptions | undefined);
   abstract readFromSource(source: TexImageSource): FrameCapture;
   abstract setup(): void;
   recycle(pixelsData: Uint8ClampedArray): void;
@@ -374,15 +358,9 @@ declare class FrameReader extends FrameReaderAbstract {
 }
 
 interface DataCaptureContextListener {
-  didChangeStatus?: (
-    context: DataCaptureContext$1,
-    contextStatus: ContextStatus,
-  ) => void;
+  didChangeStatus?: (context: DataCaptureContext$1, contextStatus: ContextStatus) => void;
   didStartObservingContext?: (context: DataCaptureContext$1) => void;
-  didChangeFrameSource?: (
-    context: DataCaptureContext$1,
-    frameSource: FrameSource | null,
-  ) => void;
+  didChangeFrameSource?: (context: DataCaptureContext$1, frameSource: FrameSource | null) => void;
 }
 interface ContextStatusJSON {
   code: number;
@@ -412,11 +390,7 @@ interface DataCaptureOverlay extends Serializable {
   toJSONObject: () => any;
 }
 interface DataCaptureViewListener {
-  didChangeSize?: (
-    view: DataCaptureView$1,
-    size: Size,
-    orientation: Orientation,
-  ) => void;
+  didChangeSize?: (view: DataCaptureView$1, size: Size, orientation: Orientation) => void;
 }
 interface DataCaptureViewJSON {
   scanAreaMargins: MarginsWithUnitJSON;
@@ -501,19 +475,14 @@ declare class DataCaptureView$1 implements Serializable<DataCaptureViewJSON> {
    * The current context as a PrivateDataCaptureContext
    */
   private get privateContext();
-  static forContext(
-    context: DataCaptureContext$1 | null,
-  ): Promise<DataCaptureView$1>;
+  static forContext(context: DataCaptureContext$1 | null): Promise<DataCaptureView$1>;
   showProgressBar(): void;
   hideProgressBar(): void;
   setProgressBarPercentage(percentage: number | null): void;
   setProgressBarMessage(message: string): void;
   getContext(): DataCaptureContext$1 | null;
   setContext(context: DataCaptureContext$1 | null): Promise<void>;
-  connectToElement(
-    element: HTMLElement,
-    options?: DataCaptureViewConnectOptions,
-  ): void;
+  connectToElement(element: HTMLElement, options?: DataCaptureViewConnectOptions): void;
   detachFromElement(): void;
   addOverlay(overlay: DataCaptureOverlay): Promise<void>;
   removeOverlay(overlay: DataCaptureOverlay): Promise<void>;
@@ -524,9 +493,7 @@ declare class DataCaptureView$1 implements Serializable<DataCaptureViewJSON> {
    * It does *not* take into account if the frameSource is mirrored.
    */
   viewPointForFramePoint(point: Point): Point;
-  viewQuadrilateralForFrameQuadrilateral(
-    quadrilateral: Quadrilateral,
-  ): Quadrilateral;
+  viewQuadrilateralForFrameQuadrilateral(quadrilateral: Quadrilateral): Quadrilateral;
   addControl(control: Control): void;
   removeControl(control: Control): void;
   toJSONObject(): DataCaptureViewJSON;
@@ -539,9 +506,7 @@ declare class DataCaptureView$1 implements Serializable<DataCaptureViewJSON> {
   protected setDidTapCustomLocationsViewListener(
     didTapViewListener: DidTapCustomLocationsViewListener,
   ): void;
-  protected renderCustomLocationsView(
-    state: StateToRender | StateToRenderDomView,
-  ): void;
+  protected renderCustomLocationsView(state: StateToRender | StateToRenderDomView): void;
   getNotificationPresenter(): NotificationPresenter;
   private removeStyles;
   private onHintPresenterUpdate;
@@ -619,9 +584,7 @@ declare class DataCaptureLoader {
     }
   >;
   protected readonly workerListeners: WorkerListener[];
-  protected workerMessageListener: (
-    event_: MessageEvent<DataCaptureCallbackMessage>,
-  ) => void;
+  protected workerMessageListener: (event_: MessageEvent<DataCaptureCallbackMessage>) => void;
   protected constructor(options: DataCaptureLoaderOptions);
   get dataCaptureWorker(): DataCaptureWorker;
   protected get name(): string;
@@ -643,14 +606,9 @@ declare class DataCaptureLoader {
   removeWorkerListener(listener: WorkerListener): void;
   getOptions(): Pick<
     DataCaptureLoaderOptions,
-    | "libraryLocation"
-    | "overrideSimdSupport"
-    | "overrideThreadsSupport"
-    | "verifyResponseHash"
+    "libraryLocation" | "overrideSimdSupport" | "overrideThreadsSupport" | "verifyResponseHash"
   >;
-  protected onWorkerMessage(
-    event_: MessageEvent<DataCaptureCallbackMessage>,
-  ): void;
+  protected onWorkerMessage(event_: MessageEvent<DataCaptureCallbackMessage>): void;
 }
 
 type Change =
@@ -743,17 +701,13 @@ interface PrivateDataCaptureContextOptions {
   settings?: DataCaptureContextSettings;
 }
 interface PrivateDataCaptureContext<
-  W extends (
-    ...parameters: any[]
-  ) => unknown = DataCaptureLoader["workerCommand"],
+  W extends (...parameters: any[]) => unknown = DataCaptureLoader["workerCommand"],
 > {
   _frameSource?: FrameSource | null;
   _useSynchronousFrameFlow: boolean;
   modes: Set<DataCaptureMode>;
   components: DataCaptureComponent[];
-  createContext: (
-    subscribeToCameraManagerAndVisibilityEvents?: boolean,
-  ) => Promise<void>;
+  createContext: (subscribeToCameraManagerAndVisibilityEvents?: boolean) => Promise<void>;
   update: (
     changeSet?: PrivateChangeSet,
     {
@@ -766,15 +720,9 @@ interface PrivateDataCaptureContext<
   removeNativeOverlay: (overlay: DataCaptureOverlay) => Promise<void>;
   addComponent: (component: DataCaptureComponent) => Promise<void>;
   dataCaptureInstance: DataCaptureLoader;
-  sendFrameToProcessor: (
-    capture: FrameCapture,
-  ) => Promise<WorkerResponse<"processFrame">>;
-  subscribeToWorkerMessages: (
-    listener: (message: DataCaptureCallbackMessage) => void,
-  ) => void;
-  unsubscribeToWorkerMessages: (
-    listener: (message: DataCaptureCallbackMessage) => void,
-  ) => void;
+  sendFrameToProcessor: (capture: FrameCapture) => Promise<WorkerResponse<"processFrame">>;
+  subscribeToWorkerMessages: (listener: (message: DataCaptureCallbackMessage) => void) => void;
+  unsubscribeToWorkerMessages: (listener: (message: DataCaptureCallbackMessage) => void) => void;
   hasEnabledMode: () => boolean;
   hasModes: () => boolean;
   workerCommand: MethodSignature<W>;
@@ -810,12 +758,8 @@ type PrivateFrameHandlerResponse = {
   action: "continue" | "skip";
   frame: FrameCapture;
 };
-type PrivateFrameHandler = (
-  frame: FrameCapture,
-) => Promise<PrivateFrameHandlerResponse>;
-declare class DataCaptureContext$1
-  implements Serializable<DataCaptureContextJSON>
-{
+type PrivateFrameHandler = (frame: FrameCapture) => Promise<PrivateFrameHandlerResponse>;
+declare class DataCaptureContext$1 implements Serializable<DataCaptureContextJSON> {
   static deviceID: string;
   private static readonly moduleLicenseTextProviders;
   private readonly framework;
@@ -1254,11 +1198,7 @@ interface EmscriptenClassHandle<Self = EmscriptenClassHandle<unknown>> {
   isAliasOf: () => Self;
 }
 interface DataCaptureContext extends EmscriptenClassHandle {
-  setCameraProperties: (
-    deviceId: string,
-    isFrontFacing: boolean,
-    hasAutofocus: boolean,
-  ) => void;
+  setCameraProperties: (deviceId: string, isFrontFacing: boolean, hasAutofocus: boolean) => void;
   addListener: (function_: unknown) => void;
   addFrameListener: (listener: unknown) => void;
   dispose: () => void;
@@ -1267,12 +1207,7 @@ interface DataCaptureContext extends EmscriptenClassHandle {
   isFeatureSupported: (feature: LicensedFeature) => boolean;
 }
 interface DataCaptureImageBufferFrameSource extends EmscriptenClassHandle {
-  outputFrame: (
-    address: number,
-    width: number,
-    height: number,
-    format: unknown,
-  ) => void;
+  outputFrame: (address: number, width: number, height: number, format: unknown) => void;
 }
 interface GestureListener extends EmscriptenClassHandle<GestureListener> {
   onTap(point: string): void;
@@ -1303,9 +1238,7 @@ interface DataCaptureContextDeserializerResult extends EmscriptenClassHandle {
   getView: () => DataCaptureView | undefined;
 }
 interface DataCaptureContextDeserializer extends EmscriptenClassHandle {
-  contextFromJson: (
-    json: string,
-  ) => DataCaptureContextDeserializerResult | null;
+  contextFromJson: (json: string) => DataCaptureContextDeserializerResult | null;
   updateContextFromJson: (
     context: DataCaptureContext,
     view: DataCaptureView | undefined,
@@ -1442,12 +1375,7 @@ interface GenericHint {
   tag?: string;
   hintStyle: Omit<
     HintStyle,
-    | "anchor"
-    | "verticalOffsetRatio"
-    | "font"
-    | "hintWidth"
-    | "hintHeight"
-    | "hintCornerStyle"
+    "anchor" | "verticalOffsetRatio" | "font" | "hintWidth" | "hintHeight" | "hintCornerStyle"
   >;
 }
 interface PerformanceMetrics {
@@ -1543,18 +1471,9 @@ interface Module extends EmscriptenModule {
       parameters: {
         onObservationStarted: (context: DataCaptureContext) => void;
         onObservationStopped: (context: DataCaptureContext) => void;
-        onFrameProcessingStarted: (
-          context: DataCaptureContext,
-          frameData: WasmFrameData,
-        ) => void;
-        onFrameProcessingFinished: (
-          context: DataCaptureContext,
-          frameData: WasmFrameData,
-        ) => void;
-        onFrameSkipped: (
-          context: DataCaptureContext,
-          frameData: WasmFrameData,
-        ) => void;
+        onFrameProcessingStarted: (context: DataCaptureContext, frameData: WasmFrameData) => void;
+        onFrameProcessingFinished: (context: DataCaptureContext, frameData: WasmFrameData) => void;
+        onFrameSkipped: (context: DataCaptureContext, frameData: WasmFrameData) => void;
       },
     ) => new () => EmscriptenClassHandle;
   };
@@ -1582,9 +1501,7 @@ interface Module extends EmscriptenModule {
       },
     ) => new () => PlatformHintPresenter;
   };
-  HintPresenterV2: new (
-    platformHintPresenter: PlatformHintPresenter,
-  ) => HintPresenterV2;
+  HintPresenterV2: new (platformHintPresenter: PlatformHintPresenter) => HintPresenterV2;
   ImageBufferFrameSource: new (
     mirroredAxis: unknown,
     isCameraFrameSource: boolean,
@@ -1608,10 +1525,7 @@ interface Module extends EmscriptenModule {
     extend: (
       target: "GestureRecognizer",
       parameters: {
-        setGestureListener(
-          gestureListener: GestureListener,
-          flags: number,
-        ): void;
+        setGestureListener(gestureListener: GestureListener, flags: number): void;
       },
     ) => new () => GestureRecognizer;
   };
@@ -1640,30 +1554,15 @@ interface Module extends EmscriptenModule {
   };
   dispose: () => void;
   LicenseFeature: LicensedFeature;
-  addBarcodeFindToContext: (
-    context: DataCaptureContext,
-    mode: EmscriptenClassHandle,
-  ) => void;
-  removeBarcodeFindFromContext: (
-    context: DataCaptureContext,
-    mode: EmscriptenClassHandle,
-  ) => void;
-  addBarcodeFindBasicOverlayToView: (
-    view: DataCaptureView,
-    overlay: EmscriptenClassHandle,
-  ) => void;
+  addBarcodeFindToContext: (context: DataCaptureContext, mode: EmscriptenClassHandle) => void;
+  removeBarcodeFindFromContext: (context: DataCaptureContext, mode: EmscriptenClassHandle) => void;
+  addBarcodeFindBasicOverlayToView: (view: DataCaptureView, overlay: EmscriptenClassHandle) => void;
   removeBarcodeFindBasicOverlayFromView: (
     view: DataCaptureView,
     overlay: EmscriptenClassHandle,
   ) => void;
-  addBarcodeArToContext: (
-    context: DataCaptureContext,
-    mode: EmscriptenClassHandle,
-  ) => void;
-  removeBarcodeArFromContext: (
-    context: DataCaptureContext,
-    mode: EmscriptenClassHandle,
-  ) => void;
+  addBarcodeArToContext: (context: DataCaptureContext, mode: EmscriptenClassHandle) => void;
+  removeBarcodeArFromContext: (context: DataCaptureContext, mode: EmscriptenClassHandle) => void;
   OpenSourceSoftwareLicenseInfo: {
     getLicenseText(): string;
   };
@@ -1725,10 +1624,7 @@ declare class HintPresenter extends ScanditHTMLElement {
   private onDidToastHide;
   private getToastElementFromIdOrTag;
   showToast(toast: GenericHint): Promise<void>;
-  showToastWithCustomIcon(
-    hintStyle: GenericHint,
-    icon: ScanditIcon,
-  ): Promise<void>;
+  showToastWithCustomIcon(hintStyle: GenericHint, icon: ScanditIcon): Promise<void>;
   hideToast(hintStyle: GenericHint): Promise<void>;
   private showGuidance;
   private hideGuidance;
@@ -1786,10 +1682,7 @@ interface ReportCameraPropertiesParameters {
 }
 interface WorkerFunctions {
   getOffscreenCanvas: () => OffscreenCanvas | undefined;
-  postMessage: (
-    message: DataCaptureCallbackMessage,
-    transfer?: Transferable[],
-  ) => void;
+  postMessage: (message: DataCaptureCallbackMessage, transfer?: Transferable[]) => void;
 }
 /**
  * DataCaptureEngine is an abstraction of the engine, it is created by the engine worker
@@ -1819,26 +1712,17 @@ declare class DataCaptureEngine<M extends Module> {
   protected parentDomain: string;
   protected readonly writableDataPathStandard: string;
   protected readonly resourceFilesSubfolder: string;
-  protected performanceMetricsReporterTimer:
-    | ReturnType<typeof setTimeout>
-    | undefined;
+  protected performanceMetricsReporterTimer: ReturnType<typeof setTimeout> | undefined;
   protected performanceMetrics: PerformanceMetrics;
   protected gestureRecognizer: GestureRecognizer | null;
   private gestureListener;
   private webPlatformHintPresenter;
-  constructor(
-    moduleHandler: ModuleHandler<M>,
-    workerFunctions: WorkerFunctions,
-  );
+  constructor(moduleHandler: ModuleHandler<M>, workerFunctions: WorkerFunctions);
   get Module(): M;
   set isDrawLoopRunning(newValue: boolean);
   get isDrawLoopRunning(): boolean;
-  convertToLoadableFrameData(
-    frameData: WasmFrameData,
-  ): PrivateLoadableFrameData;
-  createContext(
-    createContextJSON: CreateContextParameters,
-  ): EngineWorkerResponse<"createContext">;
+  convertToLoadableFrameData(frameData: WasmFrameData): PrivateLoadableFrameData;
+  createContext(createContextJSON: CreateContextParameters): EngineWorkerResponse<"createContext">;
   onTap(point: PointJSON): void;
   hintPresenterV2Update(): void;
   startReportingPerformanceMetrics(): void;
@@ -1850,12 +1734,8 @@ declare class DataCaptureEngine<M extends Module> {
     scanditLicenseKey: string,
   ): EngineWorkerResponse<"extractCentaurusLicense">;
   getModeDeserializers(): Vector;
-  loadLibrary(
-    parameters: LoadLibraryParameters,
-  ): EngineWorkerResponse<"loadLibrary">;
-  processFrame(
-    parameters: ProcessFrameParameters,
-  ): EngineWorkerResponse<"processFrame">;
+  loadLibrary(parameters: LoadLibraryParameters): EngineWorkerResponse<"loadLibrary">;
+  processFrame(parameters: ProcessFrameParameters): EngineWorkerResponse<"processFrame">;
   reportCameraProperties(
     properties: ReportCameraPropertiesParameters,
   ): EngineWorkerResponse<"reportCameraProperties">;
@@ -1885,21 +1765,13 @@ declare class DataCaptureEngine<M extends Module> {
     contextUpdateParameters: UpdateContextParameters,
   ): UpdateContextParameters;
   onDocumentVisibilityChange(state: DocumentVisibilityState): void;
-  isFeatureSupported(
-    feature: LicensedFeature,
-  ): EngineWorkerResponse<"isFeatureSupported">;
+  isFeatureSupported(feature: LicensedFeature): EngineWorkerResponse<"isFeatureSupported">;
   getViewfinderInfo(): EngineWorkerResponse<"getViewfinderInfo">;
   getOpenSourceSoftwareLicenseInfo(): EngineWorkerResponse<"getOpenSourceSoftwareLicenseInfo">;
   protected getNextFrameId(): number;
   protected getWasmDynamicLibraries(coreWasmURI: string): string[];
-  protected getWasmCoreExpectedHash(
-    simdSupport: boolean,
-    threadsSupport: boolean,
-  ): string;
-  protected getWasmCoreFileName(
-    simdSupport: boolean,
-    threadsSupport: boolean,
-  ): string;
+  protected getWasmCoreExpectedHash(simdSupport: boolean, threadsSupport: boolean): string;
+  protected getWasmCoreFileName(simdSupport: boolean, threadsSupport: boolean): string;
   protected getWasmMetadata(): Record<
     string,
     {
@@ -1984,12 +1856,11 @@ declare enum CameraManagerEvent {
   CAMERA_PROPERTIES = "cameraProperties",
   CAMERA_ACCESS_ERROR = "cameraAccessError",
 }
-type CameraManagerEventParameters<C> =
-  C extends CameraManagerEvent.CAMERA_PROPERTIES
-    ? ReportCameraPropertiesParameters
-    : C extends CameraManagerEvent.CAMERA_ACCESS_ERROR
-      ? any
-      : never;
+type CameraManagerEventParameters<C> = C extends CameraManagerEvent.CAMERA_PROPERTIES
+  ? ReportCameraPropertiesParameters
+  : C extends CameraManagerEvent.CAMERA_ACCESS_ERROR
+    ? any
+    : never;
 /**
  * A barcode picker utility class used to handle camera interaction.
  */
@@ -2092,10 +1963,7 @@ declare class CameraManager {
     listenerToRemove?: (details: CameraManagerEventParameters<E>) => void,
   ): void;
   setCameraPosition(cameraPosition: CameraPosition): Promise<void>;
-  setExposure(exposure: {
-    compensation?: number;
-    time?: number;
-  }): Promise<void>;
+  setExposure(exposure: { compensation?: number; time?: number }): Promise<void>;
   setFocus(manualLensPosition: number): Promise<void>;
   setFrameRate(frameRate: { min?: number; max?: number }): Promise<void>;
   setInitialCameraPosition(cameraPosition: CameraPosition): void;

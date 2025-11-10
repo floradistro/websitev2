@@ -88,9 +88,7 @@ export function SmartTestimonials({
               {[...Array(5)].map((_, i) => (
                 <span
                   key={i}
-                  className={
-                    i < review.rating ? "text-yellow-400" : "text-neutral-600"
-                  }
+                  className={i < review.rating ? "text-yellow-400" : "text-neutral-600"}
                 >
                   {i < review.rating ? "⭐" : "☆"}
                 </span>
@@ -98,9 +96,7 @@ export function SmartTestimonials({
             </div>
 
             {/* Review text */}
-            {review.review_text && (
-              <p className="text-white italic mb-4">"{review.review_text}"</p>
-            )}
+            {review.review_text && <p className="text-white italic mb-4">"{review.review_text}"</p>}
 
             {/* Reviewer name */}
             <div className="flex items-center gap-2">
@@ -119,9 +115,7 @@ export function SmartTestimonials({
 
             {/* Product name */}
             {showProductName && review.product_name && (
-              <p className="text-xs text-neutral-500 mt-2">
-                Product: {review.product_name}
-              </p>
+              <p className="text-xs text-neutral-500 mt-2">Product: {review.product_name}</p>
             )}
           </div>
         ))}

@@ -2,6 +2,7 @@
 
 import React, { Component, ReactNode, ErrorInfo } from "react";
 
+import { logger } from "@/lib/logger";
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -27,7 +28,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     if (process.env.NODE_ENV === "development") {
-      console.error("ErrorBoundary caught an error:", error, errorInfo);
+      logger.error("ErrorBoundary caught an error:", error, errorInfo);
     }
     this.setState({
       error,
@@ -96,9 +97,7 @@ class ErrorBoundary extends Component<Props, State> {
                 <p>{this.state.error.message}</p>
                 {this.state.errorInfo && (
                   <details className="mt-2">
-                    <summary className="cursor-pointer text-gray-600">
-                      Stack Trace
-                    </summary>
+                    <summary className="cursor-pointer text-gray-600">Stack Trace</summary>
                     <pre className="mt-1 text-xs whitespace-pre-wrap">
                       {this.state.errorInfo.componentStack}
                     </pre>
@@ -139,7 +138,7 @@ export function ProductErrorBoundary({ children }: { children: ReactNode }) {
     <ErrorBoundary
       onError={(error, errorInfo) => {
         if (process.env.NODE_ENV === "development") {
-          console.error("Product component error:", error);
+          logger.error("Product component error:", error);
         }
         // Could send to analytics or error tracking
       }}
@@ -160,12 +159,9 @@ export function ProductErrorBoundary({ children }: { children: ReactNode }) {
               />
             </svg>
             <div>
-              <h3 className="font-semibold text-red-900 mb-2">
-                Error Loading Products
-              </h3>
+              <h3 className="font-semibold text-red-900 mb-2">Error Loading Products</h3>
               <p className="text-red-700 text-sm mb-4">
-                We encountered an error while loading your products. Please try
-                refreshing the page.
+                We encountered an error while loading your products. Please try refreshing the page.
               </p>
               <button
                 onClick={() => window.location.reload()}

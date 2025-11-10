@@ -53,11 +53,7 @@ export default function ImageUploadPanel({
                     className="absolute top-2 left-2 bg-blue-500/20 border border-blue-500/40 text-blue-400 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] flex items-center gap-1"
                     style={{ fontWeight: 900 }}
                   >
-                    <Loader
-                      size={10}
-                      strokeWidth={1.5}
-                      className="animate-spin"
-                    />
+                    <Loader size={10} strokeWidth={1.5} className="animate-spin" />
                     Uploading
                   </div>
                 ) : null}

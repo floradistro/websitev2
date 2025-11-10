@@ -1,5 +1,1 @@
-export {
-  b as getAppInfo,
-  c as getKey,
-  a as isElectron,
-} from "../chunks/chunk-LISC6VSM.js";
+export { b as getAppInfo, c as getKey, a as isElectron } from "../chunks/chunk-LISC6VSM.js";

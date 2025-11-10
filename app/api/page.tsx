@@ -128,9 +128,8 @@ export default function ApiPage() {
             }}
             className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed max-w-2xl mx-auto px-4 relative z-10"
           >
-            Complete REST API for building cannabis commerce platforms.
-            Dispensary operations, inventory management, compliance tracking,
-            wholesale ordering, and more.
+            Complete REST API for building cannabis commerce platforms. Dispensary operations,
+            inventory management, compliance tracking, wholesale ordering, and more.
           </motion.p>
         </div>
       </section>
@@ -158,10 +157,7 @@ export default function ApiPage() {
                 { title: "Wholesale", desc: "B2B ordering & distribution" },
                 { title: "Analytics", desc: "Sales & performance metrics" },
               ].map((item) => (
-                <AnimatedGridItem
-                  key={item.title}
-                  className="text-center group"
-                >
+                <AnimatedGridItem key={item.title} className="text-center group">
                   <div
                     className="text-xs uppercase tracking-[0.12em] font-black text-white mb-2 group-hover:text-white/80 transition-colors"
                     style={{ fontWeight: 900 }}

@@ -6,6 +6,7 @@
 import { chromium } from "playwright";
 import sharp from "sharp";
 
+import { logger } from "@/lib/logger";
 export interface ScreenshotAnalysis {
   url: string;
   screenshot: string; // Base64
@@ -72,9 +73,7 @@ export class VisualAnalyzer {
 
       // MANUAL MODE: Let user interact with the page themselves
       if (manualMode) {
-        onProgress(
-          "⏳ Waiting 30s for YOU to manually interact with the page...",
-        );
+        onProgress("⏳ Waiting 30s for YOU to manually interact with the page...");
 
         // Wait 30 seconds for user to manually interact
         // Send progress updates every 5s to keep stream alive
@@ -82,15 +81,11 @@ export class VisualAnalyzer {
           await page.waitForTimeout(5000);
           const remaining = 30 - i - 5;
           if (remaining > 0) {
-            onProgress(
-              `⏳ ${remaining}s remaining - interact with the browser now...`,
-            );
+            onProgress(`⏳ ${remaining}s remaining - interact with the browser now...`);
           }
         }
 
-        onProgress(
-          "✅ Manual interaction time complete - taking screenshot now!",
-        );
+        onProgress("✅ Manual interaction time complete - taking screenshot now!");
       } else {
         // AUTO MODE: Try to bypass age gates automatically
         onProgress("🔍 Checking for age gates and pop-ups...");
@@ -104,9 +99,7 @@ export class VisualAnalyzer {
           await page.waitForTimeout(2000); // Wait for age gate to appear
 
           // Check if page looks like an age gate (has very few elements)
-          const bodyText = await page.evaluate(() =>
-            document.body.innerText.toLowerCase(),
-          );
+          const bodyText = await page.evaluate(() => document.body.innerText.toLowerCase());
           const isAgeGate =
             bodyText.includes("age") ||
             bodyText.includes("21") ||
@@ -175,9 +168,7 @@ export class VisualAnalyzer {
       const colorScheme = await page.evaluate(() => {
         const bg = window.getComputedStyle(document.body).backgroundColor;
         // Simple check: if background is dark
-        return bg.includes("0, 0, 0") || bg.includes("rgb(0")
-          ? "dark"
-          : "light";
+        return bg.includes("0, 0, 0") || bg.includes("rgb(0") ? "dark" : "light";
       });
 
       // Scroll through page to load lazy images and content (viewport will capture hero)
@@ -212,10 +203,7 @@ export class VisualAnalyzer {
           const style = window.getComputedStyle(el);
 
           // Background colors
-          if (
-            style.backgroundColor &&
-            style.backgroundColor !== "rgba(0, 0, 0, 0)"
-          ) {
+          if (style.backgroundColor && style.backgroundColor !== "rgba(0, 0, 0, 0)") {
             colorSet.add(`BG: ${style.backgroundColor}`);
           }
 
@@ -240,11 +228,7 @@ export class VisualAnalyzer {
           window.getComputedStyle(el).display.includes("flex"),
         );
 
-        const layout = hasGrid
-          ? "CSS Grid"
-          : hasFlex
-            ? "Flexbox"
-            : "Traditional";
+        const layout = hasGrid ? "CSS Grid" : hasFlex ? "Flexbox" : "Traditional";
 
         // Extract typography
         const fonts: string[] = [];
@@ -282,9 +266,7 @@ export class VisualAnalyzer {
         if (document.querySelector("footer")) components.push("Footer");
 
         // Count elements
-        const buttons = document.querySelectorAll(
-          'button, a[role="button"]',
-        ).length;
+        const buttons = document.querySelectorAll('button, a[role="button"]').length;
         const images = document.querySelectorAll("img").length;
         const headings = {
           h1: document.querySelectorAll("h1").length,
@@ -305,9 +287,7 @@ export class VisualAnalyzer {
           if (section.clientHeight > 200) {
             // Only substantial sections
             const h1 = section.querySelector("h1, h2");
-            const title = h1
-              ? h1.textContent?.substring(0, 50)
-              : `Section ${i + 1}`;
+            const title = h1 ? h1.textContent?.substring(0, 50) : `Section ${i + 1}`;
             const hasImages = section.querySelectorAll("img").length;
             const hasButtons = section.querySelectorAll("button").length;
             pageStructure.push(
@@ -321,21 +301,17 @@ export class VisualAnalyzer {
         document.querySelectorAll("h1, h2").forEach((h, i) => {
           if (i < 10) {
             // First 10 headings
-            headingTexts.push(
-              `${h.tagName}: "${h.textContent?.trim().substring(0, 100) || ""}"`,
-            );
+            headingTexts.push(`${h.tagName}: "${h.textContent?.trim().substring(0, 100) || ""}"`);
           }
         });
 
         // Button text
         const buttonTexts: string[] = [];
-        document
-          .querySelectorAll('button, a[role="button"]')
-          .forEach((btn, i) => {
-            if (i < 10) {
-              buttonTexts.push(`"${btn.textContent?.trim() || ""}"`);
-            }
-          });
+        document.querySelectorAll('button, a[role="button"]').forEach((btn, i) => {
+          if (i < 10) {
+            buttonTexts.push(`"${btn.textContent?.trim() || ""}"`);
+          }
+        });
 
         return {
           dominantColors: colors,
@@ -365,18 +341,14 @@ export class VisualAnalyzer {
       // Get metadata to show dimensions
       const metadata = await sharp(screenshot).metadata();
 
-      onProgress(
-        `✅ Captured: ${metadata.width}x${metadata.height}px (${sizeKB.toFixed(1)}KB)`,
-      );
+      onProgress(`✅ Captured: ${metadata.width}x${metadata.height}px (${sizeKB.toFixed(1)}KB)`);
 
       // Resize to safe dimensions (1280px max width, like Cursor AI)
       let imageBuffer = screenshot;
       const targetWidth = 1280; // Cursor AI uses ~1280px for Claude API
 
       if (metadata.width && metadata.width > targetWidth) {
-        onProgress(
-          `🔧 Resizing to ${targetWidth}px width for optimal quality...`,
-        );
+        onProgress(`🔧 Resizing to ${targetWidth}px width for optimal quality...`);
 
         imageBuffer = await sharp(screenshot)
           .resize(targetWidth, null, {
@@ -423,7 +395,7 @@ export class VisualAnalyzer {
       urls.map((url) =>
         this.analyzeWebsite(url).catch((err) => {
           if (process.env.NODE_ENV === "development") {
-            console.error(`Failed to analyze ${url}:`, err.message);
+            logger.error(`Failed to analyze ${url}:`, err.message);
           }
           return null;
         }),

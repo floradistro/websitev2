@@ -16,11 +16,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import {
-  formatCurrency,
-  formatNumber,
-  formatDate,
-} from "@/lib/analytics-utils";
+import { formatCurrency, formatNumber, formatDate } from "@/lib/analytics-utils";
 import type { TimeSeriesDataPoint } from "@/types/analytics";
 
 interface TimeSeriesChartProps {
@@ -94,10 +90,7 @@ export function TimeSeriesChart({
 
   if (chartData.length === 0) {
     return (
-      <div
-        className={`flex items-center justify-center ${className}`}
-        style={{ height }}
-      >
+      <div className={`flex items-center justify-center ${className}`} style={{ height }}>
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
             <svg
@@ -124,18 +117,9 @@ export function TimeSeriesChart({
   return (
     <div className={className} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
-          data={chartData}
-          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-        >
+        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
-            <linearGradient
-              id={`gradient-${activeMetric}`}
-              x1="0"
-              y1="0"
-              x2="0"
-              y2="1"
-            >
+            <linearGradient id={`gradient-${activeMetric}`} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={config.color} stopOpacity={0.2} />
               <stop offset="95%" stopColor={config.color} stopOpacity={0} />
             </linearGradient>
@@ -175,10 +159,7 @@ export function TimeSeriesChart({
             }
           />
 
-          <Tooltip
-            content={<CustomTooltip />}
-            cursor={{ stroke: config.color, strokeWidth: 1 }}
-          />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: config.color, strokeWidth: 1 }} />
 
           {showLegend && (
             <Legend
@@ -240,15 +221,9 @@ export function MultiMetricChart({
             const config = metricConfig[metric];
 
             return (
-              <div
-                key={index}
-                className="flex items-center justify-between gap-4"
-              >
+              <div key={index} className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: entry.color }}
-                  />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
                   <span className="text-white/60 text-xs">{config.label}</span>
                 </div>
                 <span className="text-white font-bold text-sm">
@@ -266,10 +241,7 @@ export function MultiMetricChart({
 
   if (chartData.length === 0) {
     return (
-      <div
-        className={`flex items-center justify-center ${className}`}
-        style={{ height }}
-      >
+      <div className={`flex items-center justify-center ${className}`} style={{ height }}>
         <p className="text-white/40 text-sm">No data available</p>
       </div>
     );
@@ -278,27 +250,13 @@ export function MultiMetricChart({
   return (
     <div className={className} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
-          data={chartData}
-          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-        >
+        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
             {metrics.map((metric) => {
               const config = metricConfig[metric];
               return (
-                <linearGradient
-                  key={metric}
-                  id={`gradient-${metric}`}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="0%"
-                    stopColor={config.color}
-                    stopOpacity={0.2}
-                  />
+                <linearGradient key={metric} id={`gradient-${metric}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={config.color} stopOpacity={0.2} />
                   <stop offset="95%" stopColor={config.color} stopOpacity={0} />
                 </linearGradient>
               );

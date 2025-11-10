@@ -155,9 +155,7 @@ export function injectVisualEditor() {
       tools.querySelectorAll("button").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
-          const action = (e.currentTarget as HTMLElement).getAttribute(
-            "data-action",
-          );
+          const action = (e.currentTarget as HTMLElement).getAttribute("data-action");
           window.parent.postMessage(
             {
               type: "COMPONENT_ACTION",
@@ -176,9 +174,7 @@ export function injectVisualEditor() {
       tools.querySelectorAll("button").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
-          const action = (e.currentTarget as HTMLElement).getAttribute(
-            "data-action",
-          );
+          const action = (e.currentTarget as HTMLElement).getAttribute("data-action");
           window.parent.postMessage(
             {
               type: "SECTION_ACTION",
@@ -245,10 +241,7 @@ export function injectVisualEditor() {
 }
 
 // Auto-inject if in iframe with editor mode
-if (
-  window !== window.parent &&
-  window.location.search.includes("editor=true")
-) {
+if (window !== window.parent && window.location.search.includes("editor=true")) {
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", injectVisualEditor);
   } else {

@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { VisualAnalyzer } from "@/lib/ai/visual-analyzer";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const { url, viewport } = await request.json();
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Analysis error:", error);
+      logger.error("❌ Analysis error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to analyze website" },

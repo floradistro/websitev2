@@ -7,12 +7,7 @@
 // DATABASE TYPES
 // ============================================================
 
-export type ProcessorType =
-  | "dejavoo"
-  | "authorize_net"
-  | "stripe"
-  | "square"
-  | "clover";
+export type ProcessorType = "dejavoo" | "authorize_net" | "stripe" | "square" | "clover";
 export type PaymentEnvironment = "production" | "sandbox";
 export type PaymentMethodType =
   | "cash"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching coupons:", error);
+        logger.error("Error fetching coupons:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -73,8 +74,7 @@ export async function POST(request: NextRequest) {
     if (!code || !discount_type || discount_amount === undefined) {
       return NextResponse.json(
         {
-          error:
-            "Missing required fields: code, discount_type, discount_amount",
+          error: "Missing required fields: code, discount_type, discount_amount",
         },
         { status: 400 },
       );
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
 
     if (couponError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating coupon:", couponError);
+        logger.error("Error creating coupon:", couponError);
       }
       return NextResponse.json({ error: couponError.message }, { status: 500 });
     }
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

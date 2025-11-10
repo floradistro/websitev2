@@ -1,15 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { POSProductGrid } from '@/components/component-registry/pos/POSProductGrid';
-import { POSCart, CartItem } from '@/components/component-registry/pos/POSCart';
-import { POSPayment, PaymentData } from '@/components/component-registry/pos/POSPayment';
-import { POSRegisterSelector } from '@/components/component-registry/pos/POSRegisterSelector';
-import { POSLocationSelector } from '@/components/component-registry/pos/POSLocationSelector';
-import { useAppAuth } from '@/context/AppAuthContext';
-import { supabase } from '@/lib/supabase/client';
-import { calculatePrice, type Promotion } from '@/lib/pricing';
+import { useState, useCallback, useEffect, useRef } from "react";
+import { POSProductGrid } from "@/components/component-registry/pos/POSProductGrid";
+import { POSCart, CartItem } from "@/components/component-registry/pos/POSCart";
+import { POSPayment, PaymentData } from "@/components/component-registry/pos/POSPayment";
+import { POSRegisterSelector } from "@/components/component-registry/pos/POSRegisterSelector";
+import { POSLocationSelector } from "@/components/component-registry/pos/POSLocationSelector";
+import { useAppAuth } from "@/context/AppAuthContext";
+import { supabase } from "@/lib/supabase/client";
+import { calculatePrice, type Promotion } from "@/lib/pricing";
 
+import { logger } from "@/lib/logger";
 export default function POSRegisterPage() {
   const { user, vendor, locations, isLoading } = useAppAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -20,21 +21,23 @@ export default function POSRegisterPage() {
   const [hasPaymentProcessor, setHasPaymentProcessor] = useState<boolean>(false);
 
   // CRITICAL FIX: Persist selected location in localStorage to survive navigation
-  const [selectedLocation, setSelectedLocation] = useState<{ id: string; name: string } | null>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('pos_selected_location');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          return null;
+  const [selectedLocation, setSelectedLocation] = useState<{ id: string; name: string } | null>(
+    () => {
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("pos_selected_location");
+        if (saved) {
+          try {
+            return JSON.parse(saved);
+          } catch (e) {
+            return null;
+          }
         }
       }
-    }
-    return null;
-  });
+      return null;
+    },
+  );
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
-  const [skuInput, setSkuInput] = useState('');
+  const [skuInput, setSkuInput] = useState("");
   const [skuLoading, setSkuLoading] = useState(false);
   const [skuError, setSkuError] = useState<string | null>(null);
   const skuInputRef = useRef<HTMLInputElement>(null);
@@ -43,7 +46,9 @@ export default function POSRegisterPage() {
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [existingSessionInfo, setExistingSessionInfo] = useState<any>(null);
   const [taxRate, setTaxRate] = useState<number | null>(null);
-  const [taxBreakdown, setTaxBreakdown] = useState<Array<{name: string; rate: number; type: string}>>([]);
+  const [taxBreakdown, setTaxBreakdown] = useState<
+    Array<{ name: string; rate: number; type: string }>
+  >([]);
   const [taxError, setTaxError] = useState<string | null>(null);
 
   // Auto-select location for single-location staff
@@ -52,8 +57,7 @@ export default function POSRegisterPage() {
       const singleLocation = locations[0];
       const location = { id: singleLocation.id, name: singleLocation.name };
       setSelectedLocation(location);
-      localStorage.setItem('pos_selected_location', JSON.stringify(location));
-
+      localStorage.setItem("pos_selected_location", JSON.stringify(location));
     }
   }, [locations, selectedLocation]);
 
@@ -69,7 +73,7 @@ export default function POSRegisterPage() {
 
       try {
         const response = await fetch(`/api/vendor/locations`, {
-          headers: { 'x-vendor-id': vendor.id }
+          headers: { "x-vendor-id": vendor.id },
         });
 
         if (!response.ok) {
@@ -79,7 +83,7 @@ export default function POSRegisterPage() {
         const data = await response.json();
 
         if (!data.success) {
-          throw new Error('API returned success: false');
+          throw new Error("API returned success: false");
         }
 
         const location = data.locations?.find((l: any) => l.id === selectedLocation.id);
@@ -91,20 +95,23 @@ export default function POSRegisterPage() {
         const rate = location.settings?.tax_config?.sales_tax_rate;
         const taxes = location.settings?.tax_config?.taxes || [];
 
-        if (!rate || typeof rate !== 'number' || rate <= 0) {
-          throw new Error(`NO TAX CONFIGURED FOR ${selectedLocation.name}! Go to Settings > Locations to configure taxes.`);
+        if (!rate || typeof rate !== "number" || rate <= 0) {
+          throw new Error(
+            `NO TAX CONFIGURED FOR ${selectedLocation.name}! Go to Settings > Locations to configure taxes.`,
+          );
         }
 
         setTaxRate(rate);
         setTaxBreakdown(taxes);
-
       } catch (error: any) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('❌ TAX LOAD FAILED:', error.message);
+        if (process.env.NODE_ENV === "development") {
+          logger.error("❌ TAX LOAD FAILED:", error.message);
         }
         setTaxError(error.message);
         setTaxRate(null);
-        alert(`TAX CONFIGURATION ERROR:\n\n${error.message}\n\nPOS cannot operate without tax configuration.`);
+        alert(
+          `TAX CONFIGURATION ERROR:\n\n${error.message}\n\nPOS cannot operate without tax configuration.`,
+        );
       }
     }
 
@@ -118,10 +125,10 @@ export default function POSRegisterPage() {
     const checkExistingSession = async () => {
       try {
         const { data: existingSession } = await supabase
-          .from('pos_sessions')
-          .select('id, session_number, total_sales, opened_at')
-          .eq('register_id', registerId)
-          .eq('status', 'open')
+          .from("pos_sessions")
+          .select("id, session_number, total_sales, opened_at")
+          .eq("register_id", registerId)
+          .eq("status", "open")
           .maybeSingle();
 
         if (existingSession && !sessionId) {
@@ -130,8 +137,8 @@ export default function POSRegisterPage() {
           setShowSessionModal(true);
         }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error checking for existing session:', error);
+        if (process.env.NODE_ENV === "development") {
+          logger.error("Error checking for existing session:", error);
         }
       }
     };
@@ -150,20 +157,20 @@ export default function POSRegisterPage() {
     // Close existing session and start new one
     if (existingSessionInfo) {
       try {
-        await fetch('/api/pos/sessions/close', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        await fetch("/api/pos/sessions/close", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             sessionId: existingSessionInfo.id,
             closingCash: 0,
-            closingNotes: 'Closed to start new session',
+            closingNotes: "Closed to start new session",
           }),
         });
 
         // Start new session
-        const response = await fetch('/api/pos/sessions/open', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/pos/sessions/open", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             registerId,
             locationId: selectedLocation?.id,
@@ -176,10 +183,10 @@ export default function POSRegisterPage() {
           setShowSessionModal(false);
         }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Error starting new session:', error);
+        if (process.env.NODE_ENV === "development") {
+          logger.error("Error starting new session:", error);
         }
-        alert('Failed to start new session');
+        alert("Failed to start new session");
       }
     }
   };
@@ -192,11 +199,10 @@ export default function POSRegisterPage() {
       const data = await response.json();
       if (data.success) {
         setPromotions(data.promotions || []);
-
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading promotions:', error);
+      if (process.env.NODE_ENV === "development") {
+        logger.error("Error loading promotions:", error);
       }
     }
   };
@@ -218,8 +224,7 @@ export default function POSRegisterPage() {
           const { session } = await response.json();
 
           // Kick out ONLY if session is explicitly closed
-          if (session && session.status === 'closed') {
-
+          if (session && session.status === "closed") {
             setSessionId(null);
             setRegisterId(null);
             setCart([]);
@@ -227,7 +232,7 @@ export default function POSRegisterPage() {
         }
       } catch (error) {
         // Don't kick out on errors - just log them
-        console.error('Session check error (not kicking out):', error);
+        logger.error("Session check error (not kicking out):", error);
       }
     };
 
@@ -250,16 +255,16 @@ export default function POSRegisterPage() {
         }
       }
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error loading session:', error);
+      if (process.env.NODE_ENV === "development") {
+        logger.error("Error loading session:", error);
       }
     }
   };
 
   // Recalculate cart with current promotions
   const recalculateCart = useCallback(() => {
-    setCart(prevCart => {
-      return prevCart.map(item => {
+    setCart((prevCart) => {
+      return prevCart.map((item) => {
         // Get product from cache
         const product = productsCache.get(item.productId);
         if (!product) return item;
@@ -271,7 +276,8 @@ export default function POSRegisterPage() {
           ...item,
           unitPrice: priceCalc.finalPrice,
           lineTotal: priceCalc.finalPrice * item.quantity,
-          originalPrice: priceCalc.originalPrice !== priceCalc.finalPrice ? priceCalc.originalPrice : undefined,
+          originalPrice:
+            priceCalc.originalPrice !== priceCalc.finalPrice ? priceCalc.originalPrice : undefined,
           discount: priceCalc.savings * item.quantity,
           promotionName: priceCalc.appliedPromotion?.name,
           badgeText: priceCalc.badge?.text,
@@ -282,110 +288,125 @@ export default function POSRegisterPage() {
   }, [promotions, productsCache]);
 
   // Add product to cart
-  const handleAddToCart = useCallback((product: any, quantity: number) => {
-    // Cache the product for future calculations
-    setProductsCache(prev => {
-      const newCache = new Map(prev);
-      newCache.set(product.id, product);
-      return newCache;
-    });
+  const handleAddToCart = useCallback(
+    (product: any, quantity: number) => {
+      // Cache the product for future calculations
+      setProductsCache((prev) => {
+        const newCache = new Map(prev);
+        newCache.set(product.id, product);
+        return newCache;
+      });
 
-    // Calculate price with promotions
-    const priceCalc = calculatePrice(product, promotions, quantity);
+      // Calculate price with promotions
+      const priceCalc = calculatePrice(product, promotions, quantity);
 
-    setCart(prevCart => {
-      const existing = prevCart.find(item => item.productId === product.id);
+      setCart((prevCart) => {
+        const existing = prevCart.find((item) => item.productId === product.id);
 
-      if (existing) {
-        // Update quantity and recalculate
-        const newQuantity = existing.quantity + quantity;
-        const newPriceCalc = calculatePrice(product, promotions, newQuantity);
+        if (existing) {
+          // Update quantity and recalculate
+          const newQuantity = existing.quantity + quantity;
+          const newPriceCalc = calculatePrice(product, promotions, newQuantity);
 
-        return prevCart.map(item =>
-          item.productId === product.id
-            ? {
-                ...item,
-                quantity: newQuantity,
-                unitPrice: newPriceCalc.finalPrice,
-                lineTotal: newPriceCalc.finalPrice * newQuantity,
-                originalPrice: newPriceCalc.originalPrice !== newPriceCalc.finalPrice ? newPriceCalc.originalPrice : undefined,
-                discount: newPriceCalc.savings * newQuantity,
-                promotionName: newPriceCalc.appliedPromotion?.name,
-                badgeText: newPriceCalc.badge?.text,
-                badgeColor: newPriceCalc.badge?.color,
-              }
-            : item
-        );
-      } else {
-        // Add new item with promotion applied
-        return [
-          ...prevCart,
-          {
-            productId: product.id,
-            productName: product.name,
-            unitPrice: priceCalc.finalPrice,
-            quantity,
-            lineTotal: priceCalc.finalPrice * quantity,
-            inventoryId: product.inventory_id,
-            originalPrice: priceCalc.originalPrice !== priceCalc.finalPrice ? priceCalc.originalPrice : undefined,
-            discount: priceCalc.savings * quantity,
-            promotionName: priceCalc.appliedPromotion?.name,
-            badgeText: priceCalc.badge?.text,
-            badgeColor: priceCalc.badge?.color,
-          },
-        ];
-      }
-    });
-  }, [promotions]);
+          return prevCart.map((item) =>
+            item.productId === product.id
+              ? {
+                  ...item,
+                  quantity: newQuantity,
+                  unitPrice: newPriceCalc.finalPrice,
+                  lineTotal: newPriceCalc.finalPrice * newQuantity,
+                  originalPrice:
+                    newPriceCalc.originalPrice !== newPriceCalc.finalPrice
+                      ? newPriceCalc.originalPrice
+                      : undefined,
+                  discount: newPriceCalc.savings * newQuantity,
+                  promotionName: newPriceCalc.appliedPromotion?.name,
+                  badgeText: newPriceCalc.badge?.text,
+                  badgeColor: newPriceCalc.badge?.color,
+                }
+              : item,
+          );
+        } else {
+          // Add new item with promotion applied
+          return [
+            ...prevCart,
+            {
+              productId: product.id,
+              productName: product.name,
+              unitPrice: priceCalc.finalPrice,
+              quantity,
+              lineTotal: priceCalc.finalPrice * quantity,
+              inventoryId: product.inventory_id,
+              originalPrice:
+                priceCalc.originalPrice !== priceCalc.finalPrice
+                  ? priceCalc.originalPrice
+                  : undefined,
+              discount: priceCalc.savings * quantity,
+              promotionName: priceCalc.appliedPromotion?.name,
+              badgeText: priceCalc.badge?.text,
+              badgeColor: priceCalc.badge?.color,
+            },
+          ];
+        }
+      });
+    },
+    [promotions],
+  );
 
   // Update item quantity
-  const handleUpdateQuantity = useCallback((productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      handleRemoveItem(productId);
-      return;
-    }
+  const handleUpdateQuantity = useCallback(
+    (productId: string, quantity: number) => {
+      if (quantity <= 0) {
+        handleRemoveItem(productId);
+        return;
+      }
 
-    setCart(prevCart =>
-      prevCart.map(item => {
-        if (item.productId === productId) {
-          // Get product from cache and recalculate with new quantity
-          const product = productsCache.get(productId);
-          if (!product) {
-            // Fallback if product not in cache
+      setCart((prevCart) =>
+        prevCart.map((item) => {
+          if (item.productId === productId) {
+            // Get product from cache and recalculate with new quantity
+            const product = productsCache.get(productId);
+            if (!product) {
+              // Fallback if product not in cache
+              return {
+                ...item,
+                quantity,
+                lineTotal: quantity * item.unitPrice,
+              };
+            }
+
+            const priceCalc = calculatePrice(product, promotions, quantity);
+
             return {
               ...item,
               quantity,
-              lineTotal: quantity * item.unitPrice,
+              unitPrice: priceCalc.finalPrice,
+              lineTotal: priceCalc.finalPrice * quantity,
+              originalPrice:
+                priceCalc.originalPrice !== priceCalc.finalPrice
+                  ? priceCalc.originalPrice
+                  : undefined,
+              discount: priceCalc.savings * quantity,
+              promotionName: priceCalc.appliedPromotion?.name,
+              badgeText: priceCalc.badge?.text,
+              badgeColor: priceCalc.badge?.color,
             };
           }
-
-          const priceCalc = calculatePrice(product, promotions, quantity);
-
-          return {
-            ...item,
-            quantity,
-            unitPrice: priceCalc.finalPrice,
-            lineTotal: priceCalc.finalPrice * quantity,
-            originalPrice: priceCalc.originalPrice !== priceCalc.finalPrice ? priceCalc.originalPrice : undefined,
-            discount: priceCalc.savings * quantity,
-            promotionName: priceCalc.appliedPromotion?.name,
-            badgeText: priceCalc.badge?.text,
-            badgeColor: priceCalc.badge?.color,
-          };
-        }
-        return item;
-      })
-    );
-  }, [promotions, productsCache]);
+          return item;
+        }),
+      );
+    },
+    [promotions, productsCache],
+  );
 
   // Remove item from cart
   const handleRemoveItem = useCallback((productId: string) => {
-    setCart(prevCart => prevCart.filter(item => item.productId !== productId));
+    setCart((prevCart) => prevCart.filter((item) => item.productId !== productId));
   }, []);
 
   // Clear cart
   const handleClearCart = useCallback(() => {
-    if (confirm('Clear entire cart?')) {
+    if (confirm("Clear entire cart?")) {
       setCart([]);
     }
   }, []);
@@ -399,12 +420,12 @@ export default function POSRegisterPage() {
 
     try {
       const response = await fetch(
-        `/api/pos/products/lookup?sku=${encodeURIComponent(sku.trim())}&location_id=${selectedLocation?.id}`
+        `/api/pos/products/lookup?sku=${encodeURIComponent(sku.trim())}&location_id=${selectedLocation?.id}`,
       );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || errorData.error || 'Product not found');
+        throw new Error(errorData.message || errorData.error || "Product not found");
       }
 
       const data = await response.json();
@@ -414,7 +435,7 @@ export default function POSRegisterPage() {
       if (product.inventory.available_quantity <= 0) {
         setSkuError(`❌ ${product.name} is out of stock`);
         setTimeout(() => setSkuError(null), 3000);
-        setSkuInput('');
+        setSkuInput("");
         skuInputRef.current?.focus();
         return;
       }
@@ -427,18 +448,17 @@ export default function POSRegisterPage() {
           price: product.price,
           inventory_id: product.id, // Will be resolved in backend
         },
-        1
+        1,
       );
 
       // Show success feedback
-      setSkuInput('');
+      setSkuInput("");
       skuInputRef.current?.focus();
 
       // Flash success (optional)
       const successMsg = `✅ Added: ${product.name}`;
       setSkuError(successMsg);
       setTimeout(() => setSkuError(null), 2000);
-
     } catch (error: any) {
       setSkuError(error.message);
       setTimeout(() => setSkuError(null), 3000);
@@ -470,11 +490,11 @@ export default function POSRegisterPage() {
     try {
       // Validation
       if (taxRate === null) {
-        throw new Error('Tax configuration not loaded. Please refresh the page.');
+        throw new Error("Tax configuration not loaded. Please refresh the page.");
       }
 
       if (!selectedLocation?.id || !vendor?.id) {
-        throw new Error('Location or vendor information missing. Please refresh.');
+        throw new Error("Location or vendor information missing. Please refresh.");
       }
 
       // Calculate totals
@@ -486,12 +506,12 @@ export default function POSRegisterPage() {
       const customerId = selectedCustomer?.id || null;
       const customerName = selectedCustomer
         ? `${selectedCustomer.first_name} ${selectedCustomer.last_name}`
-        : 'Walk-In';
+        : "Walk-In";
 
       // Call sales API
-      const response = await fetch('/api/pos/sales/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/pos/sales/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           locationId: selectedLocation.id,
           vendorId: vendor.id,
@@ -511,7 +531,7 @@ export default function POSRegisterPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || errorData.details || 'Failed to complete sale');
+        throw new Error(errorData.error || errorData.details || "Failed to complete sale");
       }
 
       const result = await response.json();
@@ -526,32 +546,30 @@ export default function POSRegisterPage() {
       // Show success message
       alert(
         `✅ Sale Completed!\n\n` +
-        `Order: ${result.order.order_number}\n` +
-        `Total: $${total.toFixed(2)}\n` +
-        `${paymentData.changeGiven ? `Change: $${paymentData.changeGiven.toFixed(2)}` : ''}`
+          `Order: ${result.order.order_number}\n` +
+          `Total: $${total.toFixed(2)}\n` +
+          `${paymentData.changeGiven ? `Change: $${paymentData.changeGiven.toFixed(2)}` : ""}`,
       );
 
       // Reload session in background (non-blocking)
-      loadActiveSession().catch(err => {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Failed to reload session:', err);
+      loadActiveSession().catch((err) => {
+        if (process.env.NODE_ENV === "development") {
+          logger.error("Failed to reload session:", err);
         }
       });
-
     } catch (error: any) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('❌ Sale failed:', error);
+      if (process.env.NODE_ENV === "development") {
+        logger.error("❌ Sale failed:", error);
       }
       // Show user-friendly error
       alert(
         `❌ Sale Failed\n\n` +
-        `${error.message}\n\n` +
-        `Your cart has not been cleared. Please try again or contact support.`
+          `${error.message}\n\n` +
+          `Your cart has not been cleared. Please try again or contact support.`,
       );
 
       // Don't close modal on error - let user retry
       // Modal stays open, processing flag will be cleared in finally
-
     } finally {
       // ALWAYS clear processing flag
       setProcessing(false);
@@ -566,7 +584,6 @@ export default function POSRegisterPage() {
   // CRITICAL FIX: Wait for context to load before showing location selector
   // This prevents "No locations found" when navigating back from dashboard
   if (isLoading) {
-
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Loading...</div>
@@ -576,12 +593,13 @@ export default function POSRegisterPage() {
 
   // Show location selector if not selected (for admins or multi-location staff)
   if (!selectedLocation) {
-
     // If still loading context, show loading state
     if (isLoading) {
       return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center">
-          <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Loading locations...</div>
+          <div className="text-white/40 text-xs uppercase tracking-[0.15em]">
+            Loading locations...
+          </div>
         </div>
       );
     }
@@ -589,8 +607,11 @@ export default function POSRegisterPage() {
     // If context finished loading but has no locations (and user is logged in), show error
     // DO NOT auto-reload - this causes bootloop when switching locations with active session
     if (locations.length === 0 && vendor?.id) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('🚨 CRITICAL: Context has no locations! Vendor:', vendor.id, 'User:', user?.email);
+      if (process.env.NODE_ENV === "development") {
+        logger.error("CRITICAL: Context has no locations", undefined, {
+          vendorId: vendor.id,
+          userEmail: user?.email,
+        });
       }
       return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
@@ -603,8 +624,8 @@ export default function POSRegisterPage() {
             </p>
             <button
               onClick={() => {
-                localStorage.removeItem('pos_selected_location');
-                window.location.href = '/vendor/apps';
+                localStorage.removeItem("pos_selected_location");
+                window.location.href = "/vendor/apps";
               }}
               className="px-6 py-3 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all text-xs uppercase tracking-[0.15em]"
             >
@@ -622,8 +643,7 @@ export default function POSRegisterPage() {
           const location = { id: locationId, name: locationName };
           setSelectedLocation(location);
           // CRITICAL FIX: Persist to localStorage
-          localStorage.setItem('pos_selected_location', JSON.stringify(location));
-
+          localStorage.setItem("pos_selected_location", JSON.stringify(location));
         }}
       />
     );
@@ -641,13 +661,11 @@ export default function POSRegisterPage() {
           if (sessionId) {
             setSessionId(sessionId);
           }
-
         }}
         onBackToLocationSelector={() => {
           // Clear location selection to go back to location selector
           setSelectedLocation(null);
-          localStorage.removeItem('pos_selected_location');
-
+          localStorage.removeItem("pos_selected_location");
         }}
       />
     );
@@ -662,8 +680,8 @@ export default function POSRegisterPage() {
           <POSProductGrid
             locationId={selectedLocation.id}
             locationName={selectedLocation.name}
-            vendorId={vendor?.id || ''}
-            userName={user?.name || 'Staff Member'}
+            vendorId={vendor?.id || ""}
+            userName={user?.name || "Staff Member"}
             registerId={registerId}
             onAddToCart={handleAddToCart}
             displayMode="cards"
@@ -684,7 +702,7 @@ export default function POSRegisterPage() {
         <div className="w-[400px] flex-shrink-0 border-l border-white/10 bg-[#0a0a0a]">
           <POSCart
             items={cart}
-            vendorId={vendor?.id || ''}
+            vendorId={vendor?.id || ""}
             onUpdateQuantity={handleUpdateQuantity}
             onRemoveItem={handleRemoveItem}
             onClearCart={handleClearCart}
@@ -713,7 +731,10 @@ export default function POSRegisterPage() {
       {showSessionModal && existingSessionInfo && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-black border-2 border-white/20 rounded-2xl p-8 max-w-md w-full">
-            <h2 className="text-2xl font-black text-white uppercase tracking-tight mb-4" style={{ fontWeight: 900 }}>
+            <h2
+              className="text-2xl font-black text-white uppercase tracking-tight mb-4"
+              style={{ fontWeight: 900 }}
+            >
               Session Active
             </h2>
             <p className="text-white/60 text-sm mb-6">
@@ -727,7 +748,9 @@ export default function POSRegisterPage() {
               </div>
               <div className="bg-white/5 rounded-xl p-4 space-y-2">
                 <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Total Sales</div>
-                <div className="text-white font-bold">${existingSessionInfo.total_sales.toFixed(2)}</div>
+                <div className="text-white font-bold">
+                  ${existingSessionInfo.total_sales.toFixed(2)}
+                </div>
               </div>
             </div>
 
@@ -753,4 +776,3 @@ export default function POSRegisterPage() {
     </div>
   );
 }
-

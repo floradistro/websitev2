@@ -125,9 +125,7 @@ export function SmartFAQ({
               {headline}
             </h2>
             {subheadline && (
-              <p className="text-base sm:text-lg text-white/60 max-w-2xl mx-auto">
-                {subheadline}
-              </p>
+              <p className="text-base sm:text-lg text-white/60 max-w-2xl mx-auto">{subheadline}</p>
             )}
           </motion.div>
         )}
@@ -163,17 +161,9 @@ export function SmartFAQ({
                     </span>
                     <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-white/10 group-hover:border-white/20 transition-all">
                       {isOpen ? (
-                        <Minus
-                          size={16}
-                          className="text-white"
-                          strokeWidth={3}
-                        />
+                        <Minus size={16} className="text-white" strokeWidth={3} />
                       ) : (
-                        <Plus
-                          size={16}
-                          className="text-white"
-                          strokeWidth={3}
-                        />
+                        <Plus size={16} className="text-white" strokeWidth={3} />
                       )}
                     </div>
                   </button>
@@ -216,12 +206,7 @@ export function SmartFAQ({
             style={{ fontWeight: 900 }}
           >
             CONTACT US
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

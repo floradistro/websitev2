@@ -5,6 +5,7 @@
 
 import { Redis } from "@upstash/redis";
 
+import { logger } from "@/lib/logger";
 // Types
 export interface Message {
   role: "user" | "assistant";
@@ -71,9 +72,7 @@ function initRedis(): void {
     useRedis = true;
   } else {
     if (process.env.NODE_ENV === "development") {
-      console.warn(
-        "⚠️  Redis not configured - using in-memory session storage",
-      );
+      logger.warn("⚠️  Redis not configured - using in-memory session storage");
     }
     useRedis = false;
   }
@@ -92,11 +91,7 @@ export class SessionManager {
   private useRedis: boolean;
 
   constructor(ttl: number = 86400) {
-    if (
-      redis === null &&
-      useRedis === false &&
-      typeof process !== "undefined"
-    ) {
+    if (redis === null && useRedis === false && typeof process !== "undefined") {
       initRedis();
     }
     this.redis = redis;
@@ -107,11 +102,7 @@ export class SessionManager {
   /**
    * Create a new session
    */
-  async createSession(
-    sessionId: string,
-    appId: string,
-    vendorId: string,
-  ): Promise<SessionState> {
+  async createSession(sessionId: string, appId: string, vendorId: string): Promise<SessionState> {
     const now = Date.now();
 
     const session: SessionState = {
@@ -127,11 +118,7 @@ export class SessionManager {
     };
 
     if (this.useRedis && this.redis) {
-      await this.redis.setex(
-        this.getKey(sessionId),
-        this.ttl,
-        JSON.stringify(session),
-      );
+      await this.redis.setex(this.getKey(sessionId), this.ttl, JSON.stringify(session));
     } else {
       inMemorySessions.set(this.getKey(sessionId), session);
     }
@@ -151,12 +138,10 @@ export class SessionManager {
       }
 
       try {
-        return typeof data === "string"
-          ? JSON.parse(data)
-          : (data as SessionState);
+        return typeof data === "string" ? JSON.parse(data) : (data as SessionState);
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to parse session data:", error);
+          logger.error("Failed to parse session data:", error);
         }
         return null;
       }
@@ -172,11 +157,7 @@ export class SessionManager {
     session.lastActivityAt = Date.now();
 
     if (this.useRedis && this.redis) {
-      await this.redis.setex(
-        this.getKey(session.sessionId),
-        this.ttl,
-        JSON.stringify(session),
-      );
+      await this.redis.setex(this.getKey(session.sessionId), this.ttl, JSON.stringify(session));
     } else {
       inMemorySessions.set(this.getKey(session.sessionId), session);
     }
@@ -185,10 +166,7 @@ export class SessionManager {
   /**
    * Add message to session
    */
-  async addMessage(
-    sessionId: string,
-    message: Omit<Message, "timestamp">,
-  ): Promise<void> {
+  async addMessage(sessionId: string, message: Omit<Message, "timestamp">): Promise<void> {
     const session = await this.getSession(sessionId);
 
     if (!session) {
@@ -228,10 +206,7 @@ export class SessionManager {
   /**
    * Mark file modification as applied
    */
-  async markFileModificationApplied(
-    sessionId: string,
-    path: string,
-  ): Promise<void> {
+  async markFileModificationApplied(sessionId: string, path: string): Promise<void> {
     const session = await this.getSession(sessionId);
 
     if (!session) {
@@ -323,18 +298,13 @@ export class SessionManager {
       return [];
     }
 
-    return session.pendingTools.filter(
-      (t) => t.status === "pending" || t.status === "running",
-    );
+    return session.pendingTools.filter((t) => t.status === "pending" || t.status === "running");
   }
 
   /**
    * Update metadata
    */
-  async updateMetadata(
-    sessionId: string,
-    metadata: Record<string, any>,
-  ): Promise<void> {
+  async updateMetadata(sessionId: string, metadata: Record<string, any>): Promise<void> {
     const session = await this.getSession(sessionId);
 
     if (!session) {
@@ -380,17 +350,14 @@ export class SessionManager {
 
         if (data) {
           try {
-            const session =
-              typeof data === "string"
-                ? JSON.parse(data)
-                : (data as SessionState);
+            const session = typeof data === "string" ? JSON.parse(data) : (data as SessionState);
 
             if (session.vendorId === vendorId) {
               sessions.push(session);
             }
           } catch (error) {
             if (process.env.NODE_ENV === "development") {
-              console.error(`Failed to parse session for key ${key}:`, error);
+              logger.error(`Failed to parse session for key ${key}:`, error);
             }
           }
         }
@@ -440,10 +407,7 @@ export class SessionManager {
 
         if (data) {
           try {
-            const session =
-              typeof data === "string"
-                ? JSON.parse(data)
-                : (data as SessionState);
+            const session = typeof data === "string" ? JSON.parse(data) : (data as SessionState);
 
             if (session.lastActivityAt < cutoffTime) {
               await this.redis.del(key);
@@ -489,9 +453,7 @@ export async function createSession(
   return sessionManager.createSession(sessionId, appId, vendorId);
 }
 
-export async function getSession(
-  sessionId: string,
-): Promise<SessionState | null> {
+export async function getSession(sessionId: string): Promise<SessionState | null> {
   return sessionManager.getSession(sessionId);
 }
 
@@ -502,8 +464,6 @@ export async function addMessage(
   return sessionManager.addMessage(sessionId, message);
 }
 
-export async function getConversationHistory(
-  sessionId: string,
-): Promise<Message[]> {
+export async function getConversationHistory(sessionId: string): Promise<Message[]> {
   return sessionManager.getConversationHistory(sessionId);
 }

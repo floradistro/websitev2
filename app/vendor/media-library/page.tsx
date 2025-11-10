@@ -8,9 +8,7 @@ const MediaLibraryClient = dynamic(() => import("./MediaLibraryClient"), {
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-white/60 text-sm uppercase tracking-wider">
-          Loading Media Library...
-        </p>
+        <p className="text-white/60 text-sm uppercase tracking-wider">Loading Media Library...</p>
       </div>
     </div>
   ),

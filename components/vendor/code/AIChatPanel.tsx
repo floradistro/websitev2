@@ -9,17 +9,14 @@ import { useState, useRef, useEffect } from "react";
 import { useAIChat } from "@/hooks/useAIChat";
 import type { ChatMessage, ToolUse, FileChange } from "@/hooks/useAIChat";
 
+import { logger } from "@/lib/logger";
 interface AIChatPanelProps {
   appId: string;
   sessionId?: string;
   onFileChange?: (change: FileChange) => void;
 }
 
-export default function AIChatPanel({
-  appId,
-  sessionId,
-  onFileChange,
-}: AIChatPanelProps) {
+export default function AIChatPanel({ appId, sessionId, onFileChange }: AIChatPanelProps) {
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -38,7 +35,7 @@ export default function AIChatPanel({
     onFileChange,
     onError: (error) => {
       if (process.env.NODE_ENV === "development") {
-        console.error("AI Chat Error:", error);
+        logger.error("AI Chat Error:", error);
       }
     },
   });
@@ -119,12 +116,10 @@ export default function AIChatPanel({
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Start a conversation
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Start a conversation</h3>
             <p className="text-sm text-gray-600 max-w-sm">
-              Ask me to build features, fix bugs, search the web, or edit your
-              code. I can help with React, TypeScript, CSS, and more!
+              Ask me to build features, fix bugs, search the web, or edit your code. I can help with
+              React, TypeScript, CSS, and more!
             </p>
           </div>
         )}
@@ -154,8 +149,7 @@ export default function AIChatPanel({
       {fileChanges.length > 0 && (
         <div className="px-6 py-2 bg-green-50 border-t border-green-200">
           <p className="text-sm text-green-800">
-            ✓ {fileChanges.length} file{fileChanges.length !== 1 ? "s" : ""}{" "}
-            modified
+            ✓ {fileChanges.length} file{fileChanges.length !== 1 ? "s" : ""} modified
           </p>
         </div>
       )}
@@ -188,9 +182,7 @@ export default function AIChatPanel({
             )}
           </button>
         </form>
-        <p className="mt-2 text-xs text-gray-500">
-          Press Enter to send, Shift+Enter for new line
-        </p>
+        <p className="mt-2 text-xs text-gray-500">Press Enter to send, Shift+Enter for new line</p>
       </div>
     </div>
   );
@@ -210,9 +202,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         }`}
       >
         {/* Message content */}
-        <div className="whitespace-pre-wrap break-words text-sm">
-          {message.content}
-        </div>
+        <div className="whitespace-pre-wrap break-words text-sm">{message.content}</div>
 
         {/* Tool uses */}
         {message.toolUses && message.toolUses.length > 0 && (
@@ -224,9 +214,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         )}
 
         {/* Timestamp */}
-        <div
-          className={`mt-2 text-xs ${isUser ? "text-blue-200" : "text-gray-500"}`}
-        >
+        <div className={`mt-2 text-xs ${isUser ? "text-blue-200" : "text-gray-500"}`}>
           {new Date(message.timestamp).toLocaleTimeString()}
           {message.isStreaming && (
             <span className="ml-2 inline-flex items-center gap-1">
@@ -289,15 +277,11 @@ function ToolUseIndicator({ tool }: { tool: ToolUse }) {
   };
 
   return (
-    <div
-      className={`flex items-center gap-2 text-xs ${getStatusColor(tool.status)}`}
-    >
+    <div className={`flex items-center gap-2 text-xs ${getStatusColor(tool.status)}`}>
       {getStatusIcon(tool.status)}
       <span className="font-medium">{formatToolName(tool.name)}</span>
       {tool.status === "completed" && tool.output && (
-        <span className="text-gray-600">
-          {tool.output.action && `(${tool.output.action})`}
-        </span>
+        <span className="text-gray-600">{tool.output.action && `(${tool.output.action})`}</span>
       )}
       {tool.error && <span className="text-red-600">- {tool.error}</span>}
     </div>

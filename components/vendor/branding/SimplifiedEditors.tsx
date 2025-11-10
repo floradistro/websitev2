@@ -27,8 +27,7 @@ export function SimpleBusinessHours({
   value: BusinessHours;
   onChange: (v: BusinessHours) => void;
 }) {
-  const update = (day: string, hours: DayHours | undefined) =>
-    onChange({ ...value, [day]: hours });
+  const update = (day: string, hours: DayHours | undefined) => onChange({ ...value, [day]: hours });
 
   return (
     <div className="space-y-2">
@@ -37,15 +36,10 @@ export function SimpleBusinessHours({
         const closed = hours?.closed;
 
         return (
-          <div
-            key={day}
-            className={cn("border", ds.colors.border.default, "rounded-lg p-3")}
-          >
+          <div key={day} className={cn("border", ds.colors.border.default, "rounded-lg p-3")}>
             <div className="flex items-center gap-3 mb-2">
               <Clock size={14} className={ds.colors.text.quaternary} />
-              <span className={cn(ds.typography.size.sm, "capitalize flex-1")}>
-                {day}
-              </span>
+              <span className={cn(ds.typography.size.sm, "capitalize flex-1")}>{day}</span>
               <label className="flex items-center gap-2 text-xs">
                 <input
                   type="checkbox"
@@ -165,11 +159,7 @@ export function SimplePolicy({
             {count}/{maxLength}
           </span>
           {value && (
-            <button
-              type="button"
-              onClick={copy}
-              className="p-1 hover:bg-white/5 rounded"
-            >
+            <button type="button" onClick={copy} className="p-1 hover:bg-white/5 rounded">
               {copied ? <Check size={12} /> : <Copy size={12} />}
             </button>
           )}
@@ -177,10 +167,7 @@ export function SimplePolicy({
             <button
               type="button"
               onClick={() => setShowTemplate(!showTemplate)}
-              className={cn(
-                "px-2 py-1 text-xs border rounded",
-                ds.colors.border.default,
-              )}
+              className={cn("px-2 py-1 text-xs border rounded", ds.colors.border.default)}
             >
               {showTemplate ? "Hide" : "Template"}
             </button>
@@ -189,13 +176,7 @@ export function SimplePolicy({
       </div>
 
       {showTemplate && template && (
-        <div
-          className={cn(
-            "p-3 border rounded-lg",
-            ds.colors.border.default,
-            "space-y-2",
-          )}
-        >
+        <div className={cn("p-3 border rounded-lg", ds.colors.border.default, "space-y-2")}>
           <button
             type="button"
             onClick={() => {
@@ -206,11 +187,7 @@ export function SimplePolicy({
           >
             Use Template
           </button>
-          <pre
-            className={cn(
-              "p-2 bg-black/20 rounded text-xs overflow-auto max-h-40",
-            )}
-          >
+          <pre className={cn("p-2 bg-black/20 rounded text-xs overflow-auto max-h-40")}>
             {template}
           </pre>
         </div>
@@ -253,8 +230,7 @@ export function SimpleCssEditor({
     const errs: string[] = [];
     if (css.includes("javascript:")) errs.push("JavaScript URLs not allowed");
     if (css.includes("<script")) errs.push("Script tags not allowed");
-    if ((css.match(/!important/g) || []).length > 10)
-      errs.push("Too many !important (max 10)");
+    if ((css.match(/!important/g) || []).length > 10) errs.push("Too many !important (max 10)");
     setErrors(errs);
     return errs.length === 0;
   };
@@ -331,9 +307,7 @@ export function SimpleCssEditor({
             <div className="p-4 bg-white/5 border border-white/10 rounded">
               <h3>Sample Element</h3>
             </div>
-            <button className="px-4 py-2 bg-blue-500 rounded">
-              Sample Button
-            </button>
+            <button className="px-4 py-2 bg-blue-500 rounded">Sample Button</button>
           </div>
         </div>
       )}

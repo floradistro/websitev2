@@ -3,6 +3,7 @@ import * as path from "path";
 import Handlebars from "handlebars";
 import { StoreRequirements } from "../nlp/schemas";
 
+import { logger } from "@/lib/logger";
 /**
  * Code Generation Engine - Generates Next.js storefront code from specifications
  */
@@ -27,7 +28,7 @@ export class StorefrontGenerator {
     outputPath: string;
     files: string[];
   }> {
-    console.log(`🔵 Generating storefront for vendor: ${vendorSlug}`);
+    logger.debug(`🔵 Generating storefront for vendor: ${vendorSlug}`);
 
     const projectPath = path.join(this.outputDir, `storefront-${vendorSlug}`);
 
@@ -44,17 +45,12 @@ export class StorefrontGenerator {
     await this.applyCustomizations(projectPath, vendorId, requirements);
 
     // 5. Generate config files
-    await this.generateConfigFiles(
-      projectPath,
-      vendorId,
-      vendorSlug,
-      requirements,
-    );
+    await this.generateConfigFiles(projectPath, vendorId, vendorSlug, requirements);
 
     // 6. Get list of generated files
     const files = await this.getFileList(projectPath);
 
-    console.log(`✅ Generated ${files.length} files for ${vendorSlug}`);
+    logger.debug(`✅ Generated ${files.length} files for ${vendorSlug}`);
 
     return {
       outputPath: projectPath,
@@ -94,26 +90,14 @@ export class StorefrontGenerator {
     const cssPath = path.join(projectPath, "app", "globals.css");
     let css = await fs.readFile(cssPath, "utf-8");
 
-    css = css.replace(
-      /--primary: .+;/,
-      `--primary: ${requirements.theme.colors.primary};`,
-    );
-    css = css.replace(
-      /--secondary: .+;/,
-      `--secondary: ${requirements.theme.colors.secondary};`,
-    );
-    css = css.replace(
-      /--accent: .+;/,
-      `--accent: ${requirements.theme.colors.accent};`,
-    );
+    css = css.replace(/--primary: .+;/, `--primary: ${requirements.theme.colors.primary};`);
+    css = css.replace(/--secondary: .+;/, `--secondary: ${requirements.theme.colors.secondary};`);
+    css = css.replace(/--accent: .+;/, `--accent: ${requirements.theme.colors.accent};`);
     css = css.replace(
       /--background: .+;/,
       `--background: ${requirements.theme.colors.background};`,
     );
-    css = css.replace(
-      /--text: .+;/,
-      `--text: ${requirements.theme.colors.text};`,
-    );
+    css = css.replace(/--text: .+;/, `--text: ${requirements.theme.colors.text};`);
 
     // Add Google Fonts import
     const fontImport = `@import url('https://fonts.googleapis.com/css2?family=${requirements.theme.typography.headingFont.replace(" ", "+")}:wght@300;400;500;600;700&family=${requirements.theme.typography.bodyFont.replace(" ", "+")}:wght@300;400;500;600&display=swap');\n\n`;
@@ -212,10 +196,7 @@ export default nextConfig;
       },
     };
 
-    await fs.writeFile(
-      path.join(projectPath, "vercel.json"),
-      JSON.stringify(vercelJson, null, 2),
-    );
+    await fs.writeFile(path.join(projectPath, "vercel.json"), JSON.stringify(vercelJson, null, 2));
 
     // Store requirements for future reference
     await fs.writeFile(
@@ -227,10 +208,7 @@ export default nextConfig;
   /**
    * Get list of all generated files
    */
-  private async getFileList(
-    dir: string,
-    fileList: string[] = [],
-  ): Promise<string[]> {
+  private async getFileList(dir: string, fileList: string[] = []): Promise<string[]> {
     const files = await fs.readdir(dir, { withFileTypes: true });
 
     for (const file of files) {

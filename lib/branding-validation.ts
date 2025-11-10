@@ -6,9 +6,7 @@
 
 import type { BrandingFormState, BrandingValidation } from "@/types/branding";
 
-export function validateBrandingForm(
-  formData: Partial<BrandingFormState>,
-): BrandingValidation {
+export function validateBrandingForm(formData: Partial<BrandingFormState>): BrandingValidation {
   const errors: { [key: string]: string } = {};
 
   // Tagline validation
@@ -39,10 +37,7 @@ export function validateBrandingForm(
 
   // Color contrast validation (basic)
   if (formData.primaryColor && formData.backgroundColor) {
-    const contrast = getContrastRatio(
-      formData.primaryColor,
-      formData.backgroundColor,
-    );
+    const contrast = getContrastRatio(formData.primaryColor, formData.backgroundColor);
     if (contrast < 3) {
       errors.colorContrast =
         "Low contrast between primary color and background. Consider choosing colors with better contrast for readability.";
@@ -125,9 +120,7 @@ function getRelativeLuminance(hex: string): number {
 
   const [r, g, b] = rgb.map((val) => {
     const sRGB = val / 255;
-    return sRGB <= 0.03928
-      ? sRGB / 12.92
-      : Math.pow((sRGB + 0.055) / 1.055, 2.4);
+    return sRGB <= 0.03928 ? sRGB / 12.92 : Math.pow((sRGB + 0.055) / 1.055, 2.4);
   });
 
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
@@ -139,11 +132,7 @@ function getRelativeLuminance(hex: string): number {
 function hexToRgb(hex: string): [number, number, number] | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
-    ? [
-        parseInt(result[1], 16),
-        parseInt(result[2], 16),
-        parseInt(result[3], 16),
-      ]
+    ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
     : null;
 }
 
@@ -168,10 +157,7 @@ export function formatUrl(url: string): string {
 /**
  * Validate and sanitize file for upload
  */
-export function validateImageFile(
-  file: File,
-  maxSizeMB: number = 10,
-): string | null {
+export function validateImageFile(file: File, maxSizeMB: number = 10): string | null {
   const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
   if (!validTypes.includes(file.type)) {

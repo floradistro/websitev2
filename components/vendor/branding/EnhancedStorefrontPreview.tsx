@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ExternalLink,
-  Monitor,
-  Tablet,
-  Smartphone,
-  RefreshCw,
-} from "lucide-react";
+import { ExternalLink, Monitor, Tablet, Smartphone, RefreshCw } from "lucide-react";
 import { ds, cn } from "@/lib/design-system";
 
 interface EnhancedStorefrontPreviewProps {
@@ -55,20 +49,11 @@ export function EnhancedStorefrontPreview({
           className,
         )}
       >
-        <Monitor
-          size={48}
-          className={cn(ds.colors.text.quaternary, "mx-auto mb-4")}
-        />
+        <Monitor size={48} className={cn(ds.colors.text.quaternary, "mx-auto mb-4")} />
         <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
           Storefront preview will appear here
         </p>
-        <p
-          className={cn(
-            ds.typography.size.xs,
-            ds.colors.text.quaternary,
-            "mt-2",
-          )}
-        >
+        <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mt-2")}>
           Save your branding settings to see live preview
         </p>
       </div>
@@ -118,10 +103,7 @@ export function EnhancedStorefrontPreview({
           </h3>
 
           {isLoading && (
-            <RefreshCw
-              size={12}
-              className={cn(ds.colors.text.quaternary, "animate-spin")}
-            />
+            <RefreshCw size={12} className={cn(ds.colors.text.quaternary, "animate-spin")} />
           )}
         </div>
 
@@ -271,14 +253,9 @@ export function EnhancedStorefrontPreview({
               <div className="text-center">
                 <RefreshCw
                   size={32}
-                  className={cn(
-                    ds.colors.text.tertiary,
-                    "animate-spin mx-auto mb-2",
-                  )}
+                  className={cn(ds.colors.text.tertiary, "animate-spin mx-auto mb-2")}
                 />
-                <p
-                  className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}
-                >
+                <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                   Loading preview...
                 </p>
               </div>
@@ -289,16 +266,10 @@ export function EnhancedStorefrontPreview({
 
       {/* Footer info */}
       <div className={cn("border-t", ds.colors.border.default, "px-4 py-3")}>
-        <div
-          className={cn(
-            ds.typography.size.micro,
-            ds.colors.text.quaternary,
-            "space-y-1",
-          )}
-        >
+        <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "space-y-1")}>
           <div>
-            💡 <strong>Tip:</strong> Changes appear after saving and may take a
-            few seconds to update
+            💡 <strong>Tip:</strong> Changes appear after saving and may take a few seconds to
+            update
           </div>
           <div>• Click refresh to reload the preview</div>
           <div>• Switch between devices to test responsiveness</div>

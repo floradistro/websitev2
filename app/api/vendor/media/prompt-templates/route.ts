@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
 // GET - List all prompt templates (own + public)
@@ -45,11 +46,8 @@ export async function GET(request: NextRequest) {
     const { data: templates, error } = await query;
 
     if (error) {
-      console.error("Error fetching templates:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch templates" },
-        { status: 500 },
-      );
+      logger.error("Error fetching templates:", error);
+      return NextResponse.json({ error: "Failed to fetch templates" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -58,11 +56,8 @@ export async function GET(request: NextRequest) {
       count: templates?.length || 0,
     });
   } catch (error: any) {
-    console.error("GET /prompt-templates error:", error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    logger.error("GET /prompt-templates error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -74,29 +69,15 @@ export async function POST(request: NextRequest) {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const {
-      name,
-      description,
-      prompt_text,
-      category,
-      style,
-      parameters,
-      is_public = false,
-    } = body;
+    const { name, description, prompt_text, category, style, parameters, is_public = false } = body;
 
     // Validation
     if (!name || !prompt_text) {
-      return NextResponse.json(
-        { error: "Name and prompt text are required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Name and prompt text are required" }, { status: 400 });
     }
 
     if (name.length > 255) {
-      return NextResponse.json(
-        { error: "Name must be 255 characters or less" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Name must be 255 characters or less" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -118,11 +99,8 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Error creating template:", error);
-      return NextResponse.json(
-        { error: "Failed to create template" },
-        { status: 500 },
-      );
+      logger.error("Error creating template:", error);
+      return NextResponse.json({ error: "Failed to create template" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -130,10 +108,7 @@ export async function POST(request: NextRequest) {
       template,
     });
   } catch (error: any) {
-    console.error("POST /prompt-templates error:", error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    logger.error("POST /prompt-templates error:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

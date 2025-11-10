@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const authResult = await requireVendor(request);
@@ -35,12 +36,9 @@ export async function POST(request: NextRequest) {
 
     if (verifyError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching purchase order:", verifyError);
+        logger.error("❌ Error fetching purchase order:", verifyError);
       }
-      return NextResponse.json(
-        { success: false, error: "Database error" },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: "Database error" }, { status: 500 });
     }
 
     if (!po) {
@@ -52,8 +50,7 @@ export async function POST(request: NextRequest) {
 
     // Process each item
     for (const item of items) {
-      const { po_item_id, quantity_received, condition, quality_notes, notes } =
-        item;
+      const { po_item_id, quantity_received, condition, quality_notes, notes } = item;
 
       if (!po_item_id || !quantity_received || quantity_received <= 0) {
         continue;
@@ -68,14 +65,14 @@ export async function POST(request: NextRequest) {
 
       if (itemError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error fetching PO item:", itemError);
+          logger.error("❌ Error fetching PO item:", itemError);
         }
         continue;
       }
 
       if (!poItem) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ PO item not found:", po_item_id);
+          logger.error("❌ PO item not found:", po_item_id);
         }
         continue;
       }
@@ -108,14 +105,14 @@ export async function POST(request: NextRequest) {
 
         if (createError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ Error creating inventory:", createError);
+            logger.error("❌ Error creating inventory:", createError);
           }
           continue;
         }
 
         if (!newInv) {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ Inventory creation returned null");
+            logger.error("❌ Inventory creation returned null");
           }
           continue;
         }
@@ -142,7 +139,7 @@ export async function POST(request: NextRequest) {
 
         if (updateError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error updating inventory:", updateError);
+            logger.error("Error updating inventory:", updateError);
           }
           continue;
         }
@@ -151,21 +148,19 @@ export async function POST(request: NextRequest) {
       }
 
       // Create receiving record
-      const { error: receiveError } = await supabase
-        .from("purchase_order_receives")
-        .insert({
-          purchase_order_id: po_id,
-          po_item_id: po_item_id,
-          quantity_received: quantity_received,
-          condition: condition || "good",
-          quality_notes,
-          notes,
-          inventory_id: inventoryId,
-        });
+      const { error: receiveError } = await supabase.from("purchase_order_receives").insert({
+        purchase_order_id: po_id,
+        po_item_id: po_item_id,
+        quantity_received: quantity_received,
+        condition: condition || "good",
+        quality_notes,
+        notes,
+        inventory_id: inventoryId,
+      });
 
       if (receiveError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error creating receive record:", receiveError);
+          logger.error("Error creating receive record:", receiveError);
         }
         continue;
       }
@@ -204,7 +199,7 @@ export async function POST(request: NextRequest) {
 
     if (fetchError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching updated PO:", fetchError);
+        logger.error("❌ Error fetching updated PO:", fetchError);
       }
       // Don't fail here - items were received successfully
     }
@@ -216,11 +211,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in receive items API:", error);
+      logger.error("Error in receive items API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

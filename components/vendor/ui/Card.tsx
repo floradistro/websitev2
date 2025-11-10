@@ -29,11 +29,7 @@ interface CardHeaderProps {
   action?: ReactNode;
 }
 
-export function VendorCardHeader({
-  children,
-  className,
-  action,
-}: CardHeaderProps) {
+export function VendorCardHeader({ children, className, action }: CardHeaderProps) {
   return (
     <div
       className={tw(
@@ -49,11 +45,7 @@ export function VendorCardHeader({
 }
 
 export function VendorCardContent({ children, className }: CardProps) {
-  return (
-    <div className={tw(vendorTheme.components.cardContent, className)}>
-      {children}
-    </div>
-  );
+  return <div className={tw(vendorTheme.components.cardContent, className)}>{children}</div>;
 }
 
 interface CardTitleProps {
@@ -62,7 +54,5 @@ interface CardTitleProps {
 }
 
 export function VendorCardTitle({ children, className }: CardTitleProps) {
-  return (
-    <h2 className={tw(vendorTheme.typography.label, className)}>{children}</h2>
-  );
+  return <h2 className={tw(vendorTheme.typography.label, className)}>{children}</h2>;
 }

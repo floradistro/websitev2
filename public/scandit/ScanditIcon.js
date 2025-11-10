@@ -1,4 +1,1 @@
-export {
-  b as ScanditIcon,
-  a as ScanditIconShape,
-} from "./chunks/chunk-27Z5CYJL.js";
+export { b as ScanditIcon, a as ScanditIconShape } from "./chunks/chunk-27Z5CYJL.js";

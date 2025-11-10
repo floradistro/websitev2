@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Public API endpoint for TV displays to fetch vendor info
  * Uses service role to bypass RLS
@@ -11,10 +12,7 @@ export async function GET(request: NextRequest) {
     const vendorId = searchParams.get("vendor_id");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -27,12 +25,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching vendor:", error);
+        logger.error("❌ Error fetching vendor:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -41,11 +36,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ TV Display vendor API error:", error);
+      logger.error("❌ TV Display vendor API error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

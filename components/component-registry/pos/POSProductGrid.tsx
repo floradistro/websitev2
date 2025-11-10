@@ -2,18 +2,13 @@
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import Image from "next/image";
-import {
-  ShoppingBag,
-  Eye,
-  Package,
-  ArrowDownAZ,
-  PackageCheck,
-} from "lucide-react";
+import { ShoppingBag, Eye, Package, ArrowDownAZ, PackageCheck } from "lucide-react";
 import Link from "next/link";
 import { POSQuickView } from "./POSQuickView";
 import { POSVendorDropdown } from "./POSVendorDropdown";
 import { useAppAuth } from "@/context/AppAuthContext";
 
+import { logger } from "@/lib/logger";
 interface PricingTier {
   break_id: string;
   label: string;
@@ -70,12 +65,7 @@ interface POSProductGridProps {
 
 // Category hierarchy - subcategories grouped under parent categories
 const CATEGORY_HIERARCHY: Record<string, string[]> = {
-  Beverages: [
-    "Day Drinker (5mg)",
-    "Golden Hour (10mg)",
-    "Darkside (30mg)",
-    "Riptide (60mg)",
-  ],
+  Beverages: ["Day Drinker (5mg)", "Golden Hour (10mg)", "Darkside (30mg)", "Riptide (60mg)"],
 };
 
 export function POSProductGrid({
@@ -101,19 +91,11 @@ export function POSProductGrid({
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
-    null,
-  );
-  const [selectedStrainType, setSelectedStrainType] = useState<string | null>(
-    null,
-  );
-  const [selectedConsistency, setSelectedConsistency] = useState<string | null>(
-    null,
-  );
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
+  const [selectedStrainType, setSelectedStrainType] = useState<string | null>(null);
+  const [selectedConsistency, setSelectedConsistency] = useState<string | null>(null);
   const [selectedFlavor, setSelectedFlavor] = useState<string | null>(null);
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(
-    null,
-  );
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   // Alphabetical scroll indicator
   const [sortAlphabetically, setSortAlphabetically] = useState(false);
@@ -138,9 +120,7 @@ export function POSProductGrid({
 
   const loadInventory = async () => {
     try {
-      const response = await fetch(
-        `/api/pos/inventory?locationId=${locationId}`,
-      );
+      const response = await fetch(`/api/pos/inventory?locationId=${locationId}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -152,7 +132,7 @@ export function POSProductGrid({
       setError(null);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading inventory:", err);
+        logger.error("Error loading inventory:", err);
       }
       setError(err.message);
     } finally {
@@ -211,9 +191,7 @@ export function POSProductGrid({
   // Get unique parent categories (excluding subcategories)
   const categories = useMemo(() => {
     const allCategories = new Set(
-      products
-        .map((p) => p.category)
-        .filter((cat): cat is string => typeof cat === "string"),
+      products.map((p) => p.category).filter((cat): cat is string => typeof cat === "string"),
     );
     const parents = new Set<string>();
 
@@ -243,9 +221,7 @@ export function POSProductGrid({
     if (!subcats) return [];
 
     // Only show subcategories that have products
-    return subcats.filter((subcat) =>
-      products.some((p) => p.category === subcat),
-    );
+    return subcats.filter((subcat) => products.some((p) => p.category === subcat));
   }, [selectedCategory, products]);
 
   // Get available strain types for current category
@@ -257,16 +233,12 @@ export function POSProductGrid({
       // When "all" is selected, show strain types from all relevant categories
       if (selectedCategory === "all") {
         if (relevantCategories.includes(product.category || "")) {
-          const strainType = product.fields?.find(
-            (f) => f.label === "strain_type",
-          )?.value;
+          const strainType = product.fields?.find((f) => f.label === "strain_type")?.value;
           if (strainType) strainTypes.add(strainType);
         }
       } else if (product.category === selectedCategory) {
         // When specific category selected, only show for that category
-        const strainType = product.fields?.find(
-          (f) => f.label === "strain_type",
-        )?.value;
+        const strainType = product.fields?.find((f) => f.label === "strain_type")?.value;
         if (strainType) strainTypes.add(strainType);
       }
     });
@@ -279,9 +251,7 @@ export function POSProductGrid({
     products.forEach((product) => {
       if (selectedCategory === "all" || product.category === "Concentrates") {
         if (product.category === "Concentrates") {
-          const consistency = product.fields?.find(
-            (f) => f.label === "consistency",
-          )?.value;
+          const consistency = product.fields?.find((f) => f.label === "consistency")?.value;
           if (consistency) consistencies.add(consistency);
         }
       }
@@ -312,10 +282,7 @@ export function POSProductGrid({
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
       // Search filter
-      if (
-        searchQuery &&
-        !product.name.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
+      if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
 
@@ -345,9 +312,7 @@ export function POSProductGrid({
 
       // Strain type filter
       if (selectedStrainType) {
-        const strainType = product.fields?.find(
-          (f) => f.label === "strain_type",
-        )?.value;
+        const strainType = product.fields?.find((f) => f.label === "strain_type")?.value;
         if (strainType !== selectedStrainType) {
           return false;
         }
@@ -355,9 +320,7 @@ export function POSProductGrid({
 
       // Consistency filter
       if (selectedConsistency) {
-        const consistency = product.fields?.find(
-          (f) => f.label === "consistency",
-        )?.value;
+        const consistency = product.fields?.find((f) => f.label === "consistency")?.value;
         if (consistency !== selectedConsistency) {
           return false;
         }
@@ -414,9 +377,7 @@ export function POSProductGrid({
       // e.g., "2g - $40" means $40 total, so unit price = $40 / 2 = $20
       price = priceTier.price ? priceTier.price / priceTier.qty : product.price;
     } else {
-      quantity = parseFloat(
-        prompt(`Enter quantity for ${product.name}:`, "1") || "0",
-      );
+      quantity = parseFloat(prompt(`Enter quantity for ${product.name}:`, "1") || "0");
       price = product.price;
     }
 
@@ -507,9 +468,7 @@ export function POSProductGrid({
                 style={{ animationDelay: "300ms" }}
               />
             </div>
-            <span className="text-xs uppercase tracking-[0.15em]">
-              Loading products
-            </span>
+            <span className="text-xs uppercase tracking-[0.15em]">Loading products</span>
           </div>
         </div>
       </div>
@@ -519,9 +478,7 @@ export function POSProductGrid({
   if (error) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6">
-        <div className="text-red-500 font-bold mb-2">
-          Error Loading Inventory
-        </div>
+        <div className="text-red-500 font-bold mb-2">Error Loading Inventory</div>
         <div className="text-white/60">{error}</div>
         <button
           onClick={loadInventory}
@@ -627,11 +584,7 @@ export function POSProductGrid({
                 viewBox="0 0 24 24"
                 strokeWidth={2.5}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 9l-7 7-7-7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
             </div>
           </div>
@@ -668,9 +621,7 @@ export function POSProductGrid({
               <button
                 key={`subcat-${subcat}`}
                 onClick={() => {
-                  setSelectedSubcategory(
-                    subcat === selectedSubcategory ? null : subcat,
-                  );
+                  setSelectedSubcategory(subcat === selectedSubcategory ? null : subcat);
                   if (subcat !== selectedSubcategory) {
                     setSelectedFlavor(null);
                   }
@@ -688,11 +639,7 @@ export function POSProductGrid({
             {availableStrainTypes.map((strain) => (
               <button
                 key={`strain-${strain}`}
-                onClick={() =>
-                  setSelectedStrainType(
-                    strain === selectedStrainType ? null : strain,
-                  )
-                }
+                onClick={() => setSelectedStrainType(strain === selectedStrainType ? null : strain)}
                 className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
                   selectedStrainType === strain
                     ? "bg-white text-black shadow-lg"
@@ -707,9 +654,7 @@ export function POSProductGrid({
               <button
                 key={`consistency-${consistency}`}
                 onClick={() =>
-                  setSelectedConsistency(
-                    consistency === selectedConsistency ? null : consistency,
-                  )
+                  setSelectedConsistency(consistency === selectedConsistency ? null : consistency)
                 }
                 className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
                   selectedConsistency === consistency
@@ -724,9 +669,7 @@ export function POSProductGrid({
             {availableFlavors.map((flavor) => (
               <button
                 key={`flavor-${flavor}`}
-                onClick={() =>
-                  setSelectedFlavor(flavor === selectedFlavor ? null : flavor)
-                }
+                onClick={() => setSelectedFlavor(flavor === selectedFlavor ? null : flavor)}
                 className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
                   selectedFlavor === flavor
                     ? "bg-white text-black shadow-lg"
@@ -780,38 +723,36 @@ export function POSProductGrid({
           ) : displayMode === "cards" ? (
             sortAlphabetically ? (
               <>
-                {Array.from(productsByLetter.entries()).map(
-                  ([letter, products]) => (
-                    <div
-                      key={letter}
-                      ref={(el) => {
-                        if (el) productRefsMap.current.set(letter, el);
-                      }}
-                    >
-                      {/* Letter Header */}
-                      <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-sm py-2 mb-3">
-                        <h3 className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-light">
-                          {letter}
-                        </h3>
-                      </div>
-
-                      {/* Products Grid for this letter */}
-                      <div className="grid grid-cols-3 gap-4 mb-6">
-                        {products.map((product) => (
-                          <ProductCard
-                            key={product.id}
-                            product={product}
-                            onAddToCart={handleAddProduct}
-                            onProductClick={onProductClick}
-                            onQuickView={setQuickViewProduct}
-                            showInventory={showInventory}
-                            vendorLogo={vendor?.logo_url || null}
-                          />
-                        ))}
-                      </div>
+                {Array.from(productsByLetter.entries()).map(([letter, products]) => (
+                  <div
+                    key={letter}
+                    ref={(el) => {
+                      if (el) productRefsMap.current.set(letter, el);
+                    }}
+                  >
+                    {/* Letter Header */}
+                    <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-sm py-2 mb-3">
+                      <h3 className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-light">
+                        {letter}
+                      </h3>
                     </div>
-                  ),
-                )}
+
+                    {/* Products Grid for this letter */}
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      {products.map((product) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          onAddToCart={handleAddProduct}
+                          onProductClick={onProductClick}
+                          onQuickView={setQuickViewProduct}
+                          showInventory={showInventory}
+                          vendorLogo={vendor?.logo_url || null}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </>
             ) : (
               <div className="grid grid-cols-3 gap-4 pt-1">
@@ -852,9 +793,7 @@ export function POSProductGrid({
                     <div className="flex-1 text-left">
                       <div className="text-white font-bold">{product.name}</div>
                       {product.category && (
-                        <div className="text-white/40 text-xs">
-                          {product.category}
-                        </div>
+                        <div className="text-white/40 text-xs">{product.category}</div>
                       )}
                     </div>
                   </div>
@@ -874,10 +813,7 @@ export function POSProductGrid({
                       </div>
                     )}
 
-                    <div
-                      className="text-white font-black text-xl"
-                      style={{ fontWeight: 900 }}
-                    >
+                    <div className="text-white font-black text-xl" style={{ fontWeight: 900 }}>
                       ${product.price.toFixed(2)}
                     </div>
                   </div>
@@ -888,15 +824,13 @@ export function POSProductGrid({
         </div>
 
         {/* Alphabetical Scroll Indicator */}
-        {sortAlphabetically &&
-          showScrollIndicator &&
-          availableLetters.length > 1 && (
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5 py-2">
-              {availableLetters.map((letter) => (
-                <button
-                  key={letter}
-                  onClick={() => jumpToLetter(letter)}
-                  className={`
+        {sortAlphabetically && showScrollIndicator && availableLetters.length > 1 && (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-0.5 py-2">
+            {availableLetters.map((letter) => (
+              <button
+                key={letter}
+                onClick={() => jumpToLetter(letter)}
+                className={`
                   w-5 h-5 flex items-center justify-center text-[9px] font-light tracking-wide
                   transition-all duration-200 rounded-full
                   ${
@@ -905,12 +839,12 @@ export function POSProductGrid({
                       : "bg-white/[0.05] text-white/40 hover:bg-white/[0.1] hover:text-white/60"
                   }
                 `}
-                >
-                  {letter}
-                </button>
-              ))}
-            </div>
-          )}
+              >
+                {letter}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Quick View Modal */}
@@ -943,9 +877,7 @@ function ProductCard({
   showInventory,
   vendorLogo,
 }: ProductCardProps) {
-  const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(
-    null,
-  );
+  const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddButton, setShowAddButton] = useState(false);
 
   const tiers = product.pricing_tiers || [];
@@ -1067,9 +999,7 @@ function ProductCard({
           <div className="flex items-center gap-1.5 mb-3">
             <div
               className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                product.inventory_quantity > 0
-                  ? "bg-green-500"
-                  : "bg-red-500/60"
+                product.inventory_quantity > 0 ? "bg-green-500" : "bg-red-500/60"
               }`}
             />
             <span className="text-[10px] uppercase tracking-[0.15em] text-white/60">
@@ -1093,10 +1023,7 @@ function ProductCard({
                   colorScheme: "dark",
                 }}
               >
-                <option
-                  value=""
-                  style={{ backgroundColor: "#000", color: "#fff" }}
-                >
+                <option value="" style={{ backgroundColor: "#000", color: "#fff" }}>
                   Select Quantity
                 </option>
                 {tiers.map((tier, index) => {
@@ -1120,11 +1047,7 @@ function ProductCard({
                   viewBox="0 0 24 24"
                   strokeWidth={2.5}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>

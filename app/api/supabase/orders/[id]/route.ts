@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+import { logger } from "@/lib/logger";
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const supabase = getServiceSupabase();
@@ -42,16 +40,13 @@ export async function GET(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
@@ -61,18 +56,12 @@ export async function PUT(
     const updates: any = {};
 
     if (body.status !== undefined) updates.status = body.status;
-    if (body.payment_status !== undefined)
-      updates.payment_status = body.payment_status;
-    if (body.fulfillment_status !== undefined)
-      updates.fulfillment_status = body.fulfillment_status;
-    if (body.tracking_number !== undefined)
-      updates.tracking_number = body.tracking_number;
-    if (body.tracking_url !== undefined)
-      updates.tracking_url = body.tracking_url;
-    if (body.shipping_carrier !== undefined)
-      updates.shipping_carrier = body.shipping_carrier;
-    if (body.internal_notes !== undefined)
-      updates.internal_notes = body.internal_notes;
+    if (body.payment_status !== undefined) updates.payment_status = body.payment_status;
+    if (body.fulfillment_status !== undefined) updates.fulfillment_status = body.fulfillment_status;
+    if (body.tracking_number !== undefined) updates.tracking_number = body.tracking_number;
+    if (body.tracking_url !== undefined) updates.tracking_url = body.tracking_url;
+    if (body.shipping_carrier !== undefined) updates.shipping_carrier = body.shipping_carrier;
+    if (body.internal_notes !== undefined) updates.internal_notes = body.internal_notes;
 
     // Update status dates
     if (body.status === "completed" && updates.status) {
@@ -99,7 +88,7 @@ export async function PUT(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

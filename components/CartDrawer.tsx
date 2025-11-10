@@ -1,16 +1,7 @@
 "use client";
 
 import { useEffect, useState, memo, useCallback } from "react";
-import {
-  X,
-  Trash2,
-  ArrowRight,
-  Store,
-  Truck,
-  Plus,
-  Minus,
-  Edit3,
-} from "lucide-react";
+import { X, Trash2, ArrowRight, Store, Truck, Plus, Minus, Edit3 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import Link from "next/link";
 import Image from "next/image";
@@ -42,8 +33,7 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   useEffect(() => {
     if (isOpen) {
       // Lock body scroll completely for PWA mode
-      const scrollbarWidth =
-        window.innerWidth - document.documentElement.clientWidth;
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
       document.body.style.position = "fixed";
       document.body.style.top = "0";
@@ -164,10 +154,7 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               type="button"
               aria-label="Close cart"
             >
-              <X
-                size={20}
-                className="text-white/70 group-hover:text-white transition-colors"
-              />
+              <X size={20} className="text-white/70 group-hover:text-white transition-colors" />
             </button>
           </div>
         </div>
@@ -188,9 +175,7 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="w-20 h-20 border border-white/10 rounded-2xl flex items-center justify-center mb-6">
                 <X size={32} className="text-white/20" />
               </div>
-              <p className="text-lg font-light text-white/50 mb-8">
-                Your cart is empty
-              </p>
+              <p className="text-lg font-light text-white/50 mb-8">Your cart is empty</p>
               <Link
                 href="/products"
                 onClick={onClose}
@@ -258,9 +243,7 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           {item.orderType === "pickup" ? (
                             <>
                               <Store size={12} />
-                              <span className="truncate">
-                                {item.locationName}
-                              </span>
+                              <span className="truncate">{item.locationName}</span>
                             </>
                           ) : (
                             <>
@@ -276,10 +259,7 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <div className="flex items-center gap-2 bg-[#1a1a1a] rounded-full p-1">
                           <button
                             onClick={() =>
-                              handleUpdateQuantity(
-                                item.productId,
-                                Math.max(1, item.quantity - 1),
-                              )
+                              handleUpdateQuantity(item.productId, Math.max(1, item.quantity - 1))
                             }
                             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/20 transition-colors"
                             type="button"
@@ -292,12 +272,7 @@ function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() =>
-                              handleUpdateQuantity(
-                                item.productId,
-                                item.quantity + 1,
-                              )
-                            }
+                            onClick={() => handleUpdateQuantity(item.productId, item.quantity + 1)}
                             className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 active:bg-white/20 transition-colors"
                             type="button"
                             aria-label="Increase quantity"

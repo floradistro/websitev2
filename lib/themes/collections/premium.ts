@@ -165,8 +165,7 @@ export const premiumThemes: TVTheme[] = [
         background: "#ffffff",
         borderColor: "rgba(0, 113, 227, 0.08)",
         borderWidth: "1px",
-        shadow:
-          "0 2px 16px rgba(0, 113, 227, 0.04), 0 1px 4px rgba(0, 113, 227, 0.02)",
+        shadow: "0 2px 16px rgba(0, 113, 227, 0.04), 0 1px 4px rgba(0, 113, 227, 0.02)",
       },
       productName: {
         color: "#1d1d1f",
@@ -198,16 +197,14 @@ export const premiumThemes: TVTheme[] = [
     name: "Sunset Boulevard",
     description: "Warm gradients. Premium vibrancy.",
     preview: {
-      background:
-        "linear-gradient(135deg, #ff6b6b 0%, #c44569 50%, #4a148c 100%)",
+      background: "linear-gradient(135deg, #ff6b6b 0%, #c44569 50%, #4a148c 100%)",
       cardBg: "rgba(255, 255, 255, 0.1)",
       textPrimary: "#ffffff",
       textSecondary: "#f5f5f7",
       accent: "#ff6b6b",
     },
     styles: {
-      background:
-        "linear-gradient(135deg, #ff6b6b 0%, #c44569 50%, #4a148c 100%)",
+      background: "linear-gradient(135deg, #ff6b6b 0%, #c44569 50%, #4a148c 100%)",
       productCard: {
         background: "rgba(255, 255, 255, 0.08)",
         borderColor: "rgba(255, 255, 255, 0.15)",
@@ -246,8 +243,7 @@ export const premiumThemes: TVTheme[] = [
   {
     id: "midnight-elegance",
     name: "Midnight Elegance",
-    description:
-      "Deep indigo with silver accents. Sophisticated nighttime luxury.",
+    description: "Deep indigo with silver accents. Sophisticated nighttime luxury.",
     preview: {
       background: "#0f1419",
       cardBg: "rgba(99, 102, 241, 0.1)",

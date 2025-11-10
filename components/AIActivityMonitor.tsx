@@ -40,14 +40,8 @@ export default function AIActivityMonitor() {
 
     return () => {
       window.removeEventListener("ai-autofill-start" as any, handleAIStart);
-      window.removeEventListener(
-        "ai-autofill-progress" as any,
-        handleAIProgress,
-      );
-      window.removeEventListener(
-        "ai-autofill-complete" as any,
-        handleAIComplete,
-      );
+      window.removeEventListener("ai-autofill-progress" as any, handleAIProgress);
+      window.removeEventListener("ai-autofill-complete" as any, handleAIComplete);
     };
   }, []);
 
@@ -69,9 +63,7 @@ export default function AIActivityMonitor() {
       <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between flex-shrink-0 bg-black/40">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
-            <Sparkles
-              className={`w-4 h-4 text-white ${isActive ? "animate-pulse" : ""}`}
-            />
+            <Sparkles className={`w-4 h-4 text-white ${isActive ? "animate-pulse" : ""}`} />
           </div>
           <div>
             <h3
@@ -80,9 +72,7 @@ export default function AIActivityMonitor() {
             >
               AI Agent
             </h3>
-            <p className="text-white/40 text-[10px]">
-              {isActive ? "Processing..." : "Ready"}
-            </p>
+            <p className="text-white/40 text-[10px]">{isActive ? "Processing..." : "Ready"}</p>
           </div>
         </div>
         <button
@@ -95,10 +85,7 @@ export default function AIActivityMonitor() {
       </div>
 
       {/* Activity Feed with Markdown */}
-      <div
-        ref={scrollRef}
-        className="overflow-y-auto flex-1 bg-[#0a0a0a] ai-activity-content"
-      >
+      <div ref={scrollRef} className="overflow-y-auto flex-1 bg-[#0a0a0a] ai-activity-content">
         {content ? (
           <div className="p-3">
             <ReactMarkdown
@@ -107,8 +94,7 @@ export default function AIActivityMonitor() {
                   <p
                     className="mb-2 text-white/70 text-[11px] leading-relaxed"
                     style={{
-                      fontFamily:
-                        'SF Mono, Monaco, Consolas, "Liberation Mono", monospace',
+                      fontFamily: 'SF Mono, Monaco, Consolas, "Liberation Mono", monospace',
                     }}
                     {...props}
                   />
@@ -144,10 +130,7 @@ export default function AIActivityMonitor() {
                   <ul className="space-y-0.5 mb-2 ml-0 list-none" {...props} />
                 ),
                 ol: ({ node, ...props }) => (
-                  <ol
-                    className="space-y-0.5 mb-2 ml-3 list-decimal text-white/30"
-                    {...props}
-                  />
+                  <ol className="space-y-0.5 mb-2 ml-3 list-decimal text-white/30" {...props} />
                 ),
                 li: ({ node, ...props }) => (
                   <li
@@ -168,25 +151,15 @@ export default function AIActivityMonitor() {
                         /([\w_]+):/g,
                         '<span style="color: rgba(255,255,255,0.4)">$1</span>:',
                       ) // Field names in gray
-                      .replace(
-                        /:\s*"([^"]+)"/g,
-                        ': <span style="color: #60a5fa">"$1"</span>',
-                      ) // String values in blue
-                      .replace(
-                        /:\s*(\d+\.?\d*)/g,
-                        ': <span style="color: #fbbf24">$1</span>',
-                      ) // Number values in yellow
-                      .replace(
-                        /:\s*\[([^\]]+)\]/g,
-                        ': <span style="color: #34d399">[$1]</span>',
-                      ); // Arrays in green
+                      .replace(/:\s*"([^"]+)"/g, ': <span style="color: #60a5fa">"$1"</span>') // String values in blue
+                      .replace(/:\s*(\d+\.?\d*)/g, ': <span style="color: #fbbf24">$1</span>') // Number values in yellow
+                      .replace(/:\s*\[([^\]]+)\]/g, ': <span style="color: #34d399">[$1]</span>'); // Arrays in green
 
                     return (
                       <code
                         className="block bg-[#0d0d0d] border border-white/10 p-3 rounded-md text-[11px] leading-relaxed my-2 overflow-x-auto text-white/40"
                         style={{
-                          fontFamily:
-                            "JetBrains Mono, SF Mono, Monaco, Consolas, monospace",
+                          fontFamily: "JetBrains Mono, SF Mono, Monaco, Consolas, monospace",
                         }}
                         dangerouslySetInnerHTML={{ __html: highlighted }}
                       />
@@ -196,8 +169,7 @@ export default function AIActivityMonitor() {
                     <code
                       className="bg-white/10 px-1.5 py-0.5 rounded text-[10px] text-white/60 border border-white/10"
                       style={{
-                        fontFamily:
-                          "JetBrains Mono, SF Mono, Monaco, Consolas, monospace",
+                        fontFamily: "JetBrains Mono, SF Mono, Monaco, Consolas, monospace",
                       }}
                       {...props}
                     >
@@ -205,24 +177,18 @@ export default function AIActivityMonitor() {
                     </code>
                   );
                 },
-                pre: ({ node, ...props }) => (
-                  <pre className="mb-2" {...props} />
-                ),
+                pre: ({ node, ...props }) => <pre className="mb-2" {...props} />,
                 strong: ({ node, ...props }) => (
                   <strong className="text-white font-semibold" {...props} />
                 ),
-                em: ({ node, ...props }) => (
-                  <em className="text-white/70 not-italic" {...props} />
-                ),
+                em: ({ node, ...props }) => <em className="text-white/70 not-italic" {...props} />,
                 blockquote: ({ node, ...props }) => (
                   <blockquote
                     className="border-l-2 border-white/20 pl-3 text-white/60 my-2"
                     {...props}
                   />
                 ),
-                hr: ({ node, ...props }) => (
-                  <hr className="border-white/10 my-3" {...props} />
-                ),
+                hr: ({ node, ...props }) => <hr className="border-white/10 my-3" {...props} />,
               }}
             >
               {content}
@@ -230,10 +196,7 @@ export default function AIActivityMonitor() {
           </div>
         ) : (
           <div className="h-full flex flex-col items-center justify-center p-6 text-center">
-            <Terminal
-              className="w-14 h-14 text-white/10 mb-3"
-              strokeWidth={1.5}
-            />
+            <Terminal className="w-14 h-14 text-white/10 mb-3" strokeWidth={1.5} />
             <p
               className="text-white/60 text-xs font-medium mb-2"
               style={{ fontFamily: "SF Mono, Monaco, Consolas, monospace" }}

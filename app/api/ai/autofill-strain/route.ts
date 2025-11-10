@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import Exa from "exa-js";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -48,24 +49,18 @@ export async function POST(request: NextRequest) {
   const writer = stream.writable.getWriter();
 
   const sendProgress = async (message: string) => {
-    await writer.write(
-      encoder.encode(`data: ${JSON.stringify({ message })}\n\n`),
-    );
+    await writer.write(encoder.encode(`data: ${JSON.stringify({ message })}\n\n`));
   };
 
   const sendComplete = async (productId: string, data: StrainData) => {
     await writer.write(
-      encoder.encode(
-        `data: ${JSON.stringify({ productId, data, complete: true })}\n\n`,
-      ),
+      encoder.encode(`data: ${JSON.stringify({ productId, data, complete: true })}\n\n`),
     );
   };
 
   const sendError = async (productId: string, error: string) => {
     await writer.write(
-      encoder.encode(
-        `data: ${JSON.stringify({ productId, error, complete: true })}\n\n`,
-      ),
+      encoder.encode(`data: ${JSON.stringify({ productId, error, complete: true })}\n\n`),
     );
   };
 
@@ -88,9 +83,7 @@ export async function POST(request: NextRequest) {
         return;
       }
 
-      await sendProgress(
-        `# Strain Research\n\nProcessing ${productIds.length} products`,
-      );
+      await sendProgress(`# Strain Research\n\nProcessing ${productIds.length} products`);
 
       // Fetch products with category info
       const { data: products, error: fetchError } = await supabase
@@ -129,8 +122,7 @@ export async function POST(request: NextRequest) {
       await sendProgress(`Found ${products.length} products in database`);
 
       // Get field groups to know what fields to extract
-      const { data: fieldGroups } = await supabase.from("category_field_groups")
-        .select(`
+      const { data: fieldGroups } = await supabase.from("category_field_groups").select(`
           field_group:field_groups(fields)
         `);
 
@@ -237,9 +229,7 @@ Return ONLY JSON.`,
             fieldsOutput.push(`thca_percentage: ${strainData.thca_percentage}`);
           }
           if (strainData.delta_9_percentage !== null) {
-            fieldsOutput.push(
-              `delta_9_percentage: ${strainData.delta_9_percentage}`,
-            );
+            fieldsOutput.push(`delta_9_percentage: ${strainData.delta_9_percentage}`);
           }
           if (strainData.terpene_profile?.length) {
             fieldsOutput.push(
@@ -247,9 +237,7 @@ Return ONLY JSON.`,
             );
           }
           if (strainData.effects?.length) {
-            fieldsOutput.push(
-              `effects: [${strainData.effects.map((e) => `"${e}"`).join(", ")}]`,
-            );
+            fieldsOutput.push(`effects: [${strainData.effects.map((e) => `"${e}"`).join(", ")}]`);
           }
           if (strainData.lineage && strainData.lineage !== "Unknown") {
             fieldsOutput.push(`lineage: "${strainData.lineage}"`);
@@ -262,9 +250,7 @@ Return ONLY JSON.`,
           }
 
           if (fieldsOutput.length > 0) {
-            await sendProgress(
-              `\n\`\`\`json\n{\n  ${fieldsOutput.join(",\n  ")}\n}\n\`\`\``,
-            );
+            await sendProgress(`\n\`\`\`json\n{\n  ${fieldsOutput.join(",\n  ")}\n}\n\`\`\``);
           }
 
           // Step 4: Update product in Supabase
@@ -291,12 +277,10 @@ Return ONLY JSON.`,
               strainData.lineage !== "Unknown" && {
                 lineage: strainData.lineage,
               }),
-            ...(strainData.nose &&
-              strainData.nose !== "Unknown" && { nose: strainData.nose }),
+            ...(strainData.nose && strainData.nose !== "Unknown" && { nose: strainData.nose }),
             ...(strainData.flavor &&
               strainData.flavor !== "Unknown" && { flavor: strainData.flavor }),
-            ...(strainData.taste &&
-              strainData.taste !== "Unknown" && { taste: strainData.taste }),
+            ...(strainData.taste && strainData.taste !== "Unknown" && { taste: strainData.taste }),
           };
 
           const { error: updateError } = await supabase
@@ -314,20 +298,18 @@ Return ONLY JSON.`,
           await sendComplete(product.id, strainData);
         } catch (error: any) {
           if (process.env.NODE_ENV === "development") {
-            console.error(`Error processing product ${product.id}:`, error);
+            logger.error(`Error processing product ${product.id}:`, error);
           }
           await sendProgress(`❌ Error: ${error.message}`);
           await sendError(product.id, error.message);
         }
       }
 
-      await sendProgress(
-        `\n---\n\n## Batch Complete\n\nProcessed ${products.length} products`,
-      );
+      await sendProgress(`\n---\n\n## Batch Complete\n\nProcessed ${products.length} products`);
       await writer.close();
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Fatal error:", error);
+        logger.error("Fatal error:", error);
       }
       await sendError("", error.message);
       await writer.close();

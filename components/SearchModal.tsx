@@ -5,17 +5,14 @@ import { X, Search as SearchIcon } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 
+import { logger } from "@/lib/logger";
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   vendorId?: string; // If set, only show this vendor's products
 }
 
-export default function SearchModal({
-  isOpen,
-  onClose,
-  vendorId,
-}: SearchModalProps) {
+export default function SearchModal({ isOpen, onClose, vendorId }: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -28,8 +25,7 @@ export default function SearchModal({
   useEffect(() => {
     if (isOpen) {
       // Lock body scroll completely for PWA mode
-      const scrollbarWidth =
-        window.innerWidth - document.documentElement.clientWidth;
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
       document.body.style.position = "fixed";
       document.body.style.top = "0";
@@ -102,9 +98,7 @@ export default function SearchModal({
   const performSearch = async (query: string) => {
     setIsSearching(true);
     try {
-      const response = await fetch(
-        `/api/search?q=${encodeURIComponent(query)}`,
-      );
+      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
       if (response.ok) {
         const data = await response.json();
         let products = data.products || [];
@@ -118,7 +112,7 @@ export default function SearchModal({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Search error:", error);
+        logger.error("Search error:", error);
       }
       setSearchResults([]);
     } finally {
@@ -128,9 +122,7 @@ export default function SearchModal({
 
   const handleProductClick = (productId: number) => {
     // Use appropriate route based on context
-    const route = basePath
-      ? `${basePath}/products/${productId}`
-      : `/products/${productId}`;
+    const route = basePath ? `${basePath}/products/${productId}` : `/products/${productId}`;
     router.push(route);
     onClose();
   };
@@ -217,21 +209,17 @@ export default function SearchModal({
             {isSearching && (
               <div className="p-6 text-center">
                 <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin-smooth mx-auto"></div>
-                <p className="text-sm sm:text-base text-white/40 mt-2">
-                  Searching...
-                </p>
+                <p className="text-sm sm:text-base text-white/40 mt-2">Searching...</p>
               </div>
             )}
 
-            {!isSearching &&
-              searchQuery.trim().length >= 2 &&
-              searchResults.length === 0 && (
-                <div className="p-6 text-center">
-                  <p className="text-sm sm:text-base text-white/40">
-                    No results found for "{searchQuery}"
-                  </p>
-                </div>
-              )}
+            {!isSearching && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
+              <div className="p-6 text-center">
+                <p className="text-sm sm:text-base text-white/40">
+                  No results found for "{searchQuery}"
+                </p>
+              </div>
+            )}
 
             {!isSearching && searchQuery.trim().length < 2 && (
               <div className="p-6 text-center">
@@ -275,9 +263,7 @@ export default function SearchModal({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm sm:text-base text-white truncate">
-                        {product.name}
-                      </p>
+                      <p className="text-sm sm:text-base text-white truncate">{product.name}</p>
                       <p className="text-xs sm:text-sm text-white/40 mt-1">
                         {product.categories && product.categories[0]?.name}
                       </p>
@@ -286,8 +272,7 @@ export default function SearchModal({
                       {product.price && product.price !== "0" ? (
                         product.price.includes("-") ? (
                           <span>
-                            ${product.price.split("-")[0]} - $
-                            {product.price.split("-")[1]}
+                            ${product.price.split("-")[0]} - ${product.price.split("-")[1]}
                           </span>
                         ) : (
                           <span>${product.price}</span>

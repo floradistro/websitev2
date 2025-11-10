@@ -38,9 +38,7 @@ interface SingleImageUploaderJSON extends FrameSourceJSON {
   desiredState: FrameSourceState;
 }
 type SingleImageUploaderType = "singleImageUploader";
-declare class SingleImageUploader
-  implements FrameSource, Serializable<SingleImageUploaderJSON>
-{
+declare class SingleImageUploader implements FrameSource, Serializable<SingleImageUploaderJSON> {
   private readonly type;
   private _currentState;
   private _settings;
@@ -71,8 +69,4 @@ declare class SingleImageUploader
   private addView;
 }
 
-export {
-  SingleImageUploader,
-  type SingleImageUploaderJSON,
-  type SingleImageUploaderType,
-};
+export { SingleImageUploader, type SingleImageUploaderJSON, type SingleImageUploaderType };

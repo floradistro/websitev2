@@ -5,10 +5,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-export type ApiHandler = (
-  request: NextRequest,
-  context?: any,
-) => Promise<NextResponse>;
+import { logger } from "@/lib/logger";
+export type ApiHandler = (request: NextRequest, context?: any) => Promise<NextResponse>;
 
 interface ErrorResponse {
   error: string;
@@ -35,7 +33,7 @@ export function withErrorHandler(handler: ApiHandler): ApiHandler {
       } else {
         if (process.env.NODE_ENV === "development") {
           if (process.env.NODE_ENV === "development") {
-            console.error("[API Error]", {
+            logger.error("[API Error]", {
               message: errorMessage,
               code: errorCode,
               path: request.url,
@@ -82,8 +80,7 @@ function getUserMessage(error: any): string {
   // Database errors
   if (code === "PGRST116") return "Resource not found";
   if (code === "23505") return "This record already exists";
-  if (code === "42501")
-    return "You do not have permission to perform this action";
+  if (code === "42501") return "You do not have permission to perform this action";
   if (code === "23503") return "Cannot delete: related records exist";
 
   // Common errors
@@ -100,9 +97,7 @@ export function validateEnv(requiredVars: string[]): void {
   const missing = requiredVars.filter((varName) => !process.env[varName]);
 
   if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(", ")}`,
-    );
+    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
 }
 

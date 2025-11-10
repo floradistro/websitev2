@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -19,7 +20,7 @@ export async function DELETE() {
 
     if (fetchError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching orphaned products:", fetchError);
+        logger.error("Error fetching orphaned products:", fetchError);
       }
       return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
@@ -38,27 +39,18 @@ export async function DELETE() {
     await Promise.all([
       supabase.from("product_images").delete().in("product_id", orphanedIds),
       supabase.from("product_tags").delete().in("product_id", orphanedIds),
-      supabase
-        .from("product_categories")
-        .delete()
-        .in("product_id", orphanedIds),
+      supabase.from("product_categories").delete().in("product_id", orphanedIds),
       supabase.from("reviews").delete().in("product_id", orphanedIds),
       supabase.from("inventory").delete().in("product_id", orphanedIds),
-      supabase
-        .from("inventory_adjustments")
-        .delete()
-        .in("product_id", orphanedIds),
+      supabase.from("inventory_adjustments").delete().in("product_id", orphanedIds),
     ]);
 
     // Delete orphaned products in bulk
-    const { error: deleteError } = await supabase
-      .from("products")
-      .delete()
-      .in("id", orphanedIds);
+    const { error: deleteError } = await supabase.from("products").delete().in("id", orphanedIds);
 
     if (deleteError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error deleting orphaned products:", deleteError);
+        logger.error("Error deleting orphaned products:", deleteError);
       }
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
@@ -71,11 +63,8 @@ export async function DELETE() {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Orphaned products cleanup error:", error);
+      logger.error("Orphaned products cleanup error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

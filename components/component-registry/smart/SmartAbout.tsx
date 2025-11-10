@@ -79,11 +79,7 @@ export function SmartAbout({
   const { ref, inView } = useScrollAnimation();
 
   return (
-    <SmartComponentWrapper
-      animate={false}
-      componentName="About"
-      className={className}
-    >
+    <SmartComponentWrapper animate={false} componentName="About" className={className}>
       {/* Hero Section */}
       <section className="pt-32 sm:pt-40 pb-16 sm:pb-20 px-4 sm:px-6 bg-black">
         <SmartContainers.MaxWidth>
@@ -120,9 +116,7 @@ export function SmartAbout({
               </motion.div>
             )}
 
-            <SmartTypography.Headline className="mb-6">
-              {headline}
-            </SmartTypography.Headline>
+            <SmartTypography.Headline className="mb-6">{headline}</SmartTypography.Headline>
             <p className="text-xl sm:text-2xl text-white/60 uppercase tracking-wide">
               {subheadline}
             </p>
@@ -150,9 +144,7 @@ export function SmartAbout({
               >
                 OUR STORY
               </h3>
-              <p className="text-base sm:text-lg text-white/60 leading-relaxed mb-8">
-                {story}
-              </p>
+              <p className="text-base sm:text-lg text-white/60 leading-relaxed mb-8">{story}</p>
 
               <div className="h-[1px] bg-white/5 my-8" />
 
@@ -162,9 +154,7 @@ export function SmartAbout({
               >
                 OUR MISSION
               </h3>
-              <p className="text-base sm:text-lg text-white/60 leading-relaxed">
-                {mission}
-              </p>
+              <p className="text-base sm:text-lg text-white/60 leading-relaxed">{mission}</p>
             </motion.div>
           </div>
         </SmartContainers.MaxWidth>
@@ -201,11 +191,7 @@ export function SmartAbout({
                   <SmartContainers.Card className="p-8 sm:p-10 h-full">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                        <Icon
-                          size={24}
-                          className="text-white"
-                          strokeWidth={2.5}
-                        />
+                        <Icon size={24} className="text-white" strokeWidth={2.5} />
                       </div>
                       <div className="flex-1">
                         <h4
@@ -214,9 +200,7 @@ export function SmartAbout({
                         >
                           {value.title}
                         </h4>
-                        <p className="text-sm text-white/60 leading-relaxed">
-                          {value.description}
-                        </p>
+                        <p className="text-sm text-white/60 leading-relaxed">{value.description}</p>
                       </div>
                     </div>
                   </SmartContainers.Card>

@@ -34,12 +34,10 @@ var P = ((a) => (
       this.constraint = 4;
       this.checkCameraVideoStreamAccessIfVisibleListener =
         this.checkCameraVideoStreamAccessIfVisible.bind(this);
-      this.handleWebGLContextLostListener =
-        this.handleWebGLContextLost.bind(this);
+      this.handleWebGLContextLostListener = this.handleWebGLContextLost.bind(this);
       this.listeners = new Map();
       this.mirrorImageOverrides = new Map();
-      this.postStreamInitializationListener =
-        this.postStreamInitialization.bind(this);
+      this.postStreamInitializationListener = this.postStreamInitialization.bind(this);
       this.triggerManualFocusListener = this.triggerManualFocus.bind(this);
       this.triggerZoomMoveListener = this.triggerZoomMove.bind(this);
       this.triggerZoomStartListener = this.triggerZoomStart.bind(this);
@@ -66,10 +64,7 @@ var P = ((a) => (
         (this.videoElement.style.opacity = "0"),
         (this.videoElement.poster = a$2),
         (this.canvas = document.createElement("canvas")),
-        this.canvas.addEventListener(
-          "webglcontextlost",
-          this.handleWebGLContextLostListener,
-        ));
+        this.canvas.addEventListener("webglcontextlost", this.handleWebGLContextLostListener));
     }
     get mediaStream() {
       return this._mediaStream;
@@ -90,8 +85,7 @@ var P = ((a) => (
           ((this._canvas2dContext = this.canvas.getContext("2d", {
             willReadFrequently: true,
           })),
-          this._canvas2dContext == null &&
-            a$3.warn("Unable to get 2d canvas context"),
+          this._canvas2dContext == null && a$3.warn("Unable to get 2d canvas context"),
           this.handleVideoResize()),
         this._canvas2dContext
       );
@@ -128,9 +122,7 @@ var P = ((a) => (
     }
     getCurrentFrame() {
       var e;
-      return (e = this._glFrameReaders.RGBA) == null
-        ? void 0
-        : e.readFromSource(this.videoElement);
+      return (e = this._glFrameReaders.RGBA) == null ? void 0 : e.readFromSource(this.videoElement);
     }
     requestVideoFrame(e, t = this.videoElement) {
       return "requestVideoFrameCallback" in HTMLVideoElement.prototype
@@ -157,26 +149,19 @@ var P = ((a) => (
     captureImage() {
       var e;
       if (((e = this.mediaStream) == null ? void 0 : e.active) != null) {
-        if (this.canvasWebGLContext != null)
-          return this.captureImageForWebGLContext();
-        if (this.canvas2dContext != null)
-          return this.captureImageFor2dContext();
+        if (this.canvasWebGLContext != null) return this.captureImageForWebGLContext();
+        if (this.canvas2dContext != null) return this.captureImageFor2dContext();
       }
       return null;
     }
     async initializeCameraWithSettings(e, t) {
-      if (
-        (this.cameraInitializationPromise &&
-          (await this.cameraInitializationPromise),
-        e == null)
-      )
+      if ((this.cameraInitializationPromise && (await this.cameraInitializationPromise), e == null))
         throw new a$4(n.noCameraErrorParameters);
       return (
         this.setSelectedCamera(e),
         (this.selectedCameraSettings = t),
         (this.activeCameraSettings = t),
-        (this.cameraInitializationPromise =
-          this.initializeCameraAndCheckUpdatedSettings(e)),
+        (this.cameraInitializationPromise = this.initializeCameraAndCheckUpdatedSettings(e)),
         this.cameraInitializationPromise
       );
     }
@@ -197,19 +182,13 @@ var P = ((a) => (
       var e;
       return this.mediaStream
         ? (await this.waitForCapabilities(),
-          ((e = this.mediaTrackCapabilities) == null ? void 0 : e.torch) ===
-            true)
+          ((e = this.mediaTrackCapabilities) == null ? void 0 : e.torch) === true)
         : false;
     }
     async playVideo() {
       return new Promise((e) => {
         this._canvas2dContext &&
-          this._canvas2dContext.clearRect(
-            0,
-            0,
-            this.canvas.width,
-            this.canvas.height,
-          );
+          this._canvas2dContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
         let t = this.videoElement.play();
         t == null
           ? e()
@@ -219,17 +198,13 @@ var P = ((a) => (
       });
     }
     async reinitializeCamera() {
-      if (this.activeCamera == null)
-        a$3.debug("Camera reinitialization delayed");
+      if (this.activeCamera == null) a$3.debug("Camera reinitialization delayed");
       else {
         a$3.debug("Reinitialize camera:", this.activeCamera);
         try {
           let e = this.activeCamera;
           (await this.stopStream(),
-            await this.initializeCameraWithSettings(
-              e,
-              this.activeCameraSettings,
-            ));
+            await this.initializeCameraWithSettings(e, this.activeCameraSettings));
         } catch (e) {
           throw (
             a$3.warn("Couldn't access camera:", this.activeCamera, e),
@@ -241,58 +216,34 @@ var P = ((a) => (
     }
     removeListener(e, t) {
       var s;
-      let a = ((s = this.listeners.get(e)) != null ? s : []).filter(
-        (o) => o !== t,
-      );
+      let a = ((s = this.listeners.get(e)) != null ? s : []).filter((o) => o !== t);
       this.listeners.set(e, a);
     }
     async setCameraPosition(e) {
       var i;
       this.setInitialCameraPosition(e);
       let t = d.getMainCameraForPosition(await d.getCameras(), e);
-      if (
-        t &&
-        t.deviceId !== ((i = this.selectedCamera) == null ? void 0 : i.deviceId)
-      )
-        return this.initializeCameraWithSettings(
-          t,
-          this.selectedCameraSettings,
-        );
+      if (t && t.deviceId !== ((i = this.selectedCamera) == null ? void 0 : i.deviceId))
+        return this.initializeCameraWithSettings(t, this.selectedCameraSettings);
     }
     async setExposure(e) {
       var a, s, o, c, d, l, v, p;
-      let t =
-        (s = (a = this.mediaStream) == null ? void 0 : a.getVideoTracks()) !=
-        null
-          ? s
-          : [];
+      let t = (s = (a = this.mediaStream) == null ? void 0 : a.getVideoTracks()) != null ? s : [];
       if (t.length === 0 || typeof t[0].applyConstraints != "function") return;
       await this.waitForCapabilities();
       let i = e.time != null && e.time > 0 ? "manual" : "continuous";
       if (
-        ((c =
-          (o = this.mediaTrackCapabilities) == null
-            ? void 0
-            : o.exposureMode) == null
+        ((c = (o = this.mediaTrackCapabilities) == null ? void 0 : o.exposureMode) == null
           ? void 0
           : c.includes(i)) === true
       ) {
         if (
           (await t[0].applyConstraints({ advanced: [{ exposureMode: i }] }),
-          e.time != null &&
-            e.time > 0 &&
-            this.mediaTrackCapabilities.exposureTime)
+          e.time != null && e.time > 0 && this.mediaTrackCapabilities.exposureTime)
         ) {
           let u = Math.max(
-            (d = this.mediaTrackCapabilities.exposureTime.min) != null
-              ? d
-              : 0.01,
-            Math.min(
-              e.time,
-              (l = this.mediaTrackCapabilities.exposureTime.max) != null
-                ? l
-                : 1e5,
-            ),
+            (d = this.mediaTrackCapabilities.exposureTime.min) != null ? d : 0.01,
+            Math.min(e.time, (l = this.mediaTrackCapabilities.exposureTime.max) != null ? l : 1e5),
           );
           await t[0].applyConstraints({ advanced: [{ exposureTime: u }] });
         } else if (
@@ -301,14 +252,10 @@ var P = ((a) => (
           this.mediaTrackCapabilities.exposureCompensation
         ) {
           let u = Math.max(
-            (v = this.mediaTrackCapabilities.exposureCompensation.min) != null
-              ? v
-              : -10,
+            (v = this.mediaTrackCapabilities.exposureCompensation.min) != null ? v : -10,
             Math.min(
               e.compensation,
-              (p = this.mediaTrackCapabilities.exposureCompensation.max) != null
-                ? p
-                : 10,
+              (p = this.mediaTrackCapabilities.exposureCompensation.max) != null ? p : 10,
             ),
           );
           await t[0].applyConstraints({
@@ -325,9 +272,7 @@ var P = ((a) => (
         await this.waitForCapabilities();
         let d = e >= 0 ? "manual" : "continuous";
         if (
-          ((a =
-            (i = this.mediaTrackCapabilities) == null ? void 0 : i.focusMode) ==
-          null
+          ((a = (i = this.mediaTrackCapabilities) == null ? void 0 : i.focusMode) == null
             ? void 0
             : a.includes(d)) === true &&
           (await t[0].applyConstraints({ advanced: [{ focusMode: d }] }),
@@ -335,15 +280,9 @@ var P = ((a) => (
         ) {
           let l =
             Math.max(0, Math.min(e, 1)) *
-              (((s = this.mediaTrackCapabilities.focusDistance.max) != null
-                ? s
-                : 1e3) -
-                ((o = this.mediaTrackCapabilities.focusDistance.min) != null
-                  ? o
-                  : 0.01)) +
-            ((c = this.mediaTrackCapabilities.focusDistance.min) != null
-              ? c
-              : 0.01);
+              (((s = this.mediaTrackCapabilities.focusDistance.max) != null ? s : 1e3) -
+                ((o = this.mediaTrackCapabilities.focusDistance.min) != null ? o : 0.01)) +
+            ((c = this.mediaTrackCapabilities.focusDistance.min) != null ? c : 0.01);
           await t[0].applyConstraints({ advanced: [{ focusDistance: l }] });
         }
       }
@@ -352,8 +291,7 @@ var P = ((a) => (
       var t, i, a;
       if (
         this.mediaStream &&
-        (await this.waitForCapabilities(),
-        (t = this.mediaTrackCapabilities) != null && t.frameRate)
+        (await this.waitForCapabilities(), (t = this.mediaTrackCapabilities) != null && t.frameRate)
       ) {
         let s = this.mediaStream.getVideoTracks();
         if (s.length > 0 && typeof s[0].applyConstraints == "function") {
@@ -369,9 +307,7 @@ var P = ((a) => (
       this.cameraPosition = e;
     }
     setInteractionOptions(e, t, i) {
-      ((this.torchToggleEnabled = e),
-        (this.tapToFocusEnabled = t),
-        (this.pinchToZoomEnabled = i));
+      ((this.torchToggleEnabled = e), (this.tapToFocusEnabled = t), (this.pinchToZoomEnabled = i));
     }
     setMirrorImageEnabled(e, t) {
       this.selectedCamera &&
@@ -419,17 +355,13 @@ var P = ((a) => (
       var t, i, a;
       if (
         this.mediaStream &&
-        (await this.waitForCapabilities(),
-        (t = this.mediaTrackCapabilities) != null && t.zoom)
+        (await this.waitForCapabilities(), (t = this.mediaTrackCapabilities) != null && t.zoom)
       ) {
         let s = this.mediaStream.getVideoTracks();
         if (s.length > 0 && typeof s[0].applyConstraints == "function") {
           let o = Math.max(
             (i = this.mediaTrackCapabilities.zoom.min) != null ? i : 1,
-            Math.min(
-              e,
-              (a = this.mediaTrackCapabilities.zoom.max) != null ? a : 16,
-            ),
+            Math.min(e, (a = this.mediaTrackCapabilities.zoom.max) != null ? a : 16),
           );
           await s[0].applyConstraints({ advanced: [{ zoom: o }] });
         }
@@ -484,57 +416,40 @@ var P = ((a) => (
           await new Promise((t) => {
             setTimeout(() => {
               var i, a, s;
-              for (let o of (a =
-                (i = this.mediaStream) == null ? void 0 : i.getVideoTracks()) !=
+              for (let o of (a = (i = this.mediaStream) == null ? void 0 : i.getVideoTracks()) !=
               null
                 ? a
                 : [])
-                (o.removeEventListener("ended", this.videoTrackEndedListener),
-                  o.stop());
+                (o.removeEventListener("ended", this.videoTrackEndedListener), o.stop());
               ((this.videoElement.srcObject = null),
                 this._canvas2dContext &&
-                  this._canvas2dContext.clearRect(
-                    0,
-                    0,
-                    this.canvas.width,
-                    this.canvas.height,
-                  ),
+                  this._canvas2dContext.clearRect(0, 0, this.canvas.width, this.canvas.height),
                 (this.mediaStream = void 0),
                 (this.mediaTrackCapabilities = void 0),
                 (this.mediaTrackCapabilitiesPromise = void 0),
                 (this.mediaTrackCapabilitiesPromiseResolver = void 0),
-                e ||
-                  (s = this.abortedCameraInitializationResolveCallback) ==
-                    null ||
-                  s.call(this),
+                e || (s = this.abortedCameraInitializationResolveCallback) == null || s.call(this),
                 t());
             }, 0);
           })));
     }
     stopVideoTracks() {
-      if (this.mediaStream != null)
-        for (let e of this.mediaStream.getVideoTracks()) e.stop();
+      if (this.mediaStream != null) for (let e of this.mediaStream.getVideoTracks()) e.stop();
     }
     async toggleTorch() {
-      ((this.torchEnabled = !this.torchEnabled),
-        await this.setTorchEnabled(this.torchEnabled));
+      ((this.torchEnabled = !this.torchEnabled), await this.setTorchEnabled(this.torchEnabled));
     }
     updateCanvasVideoImage() {
       this.canvas2dContext.drawImage(this.videoElement, 0, 0);
     }
     async waitForCapabilities() {
       var e;
-      return (e = this.mediaTrackCapabilitiesPromise) != null
-        ? e
-        : Promise.resolve();
+      return (e = this.mediaTrackCapabilitiesPromise) != null ? e : Promise.resolve();
     }
     setFrameReaderType(e) {
       e !== this._frameReaderType &&
         ((this._frameReaderType = e),
-        a$3.log(
-          a$3.Level.Debug,
-          `Change frame reader type to ${this._frameReaderType} mode`,
-        ));
+        a$3.log(a$3.Level.Debug, `Change frame reader type to ${this._frameReaderType} mode`));
     }
     async allowPictureInPicture(e) {
       (e
@@ -550,8 +465,7 @@ var P = ((a) => (
       var t;
       ((this._synchronousFrameHandling = e),
         (this._frameReaderOptions = this.getFrameReaderOptions(e)),
-        (t = this._glFrameReaders[this._frameReaderType]) == null ||
-          t.dispose(),
+        (t = this._glFrameReaders[this._frameReaderType]) == null || t.dispose(),
         delete this._glFrameReaders[this._frameReaderType]);
     }
     async setClipArea(e) {
@@ -568,8 +482,7 @@ var P = ((a) => (
     }
     frameRectFromViewRect(e) {
       let t = this.videoElement.videoWidth / this.videoElement.clientWidth || 1,
-        i$1 =
-          this.videoElement.videoHeight / this.videoElement.clientHeight || 1;
+        i$1 = this.videoElement.videoHeight / this.videoElement.clientHeight || 1;
       return new f(
         new a$5(e.origin.x * t, e.origin.y * i$1),
         new i(e.size.width * t, e.size.height * i$1),
@@ -580,15 +493,11 @@ var P = ((a) => (
         i = t.shift();
       for (; i; )
         try {
-          await this.initializeCameraWithSettings(
-            i,
-            this.selectedCameraSettings,
-          );
+          await this.initializeCameraWithSettings(i, this.selectedCameraSettings);
           return;
         } catch (a) {
           if ((this.setSelectedCamera(), t.length > 0)) {
-            (a$3.log(a$3.Level.Warn, "Couldn't access camera:", i, a),
-              (i = t.shift()));
+            (a$3.log(a$3.Level.Warn, "Couldn't access camera:", i, a), (i = t.shift()));
             continue;
           }
           throw a;
@@ -613,10 +522,7 @@ var P = ((a) => (
           : this.getFrameReaderOptions(this._synchronousFrameHandling);
       switch (this._frameReaderType) {
         case "GRAYSCALE": {
-          ((this._glFrameReaders.GRAYSCALE = new a$6(
-            this._canvasWebGLContext,
-            e,
-          )),
+          ((this._glFrameReaders.GRAYSCALE = new a$6(this._canvasWebGLContext, e)),
             (this._glFrameReaders.RGBA = new b$1(this._canvasWebGLContext, {
               minPoolCapacity: 1,
               maxPoolCapacity: 2,
@@ -646,19 +552,12 @@ var P = ((a) => (
       return e;
     }
     recreateCanvas() {
-      (this.canvas.removeEventListener(
-        "webglcontextlost",
-        this.handleWebGLContextLostListener,
-      ),
+      (this.canvas.removeEventListener("webglcontextlost", this.handleWebGLContextLostListener),
         (this._canvasWebGLContext = void 0),
         (this._canvas2dContext = void 0));
-      for (let t of Object.values(this._glFrameReaders))
-        t == null || t.dispose();
+      for (let t of Object.values(this._glFrameReaders)) t == null || t.dispose();
       let e = document.createElement("canvas");
-      (e.addEventListener(
-        "webglcontextlost",
-        this.handleWebGLContextLostListener,
-      ),
+      (e.addEventListener("webglcontextlost", this.handleWebGLContextLostListener),
         (e.width = this.canvas.width),
         (e.height = this.canvas.height),
         (e.className = this.canvas.className),
@@ -676,10 +575,8 @@ var P = ((a) => (
     }
     areVideoAndWebGLSizeMismatching() {
       return this.canvasWebGLContext
-        ? this.canvasWebGLContext.drawingBufferWidth !==
-            this.videoElement.videoWidth ||
-            this.canvasWebGLContext.drawingBufferHeight !==
-              this.videoElement.videoHeight
+        ? this.canvasWebGLContext.drawingBufferWidth !== this.videoElement.videoWidth ||
+            this.canvasWebGLContext.drawingBufferHeight !== this.videoElement.videoHeight
         : true;
     }
     captureImageForWebGLContext() {
@@ -723,9 +620,7 @@ var P = ((a) => (
     }
     checkCameraVideoStreamAccessIfVisible() {
       document.visibilityState === "visible" &&
-        (a$3.debug(
-          "Page is visible again, waiting for camera video stream start...",
-        ),
+        (a$3.debug("Page is visible again, waiting for camera video stream start..."),
         document.removeEventListener(
           "visibilitychange",
           this.checkCameraVideoStreamAccessIfVisibleListener,
@@ -743,11 +638,7 @@ var P = ((a) => (
               this.videoElement.currentTime > 0)
           ) {
             (this.updateActiveCameraCurrentResolution(e),
-              a$3.log(
-                a$3.Level.Debug,
-                "Camera video stream access success:",
-                e,
-              ),
+              a$3.log(a$3.Level.Debug, "Camera video stream access success:", e),
               t());
             return;
           }
@@ -774,32 +665,19 @@ var P = ((a) => (
               }
               (window.clearInterval(this.videoMetadataCheckInterval),
                 this.updateActiveCameraCurrentResolution(e),
-                a$3.log(
-                  a$3.Level.Debug,
-                  "Camera video stream access success:",
-                  e,
-                ),
+                a$3.log(a$3.Level.Debug, "Camera video stream access success:", e),
                 t());
             }, n.videoMetadataCheckIntervalMs)));
         };
       });
     }
     disablePinchToZoomListeners() {
-      (this.videoElement.removeEventListener(
-        "touchstart",
-        this.triggerZoomStartListener,
-      ),
-        this.videoElement.removeEventListener(
-          "touchmove",
-          this.triggerZoomMoveListener,
-        ));
+      (this.videoElement.removeEventListener("touchstart", this.triggerZoomStartListener),
+        this.videoElement.removeEventListener("touchmove", this.triggerZoomMoveListener));
     }
     disableTapToFocusListeners() {
       for (let e of ["touchend", "mousedown"])
-        this.videoElement.removeEventListener(
-          e,
-          this.triggerManualFocusListener,
-        );
+        this.videoElement.removeEventListener(e, this.triggerManualFocusListener);
     }
     emit(e, t) {
       var a;
@@ -807,14 +685,8 @@ var P = ((a) => (
       for (let s of i) s(t);
     }
     enablePinchToZoomListeners() {
-      (this.videoElement.addEventListener(
-        "touchstart",
-        this.triggerZoomStartListener,
-      ),
-        this.videoElement.addEventListener(
-          "touchmove",
-          this.triggerZoomMoveListener,
-        ));
+      (this.videoElement.addEventListener("touchstart", this.triggerZoomStartListener),
+        this.videoElement.addEventListener("touchmove", this.triggerZoomMoveListener));
     }
     enableTapToFocusListeners() {
       for (let e of ["touchend", "mousedown"])
@@ -828,9 +700,7 @@ var P = ((a) => (
     getInitialCameraResolutionConstraint(e) {
       var i;
       let t;
-      switch (
-        (i = this.activeCameraSettings) == null ? void 0 : i.preferredResolution
-      ) {
+      switch ((i = this.activeCameraSettings) == null ? void 0 : i.preferredResolution) {
         case "uhd4k": {
           t = 0;
           break;
@@ -902,15 +772,9 @@ var P = ((a) => (
       return this.initializeCameraForResolution(e, t + 1);
     }
     handleVideoResize() {
-      if (
-        !(
-          this.videoElement.videoWidth <= 2 ||
-          this.videoElement.videoHeight <= 2
-        )
-      ) {
+      if (!(this.videoElement.videoWidth <= 2 || this.videoElement.videoHeight <= 2)) {
         if (
-          (this.activeCamera &&
-            this.updateActiveCameraCurrentResolution(this.activeCamera),
+          (this.activeCamera && this.updateActiveCameraCurrentResolution(this.activeCamera),
           this.canvasWebGLContext != null)
         ) {
           if (
@@ -941,8 +805,7 @@ var P = ((a) => (
       (a$3.log(a$3.Level.Warn, "WebGL context has been lost, restoring..."),
         (this._canvasWebGLContext = void 0),
         this.canvasWebGLContext
-          ? (this.handleVideoResize(),
-            a$3.log(a$3.Level.Warn, "WebGL context restored"))
+          ? (this.handleVideoResize(), a$3.log(a$3.Level.Warn, "WebGL context restored"))
           : a$3.log(a$3.Level.Error, "WebGL context restore failed"));
     }
     async initializeCameraAndCheckUpdatedSettings(e) {
@@ -956,9 +819,7 @@ var P = ((a) => (
               Object.keys(this.selectedCameraSettings).some((u) => {
                 var b, f;
                 return (
-                  ((b = this.selectedCameraSettings) == null
-                    ? void 0
-                    : b[u]) !==
+                  ((b = this.selectedCameraSettings) == null ? void 0 : b[u]) !==
                   ((f = this.activeCameraSettings) == null ? void 0 : f[u])
                 );
               })))
@@ -970,31 +831,16 @@ var P = ((a) => (
         this.activeCameraSettings &&
           this.activeCameraSettings.zoomFactor > 1 &&
           (await this.setZoom(this.activeCameraSettings.zoomFactor));
-        let c =
-            (t = this.activeCameraSettings) == null
-              ? void 0
-              : t.getProperty("minFrameRate"),
-          d =
-            (i = this.activeCameraSettings) == null
-              ? void 0
-              : i.getProperty("maxFrameRate");
-        (c != null || d != null) &&
-          (await this.setFrameRate({ min: c, max: d }));
+        let c = (t = this.activeCameraSettings) == null ? void 0 : t.getProperty("minFrameRate"),
+          d = (i = this.activeCameraSettings) == null ? void 0 : i.getProperty("maxFrameRate");
+        (c != null || d != null) && (await this.setFrameRate({ min: c, max: d }));
         let l =
-          (a = this.activeCameraSettings) == null
-            ? void 0
-            : a.getProperty("manualLensPosition");
+          (a = this.activeCameraSettings) == null ? void 0 : a.getProperty("manualLensPosition");
         l != null && (await this.setFocus(l));
         let v =
-            (s = this.activeCameraSettings) == null
-              ? void 0
-              : s.getProperty("exposureTargetBias"),
-          p =
-            (o = this.activeCameraSettings) == null
-              ? void 0
-              : o.getProperty("exposureDuration");
-        (v != null || p != null) &&
-          (await this.setExposure({ compensation: v, time: p }));
+            (s = this.activeCameraSettings) == null ? void 0 : s.getProperty("exposureTargetBias"),
+          p = (o = this.activeCameraSettings) == null ? void 0 : o.getProperty("exposureDuration");
+        (v != null || p != null) && (await this.setExposure({ compensation: v, time: p }));
       } finally {
         this.cameraInitializationPromise = void 0;
       }
@@ -1002,8 +848,7 @@ var P = ((a) => (
     async initializeCameraForResolution(e, t) {
       var i;
       (this.gui.setCameraRecoveryVisible(false),
-        (this.constraint =
-          t != null ? t : this.getInitialCameraResolutionConstraint(e)),
+        (this.constraint = t != null ? t : this.getInitialCameraResolutionConstraint(e)),
         this.mediaStream != null &&
         e.deviceId !== "" &&
         ((i = this.activeCamera) == null ? void 0 : i.deviceId) === e.deviceId
@@ -1023,18 +868,11 @@ var P = ((a) => (
           o = await d.accessCameraStream(e, t, s),
           c = await this.clipMediaStreamIfNeeded(o);
         if (
-          (a$3.log(
-            a$3.Level.Debug,
-            "Camera accessed, waiting for camera video stream start...",
-          ),
+          (a$3.log(a$3.Level.Debug, "Camera accessed, waiting for camera video stream start..."),
           typeof c.getVideoTracks()[0].getSettings == "function")
         ) {
           let d = c.getVideoTracks()[0].getSettings();
-          if (
-            d.width != null &&
-            d.height != null &&
-            (d.width === 2 || d.height === 2)
-          ) {
+          if (d.width != null && d.height != null && (d.width === 2 || d.height === 2)) {
             if (
               (a$3.log(
                 a$3.Level.Debug,
@@ -1044,10 +882,7 @@ var P = ((a) => (
               t === 4)
             )
               throw new a$4(n.notReadableErrorParameters);
-            return (
-              await this.stopStream(),
-              this.initializeStreamForResolution(e, t + 1)
-            );
+            return (await this.stopStream(), this.initializeStreamForResolution(e, t + 1));
           }
         }
         ((this.mediaStream = c), i && this.pauseStream());
@@ -1083,8 +918,8 @@ var P = ((a) => (
     async recoverStreamIfNeeded() {
       var t, i;
       let e = (t = this.mediaStream) == null ? void 0 : t.getVideoTracks();
-      ((i = e == null ? void 0 : e[0]) == null ? void 0 : i.readyState) ===
-        "ended" && (await this.reinitializeCamera());
+      ((i = e == null ? void 0 : e[0]) == null ? void 0 : i.readyState) === "ended" &&
+        (await this.reinitializeCamera());
     }
     reportCameraProperties(e, t, i = true) {
       this.emit("cameraProperties", {
@@ -1128,10 +963,7 @@ var P = ((a) => (
       }
     }
     async setupCameraStreamVideo(e, t) {
-      (this.videoElement.addEventListener(
-        "loadedmetadata",
-        this.postStreamInitializationListener,
-      ),
+      (this.videoElement.addEventListener("loadedmetadata", this.postStreamInitializationListener),
         this.videoElement.addEventListener("resize", this.videoResizeListener),
         this.tapToFocusEnabled && this.enableTapToFocusListeners(),
         this.pinchToZoomEnabled && this.enablePinchToZoomListeners());
@@ -1158,10 +990,7 @@ var P = ((a) => (
         this.selectedCamera == null && (i = await this.accessInitialCamera());
         let a = await d.getCameras(false, true),
           s =
-            (t =
-              (e = this.mediaStream) == null
-                ? void 0
-                : e.getVideoTracks()[0]) == null
+            (t = (e = this.mediaStream) == null ? void 0 : e.getVideoTracks()[0]) == null
               ? void 0
               : t.getSettings().deviceId;
         if (this.mediaStream && i) {
@@ -1170,41 +999,31 @@ var P = ((a) => (
             if (
               (d.adjustCameraFromMediaStream(this.mediaStream, o),
               a$1.isDesktopDevice() &&
-                (d.setMainCameraForPositionOverridesOnDesktop(
-                  this.cameraPosition,
-                  o,
-                ),
+                (d.setMainCameraForPositionOverridesOnDesktop(this.cameraPosition, o),
                 d.setMainCameraForPositionOverridesOnDesktop(o.position, o)),
-              a.length === 1 ||
-                d.getMainCameraForPosition(a, this.cameraPosition) === o)
+              a.length === 1 || d.getMainCameraForPosition(a, this.cameraPosition) === o)
             ) {
-              (a$3.debug(
-                "Initial camera access was correct (main camera), keep camera:",
-                o,
-              ),
+              (a$3.debug("Initial camera access was correct (main camera), keep camera:", o),
                 this.setSelectedCamera(o),
                 this.updateActiveCameraCurrentResolution(o),
                 await this.recoverStreamIfNeeded());
               return;
             }
-            a$3.debug(
-              "Initial camera access was incorrect (not main camera), change camera",
-              { ...i, deviceId: s },
-            );
+            a$3.debug("Initial camera access was incorrect (not main camera), change camera", {
+              ...i,
+              deviceId: s,
+            });
           } else
-            a$3.debug(
-              "Initial camera access was incorrect (unknown camera), change camera",
-              { ...i, deviceId: s },
-            );
+            a$3.debug("Initial camera access was incorrect (unknown camera), change camera", {
+              ...i,
+              deviceId: s,
+            });
         }
         if (this.selectedCamera == null) {
           await this.accessAutoselectedCamera(a);
           return;
         }
-        await this.initializeCameraWithSettings(
-          this.selectedCamera,
-          this.selectedCameraSettings,
-        );
+        await this.initializeCameraWithSettings(this.selectedCamera, this.selectedCameraSettings);
       } finally {
         this.cameraSetupPromise = void 0;
       }
@@ -1223,8 +1042,7 @@ var P = ((a) => (
         this.reportCameraProperties(
           this.activeCamera.deviceId,
           this.activeCamera.position,
-          ((e = this.mediaTrackCapabilities) == null ? void 0 : e.focusMode) ==
-            null ||
+          ((e = this.mediaTrackCapabilities) == null ? void 0 : e.focusMode) == null ||
             this.mediaTrackCapabilities.focusMode.includes("continuous"),
         );
     }
@@ -1242,8 +1060,7 @@ var P = ((a) => (
     }
     async triggerManualFocus(e) {
       if (e) {
-        if ((e.preventDefault(), e.type === "touchend" && e.touches.length > 0))
-          return;
+        if ((e.preventDefault(), e.type === "touchend" && e.touches.length > 0)) return;
         if (this.pinchToZoomDistance != null) {
           this.pinchToZoomDistance = void 0;
           return;
@@ -1260,8 +1077,7 @@ var P = ((a) => (
         t.includes("single-shot") &&
         (t.includes("continuous") && t.includes("manual")
           ? await this.triggerManualFocusForContinuous()
-          : t.includes("continuous") ||
-            (await this.triggerManualFocusForSingleShot()));
+          : t.includes("continuous") || (await this.triggerManualFocusForSingleShot()));
     }
     async triggerManualFocusForContinuous() {
       var i;
@@ -1310,21 +1126,17 @@ var P = ((a) => (
           (e.touches[1].screenX - e.touches[0].screenX) / screen.width,
           (e.touches[1].screenY - e.touches[0].screenY) / screen.height,
         )),
-        !this.mediaStream ||
-          !((a = this.mediaTrackCapabilities) != null && a.zoom))
+        !this.mediaStream || !((a = this.mediaTrackCapabilities) != null && a.zoom))
       )
         return;
       let t = this.mediaStream.getVideoTracks();
       if (t.length === 0 || typeof t[0].getConstraints != "function") return;
-      this.pinchToZoomInitialZoom =
-        (s = this.mediaTrackCapabilities.zoom.min) != null ? s : 1;
+      this.pinchToZoomInitialZoom = (s = this.mediaTrackCapabilities.zoom.min) != null ? s : 1;
       let i = t[0].getConstraints();
       if (i.advanced) {
-        let d =
-          (o = i.advanced.find((l) => "zoom" in l)) == null ? void 0 : o.zoom;
+        let d = (o = i.advanced.find((l) => "zoom" in l)) == null ? void 0 : o.zoom;
         d != null &&
-          (this.pinchToZoomInitialZoom =
-            typeof d == "number" ? d : (c = d.ideal) != null ? c : 1);
+          (this.pinchToZoomInitialZoom = typeof d == "number" ? d : (c = d.ideal) != null ? c : 1);
       }
     }
     updateActiveCameraCurrentResolution(e) {
@@ -1340,17 +1152,14 @@ var P = ((a) => (
     }
     async updateStreamForResolution(e, t) {
       var i;
-      if (this.mediaStream == null)
-        await this.initializeCameraForResolution(e, t);
+      if (this.mediaStream == null) await this.initializeCameraForResolution(e, t);
       else
         try {
           let a =
             (i = this.activeCameraSettings) == null
               ? void 0
               : i.getProperty("preferredAspectRatio");
-          (a$3.debug(
-            "Setting new resolution for active camera video stream...",
-          ),
+          (a$3.debug("Setting new resolution for active camera video stream..."),
             await this.mediaStream
               .getVideoTracks()[0]
               .applyConstraints(d.getUserMediaVideoParameters(t, a)),
@@ -1376,15 +1185,11 @@ var P = ((a) => (
     async videoTrackEndedRecovery() {
       if (document.visibilityState === "visible")
         try {
-          (a$3.debug(
-            'Detected video track "ended" event, try to reinitialize camera',
-          ),
+          (a$3.debug('Detected video track "ended" event, try to reinitialize camera'),
             await this.reinitializeCamera());
         } catch (e) {}
       else
-        (a$3.debug(
-          "Page is currently not visible, delay camera reinitialization until visible",
-        ),
+        (a$3.debug("Page is currently not visible, delay camera reinitialization until visible"),
           document.addEventListener(
             "visibilitychange",
             this.checkCameraVideoStreamAccessIfVisibleListener,
@@ -1410,15 +1215,12 @@ var P = ((a) => (
       let t = this.videoElement.cloneNode();
       ((t.srcObject = e), t.load());
       let i = document.createElement("canvas");
-      ((i.width = this.clipArea.size.width),
-        (i.height = this.clipArea.size.height));
+      ((i.width = this.clipArea.size.width), (i.height = this.clipArea.size.height));
       let a = i.getContext("2d", { alpha: false, willReadFrequently: false });
       return a
-        ? (t.addEventListener(
-            "play",
-            this.drawClippedFrame.bind(this, this.clipArea, t, a),
-            { once: true },
-          ),
+        ? (t.addEventListener("play", this.drawClippedFrame.bind(this, this.clipArea, t, a), {
+            once: true,
+          }),
           t.addEventListener("pause", this.cleanupClippedStream.bind(this, t), {
             once: true,
           }),
@@ -1450,25 +1252,13 @@ var P = ((a) => (
     }
     connectedCallback(e) {
       (e.replaceWith(this.videoElement),
-        this.canvas.addEventListener(
-          "webglcontextlost",
-          this.handleWebGLContextLostListener,
-        ),
-        this.videoElement.addEventListener(
-          "pause",
-          this.handleVideoPauseHandler,
-        ),
+        this.canvas.addEventListener("webglcontextlost", this.handleWebGLContextLostListener),
+        this.videoElement.addEventListener("pause", this.handleVideoPauseHandler),
         this.playVideo());
     }
     disconnectedCallback() {
-      (this.canvas.removeEventListener(
-        "webglcontextlost",
-        this.handleWebGLContextLostListener,
-      ),
-        this.videoElement.removeEventListener(
-          "pause",
-          this.handleVideoPauseHandler,
-        ),
+      (this.canvas.removeEventListener("webglcontextlost", this.handleWebGLContextLostListener),
+        this.videoElement.removeEventListener("pause", this.handleVideoPauseHandler),
         this.videoElement.remove());
     }
     getVideoElement() {

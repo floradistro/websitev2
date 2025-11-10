@@ -11,6 +11,7 @@ import { ProductSelectorDropdown } from "./ProductSelectorDropdown";
 import { CategorySelectorDropdown } from "./CategorySelectorDropdown";
 import { LocationSelectorDropdown } from "./LocationSelectorDropdown";
 
+import { logger } from "@/lib/logger";
 interface ComponentInstanceEditorProps {
   instance: {
     id: string;
@@ -88,7 +89,7 @@ export function ComponentInstanceEditor({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Upload error:", error);
+        logger.error("Upload error:", error);
       }
       alert("Failed to upload image");
     } finally {
@@ -188,10 +189,7 @@ export function ComponentInstanceEditor({
     const { component_key, props } = instance;
 
     // If it's a smart component, use the schema
-    if (
-      component_key.startsWith("smart_") &&
-      SMART_COMPONENT_PROPS[component_key]
-    ) {
+    if (component_key.startsWith("smart_") && SMART_COMPONENT_PROPS[component_key]) {
       const schema = SMART_COMPONENT_PROPS[component_key];
 
       return (
@@ -209,9 +207,7 @@ export function ComponentInstanceEditor({
             </div>
             <p className="text-[9px] text-white/40 leading-relaxed uppercase tracking-wider">
               Auto-receives:{" "}
-              <span className="text-white/60 font-mono">
-                vendorId, vendorName, vendorLogo
-              </span>
+              <span className="text-white/60 font-mono">vendorId, vendorName, vendorLogo</span>
             </p>
           </div>
 
@@ -254,9 +250,7 @@ export function ComponentInstanceEditor({
                 <input
                   type="number"
                   value={props[field.key] || 0}
-                  onChange={(e) =>
-                    handlePropChange(field.key, parseInt(e.target.value))
-                  }
+                  onChange={(e) => handlePropChange(field.key, parseInt(e.target.value))}
                   className="w-full bg-black border border-white/10 text-white px-3 py-2 text-xs rounded-xl focus:outline-none focus:border-white/20 hover:bg-white/5 transition-all"
                 />
               )}
@@ -266,9 +260,7 @@ export function ComponentInstanceEditor({
                   <input
                     type="checkbox"
                     checked={props[field.key] || false}
-                    onChange={(e) =>
-                      handlePropChange(field.key, e.target.checked)
-                    }
+                    onChange={(e) => handlePropChange(field.key, e.target.checked)}
                     className="w-4 h-4 bg-black border-white/20 rounded"
                   />
                   <span
@@ -721,9 +713,7 @@ export function ComponentInstanceEditor({
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">
-              🛍️ Auto-fetches products from database
-            </p>
+            <p className="text-[9px] text-neutral-600">🛍️ Auto-fetches products from database</p>
           </div>
 
           {/* Content */}
@@ -761,9 +751,7 @@ export function ComponentInstanceEditor({
               </label>
               <select
                 value={props.columns || 3}
-                onChange={(e) =>
-                  handlePropChange("columns", parseInt(e.target.value))
-                }
+                onChange={(e) => handlePropChange("columns", parseInt(e.target.value))}
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
               >
                 <option value="2">2 Columns</option>
@@ -780,9 +768,7 @@ export function ComponentInstanceEditor({
               <input
                 type="number"
                 value={props.maxProducts || 12}
-                onChange={(e) =>
-                  handlePropChange("maxProducts", parseInt(e.target.value))
-                }
+                onChange={(e) => handlePropChange("maxProducts", parseInt(e.target.value))}
                 min="1"
                 max="100"
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
@@ -809,9 +795,7 @@ export function ComponentInstanceEditor({
           {/* Product Selection */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-[9px] text-neutral-600">
-                Select Specific Products
-              </label>
+              <label className="block text-[9px] text-neutral-600">Select Specific Products</label>
               <button
                 onClick={() => setShowProductSelector(!showProductSelector)}
                 className="text-[9px] text-white/60 hover:text-white uppercase tracking-wider"
@@ -838,9 +822,7 @@ export function ComponentInstanceEditor({
           {/* Category Filter */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-[9px] text-neutral-600">
-                Filter by Categories
-              </label>
+              <label className="block text-[9px] text-neutral-600">Filter by Categories</label>
               <button
                 onClick={() => setShowCategorySelector(!showCategorySelector)}
                 className="text-[9px] text-white/60 hover:text-white uppercase tracking-wider"
@@ -869,9 +851,7 @@ export function ComponentInstanceEditor({
               <input
                 type="checkbox"
                 checked={props.showPrice !== false}
-                onChange={(e) =>
-                  handlePropChange("showPrice", e.target.checked)
-                }
+                onChange={(e) => handlePropChange("showPrice", e.target.checked)}
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Price
@@ -881,9 +861,7 @@ export function ComponentInstanceEditor({
               <input
                 type="checkbox"
                 checked={props.showQuickAdd !== false}
-                onChange={(e) =>
-                  handlePropChange("showQuickAdd", e.target.checked)
-                }
+                onChange={(e) => handlePropChange("showQuickAdd", e.target.checked)}
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Quick Add Button
@@ -898,12 +876,8 @@ export function ComponentInstanceEditor({
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">
-              🏷️ Auto-fetches product data from URL
-            </p>
-            <p className="text-[9px] text-neutral-600 mt-1">
-              Product determined by URL slug
-            </p>
+            <p className="text-[9px] text-neutral-600">🏷️ Auto-fetches product data from URL</p>
+            <p className="text-[9px] text-neutral-600 mt-1">Product determined by URL slug</p>
           </div>
 
           {/* Override Product Slug */}
@@ -929,9 +903,7 @@ export function ComponentInstanceEditor({
               <input
                 type="checkbox"
                 checked={props.showGallery !== false}
-                onChange={(e) =>
-                  handlePropChange("showGallery", e.target.checked)
-                }
+                onChange={(e) => handlePropChange("showGallery", e.target.checked)}
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Image Gallery
@@ -941,9 +913,7 @@ export function ComponentInstanceEditor({
               <input
                 type="checkbox"
                 checked={props.showPricingTiers !== false}
-                onChange={(e) =>
-                  handlePropChange("showPricingTiers", e.target.checked)
-                }
+                onChange={(e) => handlePropChange("showPricingTiers", e.target.checked)}
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Pricing Tiers Dropdown
@@ -953,9 +923,7 @@ export function ComponentInstanceEditor({
               <input
                 type="checkbox"
                 checked={props.showFields !== false}
-                onChange={(e) =>
-                  handlePropChange("showFields", e.target.checked)
-                }
+                onChange={(e) => handlePropChange("showFields", e.target.checked)}
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Blueprint Fields
@@ -965,9 +933,7 @@ export function ComponentInstanceEditor({
               <input
                 type="checkbox"
                 checked={props.showAddToCart !== false}
-                onChange={(e) =>
-                  handlePropChange("showAddToCart", e.target.checked)
-                }
+                onChange={(e) => handlePropChange("showAddToCart", e.target.checked)}
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Add to Cart Button
@@ -982,9 +948,7 @@ export function ComponentInstanceEditor({
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">
-              📍 Auto-fetches store locations
-            </p>
+            <p className="text-[9px] text-neutral-600">📍 Auto-fetches store locations</p>
           </div>
 
           <div>
@@ -1015,9 +979,7 @@ export function ComponentInstanceEditor({
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-[9px] text-neutral-600">
-                Select Specific Locations
-              </label>
+              <label className="block text-[9px] text-neutral-600">Select Specific Locations</label>
               <button
                 onClick={() => setShowLocationSelector(!showLocationSelector)}
                 className="text-[9px] text-white/60 hover:text-white uppercase tracking-wider"
@@ -1056,9 +1018,7 @@ export function ComponentInstanceEditor({
               <input
                 type="checkbox"
                 checked={props.showDirections !== false}
-                onChange={(e) =>
-                  handlePropChange("showDirections", e.target.checked)
-                }
+                onChange={(e) => handlePropChange("showDirections", e.target.checked)}
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Directions Links
@@ -1073,9 +1033,7 @@ export function ComponentInstanceEditor({
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">
-              ⭐ Auto-fetches customer reviews
-            </p>
+            <p className="text-[9px] text-neutral-600">⭐ Auto-fetches customer reviews</p>
           </div>
 
           <div>
@@ -1099,9 +1057,7 @@ export function ComponentInstanceEditor({
               <input
                 type="number"
                 value={props.limit || 6}
-                onChange={(e) =>
-                  handlePropChange("limit", parseInt(e.target.value))
-                }
+                onChange={(e) => handlePropChange("limit", parseInt(e.target.value))}
                 min="1"
                 max="20"
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
@@ -1114,9 +1070,7 @@ export function ComponentInstanceEditor({
               </label>
               <select
                 value={props.minRating || 1}
-                onChange={(e) =>
-                  handlePropChange("minRating", parseInt(e.target.value))
-                }
+                onChange={(e) => handlePropChange("minRating", parseInt(e.target.value))}
                 className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
               >
                 <option value="1">1+ Stars</option>
@@ -1139,9 +1093,7 @@ export function ComponentInstanceEditor({
               placeholder="Leave empty for all vendor reviews"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500 font-mono"
             />
-            <p className="text-[9px] text-neutral-600 mt-1">
-              Show reviews for specific product
-            </p>
+            <p className="text-[9px] text-neutral-600 mt-1">Show reviews for specific product</p>
           </div>
 
           <div>
@@ -1167,9 +1119,7 @@ export function ComponentInstanceEditor({
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">
-              🔝 Smart Header - Full Control
-            </p>
+            <p className="text-[9px] text-neutral-600">🔝 Smart Header - Full Control</p>
           </div>
 
           {/* Logo */}
@@ -1188,15 +1138,9 @@ export function ComponentInstanceEditor({
 
           {/* Vendor Info (read-only) */}
           <div className="border border-[#1a1a1a] p-2">
-            <p className="text-[9px] text-neutral-600 mb-1">
-              Vendor Info (Auto)
-            </p>
-            <p className="text-[9px] text-neutral-600">
-              Name: {props.vendorName}
-            </p>
-            <p className="text-[9px] text-neutral-600">
-              Slug: {props.vendorSlug}
-            </p>
+            <p className="text-[9px] text-neutral-600 mb-1">Vendor Info (Auto)</p>
+            <p className="text-[9px] text-neutral-600">Name: {props.vendorName}</p>
+            <p className="text-[9px] text-neutral-600">Slug: {props.vendorSlug}</p>
           </div>
 
           {/* Announcement Bar */}
@@ -1205,9 +1149,7 @@ export function ComponentInstanceEditor({
               <input
                 type="checkbox"
                 checked={props.showAnnouncement !== false}
-                onChange={(e) =>
-                  handlePropChange("showAnnouncement", e.target.checked)
-                }
+                onChange={(e) => handlePropChange("showAnnouncement", e.target.checked)}
                 className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
               />
               Show Announcement Bar
@@ -1221,9 +1163,7 @@ export function ComponentInstanceEditor({
                 <input
                   type="text"
                   value={props.announcementText || ""}
-                  onChange={(e) =>
-                    handlePropChange("announcementText", e.target.value)
-                  }
+                  onChange={(e) => handlePropChange("announcementText", e.target.value)}
                   placeholder="Free shipping over $45"
                   className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[9px] text-neutral-500"
                 />
@@ -1233,9 +1173,7 @@ export function ComponentInstanceEditor({
 
           {/* Navigation Links */}
           <div className="border-t border-[#1a1a1a] pt-3 mt-2">
-            <label className="block text-[9px] text-neutral-600 mb-2">
-              Navigation Links
-            </label>
+            <label className="block text-[9px] text-neutral-600 mb-2">Navigation Links</label>
             <div className="space-y-2">
               {(props.navLinks || []).map((link: any, idx: number) => (
                 <div key={idx} className="border border-[#1a1a1a] p-2">
@@ -1310,17 +1248,13 @@ export function ComponentInstanceEditor({
 
           {/* Feature Toggles */}
           <div className="border-t border-[#1a1a1a] pt-3 mt-2">
-            <label className="block text-[9px] text-neutral-600 mb-2">
-              Features
-            </label>
+            <label className="block text-[9px] text-neutral-600 mb-2">Features</label>
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-[9px] text-neutral-600">
                 <input
                   type="checkbox"
                   checked={props.showSearch !== false}
-                  onChange={(e) =>
-                    handlePropChange("showSearch", e.target.checked)
-                  }
+                  onChange={(e) => handlePropChange("showSearch", e.target.checked)}
                   className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
                 />
                 Show Search
@@ -1330,9 +1264,7 @@ export function ComponentInstanceEditor({
                 <input
                   type="checkbox"
                   checked={props.showCart !== false}
-                  onChange={(e) =>
-                    handlePropChange("showCart", e.target.checked)
-                  }
+                  onChange={(e) => handlePropChange("showCart", e.target.checked)}
                   className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
                 />
                 Show Cart
@@ -1342,9 +1274,7 @@ export function ComponentInstanceEditor({
                 <input
                   type="checkbox"
                   checked={props.showAccount !== false}
-                  onChange={(e) =>
-                    handlePropChange("showAccount", e.target.checked)
-                  }
+                  onChange={(e) => handlePropChange("showAccount", e.target.checked)}
                   className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
                 />
                 Show Account
@@ -1354,9 +1284,7 @@ export function ComponentInstanceEditor({
 
           {/* Behavior */}
           <div className="border-t border-[#1a1a1a] pt-3 mt-2">
-            <label className="block text-[9px] text-neutral-600 mb-2">
-              Behavior
-            </label>
+            <label className="block text-[9px] text-neutral-600 mb-2">Behavior</label>
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-[9px] text-neutral-600">
                 <input
@@ -1372,9 +1300,7 @@ export function ComponentInstanceEditor({
                 <input
                   type="checkbox"
                   checked={props.hideOnScroll !== false}
-                  onChange={(e) =>
-                    handlePropChange("hideOnScroll", e.target.checked)
-                  }
+                  onChange={(e) => handlePropChange("hideOnScroll", e.target.checked)}
                   className="w-3 h-3 bg-transparent border border-[#1a1a1a]"
                 />
                 Hide on Scroll Down
@@ -1384,36 +1310,24 @@ export function ComponentInstanceEditor({
 
           {/* Styling */}
           <div className="border-t border-[#1a1a1a] pt-3 mt-2">
-            <label className="block text-[9px] text-neutral-600 mb-2">
-              Styling (Advanced)
-            </label>
+            <label className="block text-[9px] text-neutral-600 mb-2">Styling (Advanced)</label>
             <div className="space-y-2">
               <div>
-                <label className="block text-[9px] text-neutral-600 mb-1">
-                  Background
-                </label>
+                <label className="block text-[9px] text-neutral-600 mb-1">Background</label>
                 <input
                   type="text"
-                  value={
-                    props.backgroundColor || "bg-black/40 backdrop-blur-3xl"
-                  }
-                  onChange={(e) =>
-                    handlePropChange("backgroundColor", e.target.value)
-                  }
+                  value={props.backgroundColor || "bg-black/40 backdrop-blur-3xl"}
+                  onChange={(e) => handlePropChange("backgroundColor", e.target.value)}
                   className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[9px] text-neutral-600 mb-1">
-                  Text Color
-                </label>
+                <label className="block text-[9px] text-neutral-600 mb-1">Text Color</label>
                 <input
                   type="text"
                   value={props.textColor || "text-neutral-400"}
-                  onChange={(e) =>
-                    handlePropChange("textColor", e.target.value)
-                  }
+                  onChange={(e) => handlePropChange("textColor", e.target.value)}
                   className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 font-mono"
                 />
               </div>
@@ -1428,9 +1342,7 @@ export function ComponentInstanceEditor({
       return (
         <>
           <div className="border border-[#1a1a1a] p-2 mb-3">
-            <p className="text-[9px] text-neutral-600">
-              🔚 Smart Footer - Full Control
-            </p>
+            <p className="text-[9px] text-neutral-600">🔚 Smart Footer - Full Control</p>
           </div>
 
           <div className="text-[9px] text-neutral-600">
@@ -1447,9 +1359,7 @@ export function ComponentInstanceEditor({
           <p className="text-[9px] text-neutral-600">
             ℹ️ Smart component auto-fetches data from database
           </p>
-          <p className="text-[9px] text-neutral-600 mt-2">
-            vendorId: {props.vendorId}
-          </p>
+          <p className="text-[9px] text-neutral-600 mt-2">vendorId: {props.vendorId}</p>
         </div>
       );
     }
@@ -1485,9 +1395,7 @@ export function ComponentInstanceEditor({
             <input
               type="number"
               value={props.thickness || 1}
-              onChange={(e) =>
-                handlePropChange("thickness", parseInt(e.target.value))
-              }
+              onChange={(e) => handlePropChange("thickness", parseInt(e.target.value))}
               min="1"
               max="10"
               className="w-full bg-transparent border border-[#1a1a1a] px-2 py-1 text-[10px] text-neutral-400 focus:outline-none focus:border-[#2a2a2a]"

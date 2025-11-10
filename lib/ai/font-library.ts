@@ -116,17 +116,13 @@ EXAMPLES:
  * Get font by name
  */
 export function getFont(name: string): FontDefinition | undefined {
-  return WHALETOOLS_FONTS.find(
-    (f) => f.name.toLowerCase() === name.toLowerCase(),
-  );
+  return WHALETOOLS_FONTS.find((f) => f.name.toLowerCase() === name.toLowerCase());
 }
 
 /**
  * Get fonts by category
  */
-export function getFontsByCategory(
-  category: FontDefinition["category"],
-): FontDefinition[] {
+export function getFontsByCategory(category: FontDefinition["category"]): FontDefinition[] {
   return WHALETOOLS_FONTS.filter((f) => f.category === category);
 }
 

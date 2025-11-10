@@ -14,14 +14,7 @@ import {
   SmartContainers,
   useScrollAnimation,
 } from "@/lib/smart-component-base";
-import {
-  FlaskConical,
-  Download,
-  FileCheck,
-  Calendar,
-  CheckCircle,
-  Shield,
-} from "lucide-react";
+import { FlaskConical, Download, FileCheck, Calendar, CheckCircle, Shield } from "lucide-react";
 import Image from "next/image";
 
 export interface SmartLabResultsProps extends SmartComponentBaseProps {
@@ -120,9 +113,7 @@ export function SmartLabResults({
               </motion.div>
             )}
 
-            <SmartTypography.Headline className="mb-6">
-              {headline}
-            </SmartTypography.Headline>
+            <SmartTypography.Headline className="mb-6">{headline}</SmartTypography.Headline>
             <p className="text-xl sm:text-2xl text-white/60 uppercase tracking-wide">
               {subheadline}
             </p>
@@ -147,9 +138,8 @@ export function SmartLabResults({
                   OUR TESTING COMMITMENT
                 </h3>
                 <p className="text-base sm:text-lg text-white/60 leading-relaxed mb-8">
-                  Every product sold by {vendorName} undergoes rigorous
-                  third-party laboratory testing. We don't just meet industry
-                  standards—we exceed them.
+                  Every product sold by {vendorName} undergoes rigorous third-party laboratory
+                  testing. We don't just meet industry standards—we exceed them.
                 </p>
 
                 <div className="h-[1px] bg-white/5 my-8" />
@@ -168,11 +158,7 @@ export function SmartLabResults({
                       className="flex items-start gap-3"
                     >
                       <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center mt-0.5">
-                        <feature.icon
-                          size={14}
-                          className="text-white"
-                          strokeWidth={3}
-                        />
+                        <feature.icon size={14} className="text-white" strokeWidth={3} />
                       </div>
                       <div>
                         <h4
@@ -181,9 +167,7 @@ export function SmartLabResults({
                         >
                           {feature.title}
                         </h4>
-                        <p className="text-xs text-white/60">
-                          {feature.description}
-                        </p>
+                        <p className="text-xs text-white/60">{feature.description}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -246,11 +230,7 @@ export function SmartLabResults({
                     <SmartContainers.Card className="p-6 h-full hover:-translate-y-1 transition-all">
                       <div className="flex items-start gap-4 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 transition-all">
-                          <FileCheck
-                            size={20}
-                            className="text-white"
-                            strokeWidth={2.5}
-                          />
+                          <FileCheck size={20} className="text-white" strokeWidth={2.5} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4
@@ -268,9 +248,7 @@ export function SmartLabResults({
 
                       <div className="flex items-center gap-2 text-xs text-white/60 group-hover:text-white group-hover:gap-3 transition-all">
                         <Download size={14} strokeWidth={2.5} />
-                        <span className="font-black uppercase tracking-wide">
-                          DOWNLOAD PDF
-                        </span>
+                        <span className="font-black uppercase tracking-wide">DOWNLOAD PDF</span>
                       </div>
                     </SmartContainers.Card>
                   </motion.a>
@@ -284,10 +262,7 @@ export function SmartLabResults({
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             >
               <SmartContainers.Card className="p-12 text-center">
-                <FlaskConical
-                  className="w-16 h-16 text-white/40 mx-auto mb-6"
-                  strokeWidth={1.5}
-                />
+                <FlaskConical className="w-16 h-16 text-white/40 mx-auto mb-6" strokeWidth={1.5} />
                 <h3
                   className="text-xl font-black uppercase tracking-tight text-white mb-3"
                   style={{ fontWeight: 900 }}
@@ -295,8 +270,8 @@ export function SmartLabResults({
                   LAB RESULTS COMING SOON
                 </h3>
                 <p className="text-sm text-white/60">
-                  We're currently uploading our complete library of lab test
-                  results. Check back soon.
+                  We're currently uploading our complete library of lab test results. Check back
+                  soon.
                 </p>
               </SmartContainers.Card>
             </motion.div>
@@ -326,9 +301,8 @@ export function SmartLabResults({
                     100% COMPLIANT
                   </h3>
                   <p className="text-sm text-white/60 leading-relaxed mb-4">
-                    All products contain less than 0.3% Delta-9 THC and comply
-                    with the 2018 Farm Bill. Lab results are updated regularly
-                    and available for every product we sell.
+                    All products contain less than 0.3% Delta-9 THC and comply with the 2018 Farm
+                    Bill. Lab results are updated regularly and available for every product we sell.
                   </p>
                   <p className="text-[10px] text-white/40 uppercase tracking-wider">
                     Testing performed by ISO-certified third-party laboratories
@@ -365,12 +339,7 @@ export function SmartLabResults({
                 style={{ fontWeight: 900 }}
               >
                 CONTACT US
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

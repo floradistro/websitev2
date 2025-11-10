@@ -6,6 +6,7 @@ import { promisify } from "util";
 import path from "path";
 import fs from "fs/promises";
 
+import { logger } from "@/lib/logger";
 const execAsync = promisify(exec);
 
 /**
@@ -41,21 +42,17 @@ export async function POST(request: NextRequest) {
     const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET;
     if (!webhookSecret) {
       if (process.env.NODE_ENV === "development") {
-        console.error("GITHUB_WEBHOOK_SECRET not configured");
+        logger.error("GITHUB_WEBHOOK_SECRET not configured");
       }
-      return NextResponse.json(
-        { error: "Webhook not configured" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
     }
 
     const expectedSignature =
-      "sha256=" +
-      createHmac("sha256", webhookSecret).update(payload).digest("hex");
+      "sha256=" + createHmac("sha256", webhookSecret).update(payload).digest("hex");
 
     if (signature !== expectedSignature) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Invalid webhook signature");
+        logger.error("Invalid webhook signature");
       }
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
@@ -78,10 +75,7 @@ export async function POST(request: NextRequest) {
     const repoFullName = data.repository?.full_name; // e.g., "floradistro/flora-distro-storefront"
 
     if (!repoFullName) {
-      return NextResponse.json(
-        { error: "Repository info missing" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Repository info missing" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -98,12 +92,9 @@ export async function POST(request: NextRequest) {
 
     if (vendorError || !vendor) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Vendor not found for repo:", repoFullName);
+        logger.error("Vendor not found for repo:", repoFullName);
       }
-      return NextResponse.json(
-        { error: "Vendor not found for this repository" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Vendor not found for this repository" }, { status: 404 });
     }
 
     // Pull vendor's repo into our monorepo
@@ -115,10 +106,7 @@ export async function POST(request: NextRequest) {
       "templates",
       vendor.slug,
     );
-    const tempClonePath = path.join(
-      "/tmp",
-      `vendor-${vendor.slug}-${Date.now()}`,
-    );
+    const tempClonePath = path.join("/tmp", `vendor-${vendor.slug}-${Date.now()}`);
 
     try {
       // Clone vendor's repo to temp directory
@@ -127,9 +115,7 @@ export async function POST(request: NextRequest) {
         ? `https://${githubToken}@github.com/${repoFullName}.git`
         : `https://github.com/${repoFullName}.git`;
 
-      await execAsync(
-        `git clone --depth 1 --branch ${branch} ${cloneUrl} ${tempClonePath}`,
-      );
+      await execAsync(`git clone --depth 1 --branch ${branch} ${cloneUrl} ${tempClonePath}`);
 
       // Create vendor template directory if it doesn't exist
       await fs.mkdir(vendorTemplatePath, { recursive: true });
@@ -181,7 +167,7 @@ export async function POST(request: NextRequest) {
       });
     } catch (syncError: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error syncing vendor repo:", syncError);
+        logger.error("Error syncing vendor repo:", syncError);
       }
       // Clean up temp directory on error
       try {
@@ -192,7 +178,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("GitHub webhook error:", error);
+      logger.error("GitHub webhook error:", error);
     }
     return NextResponse.json(
       {

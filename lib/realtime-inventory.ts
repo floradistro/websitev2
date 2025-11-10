@@ -7,6 +7,7 @@
 import { createClient, RealtimeChannel } from "@supabase/supabase-js";
 import { inventoryCache } from "./cache-manager";
 
+import { logger } from "@/lib/logger";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
@@ -56,12 +57,9 @@ export class RealtimeInventoryManager {
   /**
    * Subscribe to inventory changes for a specific product
    */
-  subscribeToProduct(
-    productId: string,
-    handler: InventoryChangeHandler,
-  ): string {
+  subscribeToProduct(productId: string, handler: InventoryChangeHandler): string {
     if (!this.supabase) {
-      console.warn("⚠️  Realtime not available (server-side)");
+      logger.warn("⚠️  Realtime not available (server-side)");
       return "";
     }
 
@@ -104,7 +102,7 @@ export class RealtimeInventoryManager {
                   h(event);
                 } catch (error) {
                   if (process.env.NODE_ENV === "development") {
-                    console.error("Error in inventory change handler:", error);
+                    logger.error("Error in inventory change handler:", error);
                   }
                 }
               });
@@ -126,7 +124,7 @@ export class RealtimeInventoryManager {
    */
   subscribeToVendor(vendorId: string, handler: InventoryChangeHandler): string {
     if (!this.supabase) {
-      console.warn("⚠️  Realtime not available (server-side)");
+      logger.warn("⚠️  Realtime not available (server-side)");
       return "";
     }
 
@@ -169,7 +167,7 @@ export class RealtimeInventoryManager {
                   h(event);
                 } catch (error) {
                   if (process.env.NODE_ENV === "development") {
-                    console.error("Error in vendor inventory handler:", error);
+                    logger.error("Error in vendor inventory handler:", error);
                   }
                 }
               });

@@ -1,12 +1,11 @@
+import { logger } from "@/lib/logger";
+
 /**
  * Environment Variable Validation
  * Ensures all required environment variables are set at startup
  */
 
-const REQUIRED_ENV_VARS = [
-  "NEXT_PUBLIC_SUPABASE_URL",
-  "SUPABASE_SERVICE_ROLE_KEY",
-] as const;
+const REQUIRED_ENV_VARS = ["NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"] as const;
 
 const OPTIONAL_ENV_VARS = [
   "ANTHROPIC_API_KEY",
@@ -49,7 +48,7 @@ export function validateEnvironment(): void {
 
   // Log warnings for optional vars (only in development)
   if (warnings.length > 0 && process.env.NODE_ENV === "development") {
-    console.warn(
+    logger.warn(
       `⚠️  Optional environment variables not set:\n${warnings.map((v) => `  - ${v}`).join("\n")}`,
     );
   }
@@ -72,11 +71,7 @@ function validateFormats(): void {
   }
 
   // Validate API keys are not empty strings
-  const apiKeys = [
-    "SUPABASE_SERVICE_ROLE_KEY",
-    "ANTHROPIC_API_KEY",
-    "OPENAI_API_KEY",
-  ];
+  const apiKeys = ["SUPABASE_SERVICE_ROLE_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY"];
 
   for (const key of apiKeys) {
     const value = process.env[key];
@@ -116,6 +111,4 @@ export const isDevelopment = process.env.NODE_ENV === "development";
  * Get the site URL
  */
 export const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  process.env.VERCEL_URL ||
-  "http://localhost:3000";
+  process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL || "http://localhost:3000";

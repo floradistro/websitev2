@@ -56,10 +56,7 @@ export type PriceCalculation = {
 /**
  * Check if a promotion is currently active based on schedule
  */
-export function isPromotionActive(
-  promo: Promotion,
-  checkTime: Date = new Date(),
-): boolean {
+export function isPromotionActive(promo: Promotion, checkTime: Date = new Date()): boolean {
   if (!promo.is_active) return false;
 
   // Check date range
@@ -82,10 +79,7 @@ export function isPromotionActive(
   // Check time of day
   if (promo.time_of_day_start && promo.time_of_day_end) {
     const checkTimeOnly = checkTime.toTimeString().slice(0, 8); // HH:MM:SS
-    if (
-      checkTimeOnly < promo.time_of_day_start ||
-      checkTimeOnly > promo.time_of_day_end
-    ) {
+    if (checkTimeOnly < promo.time_of_day_start || checkTimeOnly > promo.time_of_day_end) {
       return false;
     }
   }
@@ -140,10 +134,7 @@ export function doesPromotionApply(
 /**
  * Calculate the discount amount for a promotion
  */
-export function calculateDiscount(
-  promo: Promotion,
-  originalPrice: number,
-): number {
+export function calculateDiscount(promo: Promotion, originalPrice: number): number {
   if (promo.discount_type === "percentage") {
     return originalPrice * (promo.discount_value / 100);
   } else {
@@ -169,9 +160,7 @@ export function findBestPromotion(
   if (applicablePromos.length === 0) return null;
 
   // Get base price
-  const basePrice = parseFloat(
-    String(product.regular_price || product.price || 0),
-  );
+  const basePrice = parseFloat(String(product.regular_price || product.price || 0));
 
   // Find promotion with highest savings
   let bestPromo: Promotion | null = null;
@@ -183,8 +172,7 @@ export function findBestPromotion(
     // If savings are equal, use priority
     if (
       savings > maxSavings ||
-      (savings === maxSavings &&
-        (promo.priority || 0) > (bestPromo?.priority || 0))
+      (savings === maxSavings && (promo.priority || 0) > (bestPromo?.priority || 0))
     ) {
       maxSavings = savings;
       bestPromo = promo;
@@ -222,18 +210,11 @@ export function calculatePrice(
     originalPrice = parseFloat(String(product.pricing_tiers[tierId].price));
   } else {
     // Use regular price
-    originalPrice = parseFloat(
-      String(product.regular_price || product.price || 0),
-    );
+    originalPrice = parseFloat(String(product.regular_price || product.price || 0));
   }
 
   // Find best applicable promotion
-  const bestPromo = findBestPromotion(
-    product,
-    activePromotions,
-    quantity,
-    tierId,
-  );
+  const bestPromo = findBestPromotion(product, activePromotions, quantity, tierId);
 
   if (!bestPromo) {
     // No promotion applies
@@ -248,8 +229,7 @@ export function calculatePrice(
   // Calculate discount
   const savings = calculateDiscount(bestPromo, originalPrice);
   const finalPrice = Math.max(0, originalPrice - savings); // Don't go below $0
-  const discountPercentage =
-    originalPrice > 0 ? (savings / originalPrice) * 100 : 0;
+  const discountPercentage = originalPrice > 0 ? (savings / originalPrice) * 100 : 0;
 
   return {
     originalPrice,
@@ -291,13 +271,7 @@ export function calculateTierPrices(
     const tierPrice = parseFloat(String(tierData.price));
     const quantity = priceBreak.qty || priceBreak.display_qty || 1;
 
-    result[tierId] = calculatePrice(
-      product,
-      activePromotions,
-      quantity,
-      tierId,
-      tierPrice,
-    );
+    result[tierId] = calculatePrice(product, activePromotions, quantity, tierId, tierPrice);
   }
 
   return result;

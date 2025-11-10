@@ -30,10 +30,4 @@ declare const success: GenericHint;
 declare const warning: GenericHint;
 declare const info: GenericHint;
 
-export {
-  createGenericHintFromNotificationConfiguration,
-  error,
-  info,
-  success,
-  warning,
-};
+export { createGenericHintFromNotificationConfiguration, error, info, success, warning };

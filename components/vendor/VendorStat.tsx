@@ -9,13 +9,7 @@ interface VendorStatProps {
   delay?: string;
 }
 
-export function VendorStat({
-  label,
-  value,
-  sublabel,
-  icon: Icon,
-  delay,
-}: VendorStatProps) {
+export function VendorStat({ label, value, sublabel, icon: Icon, delay }: VendorStatProps) {
   return (
     <div className="minimal-glass subtle-glow p-6 hover:bg-white/[0.03] transition-all duration-300 group">
       <div className="flex items-center justify-between mb-4">

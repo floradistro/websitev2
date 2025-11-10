@@ -13,21 +13,12 @@ interface CardProps {
   hover?: boolean;
 }
 
-export function DashboardCard({
-  children,
-  theme = "admin",
-  className,
-  hover = true,
-}: CardProps) {
+export function DashboardCard({ children, theme = "admin", className, hover = true }: CardProps) {
   const themeObj = getTheme(theme);
 
   return (
     <div
-      className={tw(
-        themeObj.components.card,
-        hover && themeObj.components.cardHover,
-        className,
-      )}
+      className={tw(themeObj.components.card, hover && themeObj.components.cardHover, className)}
     >
       {children}
     </div>
@@ -51,11 +42,7 @@ export function DashboardCardHeader({
 
   return (
     <div
-      className={tw(
-        themeObj.components.cardHeader,
-        "flex justify-between items-center",
-        className,
-      )}
+      className={tw(themeObj.components.cardHeader, "flex justify-between items-center", className)}
     >
       <div>{children}</div>
       {action && <div>{action}</div>}
@@ -63,18 +50,10 @@ export function DashboardCardHeader({
   );
 }
 
-export function DashboardCardContent({
-  children,
-  theme = "admin",
-  className,
-}: CardProps) {
+export function DashboardCardContent({ children, theme = "admin", className }: CardProps) {
   const themeObj = getTheme(theme);
 
-  return (
-    <div className={tw(themeObj.components.cardContent, className)}>
-      {children}
-    </div>
-  );
+  return <div className={tw(themeObj.components.cardContent, className)}>{children}</div>;
 }
 
 interface CardTitleProps {
@@ -83,14 +62,8 @@ interface CardTitleProps {
   className?: string;
 }
 
-export function DashboardCardTitle({
-  children,
-  theme = "admin",
-  className,
-}: CardTitleProps) {
+export function DashboardCardTitle({ children, theme = "admin", className }: CardTitleProps) {
   const themeObj = getTheme(theme);
 
-  return (
-    <h2 className={tw(themeObj.typography.label, className)}>{children}</h2>
-  );
+  return <h2 className={tw(themeObj.typography.label, className)}>{children}</h2>;
 }

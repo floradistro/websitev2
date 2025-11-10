@@ -8,12 +8,7 @@ interface GridProps {
   className?: string;
 }
 
-export function VendorGrid({
-  children,
-  cols = 4,
-  gap = "md",
-  className,
-}: GridProps) {
+export function VendorGrid({ children, cols = 4, gap = "md", className }: GridProps) {
   const colsClass = {
     1: "grid-cols-1",
     2: "grid-cols-2",
@@ -29,9 +24,5 @@ export function VendorGrid({
     lg: "gap-4",
   };
 
-  return (
-    <div className={tw("grid", colsClass[cols], gapClass[gap], className)}>
-      {children}
-    </div>
-  );
+  return <div className={tw("grid", colsClass[cols], gapClass[gap], className)}>{children}</div>;
 }

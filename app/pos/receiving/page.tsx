@@ -1,16 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import {
-  Package,
-  ArrowLeft,
-  CheckCircle,
-  AlertCircle,
-  Search,
-  Scan,
-} from "lucide-react";
+import { Package, ArrowLeft, CheckCircle, AlertCircle, Search, Scan } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import { logger } from "@/lib/logger";
 interface PurchaseOrder {
   id: string;
   po_number: string;
@@ -44,9 +38,7 @@ export default function POSReceivingPage() {
   const [loading, setLoading] = useState(true);
   const [receiving, setReceiving] = useState(false);
   const [searchSKU, setSearchSKU] = useState("");
-  const [receiveQuantities, setReceiveQuantities] = useState<
-    Record<string, number>
-  >({});
+  const [receiveQuantities, setReceiveQuantities] = useState<Record<string, number>>({});
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const skuInputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +53,7 @@ export default function POSReceivingPage() {
         setLocationName(location.name);
       } catch (e) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to parse location:", e);
+          logger.error("Failed to parse location:", e);
         }
       }
     }
@@ -73,12 +65,9 @@ export default function POSReceivingPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(
-        `/api/pos/receiving?location_id=${locationId}`,
-        {
-          credentials: "include",
-        },
-      );
+      const response = await fetch(`/api/pos/receiving?location_id=${locationId}`, {
+        credentials: "include",
+      });
 
       if (response.ok) {
         const data = await response.json();
@@ -86,7 +75,7 @@ export default function POSReceivingPage() {
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading POs:", err);
+        logger.error("Error loading POs:", err);
       }
     } finally {
       setLoading(false);
@@ -211,12 +200,8 @@ export default function POSReceivingPage() {
     }
   };
 
-  const receivableItems =
-    selectedPO?.items.filter((item) => item.quantity_remaining > 0) || [];
-  const totalReceiving = Object.values(receiveQuantities).reduce(
-    (sum, qty) => sum + qty,
-    0,
-  );
+  const receivableItems = selectedPO?.items.filter((item) => item.quantity_remaining > 0) || [];
+  const totalReceiving = Object.values(receiveQuantities).reduce((sum, qty) => sum + qty, 0);
 
   // No location selected
   if (!locationId) {
@@ -250,24 +235,17 @@ export default function POSReceivingPage() {
             className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-3"
           >
             <ArrowLeft size={16} />
-            <span className="text-xs uppercase tracking-wider">
-              Back to Purchase Orders
-            </span>
+            <span className="text-xs uppercase tracking-wider">Back to Purchase Orders</span>
           </button>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-light mb-1">
-                {selectedPO.po_number}
-              </h1>
+              <h1 className="text-xl font-light mb-1">{selectedPO.po_number}</h1>
               <p className="text-xs text-white/60">
-                {selectedPO.supplier?.external_name} • {receivableItems.length}{" "}
-                items remaining
+                {selectedPO.supplier?.external_name} • {receivableItems.length} items remaining
               </p>
             </div>
             <div className="text-right">
-              <div className="text-xs text-white/60 uppercase tracking-wider mb-1">
-                Receiving
-              </div>
+              <div className="text-xs text-white/60 uppercase tracking-wider mb-1">Receiving</div>
               <div className="text-2xl font-light">{totalReceiving} units</div>
             </div>
           </div>
@@ -293,10 +271,7 @@ export default function POSReceivingPage() {
         {/* SKU Scanner */}
         <div className="mx-4 mt-4">
           <div className="relative">
-            <Scan
-              size={16}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40"
-            />
+            <Scan size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
             <input
               ref={skuInputRef}
               type="text"
@@ -340,9 +315,7 @@ export default function POSReceivingPage() {
                 {/* Quantity Input */}
                 <div className="flex items-center gap-3">
                   <div className="flex-1">
-                    <label className="block text-xs text-white/60 mb-1">
-                      Receiving Quantity
-                    </label>
+                    <label className="block text-xs text-white/60 mb-1">Receiving Quantity</label>
                     <input
                       type="number"
                       value={receiveQuantities[item.id] || 0}
@@ -429,9 +402,7 @@ export default function POSReceivingPage() {
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-3"
         >
           <ArrowLeft size={16} />
-          <span className="text-xs uppercase tracking-wider">
-            Back to Register
-          </span>
+          <span className="text-xs uppercase tracking-wider">Back to Register</span>
         </button>
         <div className="flex items-center justify-between">
           <div>
@@ -471,9 +442,7 @@ export default function POSReceivingPage() {
       {!loading && purchaseOrders.length > 0 && (
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {purchaseOrders.map((po) => {
-            const receivableCount = po.items.filter(
-              (i) => i.quantity_remaining > 0,
-            ).length;
+            const receivableCount = po.items.filter((i) => i.quantity_remaining > 0).length;
 
             return (
               <button
@@ -483,9 +452,7 @@ export default function POSReceivingPage() {
               >
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div className="flex-1">
-                    <h3 className="text-sm font-light text-white mb-1">
-                      {po.po_number}
-                    </h3>
+                    <h3 className="text-sm font-light text-white mb-1">{po.po_number}</h3>
                     <p className="text-xs text-white/60">
                       {po.supplier?.external_name || "Unknown Supplier"}
                     </p>

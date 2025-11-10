@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
@@ -19,9 +17,7 @@ export default function PrivacyPage() {
                 height={32}
                 className="object-contain"
               />
-              <span className="text-xl font-light tracking-tight">
-                WhaleTools
-              </span>
+              <span className="text-xl font-light tracking-tight">WhaleTools</span>
             </Link>
             <Link
               href="/"
@@ -57,60 +53,19 @@ export default function PrivacyPage() {
             Last updated: October 25, 2025
           </p>
 
-          <style jsx>{`
-            @keyframes breathe {
-              0%,
-              100% {
-                opacity: 0.9;
-                transform: scale(1);
-              }
-              50% {
-                opacity: 1;
-                transform: scale(1.02);
-              }
-            }
-            @keyframes glow-pulse {
-              0%,
-              100% {
-                opacity: 0;
-              }
-              50% {
-                opacity: 0.15;
-              }
-            }
-            .logo-breathe {
-              animation: breathe 4s ease-in-out infinite;
-            }
-            .logo-glow {
-              background: radial-gradient(
-                circle,
-                rgba(255, 255, 255, 0.2) 0%,
-                transparent 70%
-              );
-              animation: glow-pulse 4s ease-in-out infinite;
-              pointer-events: none;
-            }
-          `}</style>
-
           <div className="space-y-12 text-white/60 leading-relaxed">
             {/* Section 1 */}
             <div className="border-l-2 border-white/10 pl-6">
-              <h2 className="text-2xl font-light text-white/90 mb-4">
-                1. Information We Collect
-              </h2>
+              <h2 className="text-2xl font-light text-white/90 mb-4">1. Information We Collect</h2>
               <div className="space-y-4">
                 <p>
-                  We collect information that you provide directly to us when
-                  you create an account, use our services, or communicate with
-                  us. This includes:
+                  We collect information that you provide directly to us when you create an account,
+                  use our services, or communicate with us. This includes:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-4">
                   <li>Account information (name, email, password)</li>
                   <li>Business information (company name, address, tax ID)</li>
-                  <li>
-                    Payment information (processed securely through third-party
-                    providers)
-                  </li>
+                  <li>Payment information (processed securely through third-party providers)</li>
                   <li>Usage data and analytics</li>
                   <li>Communications with our support team</li>
                 </ul>
@@ -130,9 +85,7 @@ export default function PrivacyPage() {
                   <li>Send technical notices and support messages</li>
                   <li>Respond to your comments and questions</li>
                   <li>Monitor and analyze trends, usage, and activities</li>
-                  <li>
-                    Detect, investigate, and prevent fraudulent transactions
-                  </li>
+                  <li>Detect, investigate, and prevent fraudulent transactions</li>
                   <li>Comply with legal obligations</li>
                 </ul>
               </div>
@@ -140,12 +93,10 @@ export default function PrivacyPage() {
 
             {/* Section 3 */}
             <div className="border-l-2 border-white/10 pl-6">
-              <h2 className="text-2xl font-light text-white/90 mb-4">
-                3. Data Security
-              </h2>
+              <h2 className="text-2xl font-light text-white/90 mb-4">3. Data Security</h2>
               <p>
-                We implement industry-standard security measures to protect your
-                personal information. This includes:
+                We implement industry-standard security measures to protect your personal
+                information. This includes:
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4 mt-4">
                 <li>End-to-end encryption for data in transit</li>
@@ -159,30 +110,23 @@ export default function PrivacyPage() {
 
             {/* Section 4 */}
             <div className="border-l-2 border-white/10 pl-6">
-              <h2 className="text-2xl font-light text-white/90 mb-4">
-                4. Data Sharing
-              </h2>
+              <h2 className="text-2xl font-light text-white/90 mb-4">4. Data Sharing</h2>
               <p>
-                We do not sell your personal information. We may share your
-                information only in the following circumstances:
+                We do not sell your personal information. We may share your information only in the
+                following circumstances:
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4 mt-4">
                 <li>With your explicit consent</li>
                 <li>With service providers who assist in our operations</li>
                 <li>To comply with legal obligations</li>
                 <li>To protect our rights and prevent fraud</li>
-                <li>
-                  In connection with a business transaction (merger,
-                  acquisition)
-                </li>
+                <li>In connection with a business transaction (merger, acquisition)</li>
               </ul>
             </div>
 
             {/* Section 5 */}
             <div className="border-l-2 border-white/10 pl-6">
-              <h2 className="text-2xl font-light text-white/90 mb-4">
-                5. Your Rights
-              </h2>
+              <h2 className="text-2xl font-light text-white/90 mb-4">5. Your Rights</h2>
               <p>You have the right to:</p>
               <ul className="list-disc list-inside space-y-2 ml-4 mt-4">
                 <li>Access your personal information</li>
@@ -196,27 +140,21 @@ export default function PrivacyPage() {
 
             {/* Section 6 */}
             <div className="border-l-2 border-white/10 pl-6">
-              <h2 className="text-2xl font-light text-white/90 mb-4">
-                6. Data Retention
-              </h2>
+              <h2 className="text-2xl font-light text-white/90 mb-4">6. Data Retention</h2>
               <p>
-                We retain your information for as long as your account is active
-                or as needed to provide you services. We will retain and use
-                your information as necessary to comply with legal obligations,
-                resolve disputes, and enforce our agreements.
+                We retain your information for as long as your account is active or as needed to
+                provide you services. We will retain and use your information as necessary to comply
+                with legal obligations, resolve disputes, and enforce our agreements.
               </p>
             </div>
 
             {/* Section 7 */}
             <div className="border-l-2 border-white/10 pl-6">
-              <h2 className="text-2xl font-light text-white/90 mb-4">
-                7. Cookies
-              </h2>
+              <h2 className="text-2xl font-light text-white/90 mb-4">7. Cookies</h2>
               <p>
-                We use cookies and similar tracking technologies to track
-                activity on our service and hold certain information. You can
-                instruct your browser to refuse all cookies or to indicate when
-                a cookie is being sent.
+                We use cookies and similar tracking technologies to track activity on our service
+                and hold certain information. You can instruct your browser to refuse all cookies or
+                to indicate when a cookie is being sent.
               </p>
             </div>
 
@@ -226,56 +164,41 @@ export default function PrivacyPage() {
                 8. International Data Transfers
               </h2>
               <p>
-                Your information may be transferred to and maintained on
-                computers located outside of your state, province, country, or
-                other governmental jurisdiction where data protection laws may
-                differ. We ensure appropriate safeguards are in place for such
+                Your information may be transferred to and maintained on computers located outside
+                of your state, province, country, or other governmental jurisdiction where data
+                protection laws may differ. We ensure appropriate safeguards are in place for such
                 transfers.
               </p>
             </div>
 
             {/* Section 9 */}
             <div className="border-l-2 border-white/10 pl-6">
-              <h2 className="text-2xl font-light text-white/90 mb-4">
-                9. Children's Privacy
-              </h2>
+              <h2 className="text-2xl font-light text-white/90 mb-4">9. Children's Privacy</h2>
               <p>
-                Our service is not intended for users under the age of 18. We do
-                not knowingly collect personal information from children under
-                18. If you become aware that a child has provided us with
-                personal information, please contact us.
+                Our service is not intended for users under the age of 18. We do not knowingly
+                collect personal information from children under 18. If you become aware that a
+                child has provided us with personal information, please contact us.
               </p>
             </div>
 
             {/* Section 10 */}
             <div className="border-l-2 border-white/10 pl-6">
-              <h2 className="text-2xl font-light text-white/90 mb-4">
-                10. Changes to This Policy
-              </h2>
+              <h2 className="text-2xl font-light text-white/90 mb-4">10. Changes to This Policy</h2>
               <p>
-                We may update our Privacy Policy from time to time. We will
-                notify you of any changes by posting the new Privacy Policy on
-                this page and updating the "Last updated" date. You are advised
-                to review this Privacy Policy periodically for any changes.
+                We may update our Privacy Policy from time to time. We will notify you of any
+                changes by posting the new Privacy Policy on this page and updating the "Last
+                updated" date. You are advised to review this Privacy Policy periodically for any
+                changes.
               </p>
             </div>
 
             {/* Contact */}
             <div className="border-l-2 border-white/10 pl-6">
-              <h2 className="text-2xl font-light text-white/90 mb-4">
-                Contact Us
-              </h2>
-              <p>
-                If you have any questions about this Privacy Policy, please
-                contact us at:
-              </p>
+              <h2 className="text-2xl font-light text-white/90 mb-4">Contact Us</h2>
+              <p>If you have any questions about this Privacy Policy, please contact us at:</p>
               <div className="mt-4 space-y-2">
-                <p className="font-mono text-white/70">
-                  privacy@whaletools.com
-                </p>
-                <p className="text-white/50 text-sm">
-                  We typically respond within 24-48 hours
-                </p>
+                <p className="font-mono text-white/70">privacy@whaletools.com</p>
+                <p className="text-white/50 text-sm">We typically respond within 24-48 hours</p>
               </div>
             </div>
           </div>

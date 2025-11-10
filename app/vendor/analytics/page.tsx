@@ -18,30 +18,14 @@ import { useVendorAnalytics } from "@/hooks/useVendorData";
 import { StatCard } from "@/components/ui/StatCard";
 import { TimeSeriesChart } from "@/components/analytics/TimeSeriesChart";
 import { AnalyticsPageWrapper } from "@/components/analytics/AnalyticsPageWrapper";
-import type {
-  VendorAnalyticsData,
-  TimeRange,
-  TrendData,
-} from "@/types/analytics";
-import {
-  formatCurrency,
-  formatPercentage,
-  formatNumber,
-} from "@/lib/analytics-utils";
-import {
-  createDefaultVendorAnalytics,
-  mergeWithDefaults,
-} from "@/lib/analytics-defaults";
+import type { VendorAnalyticsData, TimeRange, TrendData } from "@/types/analytics";
+import { formatCurrency, formatPercentage, formatNumber } from "@/lib/analytics-utils";
+import { createDefaultVendorAnalytics, mergeWithDefaults } from "@/lib/analytics-defaults";
 
 function VendorAnalyticsContent() {
   const { vendor } = useAppAuth();
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
-  const {
-    data: analyticsResponse,
-    loading,
-    error,
-    refetch,
-  } = useVendorAnalytics(timeRange);
+  const { data: analyticsResponse, loading, error, refetch } = useVendorAnalytics(timeRange);
 
   // Type-safe data extraction with defaults
   // API returns { success: true, analytics: {...} }
@@ -108,9 +92,7 @@ function VendorAnalyticsContent() {
     return (
       <div className="w-full px-4 lg:px-0 py-12">
         <div className="text-center">
-          <p className="text-red-400 mb-4">
-            {error.message || "Failed to load analytics"}
-          </p>
+          <p className="text-red-400 mb-4">{error.message || "Failed to load analytics"}</p>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition"
@@ -176,13 +158,10 @@ function VendorAnalyticsContent() {
             normalizeTrend(analytics.revenue.trend).direction !== "neutral"
               ? {
                   value: formatPercentage(
-                    Math.abs(
-                      normalizeTrend(analytics.revenue.trend).changePercent,
-                    ),
+                    Math.abs(normalizeTrend(analytics.revenue.trend).changePercent),
                     { decimals: 0 },
                   ),
-                  direction: normalizeTrend(analytics.revenue.trend)
-                    .direction as "up" | "down",
+                  direction: normalizeTrend(analytics.revenue.trend).direction as "up" | "down",
                 }
               : undefined
           }
@@ -211,13 +190,10 @@ function VendorAnalyticsContent() {
             normalizeTrend(analytics.orders.trend).direction !== "neutral"
               ? {
                   value: formatPercentage(
-                    Math.abs(
-                      normalizeTrend(analytics.orders.trend).changePercent,
-                    ),
+                    Math.abs(normalizeTrend(analytics.orders.trend).changePercent),
                     { decimals: 0 },
                   ),
-                  direction: normalizeTrend(analytics.orders.trend)
-                    .direction as "up" | "down",
+                  direction: normalizeTrend(analytics.orders.trend).direction as "up" | "down",
                 }
               : undefined
           }
@@ -231,9 +207,7 @@ function VendorAnalyticsContent() {
             <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">
               Revenue Trend
             </h3>
-            <p className="text-white/30 text-[10px] font-light">
-              DAILY BREAKDOWN
-            </p>
+            <p className="text-white/30 text-[10px] font-light">DAILY BREAKDOWN</p>
           </div>
         </div>
         <TimeSeriesChart
@@ -257,17 +231,13 @@ function VendorAnalyticsContent() {
             <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">
               Top Performers
             </h3>
-            <p className="text-white/30 text-[10px] font-light">
-              HIGHEST MARGIN PRODUCTS
-            </p>
+            <p className="text-white/30 text-[10px] font-light">HIGHEST MARGIN PRODUCTS</p>
           </div>
         </div>
 
         <div className="space-y-4">
           {analytics.products.topPerformers.length === 0 ? (
-            <div className="text-center text-white/40 py-8 text-xs">
-              No product data available
-            </div>
+            <div className="text-center text-white/40 py-8 text-xs">No product data available</div>
           ) : (
             analytics.products.topPerformers.map((product, index) => (
               <div
@@ -279,9 +249,7 @@ function VendorAnalyticsContent() {
                     #{index + 1}
                   </div>
                   <div>
-                    <div className="text-white text-sm font-light mb-1">
-                      {product.name}
-                    </div>
+                    <div className="text-white text-sm font-light mb-1">{product.name}</div>
                     <div className="text-white/40 text-xs">
                       {formatNumber(product.units)} units sold
                     </div>
@@ -309,9 +277,7 @@ function VendorAnalyticsContent() {
               <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">
                 Cost Analysis
               </h3>
-              <p className="text-white/30 text-[10px] font-light">
-                PROFITABILITY METRICS
-              </p>
+              <p className="text-white/30 text-[10px] font-light">PROFITABILITY METRICS</p>
             </div>
           </div>
 
@@ -352,9 +318,7 @@ function VendorAnalyticsContent() {
               <h3 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase mb-2">
                 Inventory Health
               </h3>
-              <p className="text-white/30 text-[10px] font-light">
-                STOCK METRICS
-              </p>
+              <p className="text-white/30 text-[10px] font-light">STOCK METRICS</p>
             </div>
           </div>
 

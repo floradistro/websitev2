@@ -21,13 +21,8 @@ var u = class extends EventTarget {
       this.onremove = null;
       ((this.effect = e || null),
         (this.timeline =
-          i !== void 0
-            ? i
-            : ((t = globalThis.document) == null ? void 0 : t.timeline) ||
-              null),
-        e &&
-          "target" in e &&
-          ((this.element = e.target), (this.keyFrameEffect = e)),
+          i !== void 0 ? i : ((t = globalThis.document) == null ? void 0 : t.timeline) || null),
+        e && "target" in e && ((this.element = e.target), (this.keyFrameEffect = e)),
         this.createReadyPromise());
     }
     get playState() {
@@ -46,16 +41,10 @@ var u = class extends EventTarget {
         try {
           this.resolver();
         } catch (a) {}
-      (this._playState === "finished" ||
-        (this._playState === "running" && this.timeoutId)) &&
+      (this._playState === "finished" || (this._playState === "running" && this.timeoutId)) &&
         this.createReadyPromise();
       let e =
-        (t =
-          (i = this.keyFrameEffect) == null
-            ? void 0
-            : i.getTiming().duration) != null
-          ? t
-          : 0;
+        (t = (i = this.keyFrameEffect) == null ? void 0 : i.getTiming().duration) != null ? t : 0;
       if (this._playState === "paused") {
         ((this._playState = "running"), (this.pending = false));
         try {
@@ -103,8 +92,7 @@ var u = class extends EventTarget {
       (this.timeoutId && clearTimeout(this.timeoutId),
         (this._playState = "paused"),
         (this.pending = false),
-        this.startTime !== null &&
-          (this.currentTime = performance.now() - this.startTime));
+        this.startTime !== null && (this.currentTime = performance.now() - this.startTime));
     }
     finish() {
       var r, a, s, l, o;
@@ -113,17 +101,9 @@ var u = class extends EventTarget {
         throw ((m.name = "InvalidStateError"), m);
       }
       let e =
-          (a =
-            (r = this.keyFrameEffect) == null
-              ? void 0
-              : r.getTiming().duration) != null
-            ? a
-            : 0,
+          (a = (r = this.keyFrameEffect) == null ? void 0 : r.getTiming().duration) != null ? a : 0,
         i =
-          (l =
-            (s = this.keyFrameEffect) == null
-              ? void 0
-              : s.getTiming().iterations) != null
+          (l = (s = this.keyFrameEffect) == null ? void 0 : s.getTiming().iterations) != null
             ? l
             : 1,
         t = e * i;
@@ -147,8 +127,7 @@ var u = class extends EventTarget {
     }
     cancel() {
       var e;
-      (this.timeoutId &&
-        (clearTimeout(this.timeoutId), (this.timeoutId = null)),
+      (this.timeoutId && (clearTimeout(this.timeoutId), (this.timeoutId = null)),
         (this._playState = "idle"),
         (this.pending = false),
         (this.currentTime = null),
@@ -208,18 +187,8 @@ var u = class extends EventTarget {
       if (this._playState === "idle") return 0;
       if (this._playState === "finished") return 1;
       let e =
-        (t =
-          (i = this.keyFrameEffect) == null
-            ? void 0
-            : i.getTiming().duration) != null
-          ? t
-          : 0;
-      return e === 0
-        ? 0
-        : Math.min(
-            1,
-            Math.max(0, ((r = this.currentTime) != null ? r : 0) / e),
-          );
+        (t = (i = this.keyFrameEffect) == null ? void 0 : i.getTiming().duration) != null ? t : 0;
+      return e === 0 ? 0 : Math.min(1, Math.max(0, ((r = this.currentTime) != null ? r : 0) / e));
     }
   },
   f = class {
@@ -260,17 +229,13 @@ var u = class extends EventTarget {
       let t = 0;
       for (let r of i) {
         let a = n[r];
-        Array.isArray(a)
-          ? (t = Math.max(t, a.length))
-          : a !== void 0 && (t = Math.max(t, 1));
+        Array.isArray(a) ? (t = Math.max(t, a.length)) : a !== void 0 && (t = Math.max(t, 1));
       }
       for (let r = 0; r < t; r++) {
         let a = {};
         for (let s of i) {
           let l = n[s];
-          Array.isArray(l)
-            ? (a[s] = l[r] || l[l.length - 1])
-            : l !== void 0 && (a[s] = l);
+          Array.isArray(l) ? (a[s] = l[r] || l[l.length - 1]) : l !== void 0 && (a[s] = l);
         }
         e.push(a);
       }
@@ -278,8 +243,7 @@ var u = class extends EventTarget {
     }
     calculateActiveDuration() {
       var i;
-      let n =
-          typeof this.options.duration == "number" ? this.options.duration : 0,
+      let n = typeof this.options.duration == "number" ? this.options.duration : 0,
         e = (i = this.options.iterations) != null ? i : 1;
       return n * e;
     }

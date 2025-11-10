@@ -165,9 +165,7 @@ export function SmartFeatures({
               {headline}
             </h2>
             {subheadline && (
-              <p className="text-base sm:text-lg text-white/60 max-w-2xl mx-auto">
-                {subheadline}
-              </p>
+              <p className="text-base sm:text-lg text-white/60 max-w-2xl mx-auto">{subheadline}</p>
             )}
           </motion.div>
         )}
@@ -200,10 +198,7 @@ export function SmartFeatures({
                   {/* Icon */}
                   <div className="mb-4 sm:mb-6">
                     <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-white/20 group-hover:bg-white/10 transition-all duration-300">
-                      <IconComponent
-                        className="w-6 h-6 sm:w-7 sm:h-7 text-white"
-                        strokeWidth={2}
-                      />
+                      <IconComponent className="w-6 h-6 sm:w-7 sm:h-7 text-white" strokeWidth={2} />
                     </div>
                   </div>
 

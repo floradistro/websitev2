@@ -60,14 +60,10 @@ export default function HomePage() {
                   className="flex items-center justify-between py-4 px-6 bg-black/40 border border-white/5 rounded-xl"
                 >
                   <div>
-                    <div className="text-sm font-black text-white/90 mb-1">
-                      {tool.name}
-                    </div>
+                    <div className="text-sm font-black text-white/90 mb-1">{tool.name}</div>
                     <div className="text-xs text-white/40">{tool.for}</div>
                   </div>
-                  <div className="text-lg font-black text-white/60">
-                    {tool.cost}
-                  </div>
+                  <div className="text-lg font-black text-white/60">{tool.cost}</div>
                 </div>
               ))}
             </div>
@@ -115,12 +111,8 @@ export default function HomePage() {
                   className="object-contain"
                 />
                 <div>
-                  <div className="text-2xl sm:text-3xl font-black text-white">
-                    WhaleTools
-                  </div>
-                  <div className="text-sm text-white/50">
-                    All-In-One Platform
-                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-white">WhaleTools</div>
+                  <div className="text-sm text-white/50">All-In-One Platform</div>
                 </div>
               </div>
 
@@ -162,12 +154,8 @@ export default function HomePage() {
                   <div className="text-sm uppercase tracking-wider text-green-400 font-black mb-2">
                     You Save
                   </div>
-                  <div className="text-3xl font-black text-green-400">
-                    $3,801/mo
-                  </div>
-                  <div className="text-xs text-white/40 mt-1">
-                    $45,612 per year
-                  </div>
+                  <div className="text-3xl font-black text-green-400">$3,801/mo</div>
+                  <div className="text-xs text-white/40 mt-1">$45,612 per year</div>
                 </div>
               </div>
 
@@ -308,9 +296,7 @@ export default function HomePage() {
           <p className="text-xl sm:text-2xl text-white/60 mb-12 max-w-2xl mx-auto">
             14-day free trial. No credit card required.
             <br />
-            <span className="text-white/40">
-              See why businesses are switching to WhaleTools.
-            </span>
+            <span className="text-white/40">See why businesses are switching to WhaleTools.</span>
           </p>
 
           <Link

@@ -88,9 +88,7 @@ export default function AdminModal({
               {title}
             </h2>
             {description && (
-              <p className="text-white/40 text-[10px] uppercase tracking-wider">
-                {description}
-              </p>
+              <p className="text-white/40 text-[10px] uppercase tracking-wider">{description}</p>
             )}
           </div>
           <button
@@ -102,9 +100,7 @@ export default function AdminModal({
         </div>
 
         {/* Content - Scrollable with custom scrollbar */}
-        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">{children}</div>
 
         {/* Footer - Fixed */}
         {!hideFooter &&
@@ -158,7 +154,5 @@ export default function AdminModal({
     </div>
   );
 
-  return typeof window !== "undefined"
-    ? createPortal(modalContent, document.body)
-    : null;
+  return typeof window !== "undefined" ? createPortal(modalContent, document.body) : null;
 }

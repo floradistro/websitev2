@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 /**
  * Centralized caching configuration for SWR
  * Prevents unnecessary refetches and memory leaks
@@ -35,18 +37,12 @@ export const swrConfig = {
 
   onError: (error: Error) => {
     if (process.env.NODE_ENV === "development") {
-      console.error("SWR Error:", error);
+      logger.error("SWR Error:", error);
     }
     // Don't crash the app on fetch errors
   },
 
-  onErrorRetry: (
-    error: Error,
-    key: string,
-    config: any,
-    revalidate: any,
-    { retryCount }: any,
-  ) => {
+  onErrorRetry: (error: Error, key: string, config: any, revalidate: any, { retryCount }: any) => {
     // Never retry on 404
     if (error.message.includes("404")) return;
 

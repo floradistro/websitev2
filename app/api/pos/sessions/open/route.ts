@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -13,19 +14,11 @@ export async function POST(request: NextRequest) {
     const { vendorId } = authResult;
 
     const supabase = getServiceSupabase();
-    const {
-      locationId,
-      userId,
-      openingCash = 0,
-      registerId,
-    } = await request.json();
+    const { locationId, userId, openingCash = 0, registerId } = await request.json();
     // SECURITY: vendorId from JWT, request param ignored (Phase 4)
 
     if (!locationId) {
-      return NextResponse.json(
-        { error: "Missing locationId" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing locationId" }, { status: 400 });
     }
 
     // Check if there's already an open session for THIS REGISTER (not location-wide)
@@ -56,10 +49,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!location) {
-      return NextResponse.json(
-        { error: "Location not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Location not found" }, { status: 404 });
     }
 
     // Generate session number
@@ -122,7 +112,7 @@ export async function POST(request: NextRequest) {
 
     if (sessionError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating session:", sessionError);
+        logger.error("Error creating session:", sessionError);
       }
       return NextResponse.json(
         { error: "Failed to create session", details: sessionError.message },
@@ -137,7 +127,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in open session endpoint:", error);
+      logger.error("Error in open session endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

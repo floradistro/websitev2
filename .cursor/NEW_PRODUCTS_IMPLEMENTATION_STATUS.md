@@ -153,32 +153,29 @@ This document has the EXACT JSX code to insert:
 ```javascript
 // Create PO with new products via API
 const testNewProduct = async () => {
-  const response = await fetch(
-    "http://localhost:3000/api/vendor/purchase-orders",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        action: "create",
-        vendor_id: "cd2e1122-d511-4edb-be5d-98ef274b4baf",
-        po_type: "inbound",
-        supplier_id: "bd4b6ab3-7049-4045-a0fe-4f5c3bf6aab6",
-        items: [
-          {
-            product_id: null,
-            is_new_product: true,
-            product_name: "Test New Strain",
-            sku: "TEST-001",
-            supplier_sku: "SUP-ABC-123",
-            category: "Flower",
-            brand: "Test Growers",
-            quantity: 10,
-            unit_price: 25.0,
-          },
-        ],
-      }),
-    },
-  );
+  const response = await fetch("http://localhost:3000/api/vendor/purchase-orders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "create",
+      vendor_id: "cd2e1122-d511-4edb-be5d-98ef274b4baf",
+      po_type: "inbound",
+      supplier_id: "bd4b6ab3-7049-4045-a0fe-4f5c3bf6aab6",
+      items: [
+        {
+          product_id: null,
+          is_new_product: true,
+          product_name: "Test New Strain",
+          sku: "TEST-001",
+          supplier_sku: "SUP-ABC-123",
+          category: "Flower",
+          brand: "Test Growers",
+          quantity: 10,
+          unit_price: 25.0,
+        },
+      ],
+    }),
+  });
 
   const data = await response.json();
   console.log(data);

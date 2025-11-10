@@ -2,15 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  ArrowRight,
-  ArrowLeft,
-  Monitor,
-  Grid3x3,
-  Check,
-  Settings,
-} from "lucide-react";
+import { logger } from "@/lib/logger";
+import { X, ArrowRight, ArrowLeft, Monitor, Grid3x3, Check, Settings } from "lucide-react";
 
 interface Device {
   id: string;
@@ -76,9 +69,7 @@ export default function GroupConfigWizard({
   const loadData = async () => {
     try {
       // Load available devices
-      const devicesResponse = await fetch(
-        `/api/vendor/tv-devices?vendor_id=${vendorId}`,
-      );
+      const devicesResponse = await fetch(`/api/vendor/tv-devices?vendor_id=${vendorId}`);
       const devicesData = await devicesResponse.json();
       if (devicesData.success) {
         setAvailableDevices(devicesData.devices);
@@ -94,13 +85,13 @@ export default function GroupConfigWizard({
         setAvailableCategories(categoriesData.categories || []);
       } else {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Failed to load categories:", categoriesData.error);
+          logger.error("❌ Failed to load categories:", categoriesData.error);
         }
         setAvailableCategories([]);
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading data:", error);
+        logger.error("Error loading data:", error);
       }
     } finally {
       setLoading(false);
@@ -109,9 +100,7 @@ export default function GroupConfigWizard({
 
   const handleDeviceToggle = (deviceId: string) => {
     setSelectedDevices((prev) =>
-      prev.includes(deviceId)
-        ? prev.filter((id) => id !== deviceId)
-        : [...prev, deviceId],
+      prev.includes(deviceId) ? prev.filter((id) => id !== deviceId) : [...prev, deviceId],
     );
   };
 
@@ -170,20 +159,13 @@ export default function GroupConfigWizard({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <div>
-            <h2 className="text-2xl font-bold text-white">
-              Create Display Group
-            </h2>
+            <h2 className="text-2xl font-bold text-white">Create Display Group</h2>
             <p className="text-white/60 text-sm mt-1">
               Step {step} of 2:{" "}
-              {step === 1
-                ? "Select Displays & Name"
-                : "Assign Categories Per Display"}
+              {step === 1 ? "Select Displays & Name" : "Assign Categories Per Display"}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
             <X className="w-5 h-5 text-white/60" />
           </button>
         </div>
@@ -211,9 +193,7 @@ export default function GroupConfigWizard({
                 className="space-y-6"
               >
                 <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Group Name *
-                  </label>
+                  <label className="block text-sm font-medium text-white mb-2">Group Name *</label>
                   <input
                     type="text"
                     value={groupName}
@@ -254,9 +234,7 @@ export default function GroupConfigWizard({
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
                             <Monitor className="w-5 h-5 text-white/60" />
-                            <span className="font-medium text-white">
-                              {device.device_name}
-                            </span>
+                            <span className="font-medium text-white">{device.device_name}</span>
                           </div>
                           {selectedDevices.includes(device.id) && (
                             <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
@@ -307,13 +285,13 @@ export default function GroupConfigWizard({
                     Category Assignment Per Display (Optional)
                   </h3>
                   <p className="text-sm text-white/70">
-                    Optionally assign specific product categories to each
-                    display. All grid, theme, pricing, and display settings are
-                    configured in the main "Displays & Menus" editor.
+                    Optionally assign specific product categories to each display. All grid, theme,
+                    pricing, and display settings are configured in the main "Displays & Menus"
+                    editor.
                   </p>
                   <p className="text-xs text-white/50 mt-2">
-                    💡 Tip: Skip this step or leave empty to show all categories
-                    on all displays. You can always edit this later.
+                    💡 Tip: Skip this step or leave empty to show all categories on all displays.
+                    You can always edit this later.
                   </p>
                 </div>
 
@@ -321,19 +299,15 @@ export default function GroupConfigWizard({
                   <div className="p-6 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-center">
                     <p className="text-yellow-200 mb-2">No categories found</p>
                     <p className="text-sm text-white/60">
-                      Add product categories in your Products page first, then
-                      they'll appear here.
+                      Add product categories in your Products page first, then they'll appear here.
                     </p>
                   </div>
                 ) : (
                   selectedDevices.map((deviceId, index) => {
-                    const device = availableDevices.find(
-                      (d) => d.id === deviceId,
-                    );
+                    const device = availableDevices.find((d) => d.id === deviceId);
                     if (!device) return null;
 
-                    const selectedCount = (deviceCategories[deviceId] || [])
-                      .length;
+                    const selectedCount = (deviceCategories[deviceId] || []).length;
 
                     return (
                       <div
@@ -346,9 +320,7 @@ export default function GroupConfigWizard({
                               <Monitor className="w-5 h-5 text-purple-400" />
                             </div>
                             <div>
-                              <div className="font-medium text-white">
-                                {device.device_name}
-                              </div>
+                              <div className="font-medium text-white">{device.device_name}</div>
                               <div className="text-xs text-white/40">
                                 Display {index + 1} of {selectedDevices.length}
                               </div>
@@ -357,10 +329,7 @@ export default function GroupConfigWizard({
                           <div className="text-sm">
                             {selectedCount > 0 ? (
                               <span className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full">
-                                {selectedCount}{" "}
-                                {selectedCount === 1
-                                  ? "category"
-                                  : "categories"}
+                                {selectedCount} {selectedCount === 1 ? "category" : "categories"}
                               </span>
                             ) : (
                               <span className="px-3 py-1 bg-white/10 text-white/40 rounded-full">
@@ -372,24 +341,20 @@ export default function GroupConfigWizard({
 
                         <div className="flex flex-wrap gap-2">
                           {availableCategories.map((category) => {
-                            const isSelected = (
-                              deviceCategories[deviceId] || []
-                            ).includes(category);
+                            const isSelected = (deviceCategories[deviceId] || []).includes(
+                              category,
+                            );
                             return (
                               <button
                                 key={category}
-                                onClick={() =>
-                                  handleCategoryToggle(deviceId, category)
-                                }
+                                onClick={() => handleCategoryToggle(deviceId, category)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                                   isSelected
                                     ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/20"
                                     : "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
                                 }`}
                               >
-                                {isSelected && (
-                                  <Check className="w-3 h-3 inline mr-1" />
-                                )}
+                                {isSelected && <Check className="w-3 h-3 inline mr-1" />}
                                 {category}
                               </button>
                             );
@@ -404,9 +369,8 @@ export default function GroupConfigWizard({
                   <div className="text-sm text-white/80">
                     <div className="font-medium mb-1">AI Tip</div>
                     <div className="text-white/60">
-                      Try to balance product counts across displays for a
-                      professional look. Categories with similar product counts
-                      work best together.
+                      Try to balance product counts across displays for a professional look.
+                      Categories with similar product counts work best together.
                     </div>
                   </div>
                 </div>

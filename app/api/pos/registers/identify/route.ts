@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 // POST /api/pos/registers/identify - Identify/claim a register for this device
 export async function POST(request: NextRequest) {
   try {
@@ -8,10 +9,7 @@ export async function POST(request: NextRequest) {
     const { deviceId, locationId, registerId } = body;
 
     if (!deviceId || !locationId) {
-      return NextResponse.json(
-        { error: "deviceId and locationId are required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "deviceId and locationId are required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -24,8 +22,7 @@ export async function POST(request: NextRequest) {
           device_id: deviceId,
           last_active_at: new Date().toISOString(),
           last_ip_address:
-            request.headers.get("x-forwarded-for") ||
-            request.headers.get("x-real-ip"),
+            request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip"),
         })
         .eq("id", registerId)
         .eq("location_id", locationId)
@@ -34,12 +31,9 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error claiming register:", error);
+          logger.error("Error claiming register:", error);
         }
-        return NextResponse.json(
-          { error: "Failed to claim register" },
-          { status: 500 },
-        );
+        return NextResponse.json({ error: "Failed to claim register" }, { status: 500 });
       }
 
       return NextResponse.json({
@@ -65,8 +59,7 @@ export async function POST(request: NextRequest) {
         .update({
           last_active_at: new Date().toISOString(),
           last_ip_address:
-            request.headers.get("x-forwarded-for") ||
-            request.headers.get("x-real-ip"),
+            request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip"),
         })
         .eq("id", existingRegister.id);
 
@@ -95,11 +88,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in POST /api/pos/registers/identify:", error);
+      logger.error("Error in POST /api/pos/registers/identify:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

@@ -35,6 +35,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { showNotification } from "@/components/NotificationToast";
+import { logger } from "@/lib/logger";
 import type {
   PricingMode,
   PricingTier,
@@ -83,9 +84,7 @@ interface UseSingleProductFormReturn {
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   customFieldValues: Record<string, any>;
-  setCustomFieldValues: React.Dispatch<
-    React.SetStateAction<Record<string, any>>
-  >;
+  setCustomFieldValues: React.Dispatch<React.SetStateAction<Record<string, any>>>;
 
   // Pricing State
   pricingMode: PricingMode;
@@ -173,9 +172,7 @@ export function useSingleProductForm({
    * Stores category-specific dynamic field values
    * Keys correspond to field slugs/names
    */
-  const [customFieldValues, setCustomFieldValues] = useState<
-    Record<string, any>
-  >({});
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
 
   /**
    * Pricing mode state
@@ -236,9 +233,7 @@ export function useSingleProductForm({
   /**
    * Available pricing templates for vendor
    */
-  const [availableTemplates, setAvailableTemplates] = useState<
-    PricingTemplate[]
-  >([]);
+  const [availableTemplates, setAvailableTemplates] = useState<PricingTemplate[]>([]);
 
   /**
    * Selected pricing template ID
@@ -335,7 +330,7 @@ export function useSingleProductForm({
       });
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to upload images:", err);
+        logger.error("Failed to upload images:", err);
       }
       showNotification({
         type: "error",
@@ -446,9 +441,7 @@ export function useSingleProductForm({
       return;
     }
 
-    const template = availableTemplates.find(
-      (t) => t.id === selectedTemplateId,
-    );
+    const template = availableTemplates.find((t) => t.id === selectedTemplateId);
     if (!template) {
       showNotification({
         type: "error",
@@ -556,8 +549,7 @@ export function useSingleProductForm({
         const updates: Record<string, any> = {};
 
         // Map AI suggestions to custom field values
-        if (suggestions.strain_type)
-          updates.strain_type = suggestions.strain_type;
+        if (suggestions.strain_type) updates.strain_type = suggestions.strain_type;
         if (suggestions.lineage) updates.lineage = suggestions.lineage;
 
         // Transform array fields
@@ -567,10 +559,7 @@ export function useSingleProductForm({
         if (suggestions.effects && Array.isArray(suggestions.effects)) {
           updates.effects = suggestions.effects;
         }
-        if (
-          suggestions.terpene_profile &&
-          Array.isArray(suggestions.terpene_profile)
-        ) {
+        if (suggestions.terpene_profile && Array.isArray(suggestions.terpene_profile)) {
           updates.terpene_profile = suggestions.terpene_profile;
         }
 
@@ -593,7 +582,7 @@ export function useSingleProductForm({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("AI autofill error:", error);
+        logger.error("AI autofill error:", error);
       }
       showNotification({
         type: "error",
@@ -702,9 +691,7 @@ export function useSingleProductForm({
         pricing_mode: pricingMode,
         image_urls: uploadedImageUrls,
         custom_fields: customFieldValues,
-        cost_price: formData.cost_price
-          ? parseFloat(formData.cost_price)
-          : undefined,
+        cost_price: formData.cost_price ? parseFloat(formData.cost_price) : undefined,
         initial_quantity: formData.initial_quantity
           ? parseFloat(formData.initial_quantity)
           : undefined,
@@ -739,7 +726,7 @@ export function useSingleProductForm({
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error submitting product:", err);
+        logger.error("Error submitting product:", err);
       }
       const axiosError = err as AxiosError<APIErrorResponse>;
       showNotification({

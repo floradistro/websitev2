@@ -6,6 +6,7 @@ import { promisify } from "util";
 import path from "path";
 import fs from "fs/promises";
 
+import { logger } from "@/lib/logger";
 const execAsync = promisify(exec);
 
 /**
@@ -43,10 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!vendor.github_repo_name || !vendor.github_username) {
-      return NextResponse.json(
-        { error: "GitHub repository not configured" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "GitHub repository not configured" }, { status: 400 });
     }
 
     // Sync vendor repo to monorepo
@@ -58,10 +56,7 @@ export async function POST(request: NextRequest) {
       "templates",
       vendor.slug,
     );
-    const tempClonePath = path.join(
-      "/tmp",
-      `vendor-${vendor.slug}-${Date.now()}`,
-    );
+    const tempClonePath = path.join("/tmp", `vendor-${vendor.slug}-${Date.now()}`);
 
     try {
       // Clone vendor's repo
@@ -88,10 +83,9 @@ export async function POST(request: NextRequest) {
 
       // Check if there are changes to commit
       try {
-        const { stdout: statusOutput } = await execAsync(
-          "git status --porcelain",
-          { cwd: projectRoot },
-        );
+        const { stdout: statusOutput } = await execAsync("git status --porcelain", {
+          cwd: projectRoot,
+        });
         if (statusOutput.trim()) {
           // There are changes, commit them
           await execAsync(`git commit -m "${commitMsg}"`, { cwd: projectRoot });
@@ -131,7 +125,7 @@ export async function POST(request: NextRequest) {
       });
     } catch (syncError: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error syncing vendor repo:", syncError);
+        logger.error("Error syncing vendor repo:", syncError);
       }
       // Clean up
       try {
@@ -142,7 +136,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Deployment error:", error);
+      logger.error("Deployment error:", error);
     }
     return NextResponse.json(
       {
@@ -195,7 +189,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error getting deployment status:", error);
+      logger.error("Error getting deployment status:", error);
     }
     return NextResponse.json(
       {

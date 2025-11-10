@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
+import { logger } from "@/lib/logger";
 interface ShippingRate {
   method_id: string;
   method_title: string;
@@ -89,7 +90,7 @@ export default function ShippingEstimator({
       // Validate productId (can be UUID or number)
       if (!productId) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Missing productId");
+          logger.error("❌ Missing productId");
         }
         setError("Invalid product ID");
         setLoading(false);
@@ -131,11 +132,11 @@ export default function ShippingEstimator({
       if (!response.ok) {
         const errorText = await response.text();
         if (process.env.NODE_ENV === "development") {
-          console.error("Shipping API HTTP Error:", response.status, errorText);
+          logger.error("Shipping API HTTP Error", new Error(errorText), {
+            status: response.status,
+          });
         }
-        throw new Error(
-          `HTTP ${response.status}: Unable to calculate shipping`,
-        );
+        throw new Error(`HTTP ${response.status}: Unable to calculate shipping`);
       }
 
       // Get response text first to see what we're getting
@@ -146,10 +147,10 @@ export default function ShippingEstimator({
         data = JSON.parse(responseText);
       } catch (parseError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("JSON Parse Error:", parseError);
+          logger.error("JSON Parse Error:", parseError);
         }
         if (process.env.NODE_ENV === "development") {
-          console.error("Response was:", responseText);
+          logger.error("Response was:", responseText);
         }
         throw new Error("Invalid response from server");
       }
@@ -157,7 +158,7 @@ export default function ShippingEstimator({
       if (data.success && data.rates) {
         if (data.rates.length === 0) {
           if (process.env.NODE_ENV === "development") {
-            console.warn("⚠️ No shipping rates returned");
+            logger.warn("⚠️ No shipping rates returned");
           }
           setError("No shipping options available for this location");
           setLoading(false);
@@ -182,17 +183,15 @@ export default function ShippingEstimator({
         localStorage.setItem("shipping_zip", zipCode);
       } else {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Shipping API error - no success or rates:", data);
+          logger.error("❌ Shipping API error - no success or rates:", data);
         }
         setError(data.error || "Unable to calculate shipping rates");
       }
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Shipping API exception:", err);
+        logger.error("❌ Shipping API exception:", err);
       }
-      setError(
-        err.message || "Service temporarily unavailable. Please try again.",
-      );
+      setError(err.message || "Service temporarily unavailable. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -294,17 +293,13 @@ export default function ShippingEstimator({
                           </span>
                         </span>
                         {rate.delivery_days !== "1" && (
-                          <span className="text-white/30">
-                            ({rate.delivery_days} days)
-                          </span>
+                          <span className="text-white/30">({rate.delivery_days} days)</span>
                         )}
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium text-white">
-                      ${rate.cost.toFixed(2)}
-                    </div>
+                    <div className="text-sm font-medium text-white">${rate.cost.toFixed(2)}</div>
                   </div>
                 </div>
               </div>
@@ -320,11 +315,8 @@ export default function ShippingEstimator({
             <div className="w-1 h-12 bg-emerald-400 rounded-full" />
             <div className="flex-1">
               <p className="text-xs text-emerald-300 uppercase tracking-wider mb-2">
-                Add{" "}
-                <span className="font-semibold">
-                  ${amountUntilFree.toFixed(2)}
-                </span>{" "}
-                more for <span className="font-semibold">FREE SHIPPING</span>
+                Add <span className="font-semibold">${amountUntilFree.toFixed(2)}</span> more for{" "}
+                <span className="font-semibold">FREE SHIPPING</span>
               </p>
               <div className="h-1 bg-white/10 rounded-full overflow-hidden">
                 <div
@@ -362,8 +354,7 @@ export default function ShippingEstimator({
           <div className="w-1 h-3 bg-white/30 rounded-full" />
           <span className="uppercase tracking-wider font-medium">
             Ships from {originLocation?.name || "Blowing Rock"} (
-            {originLocation?.city || "Blowing Rock"},{" "}
-            {originLocation?.state || "NC"})
+            {originLocation?.city || "Blowing Rock"}, {originLocation?.state || "NC"})
           </span>
         </div>
       )}
@@ -371,8 +362,8 @@ export default function ShippingEstimator({
       {/* Info Text */}
       {!showResults && (
         <p className="text-xs text-white/40 leading-relaxed">
-          Enter your ZIP code to see available shipping options and estimated
-          delivery dates. All orders include tracking.
+          Enter your ZIP code to see available shipping options and estimated delivery dates. All
+          orders include tracking.
         </p>
       )}
     </div>

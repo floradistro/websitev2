@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const {
@@ -32,10 +33,7 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     if (!menuId) {
-      return NextResponse.json(
-        { success: false, error: "Menu ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Menu ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -117,22 +115,16 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error updating menu:", error);
+        logger.error("Error updating menu:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, menu: data[0] });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in update menu API:", error);
+      logger.error("Error in update menu API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

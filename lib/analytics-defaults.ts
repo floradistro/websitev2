@@ -3,11 +3,7 @@
  * Provides safe default values to prevent undefined errors
  */
 
-import type {
-  VendorAnalyticsData,
-  MarketingAnalyticsData,
-  TrendData,
-} from "@/types/analytics";
+import type { VendorAnalyticsData, MarketingAnalyticsData, TrendData } from "@/types/analytics";
 
 /**
  * Create default trend data

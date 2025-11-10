@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { productCache, vendorCache, inventoryCache } from "@/lib/cache-manager";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const revalidate = 30; // Cache for 30 seconds
 
@@ -61,15 +62,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Order and paginate
-    query = query
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1);
+    query = query.order("created_at", { ascending: false }).range(offset, offset + limit - 1);
 
     const { data: products, error, count } = await query;
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching admin products:", error);
+        logger.error("❌ Error fetching admin products:", error);
       }
       return NextResponse.json(
         { error: "Failed to fetch products", details: error.message },
@@ -115,9 +114,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get vendor IDs to fetch pricing configs
-    const vendorIds = Array.from(
-      new Set(products?.map((p) => p.vendor_id).filter(Boolean) || []),
-    );
+    const vendorIds = Array.from(new Set(products?.map((p) => p.vendor_id).filter(Boolean) || []));
 
     // Batch fetch vendor pricing configs
     const { data: vendorPricingConfigs } = await supabase
@@ -129,10 +126,7 @@ export async function GET(request: NextRequest) {
     // Create lookup map for vendor pricing configs
     const vendorPricingMap = new Map<string, any>(); // key: vendorId_blueprintId
     (vendorPricingConfigs || []).forEach((config) => {
-      vendorPricingMap.set(
-        `${config.vendor_id}_${config.blueprint_id}`,
-        config,
-      );
+      vendorPricingMap.set(`${config.vendor_id}_${config.blueprint_id}`, config);
     });
 
     // Create lookup map for pricing assignments by product
@@ -195,9 +189,7 @@ export async function GET(request: NextRequest) {
           if (!blueprint) return;
 
           // Get vendor's pricing config for this blueprint
-          const vendorConfig = vendorPricingMap.get(
-            `${product.vendor_id}_${blueprint.id}`,
-          );
+          const vendorConfig = vendorPricingMap.get(`${product.vendor_id}_${blueprint.id}`);
           const vendorPricing = vendorConfig?.pricing_values || {};
           const productOverrides = assignment.price_overrides || {};
 
@@ -258,7 +250,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Admin products GET error:", error);
+      logger.error("❌ Admin products GET error:", error);
     }
     return NextResponse.json(
       { error: "Failed to fetch products", details: error.message },
@@ -278,12 +270,9 @@ export async function DELETE(request: NextRequest) {
 
     if (!productId) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ No product ID provided");
+        logger.error("❌ No product ID provided");
       }
-      return NextResponse.json(
-        { error: "Product ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Product ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -297,17 +286,14 @@ export async function DELETE(request: NextRequest) {
 
     if (fetchError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Fetch error:", fetchError);
+        logger.error("❌ Fetch error:", fetchError);
       }
-      return NextResponse.json(
-        { error: `Database error: ${fetchError.message}` },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: `Database error: ${fetchError.message}` }, { status: 500 });
     }
 
     if (!products || products.length === 0) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Product not found:", productId);
+        logger.error("❌ Product not found:", productId);
       }
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
@@ -321,10 +307,7 @@ export async function DELETE(request: NextRequest) {
       .eq("product_id", product.id);
 
     if (inventory && inventory.length > 0 && !forceDelete) {
-      const totalQty = inventory.reduce(
-        (sum, inv) => sum + parseFloat(inv.quantity || "0"),
-        0,
-      );
+      const totalQty = inventory.reduce((sum, inv) => sum + parseFloat(inv.quantity || "0"), 0);
 
       if (totalQty > 0) {
         const locationsList = inventory
@@ -368,14 +351,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete the product (will cascade to related records)
-    const { error: deleteError } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", productId);
+    const { error: deleteError } = await supabase.from("products").delete().eq("id", productId);
 
     if (deleteError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error deleting product:", deleteError);
+        logger.error("❌ Error deleting product:", deleteError);
       }
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
@@ -392,7 +372,7 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Delete product error:", error);
+      logger.error("Delete product error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to delete product" },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -11,15 +12,8 @@ export async function DELETE(request: NextRequest) {
   try {
     const { product_ids, force = false } = await request.json();
 
-    if (
-      !product_ids ||
-      !Array.isArray(product_ids) ||
-      product_ids.length === 0
-    ) {
-      return NextResponse.json(
-        { error: "product_ids array is required" },
-        { status: 400 },
-      );
+    if (!product_ids || !Array.isArray(product_ids) || product_ids.length === 0) {
+      return NextResponse.json({ error: "product_ids array is required" }, { status: 400 });
     }
 
     const results = [];
@@ -53,38 +47,20 @@ export async function DELETE(request: NextRequest) {
             // Delete related records in parallel
             if (force) {
               await Promise.all([
-                supabase
-                  .from("inventory")
-                  .delete()
-                  .eq("product_id", product_id),
-                supabase
-                  .from("inventory_adjustments")
-                  .delete()
-                  .eq("product_id", product_id),
+                supabase.from("inventory").delete().eq("product_id", product_id),
+                supabase.from("inventory_adjustments").delete().eq("product_id", product_id),
               ]);
             }
 
             await Promise.all([
-              supabase
-                .from("product_images")
-                .delete()
-                .eq("product_id", product_id),
-              supabase
-                .from("product_tags")
-                .delete()
-                .eq("product_id", product_id),
-              supabase
-                .from("product_categories")
-                .delete()
-                .eq("product_id", product_id),
+              supabase.from("product_images").delete().eq("product_id", product_id),
+              supabase.from("product_tags").delete().eq("product_id", product_id),
+              supabase.from("product_categories").delete().eq("product_id", product_id),
               supabase.from("reviews").delete().eq("product_id", product_id),
             ]);
 
             // Delete product
-            const { error } = await supabase
-              .from("products")
-              .delete()
-              .eq("id", product_id);
+            const { error } = await supabase.from("products").delete().eq("id", product_id);
 
             if (error) throw error;
 
@@ -96,9 +72,7 @@ export async function DELETE(request: NextRequest) {
       );
 
       results.push(
-        ...batchResults
-          .map((r) => (r.status === "fulfilled" ? r.value : null))
-          .filter(Boolean),
+        ...batchResults.map((r) => (r.status === "fulfilled" ? r.value : null)).filter(Boolean),
       );
     }
 
@@ -116,12 +90,9 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Bulk delete products error:", error);
+      logger.error("Bulk delete products error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -130,22 +101,12 @@ export async function PATCH(request: NextRequest) {
   try {
     const { product_ids, status } = await request.json();
 
-    if (
-      !product_ids ||
-      !Array.isArray(product_ids) ||
-      product_ids.length === 0
-    ) {
-      return NextResponse.json(
-        { error: "product_ids array is required" },
-        { status: 400 },
-      );
+    if (!product_ids || !Array.isArray(product_ids) || product_ids.length === 0) {
+      return NextResponse.json({ error: "product_ids array is required" }, { status: 400 });
     }
 
     if (!status) {
-      return NextResponse.json(
-        { error: "status is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "status is required" }, { status: 400 });
     }
 
     // Bulk update in single query - instant!
@@ -156,7 +117,7 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Bulk update error:", error);
+        logger.error("Bulk update error:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -176,12 +137,9 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Bulk update products error:", error);
+      logger.error("Bulk update products error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -190,15 +148,8 @@ export async function POST(request: NextRequest) {
   try {
     const { product_ids } = await request.json();
 
-    if (
-      !product_ids ||
-      !Array.isArray(product_ids) ||
-      product_ids.length === 0
-    ) {
-      return NextResponse.json(
-        { error: "product_ids array is required" },
-        { status: 400 },
-      );
+    if (!product_ids || !Array.isArray(product_ids) || product_ids.length === 0) {
+      return NextResponse.json({ error: "product_ids array is required" }, { status: 400 });
     }
 
     // Bulk update in single query - much faster!
@@ -209,7 +160,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Bulk approve error:", error);
+        logger.error("Bulk approve error:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -229,11 +180,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Bulk approve products error:", error);
+      logger.error("Bulk approve products error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

@@ -20,12 +20,7 @@ export default function PricingPage() {
         "5,000 AI Tokens/month",
         "Email Support",
       ],
-      notIncluded: [
-        "Multi-location sync",
-        "Wholesale portal",
-        "Custom apps",
-        "API access",
-      ],
+      notIncluded: ["Multi-location sync", "Wholesale portal", "Custom apps", "API access"],
       cta: "Start Free Trial",
       highlighted: false,
     },
@@ -93,9 +88,7 @@ export default function PricingPage() {
               height={32}
               className="object-contain"
             />
-            <span className="text-sm uppercase tracking-[0.15em] font-black">
-              WhaleTools
-            </span>
+            <span className="text-sm uppercase tracking-[0.15em] font-black">WhaleTools</span>
           </Link>
           <Link
             href="/vendor/login"
@@ -164,15 +157,11 @@ export default function PricingPage() {
                     <span className="text-5xl font-black">${tier.price}</span>
                     <span className="text-white/40">/month</span>
                   </div>
-                  <p className="text-xs text-white/40">
-                    or ${tier.yearlyPrice}/year (save 17%)
-                  </p>
+                  <p className="text-xs text-white/40">or ${tier.yearlyPrice}/year (save 17%)</p>
                 </div>
 
                 <Link
-                  href={
-                    tier.cta === "Contact Sales" ? "/contact" : "/vendor/login"
-                  }
+                  href={tier.cta === "Contact Sales" ? "/contact" : "/vendor/login"}
                   className={`block w-full text-center py-4 rounded-xl text-sm uppercase tracking-[0.1em] font-black transition-all mb-8 ${
                     tier.highlighted
                       ? "bg-white text-black hover:scale-[1.02] hover:shadow-lg"
@@ -189,10 +178,7 @@ export default function PricingPage() {
                   </p>
                   {tier.features.map((feature) => (
                     <div key={feature} className="flex items-start gap-3">
-                      <Check
-                        size={16}
-                        className="text-green-400 flex-shrink-0 mt-0.5"
-                      />
+                      <Check size={16} className="text-green-400 flex-shrink-0 mt-0.5" />
                       <span className="text-sm text-white/80">{feature}</span>
                     </div>
                   ))}
@@ -205,13 +191,8 @@ export default function PricingPage() {
                       </div>
                       {tier.notIncluded.map((feature) => (
                         <div key={feature} className="flex items-start gap-3">
-                          <X
-                            size={16}
-                            className="text-white/20 flex-shrink-0 mt-0.5"
-                          />
-                          <span className="text-sm text-white/40">
-                            {feature}
-                          </span>
+                          <X size={16} className="text-white/20 flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-white/40">{feature}</span>
                         </div>
                       ))}
                     </>
@@ -245,9 +226,7 @@ export default function PricingPage() {
                 <h3 className="text-xl font-black mb-2 text-red-400 uppercase">
                   Your Current Stack
                 </h3>
-                <p className="text-sm text-white/60">
-                  Typical multi-location setup
-                </p>
+                <p className="text-sm text-white/60">Typical multi-location setup</p>
               </div>
               <div className="space-y-4 mb-6">
                 {[
@@ -261,9 +240,7 @@ export default function PricingPage() {
                     className="flex justify-between items-center py-2 border-b border-white/5"
                   >
                     <span className="text-sm text-white/80">{item.name}</span>
-                    <span className="text-sm font-bold text-white/60">
-                      ${item.cost}/mo
-                    </span>
+                    <span className="text-sm font-bold text-white/60">${item.cost}/mo</span>
                   </div>
                 ))}
               </div>
@@ -272,22 +249,16 @@ export default function PricingPage() {
                   <span className="text-sm uppercase tracking-wider text-white/40 font-black">
                     Total Monthly
                   </span>
-                  <span className="text-3xl font-black text-red-400">
-                    $4,100
-                  </span>
+                  <span className="text-3xl font-black text-red-400">$4,100</span>
                 </div>
-                <p className="text-xs text-white/30 text-right mt-1">
-                  $49,200/year
-                </p>
+                <p className="text-xs text-white/30 text-right mt-1">$49,200/year</p>
               </div>
             </div>
 
             {/* WhaleTools */}
             <div className="bg-gradient-to-br from-white/[0.03] to-transparent border-2 border-green-500/30 rounded-2xl p-8">
               <div className="text-center mb-6">
-                <h3 className="text-xl font-black mb-2 text-green-400 uppercase">
-                  WhaleTools Pro
-                </h3>
+                <h3 className="text-xl font-black mb-2 text-green-400 uppercase">WhaleTools Pro</h3>
                 <p className="text-sm text-white/60">Everything you need</p>
               </div>
               <div className="space-y-3 mb-6">
@@ -312,25 +283,17 @@ export default function PricingPage() {
                   <span className="text-sm uppercase tracking-wider text-white/40 font-black">
                     Total Monthly
                   </span>
-                  <span className="text-3xl font-black text-green-400">
-                    $599
-                  </span>
+                  <span className="text-3xl font-black text-green-400">$599</span>
                 </div>
-                <p className="text-xs text-white/30 text-right mt-1">
-                  $7,188/year
-                </p>
+                <p className="text-xs text-white/30 text-right mt-1">$7,188/year</p>
               </div>
               <div className="mt-6 pt-6 border-t border-white/5">
                 <div className="text-center">
                   <p className="text-sm uppercase tracking-wider text-green-400 font-black mb-1">
                     You Save
                   </p>
-                  <p className="text-4xl font-black text-green-400">
-                    $3,501/mo
-                  </p>
-                  <p className="text-lg text-green-400/80 font-bold mt-1">
-                    $42,012/year
-                  </p>
+                  <p className="text-4xl font-black text-green-400">$3,501/mo</p>
+                  <p className="text-lg text-green-400/80 font-bold mt-1">$42,012/year</p>
                 </div>
               </div>
             </div>
@@ -410,9 +373,7 @@ export default function PricingPage() {
             Start Free Trial
             <ArrowRight size={20} />
           </Link>
-          <p className="text-sm text-white/40 mt-6">
-            No credit card required • 14-day free trial
-          </p>
+          <p className="text-sm text-white/40 mt-6">No credit card required • 14-day free trial</p>
         </div>
       </section>
 

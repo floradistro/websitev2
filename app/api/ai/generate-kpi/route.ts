@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
@@ -75,8 +76,7 @@ Make it actionable and relevant. Return ONLY valid JSON, no markdown or explanat
       ],
     });
 
-    const responseText =
-      message.content[0].type === "text" ? message.content[0].text : "";
+    const responseText = message.content[0].type === "text" ? message.content[0].text : "";
 
     // Parse the JSON response
     let kpiConfig;
@@ -86,7 +86,7 @@ Make it actionable and relevant. Return ONLY valid JSON, no markdown or explanat
       kpiConfig = JSON.parse(jsonText);
     } catch (parseError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to parse Claude response:", responseText);
+        logger.error("Failed to parse Claude response:", responseText);
       }
       return NextResponse.json(
         { success: false, error: "Failed to generate valid KPI configuration" },
@@ -97,10 +97,7 @@ Make it actionable and relevant. Return ONLY valid JSON, no markdown or explanat
     // Fetch real data based on common KPI patterns
     try {
       // Get sales data if relevant
-      if (
-        prompt.toLowerCase().includes("sales") ||
-        prompt.toLowerCase().includes("revenue")
-      ) {
+      if (prompt.toLowerCase().includes("sales") || prompt.toLowerCase().includes("revenue")) {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -111,19 +108,13 @@ Make it actionable and relevant. Return ONLY valid JSON, no markdown or explanat
           .gte("created_at", thirtyDaysAgo.toISOString());
 
         if (salesData && salesData.length > 0) {
-          const totalRevenue = salesData.reduce(
-            (sum, item) => sum + item.quantity * item.price,
-            0,
-          );
+          const totalRevenue = salesData.reduce((sum, item) => sum + item.quantity * item.price, 0);
           kpiConfig.value = `$${totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
       }
 
       // Get top products if requested
-      if (
-        prompt.toLowerCase().includes("top") &&
-        prompt.toLowerCase().includes("product")
-      ) {
+      if (prompt.toLowerCase().includes("top") && prompt.toLowerCase().includes("product")) {
         const { data: topProducts } = await supabase
           .from("products")
           .select("name, price, category")
@@ -131,11 +122,7 @@ Make it actionable and relevant. Return ONLY valid JSON, no markdown or explanat
           .eq("status", "approved")
           .limit(5);
 
-        if (
-          topProducts &&
-          topProducts.length > 0 &&
-          kpiConfig.visualization === "list"
-        ) {
+        if (topProducts && topProducts.length > 0 && kpiConfig.visualization === "list") {
           kpiConfig.data = topProducts.map((p) => ({
             label: p.name,
             value: `$${p.price}`,
@@ -144,10 +131,7 @@ Make it actionable and relevant. Return ONLY valid JSON, no markdown or explanat
       }
 
       // Get low stock items if requested
-      if (
-        prompt.toLowerCase().includes("stock") ||
-        prompt.toLowerCase().includes("inventory")
-      ) {
+      if (prompt.toLowerCase().includes("stock") || prompt.toLowerCase().includes("inventory")) {
         const { data: stockData } = await supabase
           .from("inventory")
           .select("product_id, quantity, threshold")
@@ -155,15 +139,13 @@ Make it actionable and relevant. Return ONLY valid JSON, no markdown or explanat
 
         if (stockData) {
           // Filter client-side for items where quantity < threshold
-          const lowStockItems = stockData.filter(
-            (item) => item.quantity < (item.threshold || 0),
-          );
+          const lowStockItems = stockData.filter((item) => item.quantity < (item.threshold || 0));
           kpiConfig.value = lowStockItems.length;
         }
       }
     } catch (dataError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Data fetching error:", dataError);
+        logger.error("Data fetching error:", dataError);
       }
       // Continue with the generated config even if data fetching fails
     }
@@ -174,11 +156,8 @@ Make it actionable and relevant. Return ONLY valid JSON, no markdown or explanat
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error generating KPI:", error);
+      logger.error("Error generating KPI:", error);
     }
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

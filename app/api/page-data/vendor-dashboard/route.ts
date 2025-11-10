@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const revalidate = 30; // Cache for 30 seconds
 
@@ -17,43 +18,36 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceSupabase();
 
     // Execute ONLY essential dashboard queries in parallel (reduced from 4 to 3 queries)
-    const [vendorResult, productsResult, inventoryResult] =
-      await Promise.allSettled([
-        // Vendor branding - only essential fields
-        supabase
-          .from("vendors")
-          .select("id, store_name, store_tagline, logo_url")
-          .eq("id", vendorId)
-          .single(),
+    const [vendorResult, productsResult, inventoryResult] = await Promise.allSettled([
+      // Vendor branding - only essential fields
+      supabase
+        .from("vendors")
+        .select("id, store_name, store_tagline, logo_url")
+        .eq("id", vendorId)
+        .single(),
 
-        // Products - minimal fields only for stats
-        supabase
-          .from("products")
-          .select("id, name, status, featured_image_storage, created_at")
-          .eq("vendor_id", vendorId)
-          .order("created_at", { ascending: false })
-          .limit(100), // Limit to 100 for stats
+      // Products - minimal fields only for stats
+      supabase
+        .from("products")
+        .select("id, name, status, featured_image_storage, created_at")
+        .eq("vendor_id", vendorId)
+        .order("created_at", { ascending: false })
+        .limit(100), // Limit to 100 for stats
 
-        // Low stock inventory only - faster than full inventory scan
-        supabase
-          .from("inventory")
-          .select("id, quantity, low_stock_threshold, product_id")
-          .eq("vendor_id", vendorId)
-          .lt("quantity", 10)
-          .limit(20),
-      ]);
+      // Low stock inventory only - faster than full inventory scan
+      supabase
+        .from("inventory")
+        .select("id, quantity, low_stock_threshold, product_id")
+        .eq("vendor_id", vendorId)
+        .lt("quantity", 10)
+        .limit(20),
+    ]);
 
     // Extract data from results
-    const vendor =
-      vendorResult.status === "fulfilled" ? vendorResult.value.data : null;
-    const products =
-      productsResult.status === "fulfilled"
-        ? productsResult.value.data || []
-        : [];
+    const vendor = vendorResult.status === "fulfilled" ? vendorResult.value.data : null;
+    const products = productsResult.status === "fulfilled" ? productsResult.value.data || [] : [];
     const lowStockItems =
-      inventoryResult.status === "fulfilled"
-        ? inventoryResult.value.data || []
-        : [];
+      inventoryResult.status === "fulfilled" ? inventoryResult.value.data || [] : [];
 
     // Calculate stats (fast in-memory operations)
     const totalProducts = products.length;
@@ -67,11 +61,7 @@ export async function GET(request: NextRequest) {
       name: p.name,
       image: p.featured_image_storage || "/yacht-club-logo.png",
       status:
-        p.status === "published"
-          ? "approved"
-          : p.status === "pending"
-            ? "pending"
-            : "rejected",
+        p.status === "published" ? "approved" : p.status === "pending" ? "pending" : "rejected",
       submittedDate: p.created_at,
     }));
 
@@ -84,9 +74,7 @@ export async function GET(request: NextRequest) {
         .select("id, name")
         .in("id", lowStockProductIds);
 
-      const productNameMap = new Map(
-        (lowStockProducts || []).map((p) => [p.id, p.name]),
-      );
+      const productNameMap = new Map((lowStockProducts || []).map((p) => [p.id, p.name]));
 
       lowStock = lowStockItems.map((item: any) => ({
         id: item.id,
@@ -138,7 +126,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error in /api/page-data/vendor-dashboard:", error);
+      logger.error("❌ Error in /api/page-data/vendor-dashboard:", error);
     }
     return NextResponse.json(
       {

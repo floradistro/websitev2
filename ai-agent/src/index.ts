@@ -9,6 +9,7 @@ import { VercelDeployment } from "./deployment/vercel";
 import { StoreRequirements } from "./nlp/schemas";
 import * as path from "path";
 
+import { logger } from "@/lib/logger";
 export interface GenerateRequest {
   vendorId: string;
   vendorSlug: string;
@@ -52,10 +53,7 @@ export class AIStorefrontAgent {
     const outputDir = path.join(__dirname, "../../generated");
     this.generator = new StorefrontGenerator(templatesDir, outputDir);
 
-    this.deployment = new VercelDeployment(
-      process.env.VERCEL_TOKEN!,
-      process.env.VERCEL_TEAM_ID,
-    );
+    this.deployment = new VercelDeployment(process.env.VERCEL_TOKEN!, process.env.VERCEL_TEAM_ID);
   }
 
   /**
@@ -63,16 +61,15 @@ export class AIStorefrontAgent {
    */
   async generate(request: GenerateRequest): Promise<GenerateResponse> {
     try {
-      console.log(`🔵 Processing request for vendor: ${request.vendorSlug}`);
+      logger.debug(`🔵 Processing request for vendor: ${request.vendorSlug}`);
 
       // 1. Parse natural language into requirements
-      const { requirements, response, confidence } =
-        await this.nlpProcessor.processVendorRequest(
-          request.userMessage,
-          request.conversationHistory,
-        );
+      const { requirements, response, confidence } = await this.nlpProcessor.processVendorRequest(
+        request.userMessage,
+        request.conversationHistory,
+      );
 
-      console.log(`✅ Requirements extracted (confidence: ${confidence})`);
+      logger.debug(`✅ Requirements extracted (confidence: ${confidence})`);
 
       // 2. Generate code
       const { outputPath, files } = await this.generator.generateStorefront(
@@ -81,7 +78,7 @@ export class AIStorefrontAgent {
         requirements,
       );
 
-      console.log(`✅ Generated ${files.length} files at ${outputPath}`);
+      logger.debug(`✅ Generated ${files.length} files at ${outputPath}`);
 
       return {
         success: true,
@@ -92,7 +89,7 @@ export class AIStorefrontAgent {
         files,
       };
     } catch (error: any) {
-      console.error("❌ Generation failed:", error);
+      logger.error("❌ Generation failed:", error);
       return {
         success: false,
         error: error.message,
@@ -105,14 +102,11 @@ export class AIStorefrontAgent {
    */
   async deploy(request: DeployRequest): Promise<DeployResponse> {
     try {
-      console.log(`🔵 Deploying storefront for: ${request.vendorSlug}`);
+      logger.debug(`🔵 Deploying storefront for: ${request.vendorSlug}`);
 
       // 1. Generate code first
       const outputDir = path.join(__dirname, "../../generated");
-      const projectPath = path.join(
-        outputDir,
-        `storefront-${request.vendorSlug}`,
-      );
+      const projectPath = path.join(outputDir, `storefront-${request.vendorSlug}`);
 
       // 2. Deploy to Vercel
       const result = await this.deployment.deploy({
@@ -128,7 +122,7 @@ export class AIStorefrontAgent {
         deploymentId: result.deploymentId,
       };
     } catch (error: any) {
-      console.error("❌ Deployment failed:", error);
+      logger.error("❌ Deployment failed:", error);
       return {
         success: false,
         error: error.message,
@@ -139,9 +133,7 @@ export class AIStorefrontAgent {
   /**
    * Update existing storefront
    */
-  async update(
-    request: GenerateRequest & { deploymentId: string },
-  ): Promise<GenerateResponse> {
+  async update(request: GenerateRequest & { deploymentId: string }): Promise<GenerateResponse> {
     // Similar to generate, but updates existing deployment
     return this.generate(request);
   }

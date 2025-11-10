@@ -1,8 +1,10 @@
+import { logger } from "@/lib/logger";
+
 function n(e, t) {
   if (e === false) throw new Error(t);
 }
 function r(e) {
-  console.warn("Reached unexpected case", e);
+  logger.warn("Reached unexpected case", e);
 }
 function o(e) {
   throw new Error("Reached unexpected case");

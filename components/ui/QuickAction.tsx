@@ -26,18 +26,14 @@ export function QuickAction({
   const colClass = cols === 2 ? "col-span-2 lg:col-span-2" : "";
 
   const cardClass =
-    variant === "highlight"
-      ? "card-interactive"
-      : "minimal-glass hover:bg-white/[0.03]";
+    variant === "highlight" ? "card-interactive" : "minimal-glass hover:bg-white/[0.03]";
 
   const iconBg =
     variant === "highlight"
       ? "bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border-blue-500/20 group-hover:border-blue-500/30"
       : "bg-gradient-to-br from-white/10 to-white/5 border-white/10";
 
-  const linkProps = external
-    ? { target: "_blank", rel: "noopener noreferrer" }
-    : {};
+  const linkProps = external ? { target: "_blank", rel: "noopener noreferrer" } : {};
 
   return (
     <Link

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const revalidate = 30; // Cache for 30 seconds
 
@@ -39,23 +40,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Supabase error loading locations:", error);
+        logger.error("❌ Supabase error loading locations:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, locations: data || [] });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error in locations API:", error);
+      logger.error("❌ Error in locations API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -136,12 +131,9 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error creating location:", error);
+          logger.error("❌ Error creating location:", error);
         }
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -186,10 +178,8 @@ export async function POST(request: NextRequest) {
       // Only update fields that are provided
       if (name !== undefined) updatePayload.name = name;
       if (type !== undefined) updatePayload.type = type;
-      if (address_line1 !== undefined)
-        updatePayload.address_line1 = address_line1;
-      if (address_line2 !== undefined)
-        updatePayload.address_line2 = address_line2;
+      if (address_line1 !== undefined) updatePayload.address_line1 = address_line1;
+      if (address_line2 !== undefined) updatePayload.address_line2 = address_line2;
       if (city !== undefined) updatePayload.city = city;
       if (state !== undefined) updatePayload.state = state;
       if (zip !== undefined) updatePayload.zip = zip;
@@ -198,8 +188,7 @@ export async function POST(request: NextRequest) {
       if (pos_enabled !== undefined) updatePayload.pos_enabled = pos_enabled;
       if (pricing_tier !== undefined) updatePayload.pricing_tier = pricing_tier;
       if (monthly_fee !== undefined) updatePayload.monthly_fee = monthly_fee;
-      if (billing_status !== undefined)
-        updatePayload.billing_status = billing_status;
+      if (billing_status !== undefined) updatePayload.billing_status = billing_status;
 
       const { data: location, error } = await supabase
         .from("locations")
@@ -215,7 +204,7 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error updating location:", error);
+          logger.error("❌ Error updating location:", error);
         }
         return NextResponse.json(
           { success: false, error: error.message, details: error },
@@ -251,36 +240,26 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (fetchError) {
-        return NextResponse.json(
-          { success: false, error: fetchError.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: fetchError.message }, { status: 400 });
       }
 
       if (location.is_primary) {
         return NextResponse.json(
           {
             success: false,
-            error:
-              "Cannot delete primary location. Set another location as primary first.",
+            error: "Cannot delete primary location. Set another location as primary first.",
           },
           { status: 400 },
         );
       }
 
-      const { error } = await supabase
-        .from("locations")
-        .delete()
-        .eq("id", location_id);
+      const { error } = await supabase.from("locations").delete().eq("id", location_id);
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error deleting location:", error);
+          logger.error("❌ Error deleting location:", error);
         }
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -315,10 +294,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -354,10 +330,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -370,18 +343,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error:
-          "Invalid action. Valid actions: create, update, delete, toggle_status, set_primary",
+        error: "Invalid action. Valid actions: create, update, delete, toggle_status, set_primary",
       },
       { status: 400 },
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error in locations API:", error);
+      logger.error("❌ Error in locations API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

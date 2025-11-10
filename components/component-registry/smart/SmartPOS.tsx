@@ -7,15 +7,13 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
-import {
-  SmartComponentWrapper,
-  SmartComponentBaseProps,
-} from "@/lib/smart-component-base";
+import { SmartComponentWrapper, SmartComponentBaseProps } from "@/lib/smart-component-base";
 import { POSSessionHeader } from "../pos/POSSessionHeader";
 import { POSProductGrid } from "../pos/POSProductGrid";
 import { POSCart, CartItem } from "../pos/POSCart";
 import { POSPayment, PaymentData } from "../pos/POSPayment";
 
+import { logger } from "@/lib/logger";
 export interface SmartPOSProps extends SmartComponentBaseProps {
   locationId: string;
   locationName: string;
@@ -48,9 +46,7 @@ export function SmartPOS({
 
   const loadActiveSession = async () => {
     try {
-      const response = await fetch(
-        `/api/pos/sessions/active?locationId=${locationId}`,
-      );
+      const response = await fetch(`/api/pos/sessions/active?locationId=${locationId}`);
       if (response.ok) {
         const data = await response.json();
         if (data.session) {
@@ -59,7 +55,7 @@ export function SmartPOS({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading session:", error);
+        logger.error("Error loading session:", error);
       }
     }
   };
@@ -96,33 +92,28 @@ export function SmartPOS({
   }, []);
 
   // Update item quantity
-  const handleUpdateQuantity = useCallback(
-    (productId: string, quantity: number) => {
-      if (quantity <= 0) {
-        handleRemoveItem(productId);
-        return;
-      }
+  const handleUpdateQuantity = useCallback((productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      handleRemoveItem(productId);
+      return;
+    }
 
-      setCart((prevCart) =>
-        prevCart.map((item) =>
-          item.productId === productId
-            ? {
-                ...item,
-                quantity,
-                lineTotal: quantity * item.unitPrice,
-              }
-            : item,
-        ),
-      );
-    },
-    [],
-  );
+    setCart((prevCart) =>
+      prevCart.map((item) =>
+        item.productId === productId
+          ? {
+              ...item,
+              quantity,
+              lineTotal: quantity * item.unitPrice,
+            }
+          : item,
+      ),
+    );
+  }, []);
 
   // Remove item from cart
   const handleRemoveItem = useCallback((productId: string) => {
-    setCart((prevCart) =>
-      prevCart.filter((item) => item.productId !== productId),
-    );
+    setCart((prevCart) => prevCart.filter((item) => item.productId !== productId));
   }, []);
 
   // Clear cart
@@ -212,10 +203,7 @@ export function SmartPOS({
         <main className="flex-1 grid grid-cols-[1fr_420px] gap-0 overflow-hidden">
           {/* Left: Product Grid - Independently Scrollable */}
           <div className="flex flex-col border-r border-white/10 bg-[#0a0a0a] overflow-hidden">
-            <div
-              className="flex-1 overflow-y-auto overflow-x-hidden"
-              style={{ minHeight: 0 }}
-            >
+            <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ minHeight: 0 }}>
               <POSProductGrid
                 locationId={locationId}
                 onAddToCart={handleAddToCart}

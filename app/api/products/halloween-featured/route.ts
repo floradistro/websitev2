@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -24,12 +25,9 @@ export async function GET() {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Database error:", error);
+        logger.error("Database error:", error);
       }
-      return NextResponse.json(
-        { error: "Failed to fetch products" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
     }
 
     // Transform to Halloween homepage format
@@ -52,11 +50,8 @@ export async function GET() {
     return NextResponse.json(halloweenProducts);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching Halloween products:", error);
+      logger.error("Error fetching Halloween products:", error);
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

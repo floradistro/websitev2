@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { MCP_TOOLS, executeMCPTool } from "@/lib/ai/mcp-tools";
 
+import { logger } from "@/lib/logger";
 /**
  * Claude-Powered Code Generation for Storefronts
  * POST /api/ai/claude-code-gen
@@ -26,10 +27,7 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     if (!prompt) {
-      return NextResponse.json(
-        { success: false, error: "Prompt required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Prompt required" }, { status: 400 });
     }
 
     // Get Claude API key from Supabase
@@ -221,8 +219,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Extract response
-    const responseText =
-      message.content[0].type === "text" ? message.content[0].text : "";
+    const responseText = message.content[0].type === "text" ? message.content[0].text : "";
 
     // Parse Claude's response
     const parsed = parseClaudeResponse(responseText, action);
@@ -237,7 +234,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Claude code gen error:", error);
+      logger.error("Claude code gen error:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "AI generation failed" },
@@ -528,15 +525,7 @@ Be specific, use REAL data, and create components that convert!`;
  * Build user message with full context
  */
 function buildUserMessage(context: any): string {
-  const {
-    prompt,
-    componentKey,
-    currentProps,
-    currentCode,
-    pageType,
-    vendorId,
-    action,
-  } = context;
+  const { prompt, componentKey, currentProps, currentCode, pageType, vendorId, action } = context;
 
   let message = `Action: ${action}\n\n`;
 
@@ -622,9 +611,6 @@ export async function GET(request: NextRequest) {
       model: config.model,
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

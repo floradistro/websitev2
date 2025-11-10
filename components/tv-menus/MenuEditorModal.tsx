@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronDown } from "lucide-react";
 import { themes } from "@/lib/themes";
 import CategorySelector from "@/components/tv-menus/CategorySelector";
+import { logger } from "@/lib/logger";
 import {
   initializeCategoryPricingConfig,
   PRICE_BREAK_LABELS,
@@ -39,12 +40,8 @@ export default function MenuEditorModal({
   const [description, setDescription] = useState(menu?.description || "");
 
   // Content
-  const [categories, setCategories] = useState<string[]>(
-    menu?.config_data?.categories || [],
-  );
-  const [customFields, setCustomFields] = useState<string[]>(
-    menu?.config_data?.customFields || [],
-  );
+  const [categories, setCategories] = useState<string[]>(menu?.config_data?.categories || []);
+  const [customFields, setCustomFields] = useState<string[]>(menu?.config_data?.customFields || []);
   const [customFieldsConfig, setCustomFieldsConfig] = useState<{
     [field: string]: { showLabel: boolean };
   }>(menu?.config_data?.customFieldsConfig || {});
@@ -53,11 +50,10 @@ export default function MenuEditorModal({
   );
 
   // Per-category pricing configuration
-  const [categoryPricingConfig, setCategoryPricingConfig] =
-    useState<CategoryPricingConfig>(
-      menu?.config_data?.categoryPricingConfig ||
-        initializeCategoryPricingConfig(menu?.config_data?.categories || []),
-    );
+  const [categoryPricingConfig, setCategoryPricingConfig] = useState<CategoryPricingConfig>(
+    menu?.config_data?.categoryPricingConfig ||
+      initializeCategoryPricingConfig(menu?.config_data?.categories || []),
+  );
   const [loadingTiers, setLoadingTiers] = useState(false);
 
   // Load actual pricing tiers from database when categories change
@@ -84,24 +80,18 @@ export default function MenuEditorModal({
 
             if (actualTiers.length === 0) {
               if (process.env.NODE_ENV === "development") {
-                console.warn(
-                  `No pricing tiers found for category: ${category}`,
-                );
+                logger.warn(`No pricing tiers found for category: ${category}`);
               }
               return;
             }
 
-            const existingSelection =
-              categoryPricingConfig[category]?.selected || [];
+            const existingSelection = categoryPricingConfig[category]?.selected || [];
 
             updatedConfig[category] = {
               available: actualTiers,
               selected:
-                existingSelection.filter((tier) => actualTiers.includes(tier))
-                  .length > 0
-                  ? existingSelection.filter((tier) =>
-                      actualTiers.includes(tier),
-                    )
+                existingSelection.filter((tier) => actualTiers.includes(tier)).length > 0
+                  ? existingSelection.filter((tier) => actualTiers.includes(tier))
                   : actualTiers,
             };
           });
@@ -110,10 +100,7 @@ export default function MenuEditorModal({
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error(
-            "[MenuEditorModal] Error fetching category pricing tiers:",
-            error,
-          );
+          logger.error("[MenuEditorModal] Error fetching category pricing tiers:", error);
         }
       } finally {
         setLoadingTiers(false);
@@ -130,18 +117,14 @@ export default function MenuEditorModal({
   const [layoutStyle, setLayoutStyle] = useState<"single" | "split">(
     menu?.config_data?.layoutStyle || "single",
   );
-  const [gridColumns, setGridColumns] = useState(
-    menu?.config_data?.gridColumns || 6,
-  );
+  const [gridColumns, setGridColumns] = useState(menu?.config_data?.gridColumns || 6);
   const [gridRows, setGridRows] = useState(menu?.config_data?.gridRows || 5);
 
   // Split view config
   const [splitLeftCategory, setSplitLeftCategory] = useState(
     menu?.config_data?.splitLeftCategory || "",
   );
-  const [splitLeftTitle, setSplitLeftTitle] = useState(
-    menu?.config_data?.splitLeftTitle || "",
-  );
+  const [splitLeftTitle, setSplitLeftTitle] = useState(menu?.config_data?.splitLeftTitle || "");
   const [splitLeftCustomFields, setSplitLeftCustomFields] = useState<string[]>(
     menu?.config_data?.splitLeftCustomFields || [],
   );
@@ -151,21 +134,17 @@ export default function MenuEditorModal({
   const [splitRightCategory, setSplitRightCategory] = useState(
     menu?.config_data?.splitRightCategory || "",
   );
-  const [splitRightTitle, setSplitRightTitle] = useState(
-    menu?.config_data?.splitRightTitle || "",
+  const [splitRightTitle, setSplitRightTitle] = useState(menu?.config_data?.splitRightTitle || "");
+  const [splitRightCustomFields, setSplitRightCustomFields] = useState<string[]>(
+    menu?.config_data?.splitRightCustomFields || [],
   );
-  const [splitRightCustomFields, setSplitRightCustomFields] = useState<
-    string[]
-  >(menu?.config_data?.splitRightCustomFields || []);
   const [splitRightPriceBreaks, setSplitRightPriceBreaks] = useState<string[]>(
     menu?.config_data?.splitRightPriceBreaks || [],
   );
 
   // Style
   const [theme, setTheme] = useState(menu?.theme || "midnight-elegance");
-  const [enableCarousel, setEnableCarousel] = useState(
-    menu?.config_data?.enableCarousel !== false,
-  );
+  const [enableCarousel, setEnableCarousel] = useState(menu?.config_data?.enableCarousel !== false);
   const [carouselInterval, setCarouselInterval] = useState(
     menu?.config_data?.carouselInterval || 5,
   );
@@ -220,14 +199,9 @@ export default function MenuEditorModal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
           <div>
             <h2 className="text-xl font-bold text-white">Edit Menu</h2>
-            <p className="text-xs text-white/40 mt-0.5">
-              Configure your TV display
-            </p>
+            <p className="text-xs text-white/40 mt-0.5">Configure your TV display</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
             <X size={18} className="text-white/60" />
           </button>
         </div>
@@ -266,9 +240,7 @@ export default function MenuEditorModal({
 
           {/* Display Settings */}
           <div className="space-y-3">
-            <h3 className="text-xs uppercase tracking-wider text-white/60 font-bold">
-              Display
-            </h3>
+            <h3 className="text-xs uppercase tracking-wider text-white/60 font-bold">Display</h3>
 
             {/* Mode & Layout in one row */}
             <div className="grid grid-cols-2 gap-3">
@@ -277,9 +249,7 @@ export default function MenuEditorModal({
                 <label className="block text-xs text-white/40 mb-2">Mode</label>
                 <select
                   value={displayMode}
-                  onChange={(e) =>
-                    setDisplayMode(e.target.value as "grid" | "list")
-                  }
+                  onChange={(e) => setDisplayMode(e.target.value as "grid" | "list")}
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20 appearance-none cursor-pointer"
                 >
                   <option value="grid" className="bg-black">
@@ -293,14 +263,10 @@ export default function MenuEditorModal({
 
               {/* Layout Style */}
               <div>
-                <label className="block text-xs text-white/40 mb-2">
-                  Layout
-                </label>
+                <label className="block text-xs text-white/40 mb-2">Layout</label>
                 <select
                   value={layoutStyle}
-                  onChange={(e) =>
-                    setLayoutStyle(e.target.value as "single" | "split")
-                  }
+                  onChange={(e) => setLayoutStyle(e.target.value as "single" | "split")}
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-white/20 appearance-none cursor-pointer"
                 >
                   <option value="single" className="bg-black">
@@ -317,9 +283,7 @@ export default function MenuEditorModal({
             {displayMode === "grid" && (
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <div>
-                  <label className="block text-xs text-white/40 mb-2">
-                    Columns
-                  </label>
+                  <label className="block text-xs text-white/40 mb-2">Columns</label>
                   <input
                     type="number"
                     min="2"
@@ -330,9 +294,7 @@ export default function MenuEditorModal({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-white/40 mb-2">
-                    Rows
-                  </label>
+                  <label className="block text-xs text-white/40 mb-2">Rows</label>
                   <input
                     type="number"
                     min="2"
@@ -365,9 +327,7 @@ export default function MenuEditorModal({
                         className="h-10 rounded mb-1.5"
                         style={{ background: t.preview.background }}
                       />
-                      <div className="text-white text-[10px] font-medium text-center">
-                        {t.name}
-                      </div>
+                      <div className="text-white text-[10px] font-medium text-center">{t.name}</div>
                     </button>
                   );
                 })}
@@ -382,9 +342,7 @@ export default function MenuEditorModal({
               </div>
               <div className="flex items-center gap-3">
                 {enableCarousel && (
-                  <span className="text-sm text-white/60">
-                    {carouselInterval}s
-                  </span>
+                  <span className="text-sm text-white/60">{carouselInterval}s</span>
                 )}
                 <button
                   onClick={() => setEnableCarousel(!enableCarousel)}
@@ -408,9 +366,7 @@ export default function MenuEditorModal({
                   min="3"
                   max="15"
                   value={carouselInterval}
-                  onChange={(e) =>
-                    setCarouselInterval(parseInt(e.target.value))
-                  }
+                  onChange={(e) => setCarouselInterval(parseInt(e.target.value))}
                   className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer"
                 />
                 <div className="flex justify-between text-xs text-white/30 mt-1">
@@ -423,9 +379,7 @@ export default function MenuEditorModal({
             {/* Show Sub-Categories */}
             <div className="flex items-center justify-between py-2 border-t border-white/5 mt-2 pt-4">
               <div>
-                <div className="text-sm text-white font-medium">
-                  Show Sub-Categories
-                </div>
+                <div className="text-sm text-white font-medium">Show Sub-Categories</div>
                 <div className="text-xs text-white/40">
                   Display sub-categories as section headers
                 </div>
@@ -482,13 +436,9 @@ export default function MenuEditorModal({
               <div className="grid grid-cols-2 gap-4">
                 {/* Left Side */}
                 <div className="space-y-3">
-                  <div className="text-xs font-bold text-white/80">
-                    Left Side
-                  </div>
+                  <div className="text-xs font-bold text-white/80">Left Side</div>
                   <div>
-                    <label className="block text-xs text-white/40 mb-1.5">
-                      Category
-                    </label>
+                    <label className="block text-xs text-white/40 mb-1.5">Category</label>
                     <select
                       value={splitLeftCategory}
                       onChange={(e) => setSplitLeftCategory(e.target.value)}
@@ -505,9 +455,7 @@ export default function MenuEditorModal({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-white/40 mb-1.5">
-                      Title (Optional)
-                    </label>
+                    <label className="block text-xs text-white/40 mb-1.5">Title (Optional)</label>
                     <input
                       type="text"
                       value={splitLeftTitle}
@@ -519,13 +467,10 @@ export default function MenuEditorModal({
 
                   {/* Left Custom Fields */}
                   <div>
-                    <label className="block text-xs text-white/40 mb-1.5">
-                      Fields
-                    </label>
+                    <label className="block text-xs text-white/40 mb-1.5">Fields</label>
                     <div className="flex flex-wrap gap-1">
                       {availableCustomFields.map((field) => {
-                        const isSelected =
-                          splitLeftCustomFields.includes(field);
+                        const isSelected = splitLeftCustomFields.includes(field);
                         const displayName = field
                           .replace(/_/g, " ")
                           .replace(/\b\w/g, (l) => l.toUpperCase());
@@ -535,9 +480,7 @@ export default function MenuEditorModal({
                             onClick={() => {
                               setSplitLeftCustomFields(
                                 isSelected
-                                  ? splitLeftCustomFields.filter(
-                                      (f) => f !== field,
-                                    )
+                                  ? splitLeftCustomFields.filter((f) => f !== field)
                                   : [...splitLeftCustomFields, field],
                               );
                             }}
@@ -555,56 +498,43 @@ export default function MenuEditorModal({
                   </div>
 
                   {/* Left Price Breaks */}
-                  {splitLeftCategory &&
-                    categoryPricingConfig[splitLeftCategory] && (
-                      <div>
-                        <label className="block text-xs text-white/40 mb-1.5">
-                          Prices
-                        </label>
-                        <div className="flex flex-wrap gap-1">
-                          {categoryPricingConfig[
-                            splitLeftCategory
-                          ].available.map((priceBreak) => {
-                            const isSelected =
-                              splitLeftPriceBreaks.includes(priceBreak);
-                            const displayName =
-                              PRICE_BREAK_LABELS[priceBreak] || priceBreak;
-                            return (
-                              <button
-                                key={priceBreak}
-                                onClick={() => {
-                                  setSplitLeftPriceBreaks(
-                                    isSelected
-                                      ? splitLeftPriceBreaks.filter(
-                                          (p) => p !== priceBreak,
-                                        )
-                                      : [...splitLeftPriceBreaks, priceBreak],
-                                  );
-                                }}
-                                className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                  {splitLeftCategory && categoryPricingConfig[splitLeftCategory] && (
+                    <div>
+                      <label className="block text-xs text-white/40 mb-1.5">Prices</label>
+                      <div className="flex flex-wrap gap-1">
+                        {categoryPricingConfig[splitLeftCategory].available.map((priceBreak) => {
+                          const isSelected = splitLeftPriceBreaks.includes(priceBreak);
+                          const displayName = PRICE_BREAK_LABELS[priceBreak] || priceBreak;
+                          return (
+                            <button
+                              key={priceBreak}
+                              onClick={() => {
+                                setSplitLeftPriceBreaks(
                                   isSelected
-                                    ? "bg-white/20 text-white"
-                                    : "bg-white/5 text-white/50 hover:bg-white/10"
-                                }`}
-                              >
-                                {displayName}
-                              </button>
-                            );
-                          })}
-                        </div>
+                                    ? splitLeftPriceBreaks.filter((p) => p !== priceBreak)
+                                    : [...splitLeftPriceBreaks, priceBreak],
+                                );
+                              }}
+                              className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                                isSelected
+                                  ? "bg-white/20 text-white"
+                                  : "bg-white/5 text-white/50 hover:bg-white/10"
+                              }`}
+                            >
+                              {displayName}
+                            </button>
+                          );
+                        })}
                       </div>
-                    )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Side */}
                 <div className="space-y-3">
-                  <div className="text-xs font-bold text-white/80">
-                    Right Side
-                  </div>
+                  <div className="text-xs font-bold text-white/80">Right Side</div>
                   <div>
-                    <label className="block text-xs text-white/40 mb-1.5">
-                      Category
-                    </label>
+                    <label className="block text-xs text-white/40 mb-1.5">Category</label>
                     <select
                       value={splitRightCategory}
                       onChange={(e) => setSplitRightCategory(e.target.value)}
@@ -621,9 +551,7 @@ export default function MenuEditorModal({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-white/40 mb-1.5">
-                      Title (Optional)
-                    </label>
+                    <label className="block text-xs text-white/40 mb-1.5">Title (Optional)</label>
                     <input
                       type="text"
                       value={splitRightTitle}
@@ -635,13 +563,10 @@ export default function MenuEditorModal({
 
                   {/* Right Custom Fields */}
                   <div>
-                    <label className="block text-xs text-white/40 mb-1.5">
-                      Fields
-                    </label>
+                    <label className="block text-xs text-white/40 mb-1.5">Fields</label>
                     <div className="flex flex-wrap gap-1">
                       {availableCustomFields.map((field) => {
-                        const isSelected =
-                          splitRightCustomFields.includes(field);
+                        const isSelected = splitRightCustomFields.includes(field);
                         const displayName = field
                           .replace(/_/g, " ")
                           .replace(/\b\w/g, (l) => l.toUpperCase());
@@ -651,9 +576,7 @@ export default function MenuEditorModal({
                             onClick={() => {
                               setSplitRightCustomFields(
                                 isSelected
-                                  ? splitRightCustomFields.filter(
-                                      (f) => f !== field,
-                                    )
+                                  ? splitRightCustomFields.filter((f) => f !== field)
                                   : [...splitRightCustomFields, field],
                               );
                             }}
@@ -671,45 +594,36 @@ export default function MenuEditorModal({
                   </div>
 
                   {/* Right Price Breaks */}
-                  {splitRightCategory &&
-                    categoryPricingConfig[splitRightCategory] && (
-                      <div>
-                        <label className="block text-xs text-white/40 mb-1.5">
-                          Prices
-                        </label>
-                        <div className="flex flex-wrap gap-1">
-                          {categoryPricingConfig[
-                            splitRightCategory
-                          ].available.map((priceBreak) => {
-                            const isSelected =
-                              splitRightPriceBreaks.includes(priceBreak);
-                            const displayName =
-                              PRICE_BREAK_LABELS[priceBreak] || priceBreak;
-                            return (
-                              <button
-                                key={priceBreak}
-                                onClick={() => {
-                                  setSplitRightPriceBreaks(
-                                    isSelected
-                                      ? splitRightPriceBreaks.filter(
-                                          (p) => p !== priceBreak,
-                                        )
-                                      : [...splitRightPriceBreaks, priceBreak],
-                                  );
-                                }}
-                                className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                  {splitRightCategory && categoryPricingConfig[splitRightCategory] && (
+                    <div>
+                      <label className="block text-xs text-white/40 mb-1.5">Prices</label>
+                      <div className="flex flex-wrap gap-1">
+                        {categoryPricingConfig[splitRightCategory].available.map((priceBreak) => {
+                          const isSelected = splitRightPriceBreaks.includes(priceBreak);
+                          const displayName = PRICE_BREAK_LABELS[priceBreak] || priceBreak;
+                          return (
+                            <button
+                              key={priceBreak}
+                              onClick={() => {
+                                setSplitRightPriceBreaks(
                                   isSelected
-                                    ? "bg-white/20 text-white"
-                                    : "bg-white/5 text-white/50 hover:bg-white/10"
-                                }`}
-                              >
-                                {displayName}
-                              </button>
-                            );
-                          })}
-                        </div>
+                                    ? splitRightPriceBreaks.filter((p) => p !== priceBreak)
+                                    : [...splitRightPriceBreaks, priceBreak],
+                                );
+                              }}
+                              className={`px-2 py-1 rounded text-xs font-medium transition-all ${
+                                isSelected
+                                  ? "bg-white/20 text-white"
+                                  : "bg-white/5 text-white/50 hover:bg-white/10"
+                              }`}
+                            >
+                              {displayName}
+                            </button>
+                          );
+                        })}
                       </div>
-                    )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -748,9 +662,7 @@ export default function MenuEditorModal({
                       key={field}
                       onClick={() => {
                         if (isSelected) {
-                          setCustomFields(
-                            customFields.filter((f) => f !== field),
-                          );
+                          setCustomFields(customFields.filter((f) => f !== field));
                         } else {
                           setCustomFields([...customFields, field]);
                         }
@@ -782,9 +694,7 @@ export default function MenuEditorModal({
                   Pricing Tiers
                 </h3>
                 {loadingTiers && (
-                  <span className="text-xs text-white/40 animate-pulse">
-                    Loading...
-                  </span>
+                  <span className="text-xs text-white/40 animate-pulse">Loading...</span>
                 )}
               </div>
 
@@ -798,9 +708,7 @@ export default function MenuEditorModal({
                   return (
                     <div key={category} className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-white font-medium">
-                          {category}
-                        </span>
+                        <span className="text-sm text-white font-medium">{category}</span>
                         <span className="text-xs text-white/40">
                           {selected.length} of {available.length}
                         </span>
@@ -809,8 +717,7 @@ export default function MenuEditorModal({
                       <div className="flex flex-wrap gap-2">
                         {available.map((priceBreak) => {
                           const isSelected = selected.includes(priceBreak);
-                          const displayName =
-                            PRICE_BREAK_LABELS[priceBreak] || priceBreak;
+                          const displayName = PRICE_BREAK_LABELS[priceBreak] || priceBreak;
 
                           return (
                             <button

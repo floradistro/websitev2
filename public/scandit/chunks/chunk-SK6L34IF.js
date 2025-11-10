@@ -21,11 +21,7 @@ function h(r, o, t) {
     r.compileShader(e),
     r.getShaderParameter(e, r.COMPILE_STATUS)
       ? e
-      : (a.log(
-          a.Level.Error,
-          "Shader compilation error:",
-          r.getShaderInfoLog(e),
-        ),
+      : (a.log(a.Level.Error, "Shader compilation error:", r.getShaderInfoLog(e)),
         r.deleteShader(e),
         null)
   );

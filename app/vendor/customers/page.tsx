@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAppAuth } from "@/context/AppAuthContext";
 
+import { logger } from "@/lib/logger";
 interface Customer {
   id: string;
   email: string;
@@ -89,7 +90,7 @@ export default function CustomersPage() {
 
       if (data.error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error:", data.error);
+          logger.error("Error:", data.error);
         }
       } else {
         setCustomers(data.customers || []);
@@ -98,7 +99,7 @@ export default function CustomersPage() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to load customers:", error);
+        logger.error("Failed to load customers:", error);
       }
     }
 
@@ -120,11 +121,7 @@ export default function CustomersPage() {
         <div className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-white/[0.04]">
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-              <Users
-                size={24}
-                className="text-teal-400/70 sm:w-7 sm:h-7"
-                strokeWidth={1.5}
-              />
+              <Users size={24} className="text-teal-400/70 sm:w-7 sm:h-7" strokeWidth={1.5} />
             </div>
             <div>
               <h1 className="text-base sm:text-lg font-light text-white/80 tracking-tight">
@@ -142,10 +139,7 @@ export default function CustomersPage() {
           <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-                <Users
-                  className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400/70"
-                  strokeWidth={1.5}
-                />
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400/70" strokeWidth={1.5} />
               </div>
               <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">
                 Total
@@ -159,10 +153,7 @@ export default function CustomersPage() {
           <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-                <Award
-                  className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400/70"
-                  strokeWidth={1.5}
-                />
+                <Award className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400/70" strokeWidth={1.5} />
               </div>
               <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">
                 Loyalty
@@ -176,10 +167,7 @@ export default function CustomersPage() {
           <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-                <TrendingUp
-                  className="w-4 h-4 sm:w-5 sm:h-5 text-green-400/70"
-                  strokeWidth={1.5}
-                />
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-400/70" strokeWidth={1.5} />
               </div>
               <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] text-white/30 font-light">
                 Avg Pts
@@ -250,11 +238,7 @@ export default function CustomersPage() {
                   viewBox="0 0 24 24"
                   strokeWidth={2}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M19 9l-7 7-7-7"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
@@ -308,10 +292,7 @@ export default function CustomersPage() {
                   </tr>
                 ) : (
                   customers.map((customer) => (
-                    <tr
-                      key={customer.id}
-                      className="hover:bg-white/[0.02] transition-colors"
-                    >
+                    <tr key={customer.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="flex-shrink-0 h-10 w-10 bg-white/[0.04] rounded-2xl flex items-center justify-center border border-white/[0.06]">
@@ -322,8 +303,7 @@ export default function CustomersPage() {
                           </div>
                           <div>
                             <div className="text-[11px] tracking-wide font-light text-white/80">
-                              {customer.first_name || "Unknown"}{" "}
-                              {customer.last_name || ""}
+                              {customer.first_name || "Unknown"} {customer.last_name || ""}
                             </div>
                             <div className="text-[10px] text-white/30 truncate max-w-[200px]">
                               {customer.email}
@@ -338,9 +318,7 @@ export default function CustomersPage() {
                             !customer.email.includes("@alpine.local") && (
                               <div className="flex items-center text-[10px] text-white/40 gap-2">
                                 <Mail className="w-3 h-3" strokeWidth={1.5} />
-                                <span className="truncate max-w-[200px]">
-                                  {customer.email}
-                                </span>
+                                <span className="truncate max-w-[200px]">{customer.email}</span>
                               </div>
                             )}
                           {customer.phone && (
@@ -359,8 +337,7 @@ export default function CustomersPage() {
                             {customer.loyalty_tier || "bronze"}
                           </span>
                           <span className="text-[11px] text-white/60 tracking-wide font-light">
-                            {(customer.loyalty_points || 0).toLocaleString()}{" "}
-                            PTS
+                            {(customer.loyalty_points || 0).toLocaleString()} PTS
                           </span>
                         </div>
                       </td>
@@ -372,9 +349,7 @@ export default function CustomersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-[10px] text-white/40 tracking-wide font-light">
                         {customer.last_order_date
-                          ? new Date(
-                              customer.last_order_date,
-                            ).toLocaleDateString()
+                          ? new Date(customer.last_order_date).toLocaleDateString()
                           : "Never"}
                       </td>
                     </tr>
@@ -415,12 +390,9 @@ export default function CustomersPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-light text-white/80 tracking-tight">
-                      {customer.first_name || "Unknown"}{" "}
-                      {customer.last_name || ""}
+                      {customer.first_name || "Unknown"} {customer.last_name || ""}
                     </div>
-                    <div className="text-[10px] text-white/30 truncate">
-                      {customer.email}
-                    </div>
+                    <div className="text-[10px] text-white/30 truncate">{customer.email}</div>
                   </div>
                 </div>
 
@@ -436,19 +408,13 @@ export default function CustomersPage() {
                         !customer.email.includes("@phone.local") &&
                         !customer.email.includes("@alpine.local") && (
                           <div className="flex items-center text-[10px] text-white/40 gap-2">
-                            <Mail
-                              className="w-3 h-3 flex-shrink-0"
-                              strokeWidth={1.5}
-                            />
+                            <Mail className="w-3 h-3 flex-shrink-0" strokeWidth={1.5} />
                             <span className="truncate">{customer.email}</span>
                           </div>
                         )}
                       {customer.phone && (
                         <div className="flex items-center text-[10px] text-white/40 gap-2">
-                          <Phone
-                            className="w-3 h-3 flex-shrink-0"
-                            strokeWidth={1.5}
-                          />
+                          <Phone className="w-3 h-3 flex-shrink-0" strokeWidth={1.5} />
                           <span>{customer.phone}</span>
                         </div>
                       )}
@@ -499,9 +465,7 @@ export default function CustomersPage() {
                     </p>
                     <p className="text-[10px] text-white/40 tracking-wide font-light">
                       {customer.last_order_date
-                        ? new Date(
-                            customer.last_order_date,
-                          ).toLocaleDateString()
+                        ? new Date(customer.last_order_date).toLocaleDateString()
                         : "Never"}
                     </p>
                   </div>
@@ -515,16 +479,11 @@ export default function CustomersPage() {
         {pagination.totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-white/[0.04]">
             <div className="text-[11px] tracking-wide text-white/30 text-center sm:text-left font-light">
-              Showing{" "}
-              <span className="text-white/60">
-                {(page - 1) * pagination.limit + 1}
-              </span>{" "}
-              to{" "}
+              Showing <span className="text-white/60">{(page - 1) * pagination.limit + 1}</span> to{" "}
               <span className="text-white/60">
                 {Math.min(page * pagination.limit, pagination.total)}
               </span>{" "}
-              of <span className="text-white/60">{pagination.total}</span>{" "}
-              customers
+              of <span className="text-white/60">{pagination.total}</span> customers
             </div>
 
             <div className="flex items-center gap-2">
@@ -543,9 +502,7 @@ export default function CustomersPage() {
               </span>
 
               <button
-                onClick={() =>
-                  setPage(Math.min(pagination.totalPages, page + 1))
-                }
+                onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
                 disabled={page === pagination.totalPages}
                 className="bg-white/[0.02] border border-white/[0.06] px-3 sm:px-4 py-2 rounded-xl text-[11px] tracking-wide font-light text-white/60 hover:bg-white/[0.04] hover:text-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
               >

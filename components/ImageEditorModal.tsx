@@ -1,16 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  X,
-  Scissors,
-  Palette,
-  Crop,
-  Sparkles,
-  FileImage,
-  Maximize2,
-  Download,
-} from "lucide-react";
+import { X, Scissors, Palette, Crop, Sparkles, FileImage, Maximize2, Download } from "lucide-react";
 import axios from "axios";
 import { showNotification } from "./NotificationToast";
 
@@ -29,9 +20,9 @@ export default function ImageEditorModal({
   vendorId,
   onSuccess,
 }: ImageEditorModalProps) {
-  const [activeTab, setActiveTab] = useState<
-    "background" | "crop" | "enhance" | "format"
-  >("background");
+  const [activeTab, setActiveTab] = useState<"background" | "crop" | "enhance" | "format">(
+    "background",
+  );
   const [processing, setProcessing] = useState(false);
 
   // Background options
@@ -44,9 +35,7 @@ export default function ImageEditorModal({
   const [cropMargin, setCropMargin] = useState("10");
 
   // Format options
-  const [outputFormat, setOutputFormat] = useState<"png" | "jpg" | "webp">(
-    "png",
-  );
+  const [outputFormat, setOutputFormat] = useState<"png" | "jpg" | "webp">("png");
 
   // Subject type
   const [subjectType, setSubjectType] = useState("auto");
@@ -131,10 +120,7 @@ export default function ImageEditorModal({
             <h2 className="text-xl text-white font-light mb-1">Image Editor</h2>
             <p className="text-white/60 text-sm">{file.name}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/60 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
             <X size={24} />
           </button>
         </div>
@@ -187,26 +173,20 @@ export default function ImageEditorModal({
                         onChange={(e) => setRemoveBg(e.target.checked)}
                         className="w-4 h-4"
                       />
-                      <span className="text-white text-sm">
-                        Remove Background
-                      </span>
+                      <span className="text-white text-sm">Remove Background</span>
                     </label>
                   </div>
 
                   {!removeBg && (
                     <div>
-                      <div className="text-white text-sm mb-2">
-                        Background Color
-                      </div>
+                      <div className="text-white text-sm mb-2">Background Color</div>
                       <div className="grid grid-cols-4 gap-2 mb-3">
                         {presetColors.map((color) => (
                           <button
                             key={color.value}
                             onClick={() => setBgColor(color.value)}
                             className={`h-12 border-2 transition-all ${
-                              bgColor === color.value
-                                ? "border-white scale-105"
-                                : "border-white/20"
+                              bgColor === color.value ? "border-white scale-105" : "border-white/20"
                             }`}
                             style={{ backgroundColor: color.value }}
                             title={color.name}
@@ -247,9 +227,7 @@ export default function ImageEditorModal({
                         onChange={(e) => setEnableCrop(e.target.checked)}
                         className="w-4 h-4"
                       />
-                      <span className="text-white text-sm">
-                        Smart Crop to Subject
-                      </span>
+                      <span className="text-white text-sm">Smart Crop to Subject</span>
                     </label>
                   </div>
 
@@ -279,9 +257,7 @@ export default function ImageEditorModal({
               {activeTab === "enhance" && (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-white text-sm mb-2 block">
-                      Subject Type
-                    </label>
+                    <label className="text-white text-sm mb-2 block">Subject Type</label>
                     <select
                       value={subjectType}
                       onChange={(e) => setSubjectType(e.target.value)}
@@ -300,9 +276,7 @@ export default function ImageEditorModal({
               {activeTab === "format" && (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-white text-sm mb-2 block">
-                      Output Format
-                    </label>
+                    <label className="text-white text-sm mb-2 block">Output Format</label>
                     <div className="grid grid-cols-3 gap-2">
                       {(["png", "jpg", "webp"] as const).map((format) => (
                         <button
@@ -319,12 +293,9 @@ export default function ImageEditorModal({
                       ))}
                     </div>
                     <div className="text-white/40 text-xs mt-2">
-                      {outputFormat === "png" &&
-                        "• Best quality • Transparency support"}
-                      {outputFormat === "jpg" &&
-                        "• Smaller file size • No transparency"}
-                      {outputFormat === "webp" &&
-                        "• Modern format • Best compression"}
+                      {outputFormat === "png" && "• Best quality • Transparency support"}
+                      {outputFormat === "jpg" && "• Smaller file size • No transparency"}
+                      {outputFormat === "webp" && "• Modern format • Best compression"}
                     </div>
                   </div>
                 </div>

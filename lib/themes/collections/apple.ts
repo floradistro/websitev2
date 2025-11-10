@@ -9,8 +9,7 @@ export const appleThemes: TVTheme[] = [
   {
     id: "apple-light",
     name: "Apple Light",
-    description:
-      "Official apple.com light theme. Clean, minimal, sophisticated.",
+    description: "Official apple.com light theme. Clean, minimal, sophisticated.",
     preview: {
       background: "#F5F5F7",
       cardBg: "#ffffff",

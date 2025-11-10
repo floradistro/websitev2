@@ -23,6 +23,7 @@ import PricingPanel from "@/app/vendor/products/new/components/PricingPanel";
 import axios from "axios";
 import type { PricingTemplate, PricingTier } from "@/lib/types/product";
 
+import { logger } from "@/lib/logger";
 interface ProductQuickViewProps {
   product: any;
   vendorId: string;
@@ -43,9 +44,9 @@ export function ProductQuickView({
   const [editedProduct, setEditedProduct] = useState<any>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeSection, setActiveSection] = useState<
-    "basic" | "pricing" | "images" | "fields"
-  >("basic");
+  const [activeSection, setActiveSection] = useState<"basic" | "pricing" | "images" | "fields">(
+    "basic",
+  );
 
   // Pricing state
   const [pricingMode, setPricingMode] = useState<"single" | "tiered">("single");
@@ -53,9 +54,7 @@ export function ProductQuickView({
   const [newTierWeight, setNewTierWeight] = useState("");
   const [newTierQty, setNewTierQty] = useState("");
   const [newTierPrice, setNewTierPrice] = useState("");
-  const [availableTemplates, setAvailableTemplates] = useState<
-    PricingTemplate[]
-  >([]);
+  const [availableTemplates, setAvailableTemplates] = useState<PricingTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
 
   // Image state - CLEAN REWRITE
@@ -63,9 +62,7 @@ export function ProductQuickView({
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // Custom fields state
-  const [customFieldValues, setCustomFieldValues] = useState<
-    Record<string, any>
-  >({});
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
   const [dynamicFields, setDynamicFields] = useState<any[]>([]);
 
   // Load product data when modal opens
@@ -125,12 +122,9 @@ export function ProductQuickView({
             // Fetch dynamic fields for category
             if (p.category_id) {
               axios
-                .get(
-                  `/api/vendor/product-fields?category_id=${p.category_id}`,
-                  {
-                    headers: { "x-vendor-id": vendorId },
-                  },
-                )
+                .get(`/api/vendor/product-fields?category_id=${p.category_id}`, {
+                  headers: { "x-vendor-id": vendorId },
+                })
                 .then((fieldsResponse) => {
                   if (fieldsResponse.data.success) {
                     setDynamicFields(fieldsResponse.data.fields || []);
@@ -138,7 +132,7 @@ export function ProductQuickView({
                 })
                 .catch((error) => {
                   if (process.env.NODE_ENV === "development") {
-                    console.error("Failed to fetch fields:", error);
+                    logger.error("Failed to fetch fields:", error);
                   }
                 });
             }
@@ -163,28 +157,25 @@ export function ProductQuickView({
             const templates = response.data.blueprints || [];
 
             // Filter templates by product category
-            const filteredTemplates = templates.filter(
-              (template: PricingTemplate) => {
-                const applicableCategories =
-                  template.applicable_to_categories || [];
+            const filteredTemplates = templates.filter((template: PricingTemplate) => {
+              const applicableCategories = template.applicable_to_categories || [];
 
-                // If no category restrictions, show it
-                if (applicableCategories.length === 0) return true;
+              // If no category restrictions, show it
+              if (applicableCategories.length === 0) return true;
 
-                // If product has no category, show all templates
-                if (!product.category_id) return true;
+              // If product has no category, show all templates
+              if (!product.category_id) return true;
 
-                // Show if product's category is in the applicable list
-                return applicableCategories.includes(product.category_id);
-              },
-            );
+              // Show if product's category is in the applicable list
+              return applicableCategories.includes(product.category_id);
+            });
 
             setAvailableTemplates(filteredTemplates);
           }
         })
         .catch((error) => {
           if (process.env.NODE_ENV === "development") {
-            console.error("Failed to fetch templates:", error);
+            logger.error("Failed to fetch templates:", error);
           }
         });
     }
@@ -214,17 +205,23 @@ export function ProductQuickView({
         throw new Error(uploadData.error || "Upload failed");
       }
 
-      const imageUrl = uploadData.file.url;
+      // Extract storage path from full URL
+      // Full URL: https://.../storage/v1/object/public/vendor-product-images/vendorId/file.png
+      // We want: vendor-product-images/vendorId/file.png
+      const fullUrl = uploadData.file.url;
+      const storagePath = fullUrl.includes("/storage/v1/object/public/")
+        ? fullUrl.split("/storage/v1/object/public/")[1]
+        : fullUrl;
 
-      // Immediately update product in database
+      // Immediately update product in database with storage path (not full URL)
       const updateRes = await axios.put(
         `/api/vendor/products/${product.id}`,
-        { featured_image_storage: imageUrl },
-        { headers: { "x-vendor-id": vendorId } }
+        { featured_image_storage: storagePath },
+        { headers: { "x-vendor-id": vendorId } },
       );
 
       if (updateRes.data.success) {
-        setCurrentImageUrl(imageUrl);
+        setCurrentImageUrl(storagePath);
         showNotification({
           type: "success",
           title: "Image Updated",
@@ -233,7 +230,7 @@ export function ProductQuickView({
         onSave(); // Refresh product list
       }
     } catch (error) {
-      console.error("Image upload error:", error);
+      logger.error("Image upload error:", error);
       showNotification({
         type: "error",
         title: "Upload Failed",
@@ -250,7 +247,7 @@ export function ProductQuickView({
       const updateRes = await axios.put(
         `/api/vendor/products/${product.id}`,
         { featured_image_storage: "" },
-        { headers: { "x-vendor-id": vendorId } }
+        { headers: { "x-vendor-id": vendorId } },
       );
 
       if (updateRes.data.success) {
@@ -263,7 +260,7 @@ export function ProductQuickView({
         onSave(); // Refresh product list
       }
     } catch (error) {
-      console.error("Image remove error:", error);
+      logger.error("Image remove error:", error);
       showNotification({
         type: "error",
         title: "Remove Failed",
@@ -272,10 +269,7 @@ export function ProductQuickView({
     }
   };
 
-  const handleNewTierChange = (
-    field: "weight" | "qty" | "price",
-    value: string,
-  ) => {
+  const handleNewTierChange = (field: "weight" | "qty" | "price", value: string) => {
     if (field === "weight") setNewTierWeight(value);
     else if (field === "qty") setNewTierQty(value);
     else if (field === "price") setNewTierPrice(value);
@@ -324,9 +318,7 @@ export function ProductQuickView({
       return;
     }
 
-    const template = availableTemplates.find(
-      (t) => t.id === selectedTemplateId,
-    );
+    const template = availableTemplates.find((t) => t.id === selectedTemplateId);
     if (!template) {
       showNotification({
         type: "error",
@@ -357,7 +349,7 @@ export function ProductQuickView({
       });
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to apply pricing template:", error);
+        logger.error("Failed to apply pricing template:", error);
       }
       showNotification({
         type: "error",
@@ -391,11 +383,9 @@ export function ProductQuickView({
 
       // Image is already updated via handleImageUpload, no need to send here
 
-      const response = await axios.put(
-        `/api/vendor/products/${product.id}`,
-        updateData,
-        { headers: { "x-vendor-id": vendorId } },
-      );
+      const response = await axios.put(`/api/vendor/products/${product.id}`, updateData, {
+        headers: { "x-vendor-id": vendorId },
+      });
 
       if (response.data.success) {
         showNotification({
@@ -478,13 +468,7 @@ export function ProductQuickView({
               >
                 {product.name}
               </h2>
-              <p
-                className={cn(
-                  ds.typography.size.xs,
-                  ds.colors.text.tertiary,
-                  "mt-0.5",
-                )}
-              >
+              <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "mt-0.5")}>
                 SKU: {product.sku}
               </p>
             </div>
@@ -576,11 +560,7 @@ export function ProductQuickView({
               <div className="space-y-4">
                 <div>
                   <label
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                      "block mb-1.5",
-                    )}
+                    className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}
                   >
                     Product Name
                   </label>
@@ -598,11 +578,7 @@ export function ProductQuickView({
 
                 <div>
                   <label
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                      "block mb-1.5",
-                    )}
+                    className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}
                   >
                     Description
                   </label>
@@ -621,11 +597,7 @@ export function ProductQuickView({
 
                 <div>
                   <label
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                      "block mb-1.5",
-                    )}
+                    className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}
                   >
                     Status
                   </label>
@@ -672,9 +644,7 @@ export function ProductQuickView({
                   selectedTemplateId={selectedTemplateId}
                   availableTemplates={availableTemplates}
                   onPricingModeChange={setPricingMode}
-                  onFormDataChange={(data) =>
-                    setEditedProduct({ ...editedProduct, ...data })
-                  }
+                  onFormDataChange={(data) => setEditedProduct({ ...editedProduct, ...data })}
                   onNewTierChange={handleNewTierChange}
                   onAddTier={handleAddTier}
                   onUpdateTier={handleUpdateTier}
@@ -688,13 +658,7 @@ export function ProductQuickView({
             {/* Images Section - CLEAN REWRITE */}
             {activeSection === "images" && (
               <div className="space-y-4">
-                <label
-                  className={cn(
-                    ds.typography.size.xs,
-                    ds.colors.text.tertiary,
-                    "block mb-3",
-                  )}
-                >
+                <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-3")}>
                   Product Image
                 </label>
 
@@ -706,8 +670,9 @@ export function ProductQuickView({
                       alt="Product"
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        console.error("Image failed to load:", currentImageUrl);
-                        e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23333' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666' font-size='14'%3EError%3C/text%3E%3C/svg%3E";
+                        logger.error("Image failed to load:", currentImageUrl);
+                        e.currentTarget.src =
+                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23333' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666' font-size='14'%3EError%3C/text%3E%3C/svg%3E";
                       }}
                     />
                     <button
@@ -742,7 +707,11 @@ export function ProductQuickView({
                   <div className="flex flex-col items-center justify-center">
                     <ImageIcon className="w-6 h-6 mb-2 text-white/40" />
                     <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
-                      {isUploadingImage ? "Uploading..." : currentImageUrl ? "Replace Image" : "Click to Upload Image"}
+                      {isUploadingImage
+                        ? "Uploading..."
+                        : currentImageUrl
+                          ? "Replace Image"
+                          : "Click to Upload Image"}
                     </p>
                   </div>
                   <input
@@ -772,9 +741,7 @@ export function ProductQuickView({
                           )}
                         >
                           {field.label}
-                          {field.required && (
-                            <span className="text-red-400 ml-1">*</span>
-                          )}
+                          {field.required && <span className="text-red-400 ml-1">*</span>}
                         </label>
                         {field.type === "textarea" ? (
                           <Textarea
@@ -841,12 +808,7 @@ export function ProductQuickView({
                   })
                 ) : (
                   <div className="text-center py-8">
-                    <p
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.quaternary,
-                      )}
-                    >
+                    <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
                       No custom fields available for this category
                     </p>
                   </div>

@@ -128,9 +128,8 @@ export default function AboutPage() {
             }}
             className="text-base sm:text-lg md:text-xl text-white/60 leading-relaxed max-w-2xl mx-auto px-4 relative z-10"
           >
-            The first complete operations platform built specifically for
-            cannabis retailers, distributors, and brands. From storefront to
-            back office, we handle it all.
+            The first complete operations platform built specifically for cannabis retailers,
+            distributors, and brands. From storefront to back office, we handle it all.
           </motion.p>
         </div>
       </section>
@@ -203,10 +202,9 @@ export default function AboutPage() {
               <span className="text-white/60">Choose WhaleTools</span>
             </h2>
             <p className="text-sm sm:text-base text-white/60 px-4 relative z-10">
-              Purpose-built for cannabis compliance, strain data, lab results
-              (COAs), age verification, and the unique needs of dispensaries and
-              distributors. Not adapted from retail software—designed from the
-              ground up for cannabis.
+              Purpose-built for cannabis compliance, strain data, lab results (COAs), age
+              verification, and the unique needs of dispensaries and distributors. Not adapted from
+              retail software—designed from the ground up for cannabis.
             </p>
           </div>
         </div>

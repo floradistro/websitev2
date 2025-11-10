@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 var __defProp = Object.defineProperty;
 var __typeError = (msg) => {
   throw TypeError(msg);
@@ -13,8 +15,7 @@ var __defNormalProp = (obj, key, value) =>
     : (obj[key] = value);
 var __publicField = (obj, key, value) =>
   __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-var __accessCheck = (obj, member, msg) =>
-  member.has(obj) || __typeError("Cannot " + msg);
+var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
 var __privateGet = (obj, member, getter) => (
   __accessCheck(obj, member, "read from private field"),
   getter ? getter.call(obj) : member.get(obj)
@@ -54,8 +55,7 @@ const createEndpoint = Symbol("Comlink.endpoint");
 const releaseProxy = Symbol("Comlink.releaseProxy");
 const finalizer = Symbol("Comlink.finalizer");
 const throwMarker = Symbol("Comlink.thrown");
-const isObject = (val) =>
-  (typeof val === "object" && val !== null) || typeof val === "function";
+const isObject = (val) => (typeof val === "object" && val !== null) || typeof val === "function";
 const proxyTransferHandler = {
   canHandle: (val) => isObject(val) && val[proxyMarker],
   serialize(obj) {
@@ -82,10 +82,7 @@ const throwTransferHandler = {
   },
   deserialize(serialized) {
     if (serialized.isError)
-      throw Object.assign(
-        new Error(serialized.value.message),
-        serialized.value,
-      );
+      throw Object.assign(new Error(serialized.value.message), serialized.value);
     throw serialized.value;
   },
 };
@@ -96,8 +93,7 @@ const transferHandlers = new Map([
 function isAllowedOrigin(allowedOrigins, origin) {
   for (const allowedOrigin of allowedOrigins) {
     if (origin === allowedOrigin || allowedOrigin === "*") return true;
-    if (allowedOrigin instanceof RegExp && allowedOrigin.test(origin))
-      return true;
+    if (allowedOrigin instanceof RegExp && allowedOrigin.test(origin)) return true;
   }
   return false;
 }
@@ -105,14 +101,10 @@ function expose(obj, ep = globalThis, allowedOrigins = ["*"]) {
   ep.addEventListener("message", function callback(ev) {
     if (!ev || !ev.data) return;
     if (!isAllowedOrigin(allowedOrigins, ev.origin)) {
-      console.warn(`Invalid origin '${ev.origin}' for comlink proxy`);
+      logger.warn(`Invalid origin '${ev.origin}' for comlink proxy`);
       return;
     }
-    const {
-      id: id,
-      type: type,
-      path: path,
-    } = Object.assign({ path: [] }, ev.data);
+    const { id: id, type: type, path: path } = Object.assign({ path: [] }, ev.data);
     const argumentList = (ev.data.argumentList || []).map(fromWireValue);
     let returnValue;
     try {
@@ -155,15 +147,11 @@ function expose(obj, ep = globalThis, allowedOrigins = ["*"]) {
       .catch((value) => ({ value: value, [throwMarker]: 0 }))
       .then((returnValue2) => {
         const [wireValue, transferables] = toWireValue(returnValue2);
-        ep.postMessage(
-          Object.assign(Object.assign({}, wireValue), { id: id }),
-          transferables,
-        );
+        ep.postMessage(Object.assign(Object.assign({}, wireValue), { id: id }), transferables);
         if (type === "RELEASE") {
           ep.removeEventListener("message", callback);
           closeEndPoint(ep);
-          if (finalizer in obj && typeof obj[finalizer] === "function")
-            obj[finalizer]();
+          if (finalizer in obj && typeof obj[finalizer] === "function") obj[finalizer]();
         }
       })
       .catch((error) => {
@@ -171,10 +159,7 @@ function expose(obj, ep = globalThis, allowedOrigins = ["*"]) {
           value: new TypeError("Unserializable return value"),
           [throwMarker]: 0,
         });
-        ep.postMessage(
-          Object.assign(Object.assign({}, wireValue), { id: id }),
-          transferables,
-        );
+        ep.postMessage(Object.assign(Object.assign({}, wireValue), { id: id }), transferables);
       });
   });
   if (ep.start) ep.start();
@@ -267,8 +252,7 @@ function createProxy(ep, pendingListeners, path = [], target = function () {}) {
         return requestResponseMessage(ep, pendingListeners, {
           type: "ENDPOINT",
         }).then(fromWireValue);
-      if (last === "bind")
-        return createProxy(ep, pendingListeners, path.slice(0, -1));
+      if (last === "bind") return createProxy(ep, pendingListeners, path.slice(0, -1));
       const [argumentList, transferables] = processArguments(rawArgumentList);
       return requestResponseMessage(
         ep,
@@ -318,10 +302,7 @@ function toWireValue(value) {
   for (const [name, handler] of transferHandlers)
     if (handler.canHandle(value)) {
       const [serializedValue, transferables] = handler.serialize(value);
-      return [
-        { type: "HANDLER", name: name, value: serializedValue },
-        transferables,
-      ];
+      return [{ type: "HANDLER", name: name, value: serializedValue }, transferables];
     }
   return [{ type: "RAW", value: value }, transferCache.get(value) || []];
 }
@@ -350,43 +331,43 @@ function generateUUID() {
 const bulkMemory = async () =>
     WebAssembly.validate(
       new Uint8Array([
-        0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 5, 3, 1, 0,
-        1, 10, 14, 1, 12, 0, 65, 0, 65, 0, 65, 0, 252, 10, 0, 0, 11,
+        0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 5, 3, 1, 0, 1, 10, 14, 1, 12, 0,
+        65, 0, 65, 0, 65, 0, 252, 10, 0, 0, 11,
       ]),
     ),
   mutableGlobals = async () =>
     WebAssembly.validate(
       new Uint8Array([
-        0, 97, 115, 109, 1, 0, 0, 0, 2, 8, 1, 1, 97, 1, 98, 3, 127, 1, 6, 6, 1,
-        127, 1, 65, 0, 11, 7, 5, 1, 1, 97, 3, 1,
+        0, 97, 115, 109, 1, 0, 0, 0, 2, 8, 1, 1, 97, 1, 98, 3, 127, 1, 6, 6, 1, 127, 1, 65, 0, 11,
+        7, 5, 1, 1, 97, 3, 1,
       ]),
     ),
   referenceTypes = async () =>
     WebAssembly.validate(
       new Uint8Array([
-        0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 10, 7, 1, 5,
-        0, 208, 112, 26, 11,
+        0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 10, 7, 1, 5, 0, 208, 112, 26,
+        11,
       ]),
     ),
   saturatedFloatToInt = async () =>
     WebAssembly.validate(
       new Uint8Array([
-        0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 10, 12, 1,
-        10, 0, 67, 0, 0, 0, 0, 252, 0, 26, 11,
+        0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 10, 12, 1, 10, 0, 67, 0, 0, 0,
+        0, 252, 0, 26, 11,
       ]),
     ),
   signExtensions = async () =>
     WebAssembly.validate(
       new Uint8Array([
-        0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 10, 8, 1, 6,
-        0, 65, 0, 192, 26, 11,
+        0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 10, 8, 1, 6, 0, 65, 0, 192, 26,
+        11,
       ]),
     ),
   simd = async () =>
     WebAssembly.validate(
       new Uint8Array([
-        0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10,
-        1, 8, 0, 65, 0, 253, 15, 253, 98, 11,
+        0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0,
+        253, 15, 253, 98, 11,
       ]),
     ),
   threads = () =>
@@ -402,8 +383,8 @@ const bulkMemory = async () =>
       }
     })(
       new Uint8Array([
-        0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 5, 4, 1, 3,
-        1, 1, 10, 11, 1, 9, 0, 65, 0, 254, 16, 2, 0, 26, 11,
+        0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 5, 4, 1, 3, 1, 1, 10, 11, 1, 9,
+        0, 65, 0, 254, 16, 2, 0, 26, 11,
       ]),
     );
 function isSafari() {
@@ -426,8 +407,7 @@ async function detectWasmFeatures() {
     signExtensions(),
   ];
   const supportsBasic = (await Promise.all(basicSet)).every(Boolean);
-  if (!supportsBasic)
-    throw new Error("Browser doesn't meet minimum requirements!");
+  if (!supportsBasic) throw new Error("Browser doesn't meet minimum requirements!");
   const supportsAdvanced = await simd();
   if (!supportsAdvanced) return "basic";
   const supportsAdvancedThreads = await checkThreadsSupport();
@@ -437,10 +417,7 @@ async function detectWasmFeatures() {
 const workerType = "application/javascript";
 const getCrossOriginWorkerURL = (originalWorkerUrl, _options = {}) => {
   const options = { skipSameOrigin: true, useBlob: true, ..._options };
-  if (
-    options.skipSameOrigin &&
-    new URL(originalWorkerUrl).origin === self.location.origin
-  )
+  if (options.skipSameOrigin && new URL(originalWorkerUrl).origin === self.location.origin)
     return Promise.resolve(originalWorkerUrl);
   return new Promise(
     (resolve, reject) =>
@@ -453,8 +430,7 @@ const getCrossOriginWorkerURL = (originalWorkerUrl, _options = {}) => {
           if (options.useBlob) {
             const blob = new Blob([codeString], { type: workerType });
             finalURL = URL.createObjectURL(blob);
-          } else
-            finalURL = `data:${workerType},` + encodeURIComponent(codeString);
+          } else finalURL = `data:${workerType},` + encodeURIComponent(codeString);
           resolve(finalURL);
         })
         .catch(reject),
@@ -475,10 +451,7 @@ function constructLicenseRequest(unlockResult) {
     sdkVersion: unlockResult.sdkVersion,
   };
 }
-async function obtainNewServerPermission(
-  unlockResult,
-  baltazarUrl = "https://www.scandit.com",
-) {
+async function obtainNewServerPermission(unlockResult, baltazarUrl = "https://www.scandit.com") {
   if (!baltazarUrl || typeof baltazarUrl !== "string")
     throw new Error("Invalid baltazarUrl: must be a non-empty string");
   try {
@@ -494,13 +467,11 @@ async function obtainNewServerPermission(
       body: JSON.stringify(constructLicenseRequest(unlockResult)),
     });
     if (!response.ok)
-      throw new Error(
-        `Server returned error: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`Server returned error: ${response.status} ${response.statusText}`);
     const serverPermission = await response.json();
     return serverPermission;
   } catch (error) {
-    console.error("Server permission request failed:", error);
+    logger.error("Server permission request failed:", error);
     throw error;
   }
 }
@@ -509,8 +480,7 @@ function mbToWasmPages(mb) {
 }
 async function downloadArrayBuffer(url, progressCallback) {
   const response = await fetch(url);
-  if (!response.body || !response.headers.has("Content-Length"))
-    return response.arrayBuffer();
+  if (!response.body || !response.headers.has("Content-Length")) return response.arrayBuffer();
   const contentLength = parseInt(response.headers.get("Content-Length"), 10);
   let loaded = 0;
   const reader = response.body.getReader();
@@ -522,10 +492,7 @@ async function downloadArrayBuffer(url, progressCallback) {
       chunks.push(value);
       loaded += value.length;
       if (progressCallback) {
-        const progress = Math.min(
-          Math.round((loaded / contentLength) * 100),
-          100,
-        );
+        const progress = Math.min(Math.round((loaded / contentLength) * 100), 100);
         progressCallback({
           loaded: loaded,
           contentLength: contentLength,
@@ -561,11 +528,7 @@ function getType(payload) {
 function isPlainObject(payload) {
   if (getType(payload) !== "Object") return false;
   const prototype = Object.getPrototypeOf(payload);
-  return (
-    !!prototype &&
-    prototype.constructor === Object &&
-    prototype === Object.prototype
-  );
+  return !!prototype && prototype.constructor === Object && prototype === Object.prototype;
 }
 function isSymbol(payload) {
   return getType(payload) === "Symbol";
@@ -592,8 +555,7 @@ function mergeRecursively(origin, newComer, compareFn) {
     newObject = [...props2, ...symbols2].reduce((carry, key) => {
       const targetVal = origin[key];
       if (
-        (!isSymbol(key) &&
-          !Object.getOwnPropertyNames(newComer).includes(key)) ||
+        (!isSymbol(key) && !Object.getOwnPropertyNames(newComer).includes(key)) ||
         (isSymbol(key) && !Object.getOwnPropertySymbols(newComer).includes(key))
       )
         assignProp(carry, key, targetVal, origin);
@@ -605,8 +567,7 @@ function mergeRecursively(origin, newComer, compareFn) {
   const result = [...props, ...symbols].reduce((carry, key) => {
     let newVal = newComer[key];
     const targetVal = isPlainObject(origin) ? origin[key] : void 0;
-    if (targetVal !== void 0 && isPlainObject(newVal))
-      newVal = mergeRecursively(targetVal, newVal);
+    if (targetVal !== void 0 && isPlainObject(newVal)) newVal = mergeRecursively(targetVal, newVal);
     const propToAssign = newVal;
     assignProp(carry, key, propToAssign, newComer);
     return carry;
@@ -614,10 +575,7 @@ function mergeRecursively(origin, newComer, compareFn) {
   return result;
 }
 function merge(object, ...otherObjects) {
-  return otherObjects.reduce(
-    (result, newComer) => mergeRecursively(result, newComer),
-    object,
-  );
+  return otherObjects.reduce((result, newComer) => mergeRecursively(result, newComer), object);
 }
 function normalizeDocumentFilter(filter) {
   return {
@@ -633,22 +591,17 @@ const normalizeDocumentRule = (rule) => ({
 const normalizeDocumentAnonymizationSettings = (settings) => ({
   documentFilter: normalizeDocumentFilter(settings.documentFilter),
   fields: settings.fields || [],
-  documentNumberAnonymizationSettings:
-    settings.documentNumberAnonymizationSettings
-      ? {
-          prefixDigitsVisible:
-            settings.documentNumberAnonymizationSettings.prefixDigitsVisible,
-          suffixDigitsVisible:
-            settings.documentNumberAnonymizationSettings.suffixDigitsVisible,
-        }
-      : void 0,
+  documentNumberAnonymizationSettings: settings.documentNumberAnonymizationSettings
+    ? {
+        prefixDigitsVisible: settings.documentNumberAnonymizationSettings.prefixDigitsVisible,
+        suffixDigitsVisible: settings.documentNumberAnonymizationSettings.suffixDigitsVisible,
+      }
+    : void 0,
 });
 function buildSessionSettings(options = {}, defaultSessionSettings) {
   var _a, _b, _c, _d;
   if (options)
-    options = Object.fromEntries(
-      Object.entries(options).filter(([_, value]) => value !== void 0),
-    );
+    options = Object.fromEntries(Object.entries(options).filter(([_, value]) => value !== void 0));
   const customDocumentRules =
     ((_b =
       (_a = options == null ? void 0 : options.scanningSettings) == null
@@ -699,72 +652,51 @@ class CentaurusWorker {
     __privateAdd(this, _showProductionOverlay, true);
     __privateAdd(this, _proxyUrls);
   }
-  async [atob("aW5pdEJsaW5rSWQ=")](
-    settings,
-    defaultSessionSettings,
-    progressCallback,
-  ) {
+  async [atob("aW5pdEJsaW5rSWQ=")](settings, defaultSessionSettings, progressCallback) {
     var _a;
-    const resourcesPath = new URL(
-      "resources/",
-      settings.resourcesLocation,
-    ).toString();
+    const resourcesPath = new URL("resources/", settings.resourcesLocation).toString();
     __privateSet(this, _defaultSessionSettings, defaultSessionSettings);
     this.progressStatusCallback = progressCallback;
-    await __privateMethod(this, _CentaurusWorker_instances, loadWasm_fn).call(
-      this,
-      {
-        resourceUrl: resourcesPath,
-        variant: settings.wasmVariant,
-        initialMemory: settings.initialMemory,
-        useLightweightBuild: settings.useLightweightBuild,
-      },
+    await __privateMethod(this, _CentaurusWorker_instances, loadWasm_fn).call(this, {
+      resourceUrl: resourcesPath,
+      variant: settings.wasmVariant,
+      initialMemory: settings.initialMemory,
+      useLightweightBuild: settings.useLightweightBuild,
+    });
+    if (!__privateGet(this, _wasmModule)) throw new Error("Wasm module not loaded");
+    const licenceUnlockResult = __privateGet(this, _wasmModule).initializeWithLicenseKey(
+      settings.licenseKey,
+      settings.userId,
+      false,
     );
-    if (!__privateGet(this, _wasmModule))
-      throw new Error("Wasm module not loaded");
-    const licenceUnlockResult = __privateGet(
-      this,
-      _wasmModule,
-    ).initializeWithLicenseKey(settings.licenseKey, settings.userId, false);
     if (licenceUnlockResult.licenseError)
       throw new LicenseError(
         "License unlock error: " + licenceUnlockResult.licenseError,
         "LICENSE_ERROR",
       );
     if (settings[atob("bWljcm9ibGlua1Byb3h5VXJs")])
-      __privateMethod(
-        this,
-        _CentaurusWorker_instances,
-        configureProxyUrls_fn,
-      ).call(
+      __privateMethod(this, _CentaurusWorker_instances, configureProxyUrls_fn).call(
         this,
         settings[atob("bWljcm9ibGlua1Byb3h5VXJs")],
         licenceUnlockResult,
       );
     if (licenceUnlockResult.unlockResult === "requires-server-permission") {
-      const baltazarUrl =
-        (_a = __privateGet(this, _proxyUrls)) == null ? void 0 : _a.baltazar;
+      const baltazarUrl = (_a = __privateGet(this, _proxyUrls)) == null ? void 0 : _a.baltazar;
       const serverPermissionResponse =
         baltazarUrl && licenceUnlockResult.allowBaltazarProxy
           ? await obtainNewServerPermission(licenceUnlockResult, baltazarUrl)
           : await obtainNewServerPermission(licenceUnlockResult);
-      const serverPermissionResult = __privateGet(
-        this,
-        _wasmModule,
-      ).submitServerPermission(JSON.stringify(serverPermissionResponse));
+      const serverPermissionResult = __privateGet(this, _wasmModule).submitServerPermission(
+        JSON.stringify(serverPermissionResponse),
+      );
       if (serverPermissionResult.error)
         throw new Error("Server unlock error: " + serverPermissionResult.error);
     }
     __privateSet(this, _showDemoOverlay, licenceUnlockResult.showDemoOverlay);
-    __privateSet(
-      this,
-      _showProductionOverlay,
-      licenceUnlockResult.showProductionOverlay,
-    );
+    __privateSet(this, _showProductionOverlay, licenceUnlockResult.showProductionOverlay);
   }
   [atob("Y3JlYXRlQmxpbmtJZFNjYW5uaW5nU2Vzc2lvbg==")](options) {
-    if (!__privateGet(this, _wasmModule))
-      throw new Error("Wasm module not loaded");
+    if (!__privateGet(this, _wasmModule)) throw new Error("Wasm module not loaded");
     const sessionSettings = buildSessionSettings(
       options,
       __privateGet(this, _defaultSessionSettings),
@@ -782,10 +714,9 @@ class CentaurusWorker {
         const processResult = session.process(image);
         if ("error" in processResult)
           throw new Error(`Error processing frame: ${processResult.error}`);
-        const transferPackage = transfer(
-          { ...processResult, arrayBuffer: image.data.buffer },
-          [image.data.buffer],
-        );
+        const transferPackage = transfer({ ...processResult, arrayBuffer: image.data.buffer }, [
+          image.data.buffer,
+        ]);
         return transferPackage;
       },
       getSettings: () => sessionSettings,
@@ -820,17 +751,13 @@ loadWasm_fn = async function ({
   initialMemory: initialMemory,
 }) {
   if (__privateGet(this, _wasmModule)) {
-    console.log("Wasm already loaded");
+    logger.debug("Wasm already loaded");
     return;
   }
   const wasmVariant = variant ?? (await detectWasmFeatures());
   const featureVariant = useLightweightBuild ? "lightweight" : "full";
   const MODULE_NAME = "Centaurus";
-  const variantUrl = buildResourcePath(
-    resourceUrl,
-    featureVariant,
-    wasmVariant,
-  );
+  const variantUrl = buildResourcePath(resourceUrl, featureVariant, wasmVariant);
   const workerUrl = buildResourcePath(variantUrl, `${MODULE_NAME}.js`);
   const wasmUrl = buildResourcePath(variantUrl, `${MODULE_NAME}.wasm`);
   const dataUrl = buildResourcePath(variantUrl, `${MODULE_NAME}.data`);
@@ -852,10 +779,7 @@ loadWasm_fn = async function ({
     if (!wasmProgress || !dataProgress) return;
     const totalLoaded = wasmProgress.loaded + dataProgress.loaded;
     const totalLength = wasmProgress.contentLength + dataProgress.contentLength;
-    const combinedPercent = Math.min(
-      Math.round((totalLoaded / totalLength) * 100),
-      100,
-    );
+    const combinedPercent = Math.min(Math.round((totalLoaded / totalLength) * 100), 100);
     const combinedProgress = {
       loaded: totalLoaded,
       contentLength: totalLength,
@@ -900,34 +824,27 @@ loadWasm_fn = async function ({
       noExitRuntime: true,
     }),
   );
-  if (!__privateGet(this, _wasmModule))
-    throw new Error("Failed to load Wasm module");
+  if (!__privateGet(this, _wasmModule)) throw new Error("Failed to load Wasm module");
 };
 configureProxyUrls_fn = function (proxyUrl, licenceUnlockResult) {
   if (!proxyUrl) {
-    console.debug("No proxy URL configured, using default Centaurus servers");
+    logger.debug("No proxy URL configured, using default Centaurus servers");
     return;
   }
-  __privateMethod(
+  __privateMethod(this, _CentaurusWorker_instances, validateProxyPermissions_fn).call(
     this,
-    _CentaurusWorker_instances,
-    validateProxyPermissions_fn,
-  ).call(this, licenceUnlockResult, proxyUrl);
+    licenceUnlockResult,
+    proxyUrl,
+  );
   try {
     __privateSet(
       this,
       _proxyUrls,
-      __privateMethod(
-        this,
-        _CentaurusWorker_instances,
-        sanitizeProxyUrls_fn,
-      ).call(this, proxyUrl),
+      __privateMethod(this, _CentaurusWorker_instances, sanitizeProxyUrls_fn).call(this, proxyUrl),
     );
     if (licenceUnlockResult.allowPingProxy)
-      __privateGet(this, _wasmModule).setPingProxyUrl(
-        __privateGet(this, _proxyUrls).ping,
-      );
-    console.debug("Proxy URLs configured successfully:", {
+      __privateGet(this, _wasmModule).setPingProxyUrl(__privateGet(this, _proxyUrls).ping);
+    logger.debug("Proxy URLs configured successfully:", {
       ping: __privateGet(this, _proxyUrls).ping,
       baltazar: __privateGet(this, _proxyUrls).baltazar,
     });
@@ -942,10 +859,7 @@ configureProxyUrls_fn = function (proxyUrl, licenceUnlockResult) {
   }
 };
 validateProxyPermissions_fn = function (licenceUnlockResult, proxyUrl) {
-  if (
-    !licenceUnlockResult.allowPingProxy &&
-    !licenceUnlockResult.allowBaltazarProxy
-  )
+  if (!licenceUnlockResult.allowPingProxy && !licenceUnlockResult.allowBaltazarProxy)
     throw new Error(
       `Proxy URL "${proxyUrl}" was provided, but your license does not permit proxy usage.\nLicense permissions: pingProxy=${licenceUnlockResult.allowPingProxy}, baltazarProxy=${licenceUnlockResult.allowBaltazarProxy}\nCheck your license.`,
     );
@@ -973,11 +887,11 @@ sanitizeProxyUrls_fn = function (baseUrl) {
       baseUrl,
     );
   const baseUrlStr = parsedUrl.origin;
-  const baltazarUrl = __privateMethod(
+  const baltazarUrl = __privateMethod(this, _CentaurusWorker_instances, buildServiceUrl_fn).call(
     this,
-    _CentaurusWorker_instances,
-    buildServiceUrl_fn,
-  ).call(this, baseUrlStr, "/api/v2/status/check");
+    baseUrlStr,
+    "/api/v2/status/check",
+  );
   return { ping: baseUrlStr, baltazar: baltazarUrl };
 };
 buildServiceUrl_fn = function (baseUrl, servicePath) {

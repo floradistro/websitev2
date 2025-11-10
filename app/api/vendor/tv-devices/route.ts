@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/vendor/tv-devices?vendor_id=xxx
  * List all TV devices for a vendor
@@ -11,10 +12,7 @@ export async function GET(request: NextRequest) {
     const vendorId = searchParams.get("vendor_id");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "Vendor ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Vendor ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -27,12 +25,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching TV devices:", error);
+        logger.error("Error fetching TV devices:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -41,11 +36,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("TV devices GET error:", error);
+      logger.error("TV devices GET error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

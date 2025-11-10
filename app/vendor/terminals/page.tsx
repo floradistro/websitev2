@@ -19,6 +19,7 @@ import axios from "axios";
 import { showNotification } from "@/components/NotificationToast";
 import AdminModal from "@/components/AdminModal";
 
+import { logger } from "@/lib/logger";
 interface Terminal {
   register_id: string;
   register_number: string;
@@ -71,8 +72,7 @@ export default function VendorTerminals() {
   async function loadTerminals() {
     try {
       setLoading(true);
-      const params =
-        filterLocation !== "all" ? `?location_id=${filterLocation}` : "";
+      const params = filterLocation !== "all" ? `?location_id=${filterLocation}` : "";
       const response = await axios.get(`/api/vendor/terminals${params}`);
 
       if (response.data.terminals) {
@@ -80,7 +80,7 @@ export default function VendorTerminals() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading terminals:", error);
+        logger.error("Error loading terminals:", error);
       }
       showNotification({
         type: "error",
@@ -100,7 +100,7 @@ export default function VendorTerminals() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading locations:", error);
+        logger.error("Error loading locations:", error);
       }
     }
   }
@@ -185,8 +185,7 @@ export default function VendorTerminals() {
 
   async function toggleTerminalStatus(terminal: Terminal) {
     try {
-      const action =
-        terminal.register_status === "active" ? "deactivate" : "activate";
+      const action = terminal.register_status === "active" ? "deactivate" : "activate";
 
       const response = await axios.post("/api/vendor/terminals", {
         action,
@@ -211,11 +210,7 @@ export default function VendorTerminals() {
   }
 
   async function deleteTerminal(terminal: Terminal) {
-    if (
-      !confirm(
-        `Are you sure you want to delete terminal "${terminal.register_name}"?`,
-      )
-    ) {
+    if (!confirm(`Are you sure you want to delete terminal "${terminal.register_name}"?`)) {
       return;
     }
 
@@ -264,9 +259,7 @@ export default function VendorTerminals() {
                 <Smartphone className="w-8 h-8 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  POS Terminals
-                </h1>
+                <h1 className="text-3xl font-bold text-gray-900">POS Terminals</h1>
                 <p className="text-gray-600 mt-1">
                   Manage your point-of-sale devices and registers
                 </p>
@@ -285,9 +278,7 @@ export default function VendorTerminals() {
         {/* Filter */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
           <div className="flex items-center space-x-4">
-            <label className="text-sm font-medium text-gray-700">
-              Filter by Location:
-            </label>
+            <label className="text-sm font-medium text-gray-700">Filter by Location:</label>
             <select
               value={filterLocation}
               onChange={(e) => setFilterLocation(e.target.value)}
@@ -312,12 +303,8 @@ export default function VendorTerminals() {
         ) : filteredTerminals.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <Smartphone className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No terminals found
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Get started by adding your first POS terminal
-            </p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No terminals found</h3>
+            <p className="text-gray-600 mb-6">Get started by adding your first POS terminal</p>
             <button
               onClick={() => setShowAddModal(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
@@ -360,9 +347,7 @@ export default function VendorTerminals() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
                       {terminal.register_name}
                     </h3>
-                    <p className="text-sm text-gray-600 font-mono">
-                      {terminal.register_number}
-                    </p>
+                    <p className="text-sm text-gray-600 font-mono">{terminal.register_number}</p>
                   </div>
 
                   {/* Device Info */}
@@ -395,16 +380,10 @@ export default function VendorTerminals() {
                   {/* Dejavoo Info */}
                   {terminal.merchant_id && (
                     <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                      <p className="text-xs text-gray-500 font-semibold mb-1">
-                        Dejavoo Config
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        MID: {terminal.merchant_id}
-                      </p>
+                      <p className="text-xs text-gray-500 font-semibold mb-1">Dejavoo Config</p>
+                      <p className="text-xs text-gray-600">MID: {terminal.merchant_id}</p>
                       {terminal.v_number && (
-                        <p className="text-xs text-gray-600">
-                          V#: {terminal.v_number}
-                        </p>
+                        <p className="text-xs text-gray-600">V#: {terminal.v_number}</p>
                       )}
                     </div>
                   )}
@@ -412,8 +391,7 @@ export default function VendorTerminals() {
                   {/* Last Active */}
                   {terminal.last_active_at && (
                     <div className="text-xs text-gray-500 mb-4">
-                      Last active:{" "}
-                      {new Date(terminal.last_active_at).toLocaleString()}
+                      Last active: {new Date(terminal.last_active_at).toLocaleString()}
                     </div>
                   )}
 
@@ -471,14 +449,10 @@ export default function VendorTerminals() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Location *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
             <select
               value={newTerminal.location_id}
-              onChange={(e) =>
-                setNewTerminal({ ...newTerminal, location_id: e.target.value })
-              }
+              onChange={(e) => setNewTerminal({ ...newTerminal, location_id: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               required
             >
@@ -492,9 +466,7 @@ export default function VendorTerminals() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Register Name *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Register Name *</label>
             <input
               type="text"
               value={newTerminal.register_name}
@@ -511,24 +483,18 @@ export default function VendorTerminals() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Device Name
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Device Name</label>
             <input
               type="text"
               value={newTerminal.device_name}
-              onChange={(e) =>
-                setNewTerminal({ ...newTerminal, device_name: e.target.value })
-              }
+              onChange={(e) => setNewTerminal({ ...newTerminal, device_name: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               placeholder="e.g., Dejavoo P8 #1"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Hardware Model
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Hardware Model</label>
             <select
               value={newTerminal.hardware_model}
               onChange={(e) =>
@@ -575,9 +541,7 @@ export default function VendorTerminals() {
         {editingTerminal && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Register Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Register Name</label>
               <input
                 type="text"
                 value={editingTerminal.register_name}
@@ -592,9 +556,7 @@ export default function VendorTerminals() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Device Name
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Device Name</label>
               <input
                 type="text"
                 value={editingTerminal.device_name || ""}
@@ -609,9 +571,7 @@ export default function VendorTerminals() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Hardware Model
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Hardware Model</label>
               <input
                 type="text"
                 value={editingTerminal.hardware_model || ""}

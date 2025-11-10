@@ -9,20 +9,14 @@ const REAL_ESRGAN_MODEL =
   "nightmareai/real-esrgan:42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b";
 const MAX_INPUT_PIXELS = 2000000;
 
-async function pollPrediction(
-  predictionId: string,
-  maxAttempts = 60,
-): Promise<any> {
+async function pollPrediction(predictionId: string, maxAttempts = 60): Promise<any> {
   for (let i = 0; i < maxAttempts; i++) {
-    const response = await axios.get(
-      `https://api.replicate.com/v1/predictions/${predictionId}`,
-      {
-        headers: {
-          Authorization: `Token ${REPLICATE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
+    const response = await axios.get(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+      headers: {
+        Authorization: `Token ${REPLICATE_API_KEY}`,
+        "Content-Type": "application/json",
       },
-    );
+    });
 
     const prediction = response.data;
 
@@ -58,9 +52,7 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         const send = (data: any) => {
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
-          );
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
         };
 
         try {
@@ -91,8 +83,7 @@ export async function POST(request: NextRequest) {
 
                 const imageBuffer = Buffer.from(originalImageResponse.data);
                 const metadata = await sharp(imageBuffer).metadata();
-                const totalPixels =
-                  (metadata.width || 0) * (metadata.height || 0);
+                const totalPixels = (metadata.width || 0) * (metadata.height || 0);
 
                 let processImageUrl = file.url;
                 let tempPath = null;
@@ -100,12 +91,8 @@ export async function POST(request: NextRequest) {
                 // Resize if needed
                 if (totalPixels > MAX_INPUT_PIXELS) {
                   const scaleFactor = Math.sqrt(MAX_INPUT_PIXELS / totalPixels);
-                  const newWidth = Math.floor(
-                    (metadata.width || 0) * scaleFactor,
-                  );
-                  const newHeight = Math.floor(
-                    (metadata.height || 0) * scaleFactor,
-                  );
+                  const newWidth = Math.floor((metadata.width || 0) * scaleFactor);
+                  const newHeight = Math.floor((metadata.height || 0) * scaleFactor);
 
                   send({
                     type: "info",
@@ -132,9 +119,7 @@ export async function POST(request: NextRequest) {
 
                   const {
                     data: { publicUrl },
-                  } = supabase.storage
-                    .from("vendor-product-images")
-                    .getPublicUrl(tempPath);
+                  } = supabase.storage.from("vendor-product-images").getPublicUrl(tempPath);
 
                   processImageUrl = publicUrl;
                 }
@@ -165,9 +150,7 @@ export async function POST(request: NextRequest) {
                 );
 
                 // Poll for result
-                const prediction = await pollPrediction(
-                  predictionResponse.data.id,
-                );
+                const prediction = await pollPrediction(predictionResponse.data.id);
 
                 if (!prediction.output) {
                   throw new Error("No output");
@@ -199,9 +182,7 @@ export async function POST(request: NextRequest) {
 
                 // Clean temp file AFTER successful upload
                 if (tempPath) {
-                  await supabase.storage
-                    .from("vendor-product-images")
-                    .remove([tempPath]);
+                  await supabase.storage.from("vendor-product-images").remove([tempPath]);
                 }
 
                 // Delete original ONLY if different from new name
@@ -213,9 +194,7 @@ export async function POST(request: NextRequest) {
 
                 const {
                   data: { publicUrl },
-                } = supabase.storage
-                  .from("vendor-product-images")
-                  .getPublicUrl(finalPath);
+                } = supabase.storage.from("vendor-product-images").getPublicUrl(finalPath);
 
                 const endTime = Date.now();
                 completedCount++;

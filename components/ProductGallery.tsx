@@ -8,10 +8,7 @@ interface ProductGalleryProps {
   productName: string;
 }
 
-export default function ProductGallery({
-  images,
-  productName,
-}: ProductGalleryProps) {
+export default function ProductGallery({ images, productName }: ProductGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   if (!images || images.length === 0) {

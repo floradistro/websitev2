@@ -39,9 +39,7 @@ export function RecentItemsList({
   return (
     <div className={`minimal-glass ${className}`}>
       <div className="border-b border-white/5 p-6 flex justify-between items-center">
-        <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">
-          {title}
-        </h2>
+        <h2 className="text-white/40 text-[11px] font-light tracking-[0.2em] uppercase">{title}</h2>
         {viewAllHref && (
           <Link
             href={viewAllHref}
@@ -53,24 +51,13 @@ export function RecentItemsList({
       </div>
       <div className="divide-y divide-white/10">
         {loading ? (
-          <div className="p-12 text-center text-white/40 text-xs">
-            Loading...
-          </div>
+          <div className="p-12 text-center text-white/40 text-xs">Loading...</div>
         ) : items.length === 0 ? (
-          <div className="p-12 text-center text-white/40 text-xs">
-            {emptyMessage}
-          </div>
+          <div className="p-12 text-center text-white/40 text-xs">{emptyMessage}</div>
         ) : (
           items.map((item) => (
-            <div
-              key={item.id}
-              className="p-6 hover:bg-white/[0.02] transition-all"
-            >
-              {renderItem ? (
-                renderItem(item)
-              ) : (
-                <DefaultItemRenderer item={item} />
-              )}
+            <div key={item.id} className="p-6 hover:bg-white/[0.02] transition-all">
+              {renderItem ? renderItem(item) : <DefaultItemRenderer item={item} />}
             </div>
           ))
         )}
@@ -86,11 +73,7 @@ function DefaultItemRenderer({ item }: { item: RecentItem }) {
     <div className="flex items-center gap-4">
       {item.image ? (
         <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden rounded-[8px]">
-          <img
-            src={item.image}
-            alt={item.title}
-            className="w-full h-full object-cover"
-          />
+          <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
         </div>
       ) : ItemIcon ? (
         <div className="w-16 h-16 bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 rounded-[8px]">
@@ -100,9 +83,7 @@ function DefaultItemRenderer({ item }: { item: RecentItem }) {
 
       <div className="flex-1 min-w-0">
         <div className="text-white font-medium mb-1 text-sm">{item.title}</div>
-        {item.subtitle && (
-          <div className="text-xs text-white/50 mb-1">{item.subtitle}</div>
-        )}
+        {item.subtitle && <div className="text-xs text-white/50 mb-1">{item.subtitle}</div>}
         {item.date && (
           <div className="flex items-center gap-2 text-xs text-white/40">
             <Calendar size={12} />
@@ -111,9 +92,7 @@ function DefaultItemRenderer({ item }: { item: RecentItem }) {
         )}
       </div>
 
-      {item.status && (
-        <div className="flex items-center gap-3">{item.status}</div>
-      )}
+      {item.status && <div className="flex items-center gap-3">{item.status}</div>}
     </div>
   );
 }

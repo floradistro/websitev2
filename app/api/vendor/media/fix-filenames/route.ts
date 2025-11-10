@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 // Fix broken image records where .jpg files were converted to .png
 export async function POST(request: NextRequest) {
   try {
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`✅ Fixed ${fixed} image records`);
+    logger.debug(`✅ Fixed ${fixed} image records`);
 
     return NextResponse.json({
       success: true,
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
       total: jpgFiles.length,
     });
   } catch (error: any) {
-    console.error("Error fixing filenames:", error);
+    logger.error("Error fixing filenames:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

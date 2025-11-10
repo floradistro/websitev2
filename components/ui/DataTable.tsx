@@ -76,19 +76,13 @@ export function DataTable<T extends { id: string | number }>({
               </tr>
             ) : data.length === 0 ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="p-12 text-center text-white/40 text-sm"
-                >
+                <td colSpan={columns.length} className="p-12 text-center text-white/40 text-sm">
                   {emptyMessage}
                 </td>
               </tr>
             ) : (
               data.map((item) => (
-                <tr
-                  key={item.id}
-                  className="hover:bg-white/[0.02] transition-colors"
-                >
+                <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
                   {columns.map((col) => (
                     <td
                       key={col.key}

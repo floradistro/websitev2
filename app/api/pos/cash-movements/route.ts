@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 // GET /api/pos/cash-movements - Get cash movements for a session
 export async function GET(request: NextRequest) {
   try {
@@ -14,10 +15,7 @@ export async function GET(request: NextRequest) {
     const sessionId = searchParams.get("sessionId");
 
     if (!sessionId) {
-      return NextResponse.json(
-        { error: "sessionId is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "sessionId is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -31,12 +29,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching cash movements:", error);
+        logger.error("Error fetching cash movements:", error);
       }
-      return NextResponse.json(
-        { error: "Failed to fetch cash movements" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch cash movements" }, { status: 500 });
     }
 
     // Calculate summary
@@ -81,12 +76,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in GET /api/pos/cash-movements:", error);
+      logger.error("Error in GET /api/pos/cash-movements:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -99,27 +91,11 @@ export async function POST(request: NextRequest) {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const {
-      sessionId,
-      registerId,
-      userId,
-      locationId,
-      movementType,
-      amount,
-      reason,
-      notes,
-    } = body;
+    const { sessionId, registerId, userId, locationId, movementType, amount, reason, notes } = body;
     // SECURITY: vendorId from JWT, request param ignored (Phase 4)
 
     // Validate required fields
-    if (
-      !sessionId ||
-      !userId ||
-      !locationId ||
-      !movementType ||
-      amount === undefined ||
-      !reason
-    ) {
+    if (!sessionId || !userId || !locationId || !movementType || amount === undefined || !reason) {
       return NextResponse.json(
         {
           error:
@@ -161,12 +137,9 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating cash movement:", error);
+        logger.error("Error creating cash movement:", error);
       }
-      return NextResponse.json(
-        { error: "Failed to create cash movement" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to create cash movement" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -176,11 +149,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in POST /api/pos/cash-movements:", error);
+      logger.error("Error in POST /api/pos/cash-movements:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

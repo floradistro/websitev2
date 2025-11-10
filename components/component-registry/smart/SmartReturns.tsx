@@ -34,22 +34,19 @@ const returnSteps = [
   {
     icon: CheckCircle,
     title: "APPROVAL",
-    description:
-      "Our team will review your request and respond within 2 business hours.",
+    description: "Our team will review your request and respond within 2 business hours.",
     timeframe: "2 hours response",
   },
   {
     icon: RotateCcw,
     title: "RETURN OR REPLACE",
-    description:
-      "Choose between a full refund or product replacement based on availability.",
+    description: "Choose between a full refund or product replacement based on availability.",
     timeframe: "Your choice",
   },
   {
     icon: Clock,
     title: "RESOLUTION",
-    description:
-      "Refunds processed within 3-5 business days. Replacements shipped same day.",
+    description: "Refunds processed within 3-5 business days. Replacements shipped same day.",
     timeframe: "3-5 days",
   },
 ];
@@ -96,11 +93,7 @@ export function SmartReturns({
   const { ref, inView } = useScrollAnimation();
 
   return (
-    <SmartComponentWrapper
-      animate={false}
-      componentName="Returns"
-      className={className}
-    >
+    <SmartComponentWrapper animate={false} componentName="Returns" className={className}>
       {/* Hero Section */}
       <section className="pt-32 sm:pt-40 pb-16 sm:pb-20 px-4 sm:px-6 bg-black">
         <SmartContainers.MaxWidth>
@@ -137,9 +130,7 @@ export function SmartReturns({
               </motion.div>
             )}
 
-            <SmartTypography.Headline className="mb-6">
-              {headline}
-            </SmartTypography.Headline>
+            <SmartTypography.Headline className="mb-6">{headline}</SmartTypography.Headline>
             <p className="text-xl sm:text-2xl text-white/60 uppercase tracking-wide">
               {subheadline}
             </p>
@@ -160,10 +151,7 @@ export function SmartReturns({
             HOW IT WORKS
           </motion.h3>
 
-          <div
-            ref={ref}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
-          >
+          <div ref={ref} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {returnSteps.map((step, index) => (
               <motion.div
                 key={index}
@@ -177,11 +165,7 @@ export function SmartReturns({
               >
                 <SmartContainers.Card className="p-6 text-center h-full">
                   <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
-                    <step.icon
-                      size={20}
-                      className="text-white"
-                      strokeWidth={2.5}
-                    />
+                    <step.icon size={20} className="text-white" strokeWidth={2.5} />
                   </div>
                   <div className="text-xs text-white/40 uppercase tracking-[0.15em] mb-3">
                     Step {index + 1}
@@ -192,9 +176,7 @@ export function SmartReturns({
                   >
                     {step.title}
                   </h4>
-                  <p className="text-xs text-white/60 leading-relaxed mb-3">
-                    {step.description}
-                  </p>
+                  <p className="text-xs text-white/60 leading-relaxed mb-3">{step.description}</p>
                   <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-[10px] text-white/40 uppercase tracking-wider">
                     {step.timeframe}
                   </div>
@@ -229,10 +211,7 @@ export function SmartReturns({
                   </h4>
                   <ul className="space-y-3">
                     {section.points.map((point, pIndex) => (
-                      <li
-                        key={pIndex}
-                        className="text-xs text-white/60 flex items-start gap-2"
-                      >
+                      <li key={pIndex} className="text-xs text-white/60 flex items-start gap-2">
                         <div className="flex-shrink-0 w-1 h-1 rounded-full bg-white/40 mt-1.5" />
                         <span>{point}</span>
                       </li>
@@ -262,8 +241,7 @@ export function SmartReturns({
                 NEED TO START A RETURN?
               </h3>
               <p className="text-sm sm:text-base text-white/60 mb-6">
-                Our support team is standing by to help process your return
-                quickly and easily.
+                Our support team is standing by to help process your return quickly and easily.
               </p>
               <a
                 href="/storefront/contact"
@@ -271,12 +249,7 @@ export function SmartReturns({
                 style={{ fontWeight: 900 }}
               >
                 CONTACT SUPPORT
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

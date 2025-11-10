@@ -23,8 +23,7 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
     }
     get frameSource() {
       var e, t;
-      return (t = (e = this.control.view) == null ? void 0 : e.getContext()) ==
-        null
+      return (t = (e = this.control.view) == null ? void 0 : e.getContext()) == null
         ? void 0
         : t.frameSource;
     }
@@ -37,26 +36,16 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
       let e = await this.canShow();
       return (
         e
-          ? (this.updateButtonBackground(this.button, this.getImageFromState()),
-            this.show())
+          ? (this.updateButtonBackground(this.button, this.getImageFromState()), this.show())
           : this.hide(),
         e
       );
     }
     remove(e = false) {
       e && this.button
-        ? (this.button.removeEventListener(
-            "mouseenter",
-            this.onMouseEnterListener,
-          ),
-          this.button.removeEventListener(
-            "mouseleave",
-            this.onMouseLeaveListener,
-          ),
-          this.button.removeEventListener(
-            "touchstart",
-            this.onTouchStartListener,
-          ),
+        ? (this.button.removeEventListener("mouseenter", this.onMouseEnterListener),
+          this.button.removeEventListener("mouseleave", this.onMouseLeaveListener),
+          this.button.removeEventListener("touchstart", this.onTouchStartListener),
           this.button.removeEventListener("click", this.onClickListener),
           this.button.remove(),
           (this.isHover = false),
@@ -78,8 +67,7 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
         this.domHost.append(e),
         e.addEventListener("mouseenter", this.onMouseEnterListener),
         e.addEventListener("mouseleave", this.onMouseLeaveListener),
-        a$2.isDesktopDevice() ||
-          e.addEventListener("touchstart", this.onTouchStartListener),
+        a$2.isDesktopDevice() || e.addEventListener("touchstart", this.onTouchStartListener),
         e.addEventListener("click", this.onClickListener),
         e.setAttribute("aria-pressed", String(this.state === "pressed")));
       let t = this.control.type,
@@ -91,18 +79,15 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
     }
     onTouchStart() {
       var e, t;
-      ((e = this.button) == null ||
-        e.removeEventListener("mouseenter", this.onMouseEnterListener),
+      ((e = this.button) == null || e.removeEventListener("mouseenter", this.onMouseEnterListener),
         (t = this.button) == null ||
           t.removeEventListener("mouseleave", this.onMouseLeaveListener));
     }
     onMouseEnter() {
-      ((this.isHover = true),
-        this.updateButtonBackground(this.button, this.getImageFromState()));
+      ((this.isHover = true), this.updateButtonBackground(this.button, this.getImageFromState()));
     }
     onMouseLeave() {
-      ((this.isHover = false),
-        this.updateButtonBackground(this.button, this.getImageFromState()));
+      ((this.isHover = false), this.updateButtonBackground(this.button, this.getImageFromState()));
     }
     onClick() {
       var e;
@@ -113,9 +98,7 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
           e.setAttribute("aria-pressed", String(this.state === "pressed")));
     }
     updateButtonBackground(e, t) {
-      t != null &&
-        e != null &&
-        (e.style.backgroundImage = `url(${JSON.stringify(t)})`);
+      t != null && e != null && (e.style.backgroundImage = `url(${JSON.stringify(t)})`);
     }
   },
   C = class extends d {
@@ -140,10 +123,7 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
           : this.control.torchOffImage;
     }
     setup() {
-      if (
-        this.control.torchOffImage == null ||
-        this.control.torchOnImage == null
-      ) {
+      if (this.control.torchOffImage == null || this.control.torchOnImage == null) {
         a.log(
           a.Level.Warn,
           "TorchSwitchControl icon is not set or is empty, the control will not be rendered.",
@@ -153,14 +133,10 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
       super.setup();
     }
     async isTorchAvailable() {
-      return f$1(this.frameSource)
-        ? this.frameSource.isTorchAvailable()
-        : false;
+      return f$1(this.frameSource) ? this.frameSource.isTorchAvailable() : false;
     }
     retrieveTorchState() {
-      return f$1(this.frameSource)
-        ? this.frameSource.getDesiredTorchState()
-        : "off";
+      return f$1(this.frameSource) ? this.frameSource.getDesiredTorchState() : "off";
     }
   },
   f = class s extends d {
@@ -198,18 +174,9 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
       var o, n;
       let e = await s.CameraAccess.getCameras(),
         t = this.frameSource ? this.frameSource : null,
-        a =
-          (o = t == null ? void 0 : t.cameraManager.activeCamera) == null
-            ? void 0
-            : o.deviceId,
+        a = (o = t == null ? void 0 : t.cameraManager.activeCamera) == null ? void 0 : o.deviceId,
         r = e.findIndex((c) => c.deviceId === a);
-      return r > -1
-        ? (n = e[r + 1]) != null
-          ? n
-          : e[0]
-        : e.length > 0
-          ? e[0]
-          : null;
+      return r > -1 ? ((n = e[r + 1]) != null ? n : e[0]) : e.length > 0 ? e[0] : null;
     }
     async switchCameras(e) {
       var n, c, u;
@@ -222,9 +189,9 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
       let o = s.Camera.fromDeviceCamera(e);
       (a != null && (await o.applySettings(a)),
         await ((c = this.context) == null ? void 0 : c.setFrameSource(o)),
-        await (
-          (u = this.context) == null ? void 0 : u.frameSource
-        ).switchToDesiredState(r != null ? r : "on"),
+        await ((u = this.context) == null ? void 0 : u.frameSource).switchToDesiredState(
+          r != null ? r : "on",
+        ),
         (this.isTransitioning = false));
     }
   },
@@ -243,8 +210,7 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
       return (e && (await this.setInitialCamera()), e);
     }
     async canShow() {
-      return !a$2.isIOSDeviceWithExtendedCameraAccess() ||
-        !f$1(this.frameSource)
+      return !a$2.isIOSDeviceWithExtendedCameraAccess() || !f$1(this.frameSource)
         ? false
         : d$1.isIOSBackDualWideCameraLabel(this.frameSource.label) ||
             d$1.isIOSBackCameraLabel(this.frameSource.label) ||
@@ -265,10 +231,7 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
       e && (await this.switchCameras(e));
     }
     setup() {
-      if (
-        this.control.cameraFOVUltraWideImage == null ||
-        this.control.cameraFOVWideImage == null
-      ) {
+      if (this.control.cameraFOVUltraWideImage == null || this.control.cameraFOVWideImage == null) {
         a.log(
           a.Level.Warn,
           "CameraFOVSwitchControl icon is not set or is empty, the control will not be rendered.",
@@ -282,14 +245,10 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
       if (
         !this.isTransitioning &&
         !d$1.isIOSBackCameraLabel(
-          (t = (e = this.frameSource) == null ? void 0 : e.label) != null
-            ? t
-            : "",
+          (t = (e = this.frameSource) == null ? void 0 : e.label) != null ? t : "",
         )
       ) {
-        let r = (await s.CameraAccess.getCameras()).find((o) =>
-          d$1.isIOSBackCameraLabel(o.label),
-        );
+        let r = (await s.CameraAccess.getCameras()).find((o) => d$1.isIOSBackCameraLabel(o.label));
         r && (await this.switchCameras(r));
       }
     }
@@ -316,9 +275,9 @@ var S = ((t) => ((t.Idle = "idle"), (t.Pressed = "pressed"), t))(S || {}),
       let o = s.Camera.fromDeviceCamera(e);
       (a != null && (await o.applySettings(a)),
         await ((c = this.context) == null ? void 0 : c.setFrameSource(o)),
-        await (
-          (u = this.context) == null ? void 0 : u.frameSource
-        ).switchToDesiredState(r != null ? r : "on"),
+        await ((u = this.context) == null ? void 0 : u.frameSource).switchToDesiredState(
+          r != null ? r : "on",
+        ),
         (this.isTransitioning = false));
     }
   };

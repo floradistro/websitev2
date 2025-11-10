@@ -38,10 +38,7 @@ export function POFilters({
         <div className="relative">
           <Search
             size={14}
-            className={cn(
-              "absolute left-3 top-1/2 -translate-y-1/2",
-              ds.colors.text.quaternary,
-            )}
+            className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.colors.text.quaternary)}
           />
           <Input
             type="text"

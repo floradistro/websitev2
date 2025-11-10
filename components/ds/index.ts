@@ -5,7 +5,7 @@
  * matching the Apple SF Family aesthetic
  */
 
-export { Button, IconButton } from "./Button";
+export { Button, IconButton } from "../ui/Button";
 export { Card, CardHeader, CardSection, CardTitle, CardContent } from "../ui/Card";
 export { Dropdown, DropdownTrigger } from "./Dropdown";
 export { Input } from "../ui/Input";

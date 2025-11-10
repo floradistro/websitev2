@@ -17,11 +17,5 @@ export {
 export { DashboardStat } from "./Stat";
 
 // Re-export theme utilities
-export {
-  getTheme,
-  tw,
-  adminTheme,
-  vendorTheme,
-  getComponentClasses,
-} from "@/lib/dashboard-theme";
+export { getTheme, tw, adminTheme, vendorTheme, getComponentClasses } from "@/lib/dashboard-theme";
 export type { ThemeName, Theme } from "@/lib/dashboard-theme";

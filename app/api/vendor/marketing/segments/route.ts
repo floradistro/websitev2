@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Segments fetch error:", error);
+        logger.error("Segments fetch error:", error);
       }
       return NextResponse.json(
         { error: "Failed to fetch segments", message: error.message },
@@ -39,10 +40,7 @@ export async function GET(request: NextRequest) {
     // Calculate customer count for each segment
     const segmentsWithCounts = await Promise.all(
       (segments || []).map(async (segment) => {
-        const count = await calculateSegmentSize(
-          vendorId,
-          segment.segment_rules,
-        );
+        const count = await calculateSegmentSize(vendorId, segment.segment_rules);
         return {
           ...segment,
           customer_count: count,
@@ -53,7 +51,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(segmentsWithCounts);
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Segments API error:", error);
+      logger.error("Segments API error:", error);
     }
     return NextResponse.json(
       { error: "Failed to load segments", message: error.message },
@@ -74,10 +72,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!name) {
-      return NextResponse.json(
-        { error: "Segment name required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Segment name required" }, { status: 400 });
     }
 
     // Create segment
@@ -95,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     if (createError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Segment creation error:", createError);
+        logger.error("Segment creation error:", createError);
       }
       return NextResponse.json(
         { error: "Failed to create segment", message: createError.message },
@@ -115,7 +110,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Segment creation error:", error);
+      logger.error("Segment creation error:", error);
     }
     return NextResponse.json(
       { error: "Failed to create segment", message: error.message },
@@ -127,10 +122,7 @@ export async function POST(request: NextRequest) {
 /**
  * Calculate segment size based on rules
  */
-async function calculateSegmentSize(
-  vendorId: string,
-  rules: any[],
-): Promise<number> {
+async function calculateSegmentSize(vendorId: string, rules: any[]): Promise<number> {
   if (!rules || rules.length === 0) {
     // No rules = all customers
     const { count } = await supabase

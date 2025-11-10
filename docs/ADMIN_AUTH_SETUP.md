@@ -97,10 +97,7 @@ To add additional admin users, modify `app/api/admin/login/route.ts`:
 
 ```typescript
 // Add new user configuration
-if (
-  process.env.CUSTOM_ADMIN_USERNAME &&
-  process.env.CUSTOM_ADMIN_PASSWORD_HASH
-) {
+if (process.env.CUSTOM_ADMIN_USERNAME && process.env.CUSTOM_ADMIN_PASSWORD_HASH) {
   users.push({
     username: process.env.CUSTOM_ADMIN_USERNAME,
     passwordHash: process.env.CUSTOM_ADMIN_PASSWORD_HASH,

@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { requireVendor } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -26,12 +27,7 @@ export async function POST(request: NextRequest) {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const {
-      prompt,
-      size = "1024x1024",
-      quality = "standard",
-      style = "vivid",
-    } = body;
+    const { prompt, size = "1024x1024", quality = "standard", style = "vivid" } = body;
 
     if (!prompt) {
       return NextResponse.json({ error: "Prompt required" }, { status: 400 });
@@ -81,15 +77,13 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Upload error:", uploadError);
+        logger.error("❌ Upload error:", uploadError);
       }
       throw uploadError;
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage
-      .from("vendor-product-images")
-      .getPublicUrl(filePath);
+    const { data: urlData } = supabase.storage.from("vendor-product-images").getPublicUrl(filePath);
 
     const publicUrl = urlData.publicUrl;
 
@@ -107,7 +101,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ DALL-E generation error:", error);
+      logger.error("❌ DALL-E generation error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to generate image" },

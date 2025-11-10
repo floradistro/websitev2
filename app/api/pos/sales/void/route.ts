@@ -3,16 +3,14 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { AlpineIQClient } from "@/lib/marketing/alpineiq-client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /**
  * Get or create Alpine IQ client for vendor
  */
-async function getAlpineIQClient(
-  supabase: any,
-  vendorId: string,
-): Promise<AlpineIQClient | null> {
+async function getAlpineIQClient(supabase: any, vendorId: string): Promise<AlpineIQClient | null> {
   try {
     const { data: vendor } = await supabase
       .from("vendors")
@@ -33,7 +31,7 @@ async function getAlpineIQClient(
     return null;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Failed to get AlpineIQ client:", error);
+      logger.error("Failed to get AlpineIQ client:", error);
     }
     return null;
   }
@@ -52,10 +50,7 @@ export async function POST(request: NextRequest) {
     const { transactionId, reason } = body;
 
     if (!transactionId || !reason) {
-      return NextResponse.json(
-        { error: "Missing transactionId or reason" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing transactionId or reason" }, { status: 400 });
     }
 
     // ============================================================================
@@ -69,19 +64,13 @@ export async function POST(request: NextRequest) {
 
     if (txError || !transaction) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Transaction not found:", transactionId);
+        logger.error("❌ Transaction not found:", transactionId);
       }
-      return NextResponse.json(
-        { error: "Transaction not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     }
 
     if (transaction.payment_status === "voided") {
-      return NextResponse.json(
-        { error: "Transaction already voided" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Transaction already voided" }, { status: 400 });
     }
 
     // ============================================================================
@@ -93,12 +82,11 @@ export async function POST(request: NextRequest) {
 
     if (!isToday) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Transaction not from today, cannot void");
+        logger.error("❌ Transaction not from today, cannot void");
       }
       return NextResponse.json(
         {
-          error:
-            "Transactions can only be voided on the same day. Use refund instead.",
+          error: "Transactions can only be voided on the same day. Use refund instead.",
         },
         { status: 400 },
       );
@@ -164,7 +152,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error updating transaction:", updateError);
+        logger.error("❌ Error updating transaction:", updateError);
       }
       throw updateError;
     }
@@ -211,7 +199,7 @@ export async function POST(request: NextRequest) {
 
             if (incrementError) {
               if (process.env.NODE_ENV === "development") {
-                console.error(
+                logger.error(
                   `⚠️  Failed to restock ${item.product_name || item.product_id}:`,
                   incrementError,
                 );
@@ -238,10 +226,7 @@ export async function POST(request: NextRequest) {
 
       if (loyalty) {
         const newPoints = Math.max(0, loyalty.points - pointsToReverse);
-        const newLifetimePoints = Math.max(
-          0,
-          loyalty.lifetime_points - pointsToReverse,
-        );
+        const newLifetimePoints = Math.max(0, loyalty.lifetime_points - pointsToReverse);
 
         // Recalculate tier (might downgrade)
         const LOYALTY_TIERS = [
@@ -256,10 +241,7 @@ export async function POST(request: NextRequest) {
             .reverse()
             .find((t) => newLifetimePoints >= t.min_points) || LOYALTY_TIERS[0];
 
-        const level =
-          LOYALTY_TIERS.indexOf(
-            LOYALTY_TIERS.find((t) => t.name === tier.name)!,
-          ) + 1;
+        const level = LOYALTY_TIERS.indexOf(LOYALTY_TIERS.find((t) => t.name === tier.name)!) + 1;
 
         // Update loyalty record
         await supabase
@@ -312,10 +294,7 @@ export async function POST(request: NextRequest) {
 
     if (customer && order) {
       try {
-        const alpineClient = await getAlpineIQClient(
-          supabase,
-          transaction.vendor_id,
-        );
+        const alpineClient = await getAlpineIQClient(supabase, transaction.vendor_id);
 
         if (alpineClient) {
           // Get loyalty record for Alpine IQ contact ID
@@ -339,7 +318,7 @@ export async function POST(request: NextRequest) {
           }
         }
       } catch (error: any) {
-        console.error("⚠️  Alpine IQ sync failed (continuing anyway):", error);
+        logger.error("⚠️  Alpine IQ sync failed (continuing anyway):", error);
 
         // Queue for retry
         try {
@@ -360,7 +339,7 @@ export async function POST(request: NextRequest) {
         } catch (queueError) {
           // Ignore queue errors - don't fail the void
           if (process.env.NODE_ENV === "development") {
-            console.error("Failed to queue void for retry:", queueError);
+            logger.error("Failed to queue void for retry:", queueError);
           }
         }
       }
@@ -381,7 +360,7 @@ export async function POST(request: NextRequest) {
 
       if (sessionError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("⚠️  Failed to update session totals:", sessionError);
+          logger.error("⚠️  Failed to update session totals:", sessionError);
         }
       } else {
       }
@@ -399,7 +378,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("💥 Error voiding transaction:", error);
+      logger.error("💥 Error voiding transaction:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

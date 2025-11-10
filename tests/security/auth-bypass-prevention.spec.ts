@@ -192,7 +192,7 @@ test.describe('Security: Header-Based Auth Bypass Prevention', () => {
 
   test.describe('3. Only Return Data for Authenticated Vendor', () => {
 
-    test('should only return authenticated vendor\\'s products', async ({ request }) => {
+    test("should only return authenticated vendor's products", async ({ request }) => {
       const vendorAToken = await getAuthToken(
         VENDOR_A_ID,
         'vendor-a@test.com',

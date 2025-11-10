@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Approve wholesale application
  * Admin only
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = getServiceSupabase();
     const body = await request.json();
@@ -35,7 +33,7 @@ export async function POST(
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Update application error:", updateError);
+        logger.error("Update application error:", updateError);
       }
       return NextResponse.json(
         {
@@ -63,7 +61,7 @@ export async function POST(
 
     if (customerError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Update customer error:", customerError);
+        logger.error("Update customer error:", customerError);
       }
     }
 
@@ -73,7 +71,7 @@ export async function POST(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Approve wholesale application error:", error);
+      logger.error("Approve wholesale application error:", error);
     }
     return NextResponse.json(
       { error: "Failed to approve application", details: error.message },

@@ -15,11 +15,7 @@ interface BrandPreviewProps {
  *
  * Live preview of how branding will appear on storefront
  */
-export function BrandPreview({
-  branding,
-  vendorName,
-  vendorSlug,
-}: BrandPreviewProps) {
+export function BrandPreview({ branding, vendorName, vendorSlug }: BrandPreviewProps) {
   const {
     logoPreview,
     primaryColor = "#000000",
@@ -99,31 +95,16 @@ export function BrandPreview({
             style={{ borderColor: primaryColor }}
           >
             {logoPreview ? (
-              <img
-                src={logoPreview}
-                alt="Logo"
-                className="w-full h-full object-contain p-2"
-              />
+              <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2" />
             ) : (
-              <div
-                className={cn(
-                  ds.typography.size.micro,
-                  ds.colors.text.quaternary,
-                )}
-              >
-                Logo
-              </div>
+              <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}>Logo</div>
             )}
           </div>
 
           {/* Brand Info */}
           <div className="flex-1 min-w-0">
             <h2
-              className={cn(
-                ds.typography.size.lg,
-                ds.typography.weight.semibold,
-                "mb-1 truncate",
-              )}
+              className={cn(ds.typography.size.lg, ds.typography.weight.semibold, "mb-1 truncate")}
               style={{
                 color: primaryColor,
                 fontFamily: customFont || "inherit",
@@ -131,13 +112,7 @@ export function BrandPreview({
             >
               {vendorName}
             </h2>
-            <p
-              className={cn(
-                ds.typography.size.sm,
-                ds.colors.text.tertiary,
-                "truncate",
-              )}
-            >
+            <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary, "truncate")}>
               {tagline || "Your tagline here"}
             </p>
           </div>
@@ -277,12 +252,7 @@ export function BrandPreview({
                 "flex items-center justify-center",
               )}
             >
-              <div
-                className={cn(
-                  ds.typography.size.micro,
-                  ds.colors.text.quaternary,
-                )}
-              >
+              <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}>
                 Product Image
               </div>
             </div>
@@ -301,19 +271,11 @@ export function BrandPreview({
               </h4>
 
               <div className="flex items-center justify-between">
-                <span
-                  className={cn(
-                    ds.typography.size.xs,
-                    ds.colors.text.quaternary,
-                  )}
-                >
+                <span className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
                   By {vendorName}
                 </span>
                 <span
-                  className={cn(
-                    ds.typography.size.sm,
-                    ds.typography.weight.semibold,
-                  )}
+                  className={cn(ds.typography.size.sm, ds.typography.weight.semibold)}
                   style={{ color: primaryColor }}
                 >
                   $45.00
@@ -338,13 +300,7 @@ export function BrandPreview({
         >
           Branding Tips
         </h4>
-        <ul
-          className={cn(
-            ds.typography.size.micro,
-            ds.colors.text.quaternary,
-            "space-y-1.5",
-          )}
-        >
+        <ul className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "space-y-1.5")}>
           <li>• Use square logo (300x300px minimum)</li>
           <li>• Transparent PNG works best</li>
           <li>• Choose colors with good contrast</li>

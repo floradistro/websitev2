@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -12,10 +13,7 @@ export async function DELETE(request: NextRequest) {
     const { vendor_ids } = await request.json();
 
     if (!vendor_ids || !Array.isArray(vendor_ids) || vendor_ids.length === 0) {
-      return NextResponse.json(
-        { error: "vendor_ids array is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "vendor_ids array is required" }, { status: 400 });
     }
 
     // Call bulk delete function
@@ -25,7 +23,7 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Bulk delete vendors error:", error);
+        logger.error("Bulk delete vendors error:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -45,12 +43,9 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Bulk delete vendors error:", error);
+      logger.error("Bulk delete vendors error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }
 
@@ -60,17 +55,11 @@ export async function PATCH(request: NextRequest) {
     const { vendor_ids, status } = await request.json();
 
     if (!vendor_ids || !Array.isArray(vendor_ids) || vendor_ids.length === 0) {
-      return NextResponse.json(
-        { error: "vendor_ids array is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "vendor_ids array is required" }, { status: 400 });
     }
 
     if (!status) {
-      return NextResponse.json(
-        { error: "status is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "status is required" }, { status: 400 });
     }
 
     // Call bulk update function
@@ -81,7 +70,7 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Bulk update vendors error:", error);
+        logger.error("Bulk update vendors error:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -101,11 +90,8 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Bulk update vendors error:", error);
+      logger.error("Bulk update vendors error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

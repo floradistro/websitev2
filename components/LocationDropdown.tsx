@@ -27,8 +27,7 @@ export default function LocationDropdown({
 
   // Filter active locations (handle both "1" string and true boolean)
   const activeLocations = locations.filter(
-    (loc) =>
-      loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true,
+    (loc) => loc.is_active === "1" || loc.is_active === 1 || loc.is_active === true,
   );
 
   const selectedLocationData = activeLocations.find(
@@ -37,10 +36,7 @@ export default function LocationDropdown({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -61,9 +57,7 @@ export default function LocationDropdown({
           className="text-white/60 group-hover:text-white transition-colors sm:w-3.5 sm:h-3.5"
         />
         <span className="whitespace-nowrap max-w-[90px] sm:max-w-none truncate">
-          {selectedLocationData
-            ? `${selectedLocationData.name}`
-            : "All Locations"}
+          {selectedLocationData ? `${selectedLocationData.name}` : "All Locations"}
         </span>
         <ChevronDown
           size={12}
@@ -94,9 +88,7 @@ export default function LocationDropdown({
                   All Locations
                 </span>
               </div>
-              {!selectedLocation && (
-                <Check size={14} strokeWidth={2} className="text-white" />
-              )}
+              {!selectedLocation && <Check size={14} strokeWidth={2} className="text-white" />}
             </button>
 
             <div className="h-px bg-white/10 my-1"></div>

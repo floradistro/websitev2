@@ -2,11 +2,7 @@
 
 import { ReactNode } from "react";
 
-export default function AdminPageWrapper({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function AdminPageWrapper({ children }: { children: ReactNode }) {
   return (
     <div className="w-full px-4 lg:px-0">
       <style jsx global>{`

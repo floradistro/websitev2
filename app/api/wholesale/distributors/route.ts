@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Get distributor vendors
  * Only accessible to vendors and wholesale-approved customers
@@ -36,14 +37,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Pagination
-    query = query
-      .range(offset, offset + limit - 1)
-      .order("store_name", { ascending: true });
+    query = query.range(offset, offset + limit - 1).order("store_name", { ascending: true });
 
     const { data: distributors, error, count } = await query;
 
     if (error) {
-      console.error("Get distributors error:", error);
+      logger.error("Get distributors error:", error);
       return NextResponse.json(
         { error: "Failed to get distributors", details: error.message },
         { status: 500 },
@@ -58,7 +57,7 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil((count || 0) / limit),
     });
   } catch (error: any) {
-    console.error("Get distributors error:", error);
+    logger.error("Get distributors error:", error);
     return NextResponse.json(
       { error: "Failed to get distributors", details: error.message },
       { status: 500 },

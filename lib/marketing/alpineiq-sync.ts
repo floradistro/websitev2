@@ -15,6 +15,7 @@ import { createClient } from "@supabase/supabase-js";
 import { AlpineIQClient, createAlpineIQClient } from "./alpineiq-client";
 import crypto from "crypto";
 
+import { logger } from "@/lib/logger";
 export interface SyncServiceConfig {
   vendorId: string;
   supabaseUrl: string;
@@ -103,10 +104,7 @@ export class AlpineIQSyncService {
           filter: `vendor_id=eq.${this.vendorId}`,
         },
         async (payload) => {
-          if (
-            payload.eventType === "INSERT" ||
-            payload.eventType === "UPDATE"
-          ) {
+          if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
             await this.pushCustomerToAlpineIQ(payload.new as any);
           } else if (payload.eventType === "DELETE") {
             // AlpineIQ doesn't support DELETE, just log it
@@ -185,7 +183,7 @@ export class AlpineIQSyncService {
       });
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to sync customer:", error);
+        logger.error("Failed to sync customer:", error);
       }
       // Log failure
       await this.logSync({
@@ -299,10 +297,7 @@ export class AlpineIQSyncService {
 
       // Format transaction date (Alpine IQ format: 'YYYY-MM-DD HH:mm:ss +0000')
       const transactionDate =
-        new Date(order.created_at)
-          .toISOString()
-          .replace("T", " ")
-          .split(".")[0] + " +0000";
+        new Date(order.created_at).toISOString().replace("T", " ").split(".")[0] + " +0000";
 
       // Create sale in AlpineIQ with correct format
       await this.alpineiq.createSale({
@@ -340,7 +335,7 @@ export class AlpineIQSyncService {
       });
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to sync order:", error);
+        logger.error("Failed to sync order:", error);
       }
       // Log failure
       await this.logSync({
@@ -447,10 +442,7 @@ export class AlpineIQSyncService {
   /**
    * Queue failed sync for retry
    */
-  private async queueRetry(
-    entityType: string,
-    entityId: string,
-  ): Promise<void> {
+  private async queueRetry(entityType: string, entityId: string): Promise<void> {
     // Update retry count in sync log
     const { data: log } = await this.supabase
       .from("alpineiq_sync_log")

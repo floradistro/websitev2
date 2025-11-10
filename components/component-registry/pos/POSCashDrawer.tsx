@@ -184,10 +184,7 @@ export function POSCashDrawer({
                       <div
                         className={`w-10 h-10 bg-${movement.color}-500/10 rounded-xl flex items-center justify-center flex-shrink-0`}
                       >
-                        <Icon
-                          size={20}
-                          className={`text-${movement.color}-400`}
-                        />
+                        <Icon size={20} className={`text-${movement.color}-400`} />
                       </div>
                       <div className="flex-1">
                         <div
@@ -196,9 +193,7 @@ export function POSCashDrawer({
                         >
                           {movement.label}
                         </div>
-                        <div className="text-white/60 text-xs mt-0.5">
-                          {movement.description}
-                        </div>
+                        <div className="text-white/60 text-xs mt-0.5">{movement.description}</div>
                       </div>
                     </div>
                   </button>
@@ -242,9 +237,7 @@ export function POSCashDrawer({
                     >
                       {selectedMovement?.label}
                     </div>
-                    <div className="text-white/60 text-xs">
-                      {selectedMovement?.description}
-                    </div>
+                    <div className="text-white/60 text-xs">{selectedMovement?.description}</div>
                   </div>
                 </div>
               </div>
@@ -283,9 +276,7 @@ export function POSCashDrawer({
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
-                  placeholder={
-                    selectedMovement?.reasonPlaceholder || "Enter reason"
-                  }
+                  placeholder={selectedMovement?.reasonPlaceholder || "Enter reason"}
                   autoFocus={!selectedMovement?.needsAmount}
                 />
               </div>

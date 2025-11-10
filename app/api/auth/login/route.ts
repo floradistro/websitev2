@@ -2,11 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { LoginSchema, validateData } from "@/lib/validation/schemas";
 import { createAuthCookie } from "@/lib/auth/middleware";
-import {
-  rateLimiter,
-  RateLimitConfigs,
-  getIdentifier,
-} from "@/lib/rate-limiter";
+import { logger } from "@/lib/logger";
+import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
 
 // Get CORS headers with proper origin (not wildcard when using credentials)
 function getCorsHeaders(request: NextRequest) {
@@ -35,10 +32,7 @@ export async function POST(request: NextRequest) {
     const allowed = rateLimiter.check(identifier, RateLimitConfigs.auth);
 
     if (!allowed) {
-      const resetTime = rateLimiter.getResetTime(
-        identifier,
-        RateLimitConfigs.auth,
-      );
+      const resetTime = rateLimiter.getResetTime(identifier, RateLimitConfigs.auth);
       return NextResponse.json(
         {
           success: false,
@@ -71,11 +65,10 @@ export async function POST(request: NextRequest) {
     const supabase = getServiceSupabase();
 
     // 1. Authenticate with Supabase
-    const { data: authData, error: authError } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (authError || !authData.user) {
       return NextResponse.json(
@@ -134,7 +127,7 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Login error:", error);
+      logger.error("Login error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Login failed. Please try again." },

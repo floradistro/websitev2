@@ -50,9 +50,7 @@ declare class CustomLocationsView implements View {
   unmount(): void;
   render(state: StateToRender): void;
   renderDomView(state: StateToRenderDomView): void;
-  mapViewAnchorPositionsForFramePoint: (
-    anchorPositions: AnchorPositions,
-  ) => AnchorPositions;
+  mapViewAnchorPositionsForFramePoint: (anchorPositions: AnchorPositions) => AnchorPositions;
   private removeChildren;
   private adjustCoordinatesWithOffset;
 }

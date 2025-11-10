@@ -1,6 +1,7 @@
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 // GET /api/pos/products/lookup?sku=ABC-123&location_id=xxx
 export async function GET(request: NextRequest) {
   try {
@@ -78,12 +79,10 @@ export async function GET(request: NextRequest) {
 
     if (inventoryError) {
       if (process.env.NODE_ENV === "development") {
-        console.warn(
-          "Inventory not found for product:",
-          product.id,
-          "at location:",
+        logger.warn("Inventory not found for product at location", {
+          productId: product.id,
           locationId,
-        );
+        });
       }
     }
 
@@ -138,7 +137,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error looking up product by SKU:", error);
+      logger.error("Error looking up product by SKU:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Failed to lookup product" },
@@ -244,7 +243,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error batch looking up products:", error);
+      logger.error("Error batch looking up products:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Failed to lookup products" },

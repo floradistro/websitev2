@@ -8,6 +8,7 @@
 import { ReactNode } from "react";
 import { AnalyticsErrorBoundary } from "./ErrorBoundary";
 
+import { logger } from "@/lib/logger";
 interface AnalyticsPageWrapperProps {
   children: ReactNode;
 }
@@ -19,7 +20,7 @@ export function AnalyticsPageWrapper({ children }: AnalyticsPageWrapperProps) {
         // Log to error tracking service
         if (process.env.NODE_ENV === "production") {
           // TODO: Send to Sentry or other error tracking
-          console.error("[Analytics Error]", {
+          logger.error("[Analytics Error]", {
             error: error.message,
             stack: error.stack,
             componentStack: errorInfo.componentStack,

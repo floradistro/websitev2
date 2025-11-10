@@ -45,9 +45,7 @@ export function DashboardStat({
           <span
             className={tw(
               "text-xs font-medium",
-              trend.isPositive
-                ? themeObj.colors.status.success
-                : themeObj.colors.status.error,
+              trend.isPositive ? themeObj.colors.status.success : themeObj.colors.status.error,
             )}
           >
             {trend.isPositive ? "+" : ""}
@@ -55,9 +53,7 @@ export function DashboardStat({
           </span>
         )}
       </div>
-      {sublabel && (
-        <div className={themeObj.typography.sublabel}>{sublabel}</div>
-      )}
+      {sublabel && <div className={themeObj.typography.sublabel}>{sublabel}</div>}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/schemas/presets
  * Get all style presets
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, presets });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching style presets:", error);
+      logger.error("Error fetching style presets:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -50,10 +51,7 @@ export async function POST(request: NextRequest) {
     const { preset_id, section_id, apply_globally } = await request.json();
 
     if (!preset_id) {
-      return NextResponse.json(
-        { error: "preset_id required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "preset_id required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -107,7 +105,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error applying style preset:", error);
+      logger.error("Error applying style preset:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

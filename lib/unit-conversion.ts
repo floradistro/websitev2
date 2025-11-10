@@ -96,11 +96,7 @@ export function convertFromBaseUnit(baseQuantity: number, unit: Unit): number {
 /**
  * Format grams to display with appropriate unit
  */
-export function formatWeight(
-  grams: number,
-  unit: WeightUnit,
-  decimals: number = 1,
-): string {
+export function formatWeight(grams: number, unit: WeightUnit, decimals: number = 1): string {
   const converted = fromGrams(grams, unit);
 
   switch (unit) {
@@ -122,11 +118,7 @@ export function formatWeight(
 /**
  * Format milliliters to display with appropriate unit
  */
-export function formatVolume(
-  milliliters: number,
-  unit: VolumeUnit,
-  decimals: number = 1,
-): string {
+export function formatVolume(milliliters: number, unit: VolumeUnit, decimals: number = 1): string {
   const converted = fromMilliliters(milliliters, unit);
 
   switch (unit) {
@@ -146,11 +138,7 @@ export function formatVolume(
 /**
  * Universal formatter - auto-detects unit type
  */
-export function formatQuantity(
-  baseQuantity: number,
-  unit: Unit,
-  decimals: number = 1,
-): string {
+export function formatQuantity(baseQuantity: number, unit: Unit, decimals: number = 1): string {
   if (unit in GRAM_CONVERSIONS) {
     return formatWeight(baseQuantity, unit as WeightUnit, decimals);
   }
@@ -184,10 +172,8 @@ export function getCannabisFriendlyLabel(grams: number): string {
   if (grams === 113.4) return "¼ lb (113g)";
   if (grams === 226.8) return "½ lb (227g)";
   if (grams === 453.6) return "1 lb (454g)";
-  if (grams >= 2268 && grams < 2300)
-    return `${(grams / 453.592).toFixed(0)} lbs`;
-  if (grams >= 4536 && grams < 4600)
-    return `${(grams / 453.592).toFixed(0)} lbs`;
+  if (grams >= 2268 && grams < 2300) return `${(grams / 453.592).toFixed(0)} lbs`;
+  if (grams >= 4536 && grams < 4600) return `${(grams / 453.592).toFixed(0)} lbs`;
 
   // Default: show in most appropriate unit
   if (grams < 28) {
@@ -210,22 +196,18 @@ export function parseTierQuantityToBase(qty: number, unit?: string): number {
 
   // Weight units
   if (unitLower === "g" || unitLower === "gram") return qty;
-  if (unitLower === "mg" || unitLower === "milligram")
-    return toGrams(qty, "milligram");
+  if (unitLower === "mg" || unitLower === "milligram") return toGrams(qty, "milligram");
   if (unitLower === "oz" || unitLower === "ounce") return toGrams(qty, "ounce");
   if (unitLower === "lb" || unitLower === "lbs" || unitLower === "pound")
     return toGrams(qty, "pound");
-  if (unitLower === "kg" || unitLower === "kilogram")
-    return toGrams(qty, "kilogram");
+  if (unitLower === "kg" || unitLower === "kilogram") return toGrams(qty, "kilogram");
 
   // Volume units
   if (unitLower === "ml" || unitLower === "milliliter") return qty;
-  if (unitLower === "l" || unitLower === "liter")
-    return toMilliliters(qty, "liter");
+  if (unitLower === "l" || unitLower === "liter") return toMilliliters(qty, "liter");
   if (unitLower === "fl oz" || unitLower === "fluid_ounce")
     return toMilliliters(qty, "fluid_ounce");
-  if (unitLower === "gal" || unitLower === "gallon")
-    return toMilliliters(qty, "gallon");
+  if (unitLower === "gal" || unitLower === "gallon") return toMilliliters(qty, "gallon");
 
   return qty; // Assume base unit if unknown
 }
@@ -240,20 +222,14 @@ export function parseTierQuantityToGrams(qty: number, unit?: string): number {
 /**
  * Check if requested quantity is available in stock
  */
-export function isStockAvailable(
-  stockInGrams: number,
-  requestedGrams: number,
-): boolean {
+export function isStockAvailable(stockInGrams: number, requestedGrams: number): boolean {
   return stockInGrams >= requestedGrams;
 }
 
 /**
  * Get remaining stock message
  */
-export function getStockMessage(
-  stockInGrams: number,
-  context: "retail" | "wholesale",
-): string {
+export function getStockMessage(stockInGrams: number, context: "retail" | "wholesale"): string {
   if (stockInGrams === 0) {
     return "Out of stock";
   }
@@ -275,10 +251,7 @@ export function getStockMessage(
 /**
  * Calculate price per gram
  */
-export function getPricePerGram(
-  totalPrice: number,
-  quantityInGrams: number,
-): number {
+export function getPricePerGram(totalPrice: number, quantityInGrams: number): number {
   if (quantityInGrams === 0) return 0;
   return totalPrice / quantityInGrams;
 }

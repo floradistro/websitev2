@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { inventoryCache, generateCacheKey } from "@/lib/cache-manager";
 
+import { logger } from "@/lib/logger";
 /**
  * Get inventory for a product or vendor
  */
@@ -15,10 +16,7 @@ export async function GET(request: NextRequest) {
     const locationId = searchParams.get("location_id");
 
     if (!productId && !vendorId) {
-      return NextResponse.json(
-        { error: "product_id or vendor_id required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "product_id or vendor_id required" }, { status: 400 });
     }
 
     // Generate cache key
@@ -65,7 +63,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching inventory:", error);
+        logger.error("Error fetching inventory:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -88,7 +86,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Inventory API error:", error);
+      logger.error("Inventory API error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

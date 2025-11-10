@@ -10,10 +10,7 @@ var d = ((e) => ((e.Nonzero = "nonzero"), (e.Evenodd = "evenodd"), e))(d || {}),
       ((this.canvas = e), (this.doDrawLoop = this.doDraw.bind(this)));
     }
     get context() {
-      if (
-        !this._context &&
-        ((this._context = this.canvas.getContext("2d")), !this._context)
-      )
+      if (!this._context && ((this._context = this.canvas.getContext("2d")), !this._context))
         throw new TypeError("CanvasRenderingContext cannot be retrieved.");
       return this._context;
     }
@@ -23,32 +20,26 @@ var d = ((e) => ((e.Nonzero = "nonzero"), (e.Evenodd = "evenodd"), e))(d || {}),
         return;
       }
       this.isNextDrawPending ||
-        ((this.isNextDrawPending = true),
-        requestAnimationFrame(this.doDrawLoop));
+        ((this.isNextDrawPending = true), requestAnimationFrame(this.doDrawLoop));
     }
     updateCanvasSizeAttributes(e, s, t = window.devicePixelRatio) {
       let i = Math.round(e * t),
         r = Math.round(s * t);
       (i !== this.canvas.width || r !== this.canvas.height) &&
-        ((this.canvas.width = i),
-        (this.canvas.height = r),
-        this.context.scale(t, t));
+        ((this.canvas.width = i), (this.canvas.height = r), this.context.scale(t, t));
     }
     startObservingCanvasResize() {
       if (!this.resizeObserver) {
-        if (!n.ResizeObserver)
-          throw new Error("PrivateCanvasDrawer.ResizeObserver is not set");
+        if (!n.ResizeObserver) throw new Error("PrivateCanvasDrawer.ResizeObserver is not set");
         ((this.resizeObserver = new n.ResizeObserver((e) => {
           var r;
           let [s] = e,
-            { width: t, height: i } =
-              (r = s.contentRect) != null ? r : this.canvas;
+            { width: t, height: i } = (r = s.contentRect) != null ? r : this.canvas;
           t === 0 ||
             i === 0 ||
             (this.updateCanvasSizeAttributes(t, i),
             this.latestCommands.length !== 0 &&
-              (this.draw(this.latestCommands),
-              (this.latestCommands = new Uint8Array([]))));
+              (this.draw(this.latestCommands), (this.latestCommands = new Uint8Array([]))));
         })),
           this.resizeObserver.observe(this.canvas));
       }
@@ -72,7 +63,6 @@ var d = ((e) => ((e.Nonzero = "nonzero"), (e.Evenodd = "evenodd"), e))(d || {}),
       return this.canvas.width > 0 && this.canvas.height > 0;
     }
   };
-n.ResizeObserver =
-  "ResizeObserver" in globalThis ? globalThis.ResizeObserver : void 0;
+n.ResizeObserver = "ResizeObserver" in globalThis ? globalThis.ResizeObserver : void 0;
 var h = n;
 export { d as a, h as b };

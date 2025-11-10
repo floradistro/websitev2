@@ -21,16 +21,8 @@ export default function AdminPageHeader({
         <div className="flex items-center gap-4 md:gap-6">
           {Icon && (
             <>
-              <Icon
-                size={56}
-                className="md:hidden text-white/90"
-                strokeWidth={1.5}
-              />
-              <Icon
-                size={72}
-                className="hidden md:block text-white/90"
-                strokeWidth={1.5}
-              />
+              <Icon size={56} className="md:hidden text-white/90" strokeWidth={1.5} />
+              <Icon size={72} className="hidden md:block text-white/90" strokeWidth={1.5} />
             </>
           )}
           <div>

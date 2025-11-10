@@ -1,6 +1,7 @@
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 // GET /api/vendor/suppliers - List all suppliers for vendor
 export async function GET(request: NextRequest) {
   try {
@@ -12,10 +13,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id is required" }, { status: 400 });
     }
 
     let query = supabase
@@ -47,22 +45,16 @@ export async function GET(request: NextRequest) {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error fetching suppliers:", error);
+          logger.error("Error fetching suppliers:", error);
         }
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 500 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
       }
 
       const filtered = allSuppliers?.filter((supplier) => {
         const searchLower = search.toLowerCase();
         const externalName = supplier.external_name?.toLowerCase() || "";
-        const vendorName =
-          supplier.supplier_vendor?.business_name?.toLowerCase() || "";
-        return (
-          externalName.includes(searchLower) || vendorName.includes(searchLower)
-        );
+        const vendorName = supplier.supplier_vendor?.business_name?.toLowerCase() || "";
+        return externalName.includes(searchLower) || vendorName.includes(searchLower);
       });
 
       return NextResponse.json({
@@ -76,12 +68,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching suppliers:", error);
+        logger.error("Error fetching suppliers:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -91,12 +80,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in GET /api/vendor/suppliers:", error);
+      logger.error("Error in GET /api/vendor/suppliers:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -108,17 +94,11 @@ export async function POST(request: NextRequest) {
     const { action, vendor_id, ...supplierData } = body;
 
     if (!vendor_id) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id is required" }, { status: 400 });
     }
 
     if (!action) {
-      return NextResponse.json(
-        { success: false, error: "action is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "action is required" }, { status: 400 });
     }
 
     switch (action) {
@@ -152,27 +132,21 @@ export async function POST(request: NextRequest) {
             country: supplierData.country || null,
             payment_terms: supplierData.payment_terms || null,
             notes: supplierData.notes || null,
-            is_active:
-              supplierData.is_active !== undefined
-                ? supplierData.is_active
-                : true,
+            is_active: supplierData.is_active !== undefined ? supplierData.is_active : true,
           })
           .select()
           .maybeSingle();
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ Error creating supplier:", error);
+            logger.error("❌ Error creating supplier:", error);
           }
-          return NextResponse.json(
-            { success: false, error: error.message },
-            { status: 500 },
-          );
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         if (!newSupplier) {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ Supplier creation returned null");
+            logger.error("❌ Supplier creation returned null");
           }
           return NextResponse.json(
             { success: false, error: "Failed to create supplier" },
@@ -235,25 +209,19 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ Error updating supplier:", error);
+            logger.error("❌ Error updating supplier:", error);
           }
-          return NextResponse.json(
-            { success: false, error: error.message },
-            { status: 500 },
-          );
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         if (!updatedSupplier) {
           if (process.env.NODE_ENV === "development") {
-            console.error(
-              "❌ Supplier update affected 0 rows - supplier may have been deleted",
-            );
+            logger.error("❌ Supplier update affected 0 rows - supplier may have been deleted");
           }
           return NextResponse.json(
             {
               success: false,
-              error:
-                "Supplier not found or was deleted. Please refresh the page.",
+              error: "Supplier not found or was deleted. Please refresh the page.",
             },
             { status: 404 },
           );
@@ -290,25 +258,19 @@ export async function POST(request: NextRequest) {
 
         if (error) {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ Error deleting supplier:", error);
+            logger.error("❌ Error deleting supplier:", error);
           }
-          return NextResponse.json(
-            { success: false, error: error.message },
-            { status: 500 },
-          );
+          return NextResponse.json({ success: false, error: error.message }, { status: 500 });
         }
 
         if (!deletedSupplier) {
           if (process.env.NODE_ENV === "development") {
-            console.error(
-              "❌ Supplier delete affected 0 rows - supplier may have been deleted",
-            );
+            logger.error("❌ Supplier delete affected 0 rows - supplier may have been deleted");
           }
           return NextResponse.json(
             {
               success: false,
-              error:
-                "Supplier not found or was already deleted. Please refresh the page.",
+              error: "Supplier not found or was already deleted. Please refresh the page.",
             },
             { status: 404 },
           );
@@ -329,11 +291,8 @@ export async function POST(request: NextRequest) {
     }
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in POST /api/vendor/suppliers:", error);
+      logger.error("Error in POST /api/vendor/suppliers:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

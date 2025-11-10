@@ -5,11 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import type {
-  MarketingAnalyticsData,
-  TimeRange,
-  ChannelType,
-} from "@/types/analytics";
+import type { MarketingAnalyticsData, TimeRange, ChannelType } from "@/types/analytics";
 import {
   getStartDate,
   getComparisonPeriod,
@@ -22,6 +18,7 @@ import {
 } from "@/lib/analytics-utils";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -70,16 +67,8 @@ export async function GET(request: NextRequest) {
     // Get current period data
     const currentStart = getStartDate(range as TimeRange);
     const [emailCampaigns, smsCampaigns] = await Promise.all([
-      getEmailCampaigns(
-        vendorId!,
-        currentStart.toISOString(),
-        channel as ChannelType,
-      ),
-      getSMSCampaigns(
-        vendorId!,
-        currentStart.toISOString(),
-        channel as ChannelType,
-      ),
+      getEmailCampaigns(vendorId!, currentStart.toISOString(), channel as ChannelType),
+      getSMSCampaigns(vendorId!, currentStart.toISOString(), channel as ChannelType),
     ]);
 
     // Get comparison period data for trends
@@ -117,7 +106,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(analyticsData);
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("[Marketing Analytics API] Error:", error);
+      logger.error("[Marketing Analytics API] Error:", error);
     }
     return NextResponse.json(
       {
@@ -157,7 +146,7 @@ async function getEmailCampaigns(
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("[getEmailCampaigns] Error:", error);
+      logger.error("[getEmailCampaigns] Error:", error);
     }
     throw new Error(`Failed to fetch email campaigns: ${error.message}`);
   }
@@ -196,7 +185,7 @@ async function getSMSCampaigns(
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("[getSMSCampaigns] Error:", error);
+      logger.error("[getSMSCampaigns] Error:", error);
     }
     throw new Error(`Failed to fetch SMS campaigns: ${error.message}`);
   }
@@ -216,39 +205,18 @@ async function getSMSCampaigns(
 // Calculation Functions
 // ============================================================================
 
-function calculateOverview(
-  currentCampaigns: CampaignData[],
-  previousCampaigns: CampaignData[],
-) {
+function calculateOverview(currentCampaigns: CampaignData[], previousCampaigns: CampaignData[]) {
   // Current period aggregates
   const totalSent = currentCampaigns.reduce((sum, c) => sum + c.total_sent, 0);
-  const totalOpened = currentCampaigns.reduce(
-    (sum, c) => sum + c.total_opened,
-    0,
-  );
-  const totalClicked = currentCampaigns.reduce(
-    (sum, c) => sum + c.total_clicked,
-    0,
-  );
-  const totalRevenue = currentCampaigns.reduce(
-    (sum, c) => sum + c.total_revenue,
-    0,
-  );
+  const totalOpened = currentCampaigns.reduce((sum, c) => sum + c.total_opened, 0);
+  const totalClicked = currentCampaigns.reduce((sum, c) => sum + c.total_clicked, 0);
+  const totalRevenue = currentCampaigns.reduce((sum, c) => sum + c.total_revenue, 0);
 
   // Previous period aggregates
   const prevSent = previousCampaigns.reduce((sum, c) => sum + c.total_sent, 0);
-  const prevOpened = previousCampaigns.reduce(
-    (sum, c) => sum + c.total_opened,
-    0,
-  );
-  const prevClicked = previousCampaigns.reduce(
-    (sum, c) => sum + c.total_clicked,
-    0,
-  );
-  const prevRevenue = previousCampaigns.reduce(
-    (sum, c) => sum + c.total_revenue,
-    0,
-  );
+  const prevOpened = previousCampaigns.reduce((sum, c) => sum + c.total_opened, 0);
+  const prevClicked = previousCampaigns.reduce((sum, c) => sum + c.total_clicked, 0);
+  const prevRevenue = previousCampaigns.reduce((sum, c) => sum + c.total_revenue, 0);
 
   // Calculate rates
   const avgOpenRate = calculatePercentage(totalOpened, totalSent) / 100;
@@ -264,13 +232,9 @@ function calculateOverview(
     totalRevenue,
     avgOpenRate,
     avgClickRate,
-    revenuePerCampaign:
-      currentCampaigns.length > 0 ? totalRevenue / currentCampaigns.length : 0,
+    revenuePerCampaign: currentCampaigns.length > 0 ? totalRevenue / currentCampaigns.length : 0,
     trends: {
-      campaigns: calculateTrend(
-        currentCampaigns.length,
-        previousCampaigns.length,
-      ),
+      campaigns: calculateTrend(currentCampaigns.length, previousCampaigns.length),
       openRate: calculateTrend(avgOpenRate, prevOpenRate),
       clickRate: calculateTrend(avgClickRate, prevClickRate),
       revenue: calculateTrend(totalRevenue, prevRevenue),
@@ -326,9 +290,7 @@ function generateTimeSeries(campaigns: CampaignData[], startDate: Date) {
   >();
 
   campaigns.forEach((campaign) => {
-    const date = new Date(campaign.sent_at || campaign.created_at)
-      .toISOString()
-      .split("T")[0];
+    const date = new Date(campaign.sent_at || campaign.created_at).toISOString().split("T")[0];
 
     if (!dateMap.has(date)) {
       dateMap.set(date, {
@@ -347,7 +309,5 @@ function generateTimeSeries(campaigns: CampaignData[], startDate: Date) {
     dayData.revenue += campaign.total_revenue;
   });
 
-  return Array.from(dateMap.values()).sort((a, b) =>
-    a.date.localeCompare(b.date),
-  );
+  return Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 }

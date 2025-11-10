@@ -18,15 +18,8 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
 
   metaArray.forEach((meta: any) => {
     const key = (meta.key || "").toLowerCase();
-    if (
-      key.includes("coa") ||
-      key.includes("certificate") ||
-      key.includes("lab_report")
-    ) {
-      if (
-        meta.value &&
-        (meta.value.startsWith("http") || meta.value.startsWith("www"))
-      ) {
+    if (key.includes("coa") || key.includes("certificate") || key.includes("lab_report")) {
+      if (meta.value && (meta.value.startsWith("http") || meta.value.startsWith("www"))) {
         coaUrl = meta.value;
       }
     }
@@ -51,9 +44,7 @@ export default function LabResults({ metaData, attributes }: LabResultsProps) {
             Lab Tested
           </span>
         </div>
-        <span className="text-xs text-white/60 uppercase tracking-wider">
-          View →
-        </span>
+        <span className="text-xs text-white/60 uppercase tracking-wider">View →</span>
       </div>
     </a>
   );

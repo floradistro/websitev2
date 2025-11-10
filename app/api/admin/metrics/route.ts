@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -14,9 +15,7 @@ function verifyAdminToken(token: string): {
 } {
   try {
     const decoded = JSON.parse(Buffer.from(token, "base64").toString());
-    const isValid =
-      (decoded.role === "admin" || decoded.role === "readonly") &&
-      decoded.username;
+    const isValid = (decoded.role === "admin" || decoded.role === "readonly") && decoded.username;
     return {
       valid: isValid,
       role: decoded.role,
@@ -34,18 +33,12 @@ export async function GET(request: NextRequest) {
     const token = authHeader?.replace("Bearer ", "");
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Unauthorized - Admin access required" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 401 });
     }
 
     const authResult = verifyAdminToken(token);
     if (!authResult.valid) {
-      return NextResponse.json(
-        { error: "Unauthorized - Invalid token" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized - Invalid token" }, { status: 401 });
     }
 
     // Both admin and readonly can view metrics
@@ -82,8 +75,7 @@ export async function GET(request: NextRequest) {
     // Calculate customer growth
     const customerGrowth =
       previousCustomers && previousCustomers > 0
-        ? (((totalCustomers || 0) - previousCustomers) / previousCustomers) *
-          100
+        ? (((totalCustomers || 0) - previousCustomers) / previousCustomers) * 100
         : 0;
 
     // Get active trials (new customers in selected range)
@@ -209,9 +201,7 @@ export async function GET(request: NextRequest) {
 
       // Engagement (calculated from real data)
       avgSessionDuration: activeToday ? 1800 : 0, // TODO: Track actual session duration
-      featuresUsedPerUser: totalCustomers
-        ? parseFloat((totalCustomers * 1.0).toFixed(1))
-        : 0,
+      featuresUsedPerUser: totalCustomers ? parseFloat((totalCustomers * 1.0).toFixed(1)) : 0,
 
       // System (TODO: Implement actual monitoring)
       uptime: 99.9,
@@ -227,11 +217,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ metrics });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Admin metrics error:", error);
+      logger.error("Admin metrics error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Failed to load metrics" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Failed to load metrics" }, { status: 500 });
   }
 }

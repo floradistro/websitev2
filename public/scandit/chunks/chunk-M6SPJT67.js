@@ -69,18 +69,17 @@ var D = class D {
       e.appName != null &&
       (s += `-${e.appName}`),
       (this.parentDomain = e.parentDomain),
-      (this.contextDeserializer =
-        new this.Module.DataCaptureContextDeserializer(
-          this.writableDataPath,
-          e.deviceId,
-          e.context.deviceModelName,
-          s,
-          this.parentDomain,
-          t,
-          e.delayedRegistration,
-          e.highEndBlurryRecognition,
-          this.resourcePath,
-        )));
+      (this.contextDeserializer = new this.Module.DataCaptureContextDeserializer(
+        this.writableDataPath,
+        e.deviceId,
+        e.context.deviceModelName,
+        s,
+        this.parentDomain,
+        t,
+        e.delayedRegistration,
+        e.highEndBlurryRecognition,
+        this.resourcePath,
+      )));
     let i = this.contextDeserializer.contextFromJson(JSON.stringify(e.context));
     if (i == null) {
       let r = this.contextDeserializer.getLastError();
@@ -88,50 +87,42 @@ var D = class D {
     }
     let a = i.getView();
     ((this.context = i.getContext()), i.delete());
-    let d = this.Module.DataCaptureContextListener.extend(
-        "DataCaptureContextListener",
-        {
-          didChangeStatus: (r, o) => {
-            (this.contextDidChangeStatus(JSON.parse(o.toJson())), r.delete());
-          },
-          didStartObservingContext: (r) => {
-            (this.didStartObservingContext(), r.delete());
-          },
-          didStopObservingContext: (r) => {
-            r.delete();
-          },
+    let d = this.Module.DataCaptureContextListener.extend("DataCaptureContextListener", {
+        didChangeStatus: (r, o) => {
+          (this.contextDidChangeStatus(JSON.parse(o.toJson())), r.delete());
         },
-      ),
-      p = this.Module.DataCaptureContextFrameListener.extend(
-        "DataCaptureContextFrameListener",
-        {
-          onObservationStarted: (r) => {
-            r.delete();
-          },
-          onObservationStopped: (r) => {
-            r.delete();
-          },
-          onFrameProcessingStarted: (r, o) => {
-            (this.workerFunctions.postMessage({
-              type: "onFrameProcessingStarted",
-            }),
-              o.delete(),
-              r.delete());
-          },
-          onFrameProcessingFinished: (r, o) => {
-            (this.workerFunctions.postMessage({
-              type: "onFrameProcessingFinished",
-            }),
-              o.delete(),
-              r.delete());
-          },
-          onFrameSkipped: (r, o) => {
-            (this.workerFunctions.postMessage({ type: "onFrameSkipped" }),
-              o.delete(),
-              r.delete());
-          },
+        didStartObservingContext: (r) => {
+          (this.didStartObservingContext(), r.delete());
         },
-      ),
+        didStopObservingContext: (r) => {
+          r.delete();
+        },
+      }),
+      p = this.Module.DataCaptureContextFrameListener.extend("DataCaptureContextFrameListener", {
+        onObservationStarted: (r) => {
+          r.delete();
+        },
+        onObservationStopped: (r) => {
+          r.delete();
+        },
+        onFrameProcessingStarted: (r, o) => {
+          (this.workerFunctions.postMessage({
+            type: "onFrameProcessingStarted",
+          }),
+            o.delete(),
+            r.delete());
+        },
+        onFrameProcessingFinished: (r, o) => {
+          (this.workerFunctions.postMessage({
+            type: "onFrameProcessingFinished",
+          }),
+            o.delete(),
+            r.delete());
+        },
+        onFrameSkipped: (r, o) => {
+          (this.workerFunctions.postMessage({ type: "onFrameSkipped" }), o.delete(), r.delete());
+        },
+      }),
       g = this.Module.GestureRecognizer.extend("GestureRecognizer", {
         setGestureListener: (r, o) => {
           var w;
@@ -140,16 +131,14 @@ var D = class D {
             r.delete());
         },
       });
-    ((m = this.gestureRecognizer) == null || m.delete(),
-      (this.gestureRecognizer = new g()));
+    ((m = this.gestureRecognizer) == null || m.delete(), (this.gestureRecognizer = new g()));
     let u = new d();
     (this.context.addListener(u), u.delete());
     let c = new p();
     (this.context.addFrameListener(c),
       c.delete(),
       this.setView(a),
-      (C = this.view) == null ||
-        C.setGestureRecognizer(this.gestureRecognizer));
+      (C = this.view) == null || C.setGestureRecognizer(this.gestureRecognizer));
     let M = this.Module.PlatformHintPresenter.extend("PlatformHintPresenter", {
       setHintPresenter: (r) => {
         r.delete();
@@ -194,9 +183,7 @@ var D = class D {
       (this.webPlatformHintPresenter = null),
       (this.webPlatformHintPresenter = new M()),
       this.view &&
-        ((this.hintPresenterV2 = new this.Module.HintPresenterV2(
-          this.webPlatformHintPresenter,
-        )),
+        ((this.hintPresenterV2 = new this.Module.HintPresenterV2(this.webPlatformHintPresenter)),
         (h = this.view) == null || h.setHintPresenterV2(this.hintPresenterV2)));
   }
   onTap(e) {
@@ -211,8 +198,7 @@ var D = class D {
     this.performanceMetricsReporterTimer == null &&
       (this.performanceMetricsReporterTimer = setInterval(() => {
         this.reportPerformanceMetrics();
-        for (let e of Object.keys(this.performanceMetrics))
-          this.performanceMetrics[e] = 0;
+        for (let e of Object.keys(this.performanceMetrics)) this.performanceMetrics[e] = 0;
       }, 1e3));
   }
   async reportPerformanceMetrics() {
@@ -246,8 +232,7 @@ var D = class D {
     return {
       payload: {
         centaurus: {
-          licenseKey:
-            this.Module.LicenseUtils[D.get3dPartyLicenseKeyMethodName](e),
+          licenseKey: this.Module.LicenseUtils[D.get3dPartyLicenseKeyMethodName](e),
         },
       },
     };
@@ -258,13 +243,11 @@ var D = class D {
   loadLibrary(e) {
     return this.libraryLoadingPromise != null
       ? this.libraryLoadingPromise
-      : ((this.libraryLoadingPromise = this.setup(e)),
-        this.libraryLoadingPromise);
+      : ((this.libraryLoadingPromise = this.setup(e)), this.libraryLoadingPromise);
   }
   processFrame(e) {
     var a;
-    if (this.context == null)
-      return { payload: e, transferables: [e.data.buffer] };
+    if (this.context == null) return { payload: e, transferables: [e.data.buffer] };
     let t = e.data,
       s =
         e.colorType === "GRAYSCALE"
@@ -273,17 +256,12 @@ var D = class D {
       i = this.Module.allocateUint8Array(t.byteLength);
     return (
       this.Module.HEAPU8.set(t, i),
-      (a = this.imageFrameSource) == null ||
-        a.outputFrame(i, e.width, e.height, s),
+      (a = this.imageFrameSource) == null || a.outputFrame(i, e.width, e.height, s),
       { payload: e, transferables: [e.data.buffer] }
     );
   }
   reportCameraProperties(e) {
-    this.context.setCameraProperties(
-      e.deviceId,
-      e.isFrontFacing,
-      e.hasAutofocus,
-    );
+    this.context.setCameraProperties(e.deviceId, e.isFrontFacing, e.hasAutofocus);
   }
   requestFrameData(e) {
     let t = this.frameDataPool.get(e);
@@ -310,8 +288,7 @@ var D = class D {
   }
   startDrawLoop(e) {
     this.isDrawLoopRunning = true;
-    let t = (a) =>
-        this.redrawRequests.length > 0 && this.redrawRequests[0] <= a,
+    let t = (a) => this.redrawRequests.length > 0 && this.redrawRequests[0] <= a,
       s = (a) => {
         for (; this.redrawRequests.length > 0 && this.redrawRequests[0] <= a; )
           this.redrawRequests.shift();
@@ -351,12 +328,8 @@ var D = class D {
           i.setViewSize(t.view.width, t.view.height, t.view.orientation),
         !this.hintPresenterV2 &&
           this.webPlatformHintPresenter &&
-          (this.hintPresenterV2 = new this.Module.HintPresenterV2(
-            this.webPlatformHintPresenter,
-          )),
-        i != null &&
-          this.hintPresenterV2 &&
-          i.setHintPresenterV2(this.hintPresenterV2),
+          (this.hintPresenterV2 = new this.Module.HintPresenterV2(this.webPlatformHintPresenter)),
+        i != null && this.hintPresenterV2 && i.setHintPresenterV2(this.hintPresenterV2),
         this.gestureRecognizer != null &&
           (i == null || i.setGestureRecognizer(this.gestureRecognizer)),
         this.setView(i),
@@ -377,10 +350,7 @@ var D = class D {
     return {
       payload: {
         isDisplayingViewfinder:
-          (t = (e = this.view) == null ? void 0 : e.isDisplayingViewfinder()) !=
-          null
-            ? t
-            : false,
+          (t = (e = this.view) == null ? void 0 : e.isDisplayingViewfinder()) != null ? t : false,
         rect: JSON.parse(this.view.getViewfinderRect()),
       },
     };
@@ -441,15 +411,9 @@ var D = class D {
   }
   contextDidChangeStatus(e) {
     (e.code === 260
-      ? (e.message = e.message.replace(
-          "domain name",
-          `domain name (${c$1(location)})`,
-        ))
+      ? (e.message = e.message.replace("domain name", `domain name (${c$1(location)})`))
       : e.code === 265 &&
-        (e.message = e.message.replace(
-          "domain name",
-          `domain name (${this.parentDomain})`,
-        )),
+        (e.message = e.message.replace("domain name", `domain name (${this.parentDomain})`)),
       this.workerFunctions.postMessage({
         type: "contextDidChangeStatus",
         payload: e,
@@ -474,8 +438,7 @@ var D = class D {
     ((this.view = e),
       this.setViewRefreshHandler(e),
       e == null &&
-        ((this.isDrawLoopRunning = false),
-        this.sendViewRefreshCommands(new Uint8Array([]))));
+        ((this.isDrawLoopRunning = false), this.sendViewRefreshCommands(new Uint8Array([]))));
   }
   addNativeOverlay(e) {
     a.warn("addNativeOverlay has not been implemented for this module", e);
@@ -588,9 +551,7 @@ var D = class D {
         ...(y ? { wasmMemory: y } : {}),
         mainScriptUrlOrBlob: w,
         canvas:
-          (x = this.workerFunctions.getOffscreenCanvas()) != null
-            ? x
-            : { getContext: () => null },
+          (x = this.workerFunctions.getOffscreenCanvas()) != null ? x : { getContext: () => null },
         ...H,
         dynamicLibraries: this.getWasmDynamicLibraries(R),
         locateFile: (l) => e$1 + l,
@@ -604,11 +565,7 @@ var D = class D {
                 m(l.toString());
                 return;
               }
-              a.log(
-                a.Level.Debug,
-                "No IndexedDB support, some data will not be persisted:",
-                l,
-              );
+              a.log(a.Level.Debug, "No IndexedDB support, some data will not be persisted:", l);
             }
             ((c = true), this.start(c, u, M));
           },
@@ -620,9 +577,7 @@ var D = class D {
               { runtimeLoaded: u, fileSystemSynced: c },
               "Both runtimeLoaded and fileSystemSynced should be true when calling onMainComplete",
             ),
-              m(
-                "onMainComplete has been called but runtime or file system was not ready.",
-              ));
+              m("onMainComplete has been called but runtime or file system was not ready."));
             return;
           }
           M();

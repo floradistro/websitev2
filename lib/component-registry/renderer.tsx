@@ -10,6 +10,7 @@ import * as Atomic from "@/components/component-registry/atomic";
 import * as Composite from "@/components/component-registry/composite";
 import * as Smart from "@/components/component-registry/smart";
 
+import { logger } from "@/lib/logger";
 // Component map for dynamic rendering
 const COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
   // Atomic
@@ -85,9 +86,7 @@ export function DynamicComponent({
   if (!Component) {
     return (
       <div className={`p-4 border border-red-500 rounded ${className}`}>
-        <p className="text-red-500 text-sm">
-          Component not found: {componentKey}
-        </p>
+        <p className="text-red-500 text-sm">Component not found: {componentKey}</p>
       </div>
     );
   }
@@ -110,7 +109,7 @@ export function DynamicComponent({
     return <Component {...mergedProps} />;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error rendering component:", componentKey, error);
+      logger.error("Error rendering component", error, { componentKey });
     }
     return (
       <div className={`p-4 border border-red-500 rounded ${className}`}>
@@ -187,9 +186,7 @@ export function DynamicSection({
             }`}
             style={{
               ...containerStyle,
-              ...(isPreviewMode && isSelected
-                ? { position: "relative", zIndex: 100 }
-                : {}),
+              ...(isPreviewMode && isSelected ? { position: "relative", zIndex: 100 } : {}),
             }}
             onClick={(e) => {
               if (isPreviewMode && onComponentSelect) {
@@ -266,10 +263,7 @@ export function DynamicSection({
 /**
  * Helper to register new components at runtime
  */
-export function registerComponent(
-  key: string,
-  component: React.ComponentType<any>,
-) {
+export function registerComponent(key: string, component: React.ComponentType<any>) {
   COMPONENT_MAP[key] = component;
 }
 

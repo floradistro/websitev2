@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * GET - List all promotions for a vendor
  */
@@ -24,23 +25,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching promotions:", error);
+        logger.error("Error fetching promotions:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, promotions });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in GET promotions:", error);
+      logger.error("Error in GET promotions:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -78,12 +73,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // SECURITY: vendorId from JWT, query param ignored (Phase 4)
-    if (
-      !name ||
-      !promotion_type ||
-      !discount_type ||
-      discount_value === undefined
-    ) {
+    if (!name || !promotion_type || !discount_type || discount_value === undefined) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
         { status: 400 },
@@ -120,23 +110,17 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating promotion:", error);
+        logger.error("Error creating promotion:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, promotion });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in POST promotion:", error);
+      logger.error("Error in POST promotion:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -154,10 +138,7 @@ export async function PATCH(request: NextRequest) {
     const { id, ...updates } = body;
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: "Promotion ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Promotion ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -171,23 +152,17 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error updating promotion:", error);
+        logger.error("Error updating promotion:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, promotion });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in PATCH promotion:", error);
+      logger.error("Error in PATCH promotion:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -205,10 +180,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: "Promotion ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Promotion ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -217,22 +189,16 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error deleting promotion:", error);
+        logger.error("Error deleting promotion:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in DELETE promotion:", error);
+      logger.error("Error in DELETE promotion:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

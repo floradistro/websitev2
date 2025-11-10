@@ -7,12 +7,8 @@ import "../private/utils/ScanditHTMLElement.js";
 import "./NotificationStyle.js";
 
 interface NotificationPresenter {
-  showNotification(
-    notificationConfiguration: NotificationConfiguration,
-  ): Promise<void>;
-  hideNotification(
-    notificationConfiguration: NotificationConfiguration,
-  ): Promise<void>;
+  showNotification(notificationConfiguration: NotificationConfiguration): Promise<void>;
+  hideNotification(notificationConfiguration: NotificationConfiguration): Promise<void>;
 }
 
 export type { NotificationPresenter };

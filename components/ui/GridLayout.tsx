@@ -72,9 +72,7 @@ export function GridLayout({
               </button>
             )}
           </div>
-          {bulkActions && (
-            <div className="flex items-center gap-2">{bulkActions}</div>
-          )}
+          {bulkActions && <div className="flex items-center gap-2">{bulkActions}</div>}
         </div>
       )}
 
@@ -107,9 +105,7 @@ export function GridLayout({
       )}
 
       {/* Grid Content */}
-      <div className={viewMode === "grid" ? gridClasses : "space-y-2"}>
-        {children}
-      </div>
+      <div className={viewMode === "grid" ? gridClasses : "space-y-2"}>{children}</div>
     </div>
   );
 }
@@ -163,17 +159,10 @@ interface EmptyStateProps {
   action?: ReactNode;
 }
 
-export function EmptyState({
-  icon,
-  title,
-  description,
-  action,
-}: EmptyStateProps) {
+export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
   return (
     <div className="text-center py-20 bg-[#0a0a0a] border border-white/5 rounded-2xl">
-      {icon && (
-        <div className="flex justify-center mb-4 text-white/10">{icon}</div>
-      )}
+      {icon && <div className="flex justify-center mb-4 text-white/10">{icon}</div>}
       <h3
         className="text-white text-xs uppercase tracking-[0.15em] mb-2 font-black"
         style={{ fontWeight: 900 }}

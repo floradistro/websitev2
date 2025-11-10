@@ -64,11 +64,7 @@ export function AnimatedText({
       style={{ display: "flex", flexWrap: "wrap", gap: "0.3em" }}
     >
       {words.map((word, index) => (
-        <motion.span
-          key={index}
-          variants={child}
-          style={{ display: "inline-block" }}
-        >
+        <motion.span key={index} variants={child} style={{ display: "inline-block" }}>
           {word}
         </motion.span>
       ))}

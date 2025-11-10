@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -17,10 +18,7 @@ export async function GET(request: NextRequest) {
     const locationId = searchParams.get("locationId");
 
     if (!locationId) {
-      return NextResponse.json(
-        { error: "Missing locationId parameter" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing locationId parameter" }, { status: 400 });
     }
 
     // Fetch inventory with product details (simplified - no multi-table pricing joins)
@@ -64,12 +62,9 @@ export async function GET(request: NextRequest) {
 
     if (inventoryResult.error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching inventory:", inventoryResult.error);
+        logger.error("Error fetching inventory:", inventoryResult.error);
       }
-      return NextResponse.json(
-        { error: inventoryResult.error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: inventoryResult.error.message }, { status: 500 });
     }
 
     // Transform data - simplified pricing from embedded pricing_data
@@ -117,13 +112,11 @@ export async function GET(request: NextRequest) {
         // custom_fields is an object like { "strain_type": "Indica", "terpenes": "..." }
         // Convert to array of { label, value, type } objects
         const customFields = inv.products.custom_fields || {};
-        const productFields = Object.entries(customFields).map(
-          ([key, value]) => ({
-            label: key,
-            value: String(value || ""),
-            type: typeof value === "number" ? "number" : "text",
-          }),
-        );
+        const productFields = Object.entries(customFields).map(([key, value]) => ({
+          label: key,
+          value: String(value || ""),
+          type: typeof value === "number" ? "number" : "text",
+        }));
 
         // Get vendor info
         const vendor = inv.products.vendors || null;
@@ -154,7 +147,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ products });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in inventory endpoint:", error);
+      logger.error("Error in inventory endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

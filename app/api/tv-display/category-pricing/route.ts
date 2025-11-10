@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
@@ -55,18 +56,7 @@ export async function GET(request: Request) {
     Object.entries(categoryPricing).forEach(([category, tiers]) => {
       result[category] = Array.from(tiers).sort((a, b) => {
         // Custom sort: 1g, 3_5g, 7g, 14g, 28g, etc.
-        const order = [
-          "1g",
-          "3_5g",
-          "7g",
-          "14g",
-          "28g",
-          "0_5g",
-          "1_5g",
-          "2g",
-          "single",
-          "pack",
-        ];
+        const order = ["1g", "3_5g", "7g", "14g", "28g", "0_5g", "1_5g", "2g", "single", "pack"];
         const aIndex = order.indexOf(a);
         const bIndex = order.indexOf(b);
 
@@ -83,7 +73,7 @@ export async function GET(request: Request) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching category pricing:", error);
+      logger.error("Error fetching category pricing:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

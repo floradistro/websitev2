@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
-    const { orderHistory, currentProduct, wishlist, allProducts } =
-      await request.json();
+    const { orderHistory, currentProduct, wishlist, allProducts } = await request.json();
 
     // Use Claude Sonnet 4.5 for recommendations
-    const apiKey =
-      process.env.ANTHROPIC_API_KEY ||
-      process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY || process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY;
 
     if (!apiKey) {
       throw new Error("Anthropic API key not configured");
@@ -63,9 +61,7 @@ Return ONLY a JSON array of product IDs. Example: [707, 786, 798, 773]`;
     // Extract product IDs - handle both string and number formats
     let recommendedIds: number[] = [];
     try {
-      const parsed = JSON.parse(
-        responseText.match(/\[[\d,\s]+\]/)?.[0] || "[]",
-      );
+      const parsed = JSON.parse(responseText.match(/\[[\d,\s]+\]/)?.[0] || "[]");
       recommendedIds = parsed.map((id: any) => parseInt(id.toString()));
     } catch {
       recommendedIds = [];
@@ -89,7 +85,7 @@ Return ONLY a JSON array of product IDs. Example: [707, 786, 798, 773]`;
     throw new Error("No valid recommendations");
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("AI recommendation error:", error);
+      logger.error("AI recommendation error:", error);
     }
     // Fallback: Return similar category products or popular items
     try {
@@ -101,9 +97,7 @@ Return ONLY a JSON array of product IDs. Example: [707, 786, 798, 773]`;
       if (currentProduct?.categories?.[0]?.id) {
         const sameCategory = allProducts.filter(
           (p: any) =>
-            p.categories?.some(
-              (c: any) => c.id === currentProduct.categories[0].id,
-            ) &&
+            p.categories?.some((c: any) => c.id === currentProduct.categories[0].id) &&
             p.id !== currentProduct.id &&
             p.stock_status === "in_stock",
         );

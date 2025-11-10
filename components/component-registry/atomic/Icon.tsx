@@ -13,13 +13,7 @@ export interface IconProps {
   emoji?: boolean; // True if using emoji instead of SVG
 }
 
-export function Icon({
-  name,
-  size = "md",
-  color,
-  className = "",
-  emoji = true,
-}: IconProps) {
+export function Icon({ name, size = "md", color, className = "", emoji = true }: IconProps) {
   const sizeClasses: Record<string, string> = {
     xs: "text-xs",
     sm: "text-sm",

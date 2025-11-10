@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { MapPin, Package, Store } from "lucide-react";
+import { logger } from "@/lib/logger";
 import {
   getUserLocation,
   findNearestLocation,
@@ -83,9 +84,7 @@ export default function DeliveryAvailability({
     return inv ? parseFloat(inv.quantity) : 0;
   };
 
-  const locationsWithStock = activeLocations.filter(
-    (loc) => getQuantity(loc.id) > 0,
-  );
+  const locationsWithStock = activeLocations.filter((loc) => getQuantity(loc.id) > 0);
 
   const sortedLocations = [...activeLocations].sort((a, b) => {
     const aQty = getQuantity(a.id);
@@ -96,9 +95,7 @@ export default function DeliveryAvailability({
   });
 
   const nearestStore =
-    sortedLocations.find((loc) => getQuantity(loc.id) > 0) ||
-    sortedLocations[0] ||
-    null;
+    sortedLocations.find((loc) => getQuantity(loc.id) > 0) || sortedLocations[0] || null;
 
   // Auto-select nearest location based on user's IP address
   useEffect(() => {
@@ -128,7 +125,7 @@ export default function DeliveryAvailability({
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error auto-selecting location:", error);
+          logger.error("Error auto-selecting location:", error);
         }
         // Fallback to first location with stock
         if (nearestStore) {
@@ -280,11 +277,7 @@ export default function DeliveryAvailability({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-white/80">
-                          {
-                            activeLocations.find(
-                              (loc) => loc.id === selectedStore,
-                            )?.name
-                          }
+                          {activeLocations.find((loc) => loc.id === selectedStore)?.name}
                         </span>
                         {storeDistance && (
                           <span className="text-xs text-white/40">
@@ -310,9 +303,7 @@ export default function DeliveryAvailability({
               {/* Delivery Date Info */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="text-xs text-white/80">
-                    {delivery.express}
-                  </div>
+                  <div className="text-xs text-white/80">{delivery.express}</div>
                   <div className="text-xs font-medium text-white">FREE</div>
                 </div>
                 {delivery.cutoffMessage && (
@@ -373,9 +364,7 @@ export default function DeliveryAvailability({
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm text-white">
-                              {location.name}
-                            </span>
+                            <span className="text-sm text-white">{location.name}</span>
                             {distance && (
                               <span className="text-xs text-white/40">
                                 {`· ${Math.round(distance)} mi`}
@@ -418,11 +407,7 @@ export default function DeliveryAvailability({
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-white/80">
-                          {
-                            activeLocations.find(
-                              (loc) => loc.id === selectedStore,
-                            )?.name
-                          }
+                          {activeLocations.find((loc) => loc.id === selectedStore)?.name}
                         </span>
                         {storeDistance && (
                           <span className="text-xs text-white/40">
@@ -497,9 +482,7 @@ export default function DeliveryAvailability({
                           <div className="flex items-center justify-between gap-4">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="text-sm text-white">
-                                  {location.name}
-                                </span>
+                                <span className="text-sm text-white">{location.name}</span>
                                 {distance && (
                                   <span className="text-xs text-white/40">
                                     {`· ${Math.round(distance)} mi`}

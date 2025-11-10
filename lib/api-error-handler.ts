@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 export type ApiError = {
   success: false;
   error: string;
@@ -38,7 +39,7 @@ export function apiHandler(
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
         if (process.env.NODE_ENV === "development") {
-          console.error("[API Error]", {
+          logger.error("[API Error]", {
             path: request.nextUrl.pathname,
             method: request.method,
             error: error instanceof Error ? error.message : "Unknown error",
@@ -55,21 +56,11 @@ export function apiHandler(
 
         // Handle common error types
         if (error.message.includes("not found")) status = 404;
-        if (
-          error.message.includes("unauthorized") ||
-          error.message.includes("authentication")
-        )
+        if (error.message.includes("unauthorized") || error.message.includes("authentication"))
           status = 401;
-        if (
-          error.message.includes("forbidden") ||
-          error.message.includes("permission")
-        )
+        if (error.message.includes("forbidden") || error.message.includes("permission"))
           status = 403;
-        if (
-          error.message.includes("invalid") ||
-          error.message.includes("validation")
-        )
-          status = 400;
+        if (error.message.includes("invalid") || error.message.includes("validation")) status = 400;
       }
 
       return NextResponse.json(
@@ -128,35 +119,27 @@ export function validationError(message: string): NextResponse<ApiError> {
 /**
  * Not found error helper
  */
-export function notFoundError(
-  resource: string = "Resource",
-): NextResponse<ApiError> {
+export function notFoundError(resource: string = "Resource"): NextResponse<ApiError> {
   return errorResponse(`${resource} not found`, 404, "NOT_FOUND");
 }
 
 /**
  * Unauthorized error helper
  */
-export function unauthorizedError(
-  message: string = "Unauthorized",
-): NextResponse<ApiError> {
+export function unauthorizedError(message: string = "Unauthorized"): NextResponse<ApiError> {
   return errorResponse(message, 401, "UNAUTHORIZED");
 }
 
 /**
  * Forbidden error helper
  */
-export function forbiddenError(
-  message: string = "Forbidden",
-): NextResponse<ApiError> {
+export function forbiddenError(message: string = "Forbidden"): NextResponse<ApiError> {
   return errorResponse(message, 403, "FORBIDDEN");
 }
 
 /**
  * Internal server error helper
  */
-export function serverError(
-  message: string = "Internal server error",
-): NextResponse<ApiError> {
+export function serverError(message: string = "Internal server error"): NextResponse<ApiError> {
   return errorResponse(message, 500, "SERVER_ERROR");
 }

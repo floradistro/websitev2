@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 var v;
 ((t) => {
   ((n) => (
@@ -23,19 +25,19 @@ var v;
     if (!(u.get(l) > u.get(e)))
       switch (e) {
         case "debug": {
-          console.debug(...r);
+          logger.debug(...r);
           break;
         }
         case "info": {
-          console.log(...r);
+          logger.debug(...r);
           break;
         }
         case "warn": {
-          console.warn(...r);
+          logger.warn(...r);
           break;
         }
         case "error": {
-          console.error(...r);
+          logger.error(...r);
           break;
         }
       }

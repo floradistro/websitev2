@@ -81,10 +81,7 @@ export function Tabs({ tabs, defaultIndex = 0, onChange }: TabsProps) {
 
       <Tab.Panels className="mt-3">
         {tabs.map((tab, index) => (
-          <Tab.Panel
-            key={index}
-            className={cn("outline-none", ds.effects.transition.normal)}
-          >
+          <Tab.Panel key={index} className={cn("outline-none", ds.effects.transition.normal)}>
             {tab.content}
           </Tab.Panel>
         ))}

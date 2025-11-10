@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 import { createVercelProject, addCustomDomain } from "@/lib/deployment/vercel";
 
+import { logger } from "@/lib/logger";
 /**
  * POST /api/vendor/website/create-vercel-project
  * Creates a separate Vercel project for the vendor's storefront
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (vendorError || !vendor) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Vendor not found:", vendorError);
+        logger.error("❌ Vendor not found:", vendorError);
       }
       return NextResponse.json(
         { error: "Vendor not found", details: vendorError?.message },
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     if (!vendor.github_username || !vendor.github_repo_name) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ GitHub repository not configured");
+        logger.error("❌ GitHub repository not configured");
       }
       return NextResponse.json(
         {
@@ -66,10 +67,7 @@ export async function POST(request: NextRequest) {
     // Check if project already exists
     if (vendor?.vercel_project_id) {
       if (process.env.NODE_ENV === "development") {
-        console.error(
-          "❌ Vercel project already exists:",
-          vendor.vercel_project_id,
-        );
+        logger.error("❌ Vercel project already exists:", vendor.vercel_project_id);
       }
       return NextResponse.json(
         {
@@ -99,8 +97,7 @@ export async function POST(request: NextRequest) {
 
       // Supabase connection (read-only for vendor data)
       NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-      NEXT_PUBLIC_SUPABASE_ANON_KEY:
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
     };
 
     const vercelProject = await createVercelProject({
@@ -119,10 +116,7 @@ export async function POST(request: NextRequest) {
         customDomainAdded = true;
         customDomain = domainData.domain;
       } catch (domainError: any) {
-        console.error(
-          "⚠️  Failed to add custom domain (non-fatal):",
-          domainError.message,
-        );
+        logger.error("⚠️  Failed to add custom domain (non-fatal):", domainError.message);
         // Don't fail the entire operation if domain addition fails
       }
     }
@@ -165,7 +159,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error creating Vercel project:", error);
+      logger.error("❌ Error creating Vercel project:", error);
     }
     return NextResponse.json(
       {

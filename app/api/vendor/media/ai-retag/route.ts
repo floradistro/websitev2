@@ -4,6 +4,7 @@ import { withErrorHandler } from "@/lib/api-handler";
 import { requireVendor } from "@/lib/auth/middleware";
 import OpenAI from "openai";
 
+import { logger } from "@/lib/logger";
 // Lazy-load OpenAI client
 let openai: OpenAI | null = null;
 function getOpenAI() {
@@ -43,7 +44,7 @@ async function analyzeImageWithAI(imageUrl: string) {
 }
 
 Categories:
-- "product_photos": Product photography, cannabis flowers, edibles, product shots
+- "product_photos": Product photography, product shots, packaged items
 - "social_media": Instagram posts, Facebook ads, Stories, social media graphics
 - "print_marketing": Flyers, posters, print ads, physical marketing materials
 - "promotional": Promotional graphics, deals, event materials, special offers
@@ -77,7 +78,7 @@ Respond with ONLY the JSON, no other text.`,
     return analysis;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ AI analysis error:", error.message);
+      logger.error("❌ AI analysis error:", error.message);
     }
     return null;
   }
@@ -116,10 +117,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     const aiAnalysis = await analyzeImageWithAI(file.file_url);
 
     if (!aiAnalysis) {
-      return NextResponse.json(
-        { error: "AI analysis failed" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "AI analysis failed" }, { status: 500 });
     }
 
     // Update metadata
@@ -140,7 +138,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Update error:", updateError);
+        logger.error("❌ Update error:", updateError);
       }
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
@@ -152,7 +150,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

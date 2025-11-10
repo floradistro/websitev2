@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     // Verify vendor authentication
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching vendor from database:", error);
+        logger.error("Error fetching vendor from database:", error);
       }
       return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
     }
@@ -55,11 +56,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching website status:", error);
+      logger.error("Error fetching website status:", error);
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

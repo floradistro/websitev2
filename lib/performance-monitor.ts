@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 /**
  * Performance Monitoring System
  * Tracks API response times, cache hit rates, and system health
@@ -48,10 +50,7 @@ class PerformanceMonitor {
 
       // Log slow operations (>1 second)
       if (duration > 1000) {
-        console.warn(
-          `⚠️  SLOW OPERATION: ${operation} took ${duration.toFixed(2)}ms`,
-          metadata,
-        );
+        logger.warn(`⚠️  SLOW OPERATION: ${operation} took ${duration.toFixed(2)}ms`, metadata);
       } else if (duration > 500) {
       }
 
@@ -117,9 +116,7 @@ class PerformanceMonitor {
   getCacheStats(timeWindowMs: number = 300000) {
     // Default: last 5 minutes
     const now = Date.now();
-    const recentMetrics = this.cacheMetrics.filter(
-      (m) => now - m.timestamp < timeWindowMs,
-    );
+    const recentMetrics = this.cacheMetrics.filter((m) => now - m.timestamp < timeWindowMs);
 
     if (recentMetrics.length === 0) {
       return {
@@ -161,8 +158,7 @@ class PerformanceMonitor {
 
     // Bonus for good cache hit rate
     if (cacheStats.hitRate > 90) healthScore = Math.min(100, healthScore + 5);
-    else if (cacheStats.hitRate < 50)
-      healthScore = Math.max(0, healthScore - 10);
+    else if (cacheStats.hitRate < 50) healthScore = Math.max(0, healthScore - 10);
 
     healthScore = Math.max(0, Math.min(100, healthScore));
 

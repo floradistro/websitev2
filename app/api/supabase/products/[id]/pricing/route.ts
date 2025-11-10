@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: productId } = await params;
 
@@ -21,10 +19,7 @@ export async function GET(
     }
 
     // Get product to find vendor_id
-    let productQuery = supabase
-      .from("products")
-      .select("vendor_id")
-      .eq("id", productId);
+    let productQuery = supabase.from("products").select("vendor_id").eq("id", productId);
 
     const { data: product, error: productError } = await productQuery.single();
 
@@ -63,7 +58,7 @@ export async function GET(
 
     if (configError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching pricing configs:", configError);
+        logger.error("Error fetching pricing configs:", configError);
       }
       return NextResponse.json({
         success: true,
@@ -78,34 +73,22 @@ export async function GET(
 
     if (configs && configs.length > 0) {
       // Use retail pricing by default (weight-based with grams)
-      const weightBasedConfigs = configs.filter(
-        (c: any) => c.blueprint?.tier_type === "weight",
-      );
+      const weightBasedConfigs = configs.filter((c: any) => c.blueprint?.tier_type === "weight");
       const primaryConfig = weightBasedConfigs[0] || configs[0];
 
       if (primaryConfig) {
         const blueprint = primaryConfig.blueprint;
         const pricingValues = primaryConfig.pricing_values || {};
 
-        if (
-          blueprint &&
-          blueprint.price_breaks &&
-          Array.isArray(blueprint.price_breaks)
-        ) {
+        if (blueprint && blueprint.price_breaks && Array.isArray(blueprint.price_breaks)) {
           blueprint.price_breaks.forEach((priceBreak: any) => {
             const breakId = priceBreak.break_id;
             const vendorPrice = pricingValues[breakId];
 
             // Only add if tier is ENABLED and has a price
-            if (
-              vendorPrice &&
-              vendorPrice.enabled !== false &&
-              vendorPrice.price
-            ) {
+            if (vendorPrice && vendorPrice.enabled !== false && vendorPrice.price) {
               pricingTiers.push({
-                weight:
-                  priceBreak.label ||
-                  `${priceBreak.qty}${priceBreak.unit || ""}`,
+                weight: priceBreak.label || `${priceBreak.qty}${priceBreak.unit || ""}`,
                 qty: priceBreak.qty || 1,
                 price: parseFloat(vendorPrice.price),
                 tier_name: priceBreak.label,
@@ -129,7 +112,7 @@ export async function GET(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching product pricing:", error);
+      logger.error("Error fetching product pricing:", error);
     }
     return NextResponse.json(
       { success: true, pricingTiers: [] }, // Return empty instead of error to not break product page

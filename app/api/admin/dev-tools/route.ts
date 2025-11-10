@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
@@ -55,10 +56,7 @@ export async function POST(request: NextRequest) {
           .delete()
           .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all
 
-        if (
-          clearLogsError &&
-          !clearLogsError.message.includes("does not exist")
-        ) {
+        if (clearLogsError && !clearLogsError.message.includes("does not exist")) {
           throw clearLogsError;
         }
 
@@ -104,8 +102,7 @@ export async function POST(request: NextRequest) {
         // This is a placeholder - actual implementation would require careful consideration
         return NextResponse.json({
           success: true,
-          message:
-            "Database reset initiated - this is a placeholder in production",
+          message: "Database reset initiated - this is a placeholder in production",
         });
 
       default:
@@ -119,7 +116,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Dev tools error:", error);
+      logger.error("Dev tools error:", error);
     }
     return NextResponse.json(
       {

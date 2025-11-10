@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 // Levenshtein distance for fuzzy matching
 function levenshtein(a: string, b: string): number {
   const matrix = [];
@@ -22,7 +23,7 @@ function levenshtein(a: string, b: string): number {
         matrix[i][j] = Math.min(
           matrix[i - 1][j - 1] + 1,
           matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1
+          matrix[i - 1][j] + 1,
         );
       }
     }
@@ -75,10 +76,7 @@ export async function POST(request: NextRequest) {
       .or("featured_image_storage.is.null,featured_image_storage.eq.");
 
     if (productsError) {
-      return NextResponse.json(
-        { error: productsError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: productsError.message }, { status: 500 });
     }
 
     // Get all media files
@@ -89,10 +87,7 @@ export async function POST(request: NextRequest) {
       .eq("status", "active");
 
     if (mediaError) {
-      return NextResponse.json(
-        { error: mediaError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: mediaError.message }, { status: 500 });
     }
 
     if (!products || !mediaFiles) {
@@ -125,9 +120,7 @@ export async function POST(request: NextRequest) {
         const nameScore = calculateMatchScore(product.name, fileNameWithoutExt);
 
         // Try matching against SKU if available
-        const skuScore = product.sku
-          ? calculateMatchScore(product.sku, fileNameWithoutExt)
-          : 0;
+        const skuScore = product.sku ? calculateMatchScore(product.sku, fileNameWithoutExt) : 0;
 
         const score = Math.max(nameScore, skuScore);
 
@@ -176,7 +169,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -193,10 +186,7 @@ export async function PUT(request: NextRequest) {
     const { matches } = body; // Array of { productId, filePath }
 
     if (!Array.isArray(matches) || matches.length === 0) {
-      return NextResponse.json(
-        { error: "Matches array required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Matches array required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -217,7 +207,7 @@ export async function PUT(request: NextRequest) {
       if (error) {
         failed++;
         if (process.env.NODE_ENV === "development") {
-          console.error(`Failed to link ${match.productId}:`, error);
+          logger.error(`Failed to link ${match.productId}:`, error);
         }
       } else {
         linked++;
@@ -232,7 +222,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

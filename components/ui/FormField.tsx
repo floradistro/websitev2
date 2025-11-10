@@ -66,11 +66,7 @@ interface CheckboxProps extends BaseFormFieldProps {
   description?: string;
 }
 
-type FormFieldProps =
-  | TextInputProps
-  | TextareaProps
-  | SelectProps
-  | CheckboxProps;
+type FormFieldProps = TextInputProps | TextareaProps | SelectProps | CheckboxProps;
 
 export function FormField(props: FormFieldProps) {
   const { label, error, hint, required, className = "", icon } = props;
@@ -96,9 +92,7 @@ export function FormField(props: FormFieldProps) {
               {required && <span className="text-red-400 ml-1">*</span>}
             </div>
             {props.description && (
-              <p className="text-white/40 text-[10px] mt-1">
-                {props.description}
-              </p>
+              <p className="text-white/40 text-[10px] mt-1">{props.description}</p>
             )}
           </div>
         </label>
@@ -138,11 +132,7 @@ export function FormField(props: FormFieldProps) {
         >
           {props.placeholder && <option value="">{props.placeholder}</option>}
           {props.options.map((option) => (
-            <option
-              key={option.value}
-              value={option.value}
-              disabled={option.disabled}
-            >
+            <option key={option.value} value={option.value} disabled={option.disabled}>
               {option.label}
             </option>
           ))}
@@ -150,9 +140,7 @@ export function FormField(props: FormFieldProps) {
       ) : (
         <div className="relative">
           {icon && (
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
-              {icon}
-            </div>
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">{icon}</div>
           )}
           <input
             type={props.type || "text"}
@@ -174,9 +162,7 @@ export function FormField(props: FormFieldProps) {
       )}
 
       {hint && !error && (
-        <p className="text-white/30 text-[9px] uppercase tracking-wider">
-          {hint}
-        </p>
+        <p className="text-white/30 text-[9px] uppercase tracking-wider">{hint}</p>
       )}
 
       {error && (
@@ -204,12 +190,8 @@ export function FormSection({
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="border-b border-white/5 pb-3">
-        <h3 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">
-          {title}
-        </h3>
-        {description && (
-          <p className="text-white/40 text-[9px] mt-1">{description}</p>
-        )}
+        <h3 className="text-white/60 text-[10px] uppercase tracking-wider font-medium">{title}</h3>
+        {description && <p className="text-white/40 text-[9px] mt-1">{description}</p>}
       </div>
       <div className="space-y-4">{children}</div>
     </div>
@@ -232,9 +214,5 @@ export function FormGrid({
     4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
   };
 
-  return (
-    <div className={`grid ${gridClasses[columns]} gap-4 ${className}`}>
-      {children}
-    </div>
-  );
+  return <div className={`grid ${gridClasses[columns]} gap-4 ${className}`}>{children}</div>;
 }

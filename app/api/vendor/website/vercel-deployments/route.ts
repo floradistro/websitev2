@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRecentDeployments } from "@/lib/deployment/vercel";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/vendor/website/vercel-deployments
  * Get actual Vercel deployments for the main project
@@ -18,10 +19,7 @@ export async function GET(request: NextRequest) {
     const vercelProjectId = process.env.VERCEL_PROJECT_ID;
 
     if (!vercelProjectId) {
-      return NextResponse.json(
-        { error: "Vercel project not configured" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Vercel project not configured" }, { status: 500 });
     }
 
     // Get recent deployments from Vercel
@@ -33,7 +31,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching Vercel deployments:", error);
+      logger.error("Error fetching Vercel deployments:", error);
     }
     return NextResponse.json(
       {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * GET - Vendor profit statistics
  * Returns margin analysis, inventory value, and profitability metrics
@@ -19,16 +20,14 @@ export async function GET(request: NextRequest) {
     // Fetch all products with cost tracking
     const { data: products, error } = await supabase
       .from("products")
-      .select(
-        "id, name, cost_price, regular_price, price, stock_quantity, margin_percentage",
-      )
+      .select("id, name, cost_price, regular_price, price, stock_quantity, margin_percentage")
       .eq("vendor_id", vendorId)
       .not("cost_price", "is", null)
       .gt("cost_price", 0);
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching products for profit stats:", error);
+        logger.error("Error fetching products for profit stats:", error);
       }
       return NextResponse.json(
         {
@@ -85,8 +84,7 @@ export async function GET(request: NextRequest) {
       totalPotentialProfit += potentialProfit;
     });
 
-    const averageMargin =
-      products.length > 0 ? totalMargin / products.length : 0;
+    const averageMargin = products.length > 0 ? totalMargin / products.length : 0;
 
     const stats = {
       total_products_with_cost: products.length,
@@ -103,7 +101,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Profit stats error:", error);
+      logger.error("❌ Profit stats error:", error);
     }
     return NextResponse.json(
       {

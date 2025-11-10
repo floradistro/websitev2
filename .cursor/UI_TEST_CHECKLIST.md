@@ -290,10 +290,10 @@ Browser opened at: `http://localhost:3000/vendor/purchase-orders`
 
 _(Fill in during testing)_
 
-1. Issue: ******\_\_\_******
-   - Steps to reproduce: ******\_\_\_******
-   - Expected: ******\_\_\_******
-   - Actual: ******\_\_\_******
+1. Issue: **\*\***\_\_\_**\*\***
+   - Steps to reproduce: **\*\***\_\_\_**\*\***
+   - Expected: **\*\***\_\_\_**\*\***
+   - Actual: **\*\***\_\_\_**\*\***
 
 ---
 
@@ -329,7 +329,7 @@ All checkboxes should be ✅ for feature to be production-ready.
 
 ---
 
-_Tested by: ****\_****_
+_Tested by: \***\*\_\*\***_
 _Date: October 27, 2025_
-_Browser: ****\_****_
+_Browser: \***\*\_\*\***_
 _Pass Rate: \_\_\_/15 tests_

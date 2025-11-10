@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -14,9 +15,7 @@ function verifyAdminToken(token: string): {
 } {
   try {
     const decoded = JSON.parse(Buffer.from(token, "base64").toString());
-    const isValid =
-      (decoded.role === "admin" || decoded.role === "readonly") &&
-      decoded.username;
+    const isValid = (decoded.role === "admin" || decoded.role === "readonly") && decoded.username;
     return {
       valid: isValid,
       role: decoded.role,
@@ -34,18 +33,12 @@ export async function GET(request: NextRequest) {
     const token = authHeader?.replace("Bearer ", "");
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Unauthorized - Admin access required" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 401 });
     }
 
     const authResult = verifyAdminToken(token);
     if (!authResult.valid) {
-      return NextResponse.json(
-        { error: "Unauthorized - Invalid token" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Unauthorized - Invalid token" }, { status: 401 });
     }
 
     const userRole = authResult.role;
@@ -116,7 +109,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ customers });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Admin customers error:", error);
+      logger.error("Admin customers error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to load customers" },

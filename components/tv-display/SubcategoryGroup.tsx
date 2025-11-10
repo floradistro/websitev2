@@ -59,8 +59,7 @@ export function SubcategoryGroup({
   const enabledPrices = Object.entries(pricingTiers)
     .filter(([breakId, breakData]: [string, any]) => {
       const isEnabled = breakData?.enabled !== false;
-      const isVisible =
-        visiblePriceBreaks.length === 0 || visiblePriceBreaks.includes(breakId);
+      const isVisible = visiblePriceBreaks.length === 0 || visiblePriceBreaks.includes(breakId);
       return isEnabled && isVisible;
     })
     .map(([breakId, breakData]: [string, any]) => {
@@ -112,10 +111,7 @@ export function SubcategoryGroup({
                     : `${priceInfo.label}${priceInfo.unit}`;
 
                 return (
-                  <div
-                    key={priceInfo.breakId}
-                    className="flex items-baseline gap-1.5"
-                  >
+                  <div key={priceInfo.breakId} className="flex items-baseline gap-1.5">
                     <span
                       className="font-medium uppercase tracking-wide"
                       style={{
@@ -147,9 +143,7 @@ export function SubcategoryGroup({
       {displayMode === "list" ? (
         <div className="flex flex-col gap-2">
           {products.map((product: any, idx: number) => {
-            const CardComponent = useCompactCards
-              ? CompactListProductCard
-              : ListProductCard;
+            const CardComponent = useCompactCards ? CompactListProductCard : ListProductCard;
             return (
               <CardComponent
                 key={product.id}

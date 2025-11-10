@@ -10,13 +10,7 @@ import React, { useRef, useEffect } from "react";
 export interface TextProps {
   content?: string; // Old prop name
   text?: string; // New prop name (AI uses this)
-  variant?:
-    | "headline"
-    | "subheadline"
-    | "paragraph"
-    | "label"
-    | "caption"
-    | "quote";
+  variant?: "headline" | "subheadline" | "paragraph" | "label" | "caption" | "quote";
   size?:
     | "xs"
     | "sm"

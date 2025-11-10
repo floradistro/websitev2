@@ -138,8 +138,7 @@ export const productCache = new LRUCache(2000, 120000); // 2000 entries, 2min TT
  */
 export const CacheKeys = {
   vendor: (vendorId: string) => `vendor:${vendorId}`,
-  vendorProducts: (vendorId: string, limit: number) =>
-    `vendor:${vendorId}:products:${limit}`,
+  vendorProducts: (vendorId: string, limit: number) => `vendor:${vendorId}:products:${limit}`,
   vendorLocations: (vendorId: string) => `vendor:${vendorId}:locations`,
   product: (productId: string) => `product:${productId}`,
   pricingConfig: (vendorId: string) => `pricing:${vendorId}`,

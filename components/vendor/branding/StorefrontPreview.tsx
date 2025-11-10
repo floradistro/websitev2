@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ExternalLink,
-  Monitor,
-  Tablet,
-  Smartphone,
-  RefreshCw,
-} from "lucide-react";
+import { ExternalLink, Monitor, Tablet, Smartphone, RefreshCw } from "lucide-react";
 import { ds, cn } from "@/lib/design-system";
 
 interface StorefrontPreviewProps {
@@ -38,20 +32,9 @@ export function StorefrontPreview({ vendorSlug }: StorefrontPreviewProps) {
           "p-8 text-center",
         )}
       >
-        <Monitor
-          size={48}
-          className={cn(ds.colors.text.quaternary, "mx-auto mb-4")}
-        />
-        <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
-          Preview unavailable
-        </p>
-        <p
-          className={cn(
-            ds.typography.size.xs,
-            ds.colors.text.quaternary,
-            "mt-2",
-          )}
-        >
+        <Monitor size={48} className={cn(ds.colors.text.quaternary, "mx-auto mb-4")} />
+        <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>Preview unavailable</p>
+        <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mt-2")}>
           Save to see live preview
         </p>
       </div>
@@ -113,10 +96,7 @@ export function StorefrontPreview({ vendorSlug }: StorefrontPreviewProps) {
           <button
             type="button"
             onClick={() => setKey((k) => k + 1)}
-            className={cn(
-              "p-1.5 rounded hover:bg-white/5",
-              ds.colors.text.quaternary,
-            )}
+            className={cn("p-1.5 rounded hover:bg-white/5", ds.colors.text.quaternary)}
           >
             <RefreshCw size={14} />
           </button>

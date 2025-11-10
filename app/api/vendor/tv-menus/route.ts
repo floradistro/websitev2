@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * GET - List all TV menus for a vendor
  */
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching TV menus:", error);
+        logger.error("Error fetching TV menus:", error);
       }
       throw error;
     }
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("TV menus API error:", error);
+      logger.error("TV menus API error:", error);
     }
     return NextResponse.json(
       {
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating TV menu:", error);
+        logger.error("Error creating TV menu:", error);
       }
       throw error;
     }
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("TV menu creation error:", error);
+      logger.error("TV menu creation error:", error);
     }
     return NextResponse.json(
       {

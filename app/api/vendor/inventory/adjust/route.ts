@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     // SECURITY: Use requireVendor to get vendor_id from authenticated session
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
 
       if (productError || !product) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Product not found:", productError);
+          logger.error("❌ Product not found:", productError);
         }
         return NextResponse.json(
           {
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest) {
 
         if (createError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ Error creating inventory:", createError);
+            logger.error("❌ Error creating inventory:", createError);
           }
           return NextResponse.json(
             { error: createError.message, details: createError },
@@ -169,7 +170,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error updating inventory:", updateError);
+        logger.error("❌ Error updating inventory:", updateError);
       }
       return NextResponse.json(
         { error: updateError.message, details: updateError },
@@ -179,12 +180,11 @@ export async function POST(request: NextRequest) {
 
     if (!updated) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Inventory update affected 0 rows");
+        logger.error("❌ Inventory update affected 0 rows");
       }
       return NextResponse.json(
         {
-          error:
-            "Failed to update inventory - record may have been deleted or modified",
+          error: "Failed to update inventory - record may have been deleted or modified",
           inventory_id: inventory.id,
         },
         { status: 500 },
@@ -200,15 +200,11 @@ export async function POST(request: NextRequest) {
 
     if (productFetchError) {
       if (process.env.NODE_ENV === "development") {
-        console.error(
-          "❌ Error fetching product with ID:",
-          inventory.product_id,
-          productFetchError,
-        );
+        logger.error("❌ Error fetching product with ID:", inventory.product_id, productFetchError);
       }
     } else if (!product) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Product not found with ID:", inventory.product_id);
+        logger.error("❌ Product not found with ID:", inventory.product_id);
       }
     } else {
       // Get total stock across all locations for this product
@@ -219,14 +215,11 @@ export async function POST(request: NextRequest) {
 
       if (invFetchError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error fetching all inventory:", invFetchError);
+          logger.error("❌ Error fetching all inventory:", invFetchError);
         }
       } else {
         const totalStock =
-          allInventory?.reduce(
-            (sum, inv) => sum + parseFloat(inv.quantity || 0),
-            0,
-          ) || 0;
+          allInventory?.reduce((sum, inv) => sum + parseFloat(inv.quantity || 0), 0) || 0;
 
         const { error: productUpdateError } = await supabase
           .from("products")
@@ -239,10 +232,7 @@ export async function POST(request: NextRequest) {
 
         if (productUpdateError) {
           if (process.env.NODE_ENV === "development") {
-            console.error(
-              "❌ Error updating product stock:",
-              productUpdateError,
-            );
+            logger.error("❌ Error updating product stock:", productUpdateError);
           }
         } else {
         }
@@ -278,7 +268,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Inventory adjustment error:", error);
+      logger.error("❌ Inventory adjustment error:", error);
     }
     return NextResponse.json(
       {

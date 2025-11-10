@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const clientKey = process.env.NEXT_PUBLIC_AUTHORIZENET_CLIENT_KEY;
     const apiLoginId = process.env.NEXT_PUBLIC_AUTHORIZENET_API_LOGIN_ID;
-    const environment =
-      process.env.NEXT_PUBLIC_AUTHORIZENET_ENVIRONMENT || "production";
+    const environment = process.env.NEXT_PUBLIC_AUTHORIZENET_ENVIRONMENT || "production";
 
     if (!clientKey || !apiLoginId) {
       throw new Error("Authorize.net keys not configured");
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching Authorize.net keys:", error);
+      logger.error("Error fetching Authorize.net keys:", error);
     }
     return NextResponse.json(
       {

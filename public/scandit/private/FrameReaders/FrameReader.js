@@ -1,4 +1,1 @@
-export {
-  a as ColorType,
-  b as FrameReader,
-} from "../../chunks/chunk-ULRY4SXF.js";
+export { a as ColorType, b as FrameReader } from "../../chunks/chunk-ULRY4SXF.js";

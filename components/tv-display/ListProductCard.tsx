@@ -69,11 +69,8 @@ export function ListProductCard({
       const formattedValue = formatFieldValue(field, value);
       if (!formattedValue) return null;
 
-      const showLabel =
-        !hideAllFieldLabels && customFieldsConfig[field]?.showLabel !== false;
-      const fieldLabel = field
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (l) => l.toUpperCase());
+      const showLabel = !hideAllFieldLabels && customFieldsConfig[field]?.showLabel !== false;
+      const fieldLabel = field.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
       return showLabel ? `${fieldLabel}: ${formattedValue}` : formattedValue;
     })
@@ -162,10 +159,7 @@ export function ListProductCard({
 
         {/* Primary Price - Right aligned, prominent with tier label */}
         {primaryPrice && (
-          <div
-            className="flex items-baseline gap-2 flex-shrink-0"
-            style={{ minWidth: "140px" }}
-          >
+          <div className="flex items-baseline gap-2 flex-shrink-0" style={{ minWidth: "140px" }}>
             {/* Tier Label - Prominent */}
             <div
               className="font-semibold"

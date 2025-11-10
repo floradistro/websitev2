@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { POSModal } from "./POSModal";
 import { Package, MapPin, Truck } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface OrderItem {
   id: string;
   product_name: string;
@@ -101,9 +102,7 @@ export function POSShippingQueue({
       if (locationId) params.append("locationId", locationId);
       if (vendorId) params.append("vendorId", vendorId);
 
-      const response = await fetch(
-        `/api/pos/orders/shipping?${params.toString()}`,
-      );
+      const response = await fetch(`/api/pos/orders/shipping?${params.toString()}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -115,7 +114,7 @@ export function POSShippingQueue({
       setError(null);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading shipping orders:", err);
+        logger.error("Error loading shipping orders:", err);
       }
       setError(err.message);
     } finally {
@@ -209,7 +208,7 @@ export function POSShippingQueue({
       });
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error marking order as shipped:", err);
+        logger.error("Error marking order as shipped:", err);
       }
       setModal({
         isOpen: true,
@@ -245,12 +244,10 @@ export function POSShippingQueue({
     const diffMins = Math.floor(diffMs / 60000);
 
     if (diffMins < 1) return "Just now";
-    if (diffMins < 60)
-      return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
+    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
 
     const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24)
-      return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
 
     const diffDays = Math.floor(diffHours / 24);
     return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
@@ -303,9 +300,7 @@ export function POSShippingQueue({
             >
               Mark as Shipped
             </h3>
-            <p className="text-white/60 text-sm mb-4">
-              Order #{trackingModal.orderNumber}
-            </p>
+            <p className="text-white/60 text-sm mb-4">Order #{trackingModal.orderNumber}</p>
 
             <div className="space-y-4 mb-6">
               <div>
@@ -355,15 +350,11 @@ export function POSShippingQueue({
                     trackingModal.carrier,
                   )
                 }
-                disabled={
-                  shipping === trackingModal.orderId || !trackingModal.carrier
-                }
+                disabled={shipping === trackingModal.orderId || !trackingModal.carrier}
                 className="flex-1 bg-white text-black font-black uppercase py-3 rounded-xl hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontWeight: 900 }}
               >
-                {shipping === trackingModal.orderId
-                  ? "Updating..."
-                  : "Confirm Shipment"}
+                {shipping === trackingModal.orderId ? "Updating..." : "Confirm Shipment"}
               </button>
               <button
                 onClick={() => setTrackingModal(null)}
@@ -389,13 +380,8 @@ export function POSShippingQueue({
         </div>
         <div className="flex items-center gap-4">
           <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-3">
-            <div className="text-white/40 text-xs uppercase tracking-wide">
-              Pending
-            </div>
-            <div
-              className="text-white font-black text-2xl mt-1"
-              style={{ fontWeight: 900 }}
-            >
+            <div className="text-white/40 text-xs uppercase tracking-wide">Pending</div>
+            <div className="text-white font-black text-2xl mt-1" style={{ fontWeight: 900 }}>
               {orders.length}
             </div>
           </div>
@@ -431,36 +417,24 @@ export function POSShippingQueue({
               {/* Order Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <div
-                    className="text-white font-black text-xl"
-                    style={{ fontWeight: 900 }}
-                  >
+                  <div className="text-white font-black text-xl" style={{ fontWeight: 900 }}>
                     Order #{order.order_number}
                   </div>
                   <div className="text-white/80 text-lg mt-1">
                     {order.customers.first_name} {order.customers.last_name}
                   </div>
                   {order.customers.phone && (
-                    <div className="text-white/40 text-sm mt-1">
-                      {order.customers.phone}
-                    </div>
+                    <div className="text-white/40 text-sm mt-1">{order.customers.phone}</div>
                   )}
-                  <div className="text-white/40 text-xs mt-2">
-                    {getTimeAgo(order.created_at)}
-                  </div>
+                  <div className="text-white/40 text-xs mt-2">{getTimeAgo(order.created_at)}</div>
                 </div>
                 <div className="text-right">
-                  <div
-                    className="text-white font-black text-3xl"
-                    style={{ fontWeight: 900 }}
-                  >
+                  <div className="text-white font-black text-3xl" style={{ fontWeight: 900 }}>
                     ${order.total_amount.toFixed(2)}
                   </div>
                   <div
                     className={`text-sm font-bold mt-1 ${
-                      order.payment_status === "paid"
-                        ? "text-green-500"
-                        : "text-yellow-500"
+                      order.payment_status === "paid" ? "text-green-500" : "text-yellow-500"
                     }`}
                   >
                     {order.payment_status === "paid"
@@ -473,10 +447,7 @@ export function POSShippingQueue({
               {/* Shipping Address */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-4">
                 <div className="flex items-start gap-3">
-                  <MapPin
-                    size={16}
-                    className="text-white/40 mt-0.5 flex-shrink-0"
-                  />
+                  <MapPin size={16} className="text-white/40 mt-0.5 flex-shrink-0" />
                   <div>
                     <div className="text-white/40 text-xs uppercase tracking-wider mb-1">
                       Ship To
@@ -496,17 +467,11 @@ export function POSShippingQueue({
               {/* Order Items */}
               <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
                 {order.order_items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between text-white/60 text-sm"
-                  >
+                  <div key={item.id} className="flex justify-between text-white/60 text-sm">
                     <span>
-                      {item.product_name}{" "}
-                      <span className="text-white/40">({item.quantity}x)</span>
+                      {item.product_name} <span className="text-white/40">({item.quantity}x)</span>
                     </span>
-                    <span className="font-bold">
-                      ${item.line_total.toFixed(2)}
-                    </span>
+                    <span className="font-bold">${item.line_total.toFixed(2)}</span>
                   </div>
                 ))}
               </div>

@@ -7,6 +7,7 @@ import { DollarSign } from "lucide-react";
 import { useAppAuth } from "@/context/AppAuthContext";
 import Image from "next/image";
 
+import { logger } from "@/lib/logger";
 interface POSSession {
   id: string;
   session_number: string;
@@ -65,9 +66,7 @@ export function POSSessionHeader({
     type: "info",
   });
   const [showCashDrawer, setShowCashDrawer] = useState(false);
-  const [cashSummary, setCashSummary] = useState<CashMovementSummary | null>(
-    null,
-  );
+  const [cashSummary, setCashSummary] = useState<CashMovementSummary | null>(null);
 
   // Refresh vendor data on mount to get latest logo/POS status
   useEffect(() => {
@@ -84,9 +83,7 @@ export function POSSessionHeader({
 
   const loadActiveSession = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/pos/sessions/active?locationId=${locationId}`,
-      );
+      const response = await fetch(`/api/pos/sessions/active?locationId=${locationId}`);
 
       if (response.ok) {
         const data = await response.json();
@@ -101,7 +98,7 @@ export function POSSessionHeader({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading session:", error);
+        logger.error("Error loading session:", error);
       }
       setSession(null);
     } finally {
@@ -111,16 +108,14 @@ export function POSSessionHeader({
 
   const loadCashMovements = useCallback(async (sessionId: string) => {
     try {
-      const response = await fetch(
-        `/api/pos/cash-movements?sessionId=${sessionId}`,
-      );
+      const response = await fetch(`/api/pos/cash-movements?sessionId=${sessionId}`);
       if (response.ok) {
         const data = await response.json();
         setCashSummary(data.summary);
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading cash movements:", error);
+        logger.error("Error loading cash movements:", error);
       }
     }
   }, []);
@@ -192,10 +187,7 @@ export function POSSessionHeader({
       confirmText: "Close Session",
       cancelText: "Cancel",
       onConfirm: () => {
-        const closingCash = prompt(
-          "Enter closing cash amount:",
-          session.opening_cash.toString(),
-        );
+        const closingCash = prompt("Enter closing cash amount:", session.opening_cash.toString());
         if (!closingCash) return;
         performCloseSession(parseFloat(closingCash));
       },
@@ -316,13 +308,8 @@ export function POSSessionHeader({
           )}
 
           <div>
-            <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-              Location
-            </div>
-            <div
-              className="text-white font-black text-xs"
-              style={{ fontWeight: 900 }}
-            >
+            <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Location</div>
+            <div className="text-white font-black text-xs" style={{ fontWeight: 900 }}>
               {locationName}
             </div>
           </div>
@@ -330,13 +317,8 @@ export function POSSessionHeader({
           <div className="h-6 w-px bg-white/10"></div>
 
           <div>
-            <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-              Staff
-            </div>
-            <div
-              className="text-white font-black text-xs"
-              style={{ fontWeight: 900 }}
-            >
+            <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Staff</div>
+            <div className="text-white font-black text-xs" style={{ fontWeight: 900 }}>
               {userName}
             </div>
           </div>
@@ -358,23 +340,15 @@ export function POSSessionHeader({
                 className="text-white font-black text-sm group-hover:text-green-400 transition-colors"
                 style={{ fontWeight: 900 }}
               >
-                $
-                {(cashSummary?.current_balance || session.opening_cash).toFixed(
-                  2,
-                )}
+                ${(cashSummary?.current_balance || session.opening_cash).toFixed(2)}
               </div>
             </button>
 
             <div className="h-6 w-px bg-white/10"></div>
 
             <div className="text-center">
-              <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-                Sales
-              </div>
-              <div
-                className="text-white font-black text-sm"
-                style={{ fontWeight: 900 }}
-              >
+              <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Sales</div>
+              <div className="text-white font-black text-sm" style={{ fontWeight: 900 }}>
                 ${session.total_sales.toFixed(2)}
               </div>
             </div>
@@ -385,10 +359,7 @@ export function POSSessionHeader({
               <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
                 Transactions
               </div>
-              <div
-                className="text-white font-black text-xs"
-                style={{ fontWeight: 900 }}
-              >
+              <div className="text-white font-black text-xs" style={{ fontWeight: 900 }}>
                 {session.total_transactions}
               </div>
             </div>
@@ -396,13 +367,8 @@ export function POSSessionHeader({
             <div className="h-6 w-px bg-white/10"></div>
 
             <div className="text-center">
-              <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-                Time
-              </div>
-              <div
-                className="text-white font-black text-xs"
-                style={{ fontWeight: 900 }}
-              >
+              <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Time</div>
+              <div className="text-white font-black text-xs" style={{ fontWeight: 900 }}>
                 {getSessionDuration()}
               </div>
             </div>
@@ -418,8 +384,7 @@ export function POSSessionHeader({
           {session ? (
             <>
               {/* Context-aware navigation button */}
-              {typeof window !== "undefined" &&
-              window.location.pathname === "/pos/orders" ? (
+              {typeof window !== "undefined" && window.location.pathname === "/pos/orders" ? (
                 <a
                   href="/pos/register"
                   className="px-4 py-2.5 border border-white/10 text-white rounded-2xl hover:bg-white/5 hover:border-white/20 text-[10px] font-black uppercase tracking-[0.15em] transition-all flex items-center justify-center"

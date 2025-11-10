@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRecommendedComponents } from "@/lib/component-registry";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Failed to get recommendations:", error);
+      logger.error("Failed to get recommendations:", error);
     }
     return NextResponse.json(
       { success: false, error: "Failed to get recommendations" },

@@ -20,6 +20,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
+import { logger } from "@/lib/logger";
 interface Supplier {
   id: string;
   vendor_id: string;
@@ -75,13 +76,11 @@ export default function SuppliersPage() {
   const loadSuppliers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `/api/vendor/suppliers?vendor_id=${vendor!.id}`,
-      );
+      const response = await axios.get(`/api/vendor/suppliers?vendor_id=${vendor!.id}`);
       setSuppliers(response.data.data || []);
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading suppliers:", error);
+        logger.error("Error loading suppliers:", error);
       }
     } finally {
       setLoading(false);
@@ -143,7 +142,7 @@ export default function SuppliersPage() {
       loadSuppliers();
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error saving supplier:", error);
+        logger.error("Error saving supplier:", error);
       }
       alert("Failed to save supplier");
     }
@@ -161,7 +160,7 @@ export default function SuppliersPage() {
       loadSuppliers();
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error deleting supplier:", error);
+        logger.error("Error deleting supplier:", error);
       }
       alert("Failed to delete supplier");
     }
@@ -169,11 +168,7 @@ export default function SuppliersPage() {
 
   const filteredSuppliers = suppliers.filter((s) => {
     const searchLower = search.toLowerCase();
-    const name = (
-      s.external_name ||
-      s.supplier_vendor?.store_name ||
-      ""
-    ).toLowerCase();
+    const name = (s.external_name || s.supplier_vendor?.store_name || "").toLowerCase();
     const company = (s.external_company || "").toLowerCase();
     return name.includes(searchLower) || company.includes(searchLower);
   });
@@ -242,10 +237,7 @@ export default function SuppliersPage() {
       {/* Search */}
       <Card className="mb-6" padding="sm">
         <div className="relative">
-          <Search
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
-          />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
           <input
             type="text"
             placeholder="Search suppliers..."
@@ -279,14 +271,10 @@ export default function SuppliersPage() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <h3 className="text-white font-medium text-lg mb-1">
-                    {supplier.external_name ||
-                      supplier.supplier_vendor?.store_name ||
-                      "Unnamed"}
+                    {supplier.external_name || supplier.supplier_vendor?.store_name || "Unnamed"}
                   </h3>
                   {supplier.external_company && (
-                    <p className="text-white/60 text-sm mb-2">
-                      {supplier.external_company}
-                    </p>
+                    <p className="text-white/60 text-sm mb-2">{supplier.external_company}</p>
                   )}
                   <div className="flex items-center gap-2">
                     {supplier.is_active ? (
@@ -300,9 +288,7 @@ export default function SuppliersPage() {
                         Inactive
                       </Badge>
                     )}
-                    {supplier.supplier_vendor_id && (
-                      <Badge variant="neutral">B2B Vendor</Badge>
-                    )}
+                    {supplier.supplier_vendor_id && <Badge variant="neutral">B2B Vendor</Badge>}
                   </div>
                 </div>
 
@@ -317,10 +303,7 @@ export default function SuppliersPage() {
                     onClick={() => handleDelete(supplier.id)}
                     className="p-2 hover:bg-red-500/10 border border-white/10 hover:border-red-500 rounded-md transition-all"
                   >
-                    <Trash2
-                      size={14}
-                      className="text-red-500/60 hover:text-red-500"
-                    />
+                    <Trash2 size={14} className="text-red-500/60 hover:text-red-500" />
                   </button>
                 </div>
               </div>
@@ -352,8 +335,7 @@ export default function SuppliersPage() {
                 )}
                 {supplier.payment_terms && (
                   <div className="text-white/60">
-                    <span className="text-white/40">Terms:</span>{" "}
-                    {supplier.payment_terms}
+                    <span className="text-white/40">Terms:</span> {supplier.payment_terms}
                   </div>
                 )}
               </div>
@@ -375,9 +357,7 @@ export default function SuppliersPage() {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-label mb-2">
-                    Supplier Name *
-                  </label>
+                  <label className="block text-label mb-2">Supplier Name *</label>
                   <input
                     type="text"
                     value={formData.external_name}
@@ -414,9 +394,7 @@ export default function SuppliersPage() {
                   <input
                     type="text"
                     value={formData.contact_name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, contact_name: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, contact_name: e.target.value })}
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
@@ -457,9 +435,7 @@ export default function SuppliersPage() {
                 <input
                   type="text"
                   value={formData.address_line1}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address_line1: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, address_line1: e.target.value })}
                   className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   placeholder="Street address"
                 />
@@ -471,9 +447,7 @@ export default function SuppliersPage() {
                   <input
                     type="text"
                     value={formData.city}
-                    onChange={(e) =>
-                      setFormData({ ...formData, city: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
@@ -483,9 +457,7 @@ export default function SuppliersPage() {
                   <input
                     type="text"
                     value={formData.state}
-                    onChange={(e) =>
-                      setFormData({ ...formData, state: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
@@ -495,9 +467,7 @@ export default function SuppliersPage() {
                   <input
                     type="text"
                     value={formData.zip}
-                    onChange={(e) =>
-                      setFormData({ ...formData, zip: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, zip: e.target.value })}
                     className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                   />
                 </div>
@@ -508,9 +478,7 @@ export default function SuppliersPage() {
                 <input
                   type="text"
                   value={formData.payment_terms}
-                  onChange={(e) =>
-                    setFormData({ ...formData, payment_terms: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
                   placeholder="e.g., Net 30, Net 60"
                   className="w-full bg-black border border-white/10 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-white/20 transition-colors"
                 />

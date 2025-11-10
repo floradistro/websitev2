@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(stats);
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Marketing stats error:", error);
+      logger.error("Marketing stats error:", error);
     }
     return NextResponse.json(
       { error: "Failed to load marketing stats", message: error.message },
@@ -83,8 +84,7 @@ async function getAlpineIQStats(vendorId: string): Promise<any> {
   const sent = events?.filter((e) => e.event_type === "sent").length || 0;
   const opened = events?.filter((e) => e.event_type === "opened").length || 0;
   const clicked = events?.filter((e) => e.event_type === "clicked").length || 0;
-  const revenue =
-    events?.reduce((sum, e) => sum + (e.attributed_revenue || 0), 0) || 0;
+  const revenue = events?.reduce((sum, e) => sum + (e.attributed_revenue || 0), 0) || 0;
 
   return {
     total_campaigns: syncData?.length || 0,
@@ -130,12 +130,9 @@ async function getBuiltInStats(vendorId: string): Promise<any> {
     .eq("vendor_id", vendorId);
 
   const sent = campaigns?.reduce((sum, c) => sum + (c.total_sent || 0), 0) || 0;
-  const opened =
-    campaigns?.reduce((sum, c) => sum + (c.total_opened || 0), 0) || 0;
-  const clicked =
-    campaigns?.reduce((sum, c) => sum + (c.total_clicked || 0), 0) || 0;
-  const revenue =
-    campaigns?.reduce((sum, c) => sum + (c.total_revenue || 0), 0) || 0;
+  const opened = campaigns?.reduce((sum, c) => sum + (c.total_opened || 0), 0) || 0;
+  const clicked = campaigns?.reduce((sum, c) => sum + (c.total_clicked || 0), 0) || 0;
+  const revenue = campaigns?.reduce((sum, c) => sum + (c.total_revenue || 0), 0) || 0;
 
   // Get loyalty members
   const { count: loyaltyMembers } = await supabase

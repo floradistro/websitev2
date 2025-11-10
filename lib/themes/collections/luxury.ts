@@ -9,8 +9,7 @@ export const luxuryThemes: TVTheme[] = [
   {
     id: "maison-orange",
     name: "Maison Orange",
-    description:
-      "Inspired by French luxury. Vibrant orange meets rich saddle brown.",
+    description: "Inspired by French luxury. Vibrant orange meets rich saddle brown.",
     preview: {
       background: "#2c1810",
       cardBg: "rgba(255, 102, 51, 0.08)",
@@ -57,8 +56,7 @@ export const luxuryThemes: TVTheme[] = [
   {
     id: "robins-egg",
     name: "Robin's Egg",
-    description:
-      "Inspired by iconic jewelry. Turquoise elegance meets white sophistication.",
+    description: "Inspired by iconic jewelry. Turquoise elegance meets white sophistication.",
     preview: {
       background: "#ffffff",
       cardBg: "#fafafa",
@@ -105,8 +103,7 @@ export const luxuryThemes: TVTheme[] = [
   {
     id: "crimson-royale",
     name: "Crimson Royale",
-    description:
-      "Inspired by haute joaillerie. Deep burgundy with champagne gold accents.",
+    description: "Inspired by haute joaillerie. Deep burgundy with champagne gold accents.",
     preview: {
       background: "#1a0a0a",
       cardBg: "rgba(139, 0, 0, 0.1)",
@@ -153,8 +150,7 @@ export const luxuryThemes: TVTheme[] = [
   {
     id: "monochrome-elegance",
     name: "Monochrome Elegance",
-    description:
-      "Inspired by haute couture. Pure black and white sophistication.",
+    description: "Inspired by haute couture. Pure black and white sophistication.",
     preview: {
       background: "#000000",
       cardBg: "#1a1a1a",
@@ -199,8 +195,7 @@ export const luxuryThemes: TVTheme[] = [
   {
     id: "heritage-brown",
     name: "Heritage Brown",
-    description:
-      "Inspired by legendary luggage. Rich cognac with lustrous gold.",
+    description: "Inspired by legendary luggage. Rich cognac with lustrous gold.",
     preview: {
       background: "#3e2723",
       cardBg: "rgba(121, 85, 72, 0.2)",
@@ -247,8 +242,7 @@ export const luxuryThemes: TVTheme[] = [
   {
     id: "emerald-prestige",
     name: "Emerald Prestige",
-    description:
-      "Inspired by Swiss timepieces. Deep forest green with 18k gold.",
+    description: "Inspired by Swiss timepieces. Deep forest green with 18k gold.",
     preview: {
       background: "#0a1f0f",
       cardBg: "rgba(1, 50, 32, 0.4)",
@@ -295,8 +289,7 @@ export const luxuryThemes: TVTheme[] = [
   {
     id: "champagne-classic",
     name: "Champagne Classic",
-    description:
-      "Inspired by Michelin dining. Warm beige with subtle gold accents.",
+    description: "Inspired by Michelin dining. Warm beige with subtle gold accents.",
     preview: {
       background: "#f5f1e8",
       cardBg: "#ffffff",

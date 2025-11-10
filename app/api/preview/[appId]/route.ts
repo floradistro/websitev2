@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/preview/[appId] - Serve live preview of app files
  * This returns HTML that loads the app's files from the database and renders them
@@ -74,7 +75,7 @@ export async function GET(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Preview error:", error);
+      logger.error("Preview error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -252,12 +252,9 @@ export async function GET(request: NextRequest) {
     ...product,
     display_badges: {
       isNew: isProductNew(product.created_at, menu.show_new_badge_days),
-      isLowStock:
-        product.inventory.available_quantity <= menu.low_stock_threshold,
+      isLowStock: product.inventory.available_quantity <= menu.low_stock_threshold,
       isOnSale: product.on_sale,
-      stockCount: menu.show_stock_count
-        ? product.inventory.available_quantity
-        : null,
+      stockCount: menu.show_stock_count ? product.inventory.available_quantity : null,
     },
     display_price: menu.sync_pricing
       ? product.on_sale
@@ -284,8 +281,7 @@ export async function GET(request: NextRequest) {
     products: limited,
     stats: {
       total_products: limited.length,
-      low_stock_count: limited.filter((p) => p.display_badges.isLowStock)
-        .length,
+      low_stock_count: limited.filter((p) => p.display_badges.isLowStock).length,
       on_sale_count: limited.filter((p) => p.display_badges.isOnSale).length,
     },
   });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 // POST - Toggle domain active status (admin)
 export async function POST(request: NextRequest) {
   try {
@@ -8,10 +9,7 @@ export async function POST(request: NextRequest) {
     const { domainId, isActive } = body;
 
     if (!domainId || typeof isActive !== "boolean") {
-      return NextResponse.json(
-        { error: "Invalid parameters" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid parameters" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -29,7 +27,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error toggling domain:", error);
+      logger.error("Error toggling domain:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

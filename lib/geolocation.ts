@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 /**
  * Geolocation utilities for finding nearest Flora warehouse
  */
@@ -33,10 +35,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
  */
 export async function getUserLocation(): Promise<UserLocation | null> {
   // Return cached result if available and fresh
-  if (
-    cachedLocation !== undefined &&
-    Date.now() - cacheTimestamp < CACHE_DURATION
-  ) {
+  if (cachedLocation !== undefined && Date.now() - cacheTimestamp < CACHE_DURATION) {
     return cachedLocation;
   }
 
@@ -116,12 +115,7 @@ export async function getUserLocation(): Promise<UserLocation | null> {
 /**
  * Calculate distance between two coordinates (Haversine formula)
  */
-export function calculateDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
+export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3959; // Earth radius in miles
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -150,12 +144,7 @@ export function getDistanceToLocation(
     return null;
   }
 
-  return calculateDistance(
-    userLocation.latitude,
-    userLocation.longitude,
-    coords.lat,
-    coords.lon,
-  );
+  return calculateDistance(userLocation.latitude, userLocation.longitude, coords.lat, coords.lon);
 }
 
 /**
@@ -191,17 +180,12 @@ export function findNearestLocation(
 
     if (!coords) {
       if (process.env.NODE_ENV === "development") {
-        console.warn(`No coordinates for location ${location.id}`);
+        logger.warn(`No coordinates for location ${location.id}`);
       }
       continue;
     }
 
-    const distance = calculateDistance(
-      userLat,
-      userLon,
-      coords.lat,
-      coords.lon,
-    );
+    const distance = calculateDistance(userLat, userLon, coords.lat, coords.lon);
 
     if (distance < shortestDistance) {
       shortestDistance = distance;

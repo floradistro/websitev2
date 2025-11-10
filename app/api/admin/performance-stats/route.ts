@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { monitor } from "@/lib/performance-monitor";
 import { productCache, vendorCache, inventoryCache } from "@/lib/cache-manager";
 
+import { logger } from "@/lib/logger";
 /**
  * Performance monitoring dashboard endpoint
  * Provides real-time system health metrics
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Performance stats error:", error);
+      logger.error("Performance stats error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

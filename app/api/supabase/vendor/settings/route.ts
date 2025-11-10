@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -61,16 +62,12 @@ export async function PUT(request: NextRequest) {
     // Build update object
     const updates: any = { vendor_id: vendorId };
 
-    if (body.notifications !== undefined)
-      updates.notifications = body.notifications;
-    if (body.payout_preferences !== undefined)
-      updates.payout_preferences = body.payout_preferences;
+    if (body.notifications !== undefined) updates.notifications = body.notifications;
+    if (body.payout_preferences !== undefined) updates.payout_preferences = body.payout_preferences;
     if (body.fulfillment_settings !== undefined)
       updates.fulfillment_settings = body.fulfillment_settings;
-    if (body.tax_settings !== undefined)
-      updates.tax_settings = body.tax_settings;
-    if (body.business_info !== undefined)
-      updates.business_info = body.business_info;
+    if (body.tax_settings !== undefined) updates.tax_settings = body.tax_settings;
+    if (body.business_info !== undefined) updates.business_info = body.business_info;
 
     const { data, error } = await supabase
       .from("vendor_settings")
@@ -88,7 +85,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

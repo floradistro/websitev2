@@ -2,12 +2,7 @@
 // Import once, use everywhere
 
 // VendorButton removed (unused - 0 imports)
-export {
-  VendorCard,
-  VendorCardHeader,
-  VendorCardContent,
-  VendorCardTitle,
-} from "./Card";
+export { VendorCard, VendorCardHeader, VendorCardContent, VendorCardTitle } from "./Card";
 export { VendorInput } from "./Input";
 export { VendorBadge } from "./Badge";
 export { VendorStat } from "./Stat";

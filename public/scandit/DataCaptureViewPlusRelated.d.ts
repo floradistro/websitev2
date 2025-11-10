@@ -9,9 +9,7 @@ interface FocusGestureJSON {
   type: string;
 }
 type FocusGesture = Serializable<FocusGestureJSON>;
-declare class TapToFocus
-  implements FocusGesture, Serializable<FocusGestureJSON>
-{
+declare class TapToFocus implements FocusGesture, Serializable<FocusGestureJSON> {
   private type;
   toJSONObject(): FocusGestureJSON;
 }
@@ -19,9 +17,7 @@ type ZoomGesture = Serializable<ZoomGestureJSON>;
 interface ZoomGestureJSON {
   type: string;
 }
-declare class SwipeToZoom
-  implements ZoomGesture, Serializable<ZoomGestureJSON>
-{
+declare class SwipeToZoom implements ZoomGesture, Serializable<ZoomGestureJSON> {
   private readonly type;
   toJSONObject(): ZoomGestureJSON;
 }

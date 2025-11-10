@@ -80,9 +80,7 @@ export function showWarning(message: string, title: string = "Warning") {
   });
 }
 
-export function showConfirm(
-  options: Omit<ConfirmDialog, "id">,
-): Promise<boolean> {
+export function showConfirm(options: Omit<ConfirmDialog, "id">): Promise<boolean> {
   return new Promise((resolve) => {
     const dialog: ConfirmDialog = {
       ...options,
@@ -112,9 +110,7 @@ export default function NotificationToast() {
       setNotifications((prev) => [...prev, notification]);
 
       setTimeout(() => {
-        setNotifications((prev) =>
-          prev.filter((n) => n.id !== notification.id),
-        );
+        setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
       }, notification.duration || 5000);
     };
 
@@ -126,12 +122,8 @@ export default function NotificationToast() {
     confirmCallbacks.push(confirmCallback);
 
     return () => {
-      notificationCallbacks = notificationCallbacks.filter(
-        (cb) => cb !== notifCallback,
-      );
-      confirmCallbacks = confirmCallbacks.filter(
-        (cb) => cb !== confirmCallback,
-      );
+      notificationCallbacks = notificationCallbacks.filter((cb) => cb !== notifCallback);
+      confirmCallbacks = confirmCallbacks.filter((cb) => cb !== confirmCallback);
     };
   }, []);
 
@@ -158,9 +150,7 @@ export default function NotificationToast() {
 
     switch (notification.type) {
       case "points":
-        return (
-          <Star size={18} className="text-amber-400" fill="currentColor" />
-        );
+        return <Star size={18} className="text-amber-400" fill="currentColor" />;
       case "tier":
         return <Gift size={18} className="text-purple-400" />;
       case "success":

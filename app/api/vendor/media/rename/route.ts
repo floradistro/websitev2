@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function PUT(request: NextRequest) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
@@ -26,8 +27,7 @@ export async function PUT(request: NextRequest) {
     if (!validNameRegex.test(newName)) {
       return NextResponse.json(
         {
-          error:
-            "Invalid filename. Use only letters, numbers, dash, underscore, and dot.",
+          error: "Invalid filename. Use only letters, numbers, dash, underscore, and dot.",
         },
         { status: 400 },
       );
@@ -63,7 +63,7 @@ export async function PUT(request: NextRequest) {
 
     if (moveError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Rename error:", moveError);
+        logger.error("❌ Rename error:", moveError);
       }
       return NextResponse.json({ error: moveError.message }, { status: 500 });
     }
@@ -71,9 +71,7 @@ export async function PUT(request: NextRequest) {
     // Get new public URL
     const {
       data: { publicUrl },
-    } = supabase.storage
-      .from("vendor-product-images")
-      .getPublicUrl(newFilePath);
+    } = supabase.storage.from("vendor-product-images").getPublicUrl(newFilePath);
 
     return NextResponse.json({
       success: true,
@@ -82,7 +80,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -15,10 +15,7 @@ interface POSLocationSelectorProps {
   onLocationSelected: (locationId: string, locationName: string) => void;
 }
 
-export function POSLocationSelector({
-  locations,
-  onLocationSelected,
-}: POSLocationSelectorProps) {
+export function POSLocationSelector({ locations, onLocationSelected }: POSLocationSelectorProps) {
   if (locations.length === 0) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
@@ -26,9 +23,7 @@ export function POSLocationSelector({
           <p className="text-white/40 text-sm uppercase tracking-[0.15em] mb-4">
             No locations available
           </p>
-          <p className="text-white/60 text-xs">
-            Contact your administrator to get location access
-          </p>
+          <p className="text-white/60 text-xs">Contact your administrator to get location access</p>
         </div>
       </div>
     );
@@ -48,13 +43,9 @@ export function POSLocationSelector({
               <span>Dashboard</span>
             </Link>
             <ChevronRight size={16} className="text-white/20" />
-            <span className="text-white/60 uppercase tracking-[0.15em]">
-              POS
-            </span>
+            <span className="text-white/60 uppercase tracking-[0.15em]">POS</span>
             <ChevronRight size={16} className="text-white/20" />
-            <span className="text-white uppercase tracking-[0.15em]">
-              Select Location
-            </span>
+            <span className="text-white uppercase tracking-[0.15em]">Select Location</span>
           </nav>
         </div>
 

@@ -11,11 +11,7 @@ export interface SpacerProps {
   className?: string;
 }
 
-export function Spacer({
-  size = "md",
-  direction = "vertical",
-  className = "",
-}: SpacerProps) {
+export function Spacer({ size = "md", direction = "vertical", className = "" }: SpacerProps) {
   const verticalSizes: Record<string, string> = {
     xs: "h-2",
     sm: "h-4",
@@ -36,8 +32,7 @@ export function Spacer({
     "3xl": "w-32",
   };
 
-  const sizeClass =
-    direction === "vertical" ? verticalSizes[size] : horizontalSizes[size];
+  const sizeClass = direction === "vertical" ? verticalSizes[size] : horizontalSizes[size];
 
   return <div className={`${sizeClass} ${className}`} aria-hidden="true" />;
 }

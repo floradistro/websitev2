@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 export interface CreateProjectOptions {
   name: string;
   gitRepo: string; // e.g., "yourorg/repo-name"
@@ -23,12 +25,7 @@ export interface VercelDeployment {
 }
 
 export async function createVercelProject(options: CreateProjectOptions) {
-  const {
-    name,
-    gitRepo,
-    environmentVariables = {},
-    framework = "nextjs",
-  } = options;
+  const { name, gitRepo, environmentVariables = {}, framework = "nextjs" } = options;
 
   const vercelToken = process.env.VERCEL_TOKEN;
 
@@ -50,14 +47,12 @@ export async function createVercelProject(options: CreateProjectOptions) {
           repo: gitRepo,
         },
         framework,
-        environmentVariables: Object.entries(environmentVariables).map(
-          ([key, value]) => ({
-            key,
-            value,
-            type: "plain",
-            target: ["production", "preview", "development"],
-          }),
-        ),
+        environmentVariables: Object.entries(environmentVariables).map(([key, value]) => ({
+          key,
+          value,
+          type: "plain",
+          target: ["production", "preview", "development"],
+        })),
         buildCommand: "npm run build",
         outputDirectory: ".next",
         installCommand: "npm install",
@@ -84,7 +79,7 @@ export async function createVercelProject(options: CreateProjectOptions) {
     };
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error creating Vercel project:", error);
+      logger.error("Error creating Vercel project:", error);
     }
     throw new Error(`Failed to create Vercel project: ${error.message}`);
   }
@@ -120,7 +115,7 @@ export async function triggerDeployment(projectId: string) {
     return deployment;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error triggering deployment:", error);
+      logger.error("Error triggering deployment:", error);
     }
     throw new Error(`Failed to trigger deployment: ${error.message}`);
   }
@@ -134,14 +129,11 @@ export async function getDeploymentStatus(deploymentId: string) {
   }
 
   try {
-    const response = await fetch(
-      `https://api.vercel.com/v13/deployments/${deploymentId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${vercelToken}`,
-        },
+    const response = await fetch(`https://api.vercel.com/v13/deployments/${deploymentId}`, {
+      headers: {
+        Authorization: `Bearer ${vercelToken}`,
       },
-    );
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -152,7 +144,7 @@ export async function getDeploymentStatus(deploymentId: string) {
     return deployment;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error getting deployment status:", error);
+      logger.error("Error getting deployment status:", error);
     }
     throw new Error(`Failed to get deployment status: ${error.message}`);
   }
@@ -169,14 +161,11 @@ export async function getDeploymentLogs(deploymentId: string) {
   }
 
   try {
-    const response = await fetch(
-      `https://api.vercel.com/v2/deployments/${deploymentId}/events`,
-      {
-        headers: {
-          Authorization: `Bearer ${vercelToken}`,
-        },
+    const response = await fetch(`https://api.vercel.com/v2/deployments/${deploymentId}/events`, {
+      headers: {
+        Authorization: `Bearer ${vercelToken}`,
       },
-    );
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -188,10 +177,7 @@ export async function getDeploymentLogs(deploymentId: string) {
     // Clean up and format logs for display
     return data
       .filter(
-        (log: any) =>
-          log.type === "stdout" ||
-          log.type === "stderr" ||
-          log.type === "command",
+        (log: any) => log.type === "stdout" || log.type === "stderr" || log.type === "command",
       )
       .map((log: any) => ({
         id: log.id || `${Date.now()}-${Math.random()}`,
@@ -201,7 +187,7 @@ export async function getDeploymentLogs(deploymentId: string) {
       }));
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error getting deployment logs:", error);
+      logger.error("Error getting deployment logs:", error);
     }
     // Return empty array instead of throwing - logs are nice-to-have
     return [];
@@ -219,17 +205,14 @@ export async function addCustomDomain(projectId: string, domain: string) {
   }
 
   try {
-    const response = await fetch(
-      `https://api.vercel.com/v9/projects/${projectId}/domains`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${vercelToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: domain }),
+    const response = await fetch(`https://api.vercel.com/v9/projects/${projectId}/domains`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${vercelToken}`,
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({ name: domain }),
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -241,7 +224,7 @@ export async function addCustomDomain(projectId: string, domain: string) {
     return domainData;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error adding custom domain:", error);
+      logger.error("Error adding custom domain:", error);
     }
     throw new Error(`Failed to add custom domain: ${error.message}`);
   }
@@ -250,10 +233,7 @@ export async function addCustomDomain(projectId: string, domain: string) {
 /**
  * Get recent deployments for a project
  */
-export async function getRecentDeployments(
-  projectId: string,
-  limit: number = 10,
-) {
+export async function getRecentDeployments(projectId: string, limit: number = 10) {
   const vercelToken = process.env.VERCEL_TOKEN;
 
   if (!vercelToken) {
@@ -279,7 +259,7 @@ export async function getRecentDeployments(
     return data.deployments || [];
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error getting deployments:", error);
+      logger.error("Error getting deployments:", error);
     }
     throw new Error(`Failed to get deployments: ${error.message}`);
   }
@@ -288,10 +268,7 @@ export async function getRecentDeployments(
 /**
  * Remove a domain from a Vercel project
  */
-export async function removeDomainFromProject(
-  projectId: string,
-  domain: string,
-) {
+export async function removeDomainFromProject(projectId: string, domain: string) {
   const vercelToken = process.env.VERCEL_TOKEN;
 
   if (!vercelToken) {
@@ -320,7 +297,7 @@ export async function removeDomainFromProject(
     return true;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error removing domain:", error);
+      logger.error("Error removing domain:", error);
     }
     throw new Error(`Failed to remove domain: ${error.message}`);
   }
@@ -330,9 +307,7 @@ export async function removeDomainFromProject(
  * Check which project owns a domain (if any)
  * Returns the project ID or null
  */
-export async function checkDomainOwnership(
-  domain: string,
-): Promise<string | null> {
+export async function checkDomainOwnership(domain: string): Promise<string | null> {
   const vercelToken = process.env.VERCEL_TOKEN;
 
   if (!vercelToken) {
@@ -340,14 +315,11 @@ export async function checkDomainOwnership(
   }
 
   try {
-    const response = await fetch(
-      `https://api.vercel.com/v9/projects?limit=100`,
-      {
-        headers: {
-          Authorization: `Bearer ${vercelToken}`,
-        },
+    const response = await fetch(`https://api.vercel.com/v9/projects?limit=100`, {
+      headers: {
+        Authorization: `Bearer ${vercelToken}`,
       },
-    );
+    });
 
     if (!response.ok) {
       const error = await response.text();
@@ -367,7 +339,7 @@ export async function checkDomainOwnership(
     return null;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error checking domain ownership:", error);
+      logger.error("Error checking domain ownership:", error);
     }
     return null;
   }

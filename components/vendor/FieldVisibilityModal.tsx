@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { Monitor, FileText, Tablet, Tv, Save } from "lucide-react";
 import { Modal, Button, ds, cn } from "@/components/ds";
 
+import { logger } from "@/lib/logger";
 interface FieldVisibilityModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -61,7 +62,7 @@ export function FieldVisibilityModal({
       onClose();
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to save:", error);
+        logger.error("Failed to save:", error);
       }
     } finally {
       setIsSaving(false);
@@ -100,12 +101,7 @@ export function FieldVisibilityModal({
   ];
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Field Visibility: ${fieldName}`}
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={`Field Visibility: ${fieldName}`} size="md">
       <div className="space-y-3 mb-6">
         <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
           Configure where this field appears in your store
@@ -130,20 +126,11 @@ export function FieldVisibilityModal({
                 <Icon
                   size={16}
                   strokeWidth={1.5}
-                  className={
-                    isEnabled ? "text-green-400" : cn(ds.colors.text.whisper)
-                  }
+                  className={isEnabled ? "text-green-400" : cn(ds.colors.text.whisper)}
                 />
                 <div className="text-left">
-                  <div className={cn(ds.typography.size.xs, "text-white/90")}>
-                    {option.label}
-                  </div>
-                  <div
-                    className={cn(
-                      ds.typography.size.micro,
-                      ds.colors.text.quaternary,
-                    )}
-                  >
+                  <div className={cn(ds.typography.size.xs, "text-white/90")}>{option.label}</div>
+                  <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}>
                     {option.description}
                   </div>
                 </div>
@@ -176,8 +163,7 @@ export function FieldVisibilityModal({
         )}
       >
         <p className={cn(ds.typography.size.xs, "text-white/70")}>
-          💡 Fields hidden from certain views won't appear, but their data is
-          preserved
+          💡 Fields hidden from certain views won't appear, but their data is preserved
         </p>
       </div>
 

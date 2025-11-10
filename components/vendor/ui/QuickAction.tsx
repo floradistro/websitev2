@@ -11,12 +11,7 @@ interface QuickActionProps {
   className?: string;
 }
 
-export function VendorQuickAction({
-  href,
-  icon: Icon,
-  label,
-  className,
-}: QuickActionProps) {
+export function VendorQuickAction({ href, icon: Icon, label, className }: QuickActionProps) {
   return (
     <Link href={href} className={tw(vendorTheme.components.action, className)}>
       <div className="w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 rounded-[12px] flex items-center justify-center transition-all duration-300 group-hover:scale-110 border border-white/10">

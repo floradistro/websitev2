@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ agents });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching agents:", error);
+      logger.error("Error fetching agents:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ agent }, { status: 201 });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error creating agent:", error);
+      logger.error("Error creating agent:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -71,7 +72,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ agent });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating agent:", error);
+      logger.error("Error updating agent:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -94,7 +95,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error deleting agent:", error);
+      logger.error("Error deleting agent:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

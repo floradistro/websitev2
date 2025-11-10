@@ -2,18 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Search,
-  X,
-  Package,
-  ShoppingCart,
-  Users,
-  Tag,
-  BarChart3,
-  TrendingUp,
-} from "lucide-react";
+import { Search, X, Package, ShoppingCart, Users, Tag, BarChart3, TrendingUp } from "lucide-react";
 import { useAppAuth } from "@/context/AppAuthContext";
 
+import { logger } from "@/lib/logger";
 interface SearchResult {
   id: string;
   type: "product" | "order" | "customer" | "app";
@@ -77,7 +69,7 @@ export function UniversalSearch() {
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Search error:", error);
+          logger.error("Search error:", error);
         }
       } finally {
         setLoading(false);
@@ -110,21 +102,11 @@ export function UniversalSearch() {
   const getIcon = (type: string) => {
     switch (type) {
       case "product":
-        return (
-          <Package size={16} className="text-cyan-400/70" strokeWidth={1.5} />
-        );
+        return <Package size={16} className="text-cyan-400/70" strokeWidth={1.5} />;
       case "order":
-        return (
-          <ShoppingCart
-            size={16}
-            className="text-purple-400/70"
-            strokeWidth={1.5}
-          />
-        );
+        return <ShoppingCart size={16} className="text-purple-400/70" strokeWidth={1.5} />;
       case "customer":
-        return (
-          <Users size={16} className="text-teal-400/70" strokeWidth={1.5} />
-        );
+        return <Users size={16} className="text-teal-400/70" strokeWidth={1.5} />;
       case "app":
         return <Tag size={16} className="text-blue-400/70" strokeWidth={1.5} />;
       default:
@@ -140,12 +122,8 @@ export function UniversalSearch() {
         className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-lg transition-all duration-200"
       >
         <Search size={14} className="text-white/40" strokeWidth={2} />
-        <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-          Search
-        </span>
-        <span className="hidden md:inline text-white/20 text-[9px] ml-1">
-          ⌘K
-        </span>
+        <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Search</span>
+        <span className="hidden md:inline text-white/20 text-[9px] ml-1">⌘K</span>
       </button>
 
       {/* Search Modal */}
@@ -183,15 +161,11 @@ export function UniversalSearch() {
             {/* Results */}
             <div className="max-h-[400px] overflow-y-auto">
               {loading && (
-                <div className="py-8 text-center text-white/30 text-sm">
-                  Searching...
-                </div>
+                <div className="py-8 text-center text-white/30 text-sm">Searching...</div>
               )}
 
               {!loading && query && results.length === 0 && (
-                <div className="py-8 text-center text-white/30 text-sm">
-                  No results found
-                </div>
+                <div className="py-8 text-center text-white/30 text-sm">No results found</div>
               )}
 
               {!loading && results.length > 0 && (
@@ -201,22 +175,16 @@ export function UniversalSearch() {
                       key={result.id}
                       onClick={() => handleResultClick(result)}
                       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                        index === selectedIndex
-                          ? "bg-white/[0.08]"
-                          : "hover:bg-white/[0.04]"
+                        index === selectedIndex ? "bg-white/[0.08]" : "hover:bg-white/[0.04]"
                       }`}
                     >
-                      <div className="flex-shrink-0">
-                        {getIcon(result.type)}
-                      </div>
+                      <div className="flex-shrink-0">{getIcon(result.type)}</div>
                       <div className="flex-1 min-w-0">
                         <div className="text-white text-sm font-medium truncate">
                           {result.title}
                         </div>
                         {result.subtitle && (
-                          <div className="text-white/40 text-xs truncate">
-                            {result.subtitle}
-                          </div>
+                          <div className="text-white/40 text-xs truncate">{result.subtitle}</div>
                         )}
                       </div>
                       <div className="text-white/20 text-[10px] uppercase tracking-wider">

@@ -16,14 +16,12 @@ export default function CategorySelector({
   showAllOption = true,
 }: CategorySelectorProps) {
   const [isAllSelected, setIsAllSelected] = useState(
-    selectedCategories.length === 0 ||
-      selectedCategories.length === availableCategories.length,
+    selectedCategories.length === 0 || selectedCategories.length === availableCategories.length,
   );
 
   useEffect(() => {
     setIsAllSelected(
-      selectedCategories.length === 0 ||
-        selectedCategories.length === availableCategories.length,
+      selectedCategories.length === 0 || selectedCategories.length === availableCategories.length,
     );
   }, [selectedCategories, availableCategories]);
 
@@ -62,13 +60,9 @@ export default function CategorySelector({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-white">
-          Display Categories
-        </label>
+        <label className="text-sm font-medium text-white">Display Categories</label>
         <span className="text-xs text-white/40">
-          {isAllSelected
-            ? "All categories"
-            : `${selectedCategories.length} selected`}
+          {isAllSelected ? "All categories" : `${selectedCategories.length} selected`}
         </span>
       </div>
 
@@ -113,14 +107,13 @@ export default function CategorySelector({
 
       {availableCategories.length === 0 && (
         <div className="text-sm text-white/40 italic py-4 text-center bg-white/5 border border-white/10 rounded-lg">
-          No categories found. Make sure products have categories assigned in
-          your inventory.
+          No categories found. Make sure products have categories assigned in your inventory.
         </div>
       )}
 
       <p className="text-xs text-white/30 mt-2">
-        Select specific categories to display on the menu, or choose "All
-        Categories" to show everything.
+        Select specific categories to display on the menu, or choose "All Categories" to show
+        everything.
       </p>
     </div>
   );

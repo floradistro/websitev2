@@ -31,13 +31,10 @@ interface AdvancedPropertyEditorProps {
   onUpdate: (updates: any) => void;
 }
 
-export function AdvancedPropertyEditor({
-  component,
-  onUpdate,
-}: AdvancedPropertyEditorProps) {
-  const [activeTab, setActiveTab] = useState<
-    "content" | "layout" | "style" | "advanced"
-  >("content");
+export function AdvancedPropertyEditor({ component, onUpdate }: AdvancedPropertyEditorProps) {
+  const [activeTab, setActiveTab] = useState<"content" | "layout" | "style" | "advanced">(
+    "content",
+  );
 
   const handlePropChange = (key: string, value: any) => {
     onUpdate({
@@ -95,9 +92,7 @@ export function AdvancedPropertyEditor({
                   </label>
                   <textarea
                     value={component.props.content || ""}
-                    onChange={(e) =>
-                      handlePropChange("content", e.target.value)
-                    }
+                    onChange={(e) => handlePropChange("content", e.target.value)}
                     className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-2 text-xs text-white resize-none"
                     rows={4}
                   />
@@ -109,9 +104,7 @@ export function AdvancedPropertyEditor({
                   </label>
                   <select
                     value={component.props.variant || "paragraph"}
-                    onChange={(e) =>
-                      handlePropChange("variant", e.target.value)
-                    }
+                    onChange={(e) => handlePropChange("variant", e.target.value)}
                     className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                   >
                     <option value="headline">Headline</option>
@@ -149,9 +142,7 @@ export function AdvancedPropertyEditor({
                     </label>
                     <select
                       value={component.props.fontWeight || "normal"}
-                      onChange={(e) =>
-                        handlePropChange("fontWeight", e.target.value)
-                      }
+                      onChange={(e) => handlePropChange("fontWeight", e.target.value)}
                       className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                     >
                       <option value="light">Light</option>
@@ -196,17 +187,13 @@ export function AdvancedPropertyEditor({
                     <input
                       type="color"
                       value={component.props.color || "#ffffff"}
-                      onChange={(e) =>
-                        handlePropChange("color", e.target.value)
-                      }
+                      onChange={(e) => handlePropChange("color", e.target.value)}
                       className="w-10 h-8 rounded border border-neutral-700 bg-[#1e1e1e]"
                     />
                     <input
                       type="text"
                       value={component.props.color || "#ffffff"}
-                      onChange={(e) =>
-                        handlePropChange("color", e.target.value)
-                      }
+                      onChange={(e) => handlePropChange("color", e.target.value)}
                       className="flex-1 bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white font-mono"
                     />
                   </div>
@@ -252,9 +239,7 @@ export function AdvancedPropertyEditor({
                     </label>
                     <select
                       value={component.props.variant || "primary"}
-                      onChange={(e) =>
-                        handlePropChange("variant", e.target.value)
-                      }
+                      onChange={(e) => handlePropChange("variant", e.target.value)}
                       className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                     >
                       <option value="primary">Primary</option>
@@ -300,9 +285,7 @@ export function AdvancedPropertyEditor({
               </label>
               <select
                 value={component.container_config?.display || "block"}
-                onChange={(e) =>
-                  handleContainerChange("display", e.target.value)
-                }
+                onChange={(e) => handleContainerChange("display", e.target.value)}
                 className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
               >
                 <option value="block">Block</option>
@@ -321,9 +304,7 @@ export function AdvancedPropertyEditor({
                     </label>
                     <select
                       value={component.container_config?.flexDirection || "row"}
-                      onChange={(e) =>
-                        handleContainerChange("flexDirection", e.target.value)
-                      }
+                      onChange={(e) => handleContainerChange("flexDirection", e.target.value)}
                       className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                     >
                       <option value="row">Row</option>
@@ -336,13 +317,8 @@ export function AdvancedPropertyEditor({
                       Justify
                     </label>
                     <select
-                      value={
-                        component.container_config?.justifyContent ||
-                        "flex-start"
-                      }
-                      onChange={(e) =>
-                        handleContainerChange("justifyContent", e.target.value)
-                      }
+                      value={component.container_config?.justifyContent || "flex-start"}
+                      onChange={(e) => handleContainerChange("justifyContent", e.target.value)}
                       className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                     >
                       <option value="flex-start">Start</option>
@@ -359,12 +335,8 @@ export function AdvancedPropertyEditor({
                     Align Items
                   </label>
                   <select
-                    value={
-                      component.container_config?.alignItems || "flex-start"
-                    }
-                    onChange={(e) =>
-                      handleContainerChange("alignItems", e.target.value)
-                    }
+                    value={component.container_config?.alignItems || "flex-start"}
+                    onChange={(e) => handleContainerChange("alignItems", e.target.value)}
                     className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                   >
                     <option value="flex-start">Start</option>
@@ -381,9 +353,7 @@ export function AdvancedPropertyEditor({
                   <input
                     type="number"
                     value={component.container_config?.gap || 0}
-                    onChange={(e) =>
-                      handleContainerChange("gap", parseInt(e.target.value))
-                    }
+                    onChange={(e) => handleContainerChange("gap", parseInt(e.target.value))}
                     className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                     min="0"
                     step="4"
@@ -400,9 +370,7 @@ export function AdvancedPropertyEditor({
                 <input
                   type="text"
                   value={component.container_config?.width || "auto"}
-                  onChange={(e) =>
-                    handleContainerChange("width", e.target.value)
-                  }
+                  onChange={(e) => handleContainerChange("width", e.target.value)}
                   placeholder="auto, 100%, 500px"
                   className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                 />
@@ -415,9 +383,7 @@ export function AdvancedPropertyEditor({
                 <input
                   type="text"
                   value={component.container_config?.height || "auto"}
-                  onChange={(e) =>
-                    handleContainerChange("height", e.target.value)
-                  }
+                  onChange={(e) => handleContainerChange("height", e.target.value)}
                   placeholder="auto, 100%, 500px"
                   className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                 />
@@ -491,22 +457,14 @@ export function AdvancedPropertyEditor({
               <div className="flex gap-2">
                 <input
                   type="color"
-                  value={
-                    component.container_config?.backgroundColor || "#000000"
-                  }
-                  onChange={(e) =>
-                    handleContainerChange("backgroundColor", e.target.value)
-                  }
+                  value={component.container_config?.backgroundColor || "#000000"}
+                  onChange={(e) => handleContainerChange("backgroundColor", e.target.value)}
                   className="w-10 h-8 rounded border border-neutral-700 bg-[#1e1e1e]"
                 />
                 <input
                   type="text"
-                  value={
-                    component.container_config?.backgroundColor || "transparent"
-                  }
-                  onChange={(e) =>
-                    handleContainerChange("backgroundColor", e.target.value)
-                  }
+                  value={component.container_config?.backgroundColor || "transparent"}
+                  onChange={(e) => handleContainerChange("backgroundColor", e.target.value)}
                   className="flex-1 bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white font-mono"
                 />
               </div>
@@ -520,21 +478,14 @@ export function AdvancedPropertyEditor({
                 <input
                   type="number"
                   value={component.container_config?.borderWidth || 0}
-                  onChange={(e) =>
-                    handleContainerChange(
-                      "borderWidth",
-                      parseInt(e.target.value),
-                    )
-                  }
+                  onChange={(e) => handleContainerChange("borderWidth", parseInt(e.target.value))}
                   placeholder="Width"
                   className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                   min="0"
                 />
                 <select
                   value={component.container_config?.borderStyle || "solid"}
-                  onChange={(e) =>
-                    handleContainerChange("borderStyle", e.target.value)
-                  }
+                  onChange={(e) => handleContainerChange("borderStyle", e.target.value)}
                   className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                 >
                   <option value="solid">Solid</option>
@@ -544,9 +495,7 @@ export function AdvancedPropertyEditor({
                 <input
                   type="color"
                   value={component.container_config?.borderColor || "#000000"}
-                  onChange={(e) =>
-                    handleContainerChange("borderColor", e.target.value)
-                  }
+                  onChange={(e) => handleContainerChange("borderColor", e.target.value)}
                   className="w-full h-8 rounded border border-neutral-700 bg-[#1e1e1e]"
                 />
               </div>
@@ -559,12 +508,7 @@ export function AdvancedPropertyEditor({
               <input
                 type="number"
                 value={component.container_config?.borderRadius || 0}
-                onChange={(e) =>
-                  handleContainerChange(
-                    "borderRadius",
-                    parseInt(e.target.value),
-                  )
-                }
+                onChange={(e) => handleContainerChange("borderRadius", parseInt(e.target.value))}
                 className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                 min="0"
               />
@@ -576,9 +520,7 @@ export function AdvancedPropertyEditor({
               </label>
               <select
                 value={component.container_config?.boxShadow || "none"}
-                onChange={(e) =>
-                  handleContainerChange("boxShadow", e.target.value)
-                }
+                onChange={(e) => handleContainerChange("boxShadow", e.target.value)}
                 className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
               >
                 <option value="none">None</option>
@@ -597,9 +539,7 @@ export function AdvancedPropertyEditor({
               <input
                 type="range"
                 value={component.container_config?.opacity || 1}
-                onChange={(e) =>
-                  handleContainerChange("opacity", parseFloat(e.target.value))
-                }
+                onChange={(e) => handleContainerChange("opacity", parseFloat(e.target.value))}
                 className="w-full"
                 min="0"
                 max="1"
@@ -620,9 +560,7 @@ export function AdvancedPropertyEditor({
               </label>
               <select
                 value={component.container_config?.animation || "none"}
-                onChange={(e) =>
-                  handleContainerChange("animation", e.target.value)
-                }
+                onChange={(e) => handleContainerChange("animation", e.target.value)}
                 className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
               >
                 <option value="none">None</option>
@@ -643,51 +581,33 @@ export function AdvancedPropertyEditor({
                   <input
                     type="number"
                     value={component.container_config?.rotate || 0}
-                    onChange={(e) =>
-                      handleContainerChange("rotate", parseInt(e.target.value))
-                    }
+                    onChange={(e) => handleContainerChange("rotate", parseInt(e.target.value))}
                     placeholder="Rotate"
                     className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                   />
-                  <div className="text-[10px] text-neutral-600 text-center mt-0.5">
-                    Rotate
-                  </div>
+                  <div className="text-[10px] text-neutral-600 text-center mt-0.5">Rotate</div>
                 </div>
                 <div>
                   <input
                     type="number"
                     value={component.container_config?.scaleX || 1}
-                    onChange={(e) =>
-                      handleContainerChange(
-                        "scaleX",
-                        parseFloat(e.target.value),
-                      )
-                    }
+                    onChange={(e) => handleContainerChange("scaleX", parseFloat(e.target.value))}
                     placeholder="Scale X"
                     step="0.1"
                     className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                   />
-                  <div className="text-[10px] text-neutral-600 text-center mt-0.5">
-                    Scale X
-                  </div>
+                  <div className="text-[10px] text-neutral-600 text-center mt-0.5">Scale X</div>
                 </div>
                 <div>
                   <input
                     type="number"
                     value={component.container_config?.scaleY || 1}
-                    onChange={(e) =>
-                      handleContainerChange(
-                        "scaleY",
-                        parseFloat(e.target.value),
-                      )
-                    }
+                    onChange={(e) => handleContainerChange("scaleY", parseFloat(e.target.value))}
                     placeholder="Scale Y"
                     step="0.1"
                     className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
                   />
-                  <div className="text-[10px] text-neutral-600 text-center mt-0.5">
-                    Scale Y
-                  </div>
+                  <div className="text-[10px] text-neutral-600 text-center mt-0.5">Scale Y</div>
                 </div>
               </div>
             </div>
@@ -700,10 +620,7 @@ export function AdvancedPropertyEditor({
                 type="number"
                 value={component.container_config?.transitionDuration || 300}
                 onChange={(e) =>
-                  handleContainerChange(
-                    "transitionDuration",
-                    parseInt(e.target.value),
-                  )
+                  handleContainerChange("transitionDuration", parseInt(e.target.value))
                 }
                 placeholder="ms"
                 className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
@@ -719,9 +636,7 @@ export function AdvancedPropertyEditor({
               <input
                 type="number"
                 value={component.container_config?.zIndex || 0}
-                onChange={(e) =>
-                  handleContainerChange("zIndex", parseInt(e.target.value))
-                }
+                onChange={(e) => handleContainerChange("zIndex", parseInt(e.target.value))}
                 className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
               />
             </div>
@@ -732,9 +647,7 @@ export function AdvancedPropertyEditor({
               </label>
               <select
                 value={component.container_config?.overflow || "visible"}
-                onChange={(e) =>
-                  handleContainerChange("overflow", e.target.value)
-                }
+                onChange={(e) => handleContainerChange("overflow", e.target.value)}
                 className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
               >
                 <option value="visible">Visible</option>
@@ -750,9 +663,7 @@ export function AdvancedPropertyEditor({
               </label>
               <select
                 value={component.container_config?.position || "relative"}
-                onChange={(e) =>
-                  handleContainerChange("position", e.target.value)
-                }
+                onChange={(e) => handleContainerChange("position", e.target.value)}
                 className="w-full bg-[#1e1e1e] border border-neutral-700 rounded px-2 py-1.5 text-xs text-white"
               >
                 <option value="static">Static</option>

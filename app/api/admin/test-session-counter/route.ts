@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -13,14 +14,11 @@ export async function POST(request: NextRequest) {
     const supabase = getServiceSupabase();
 
     // Step 1: Check if function exists
-    const { data: functions, error: funcError } = await supabase.rpc(
-      "increment_session_counter",
-      {
-        p_session_id: "00000000-0000-0000-0000-000000000000", // Dummy UUID (won't match anything)
-        p_counter_name: "walk_in_sales",
-        p_amount: 0,
-      },
-    );
+    const { data: functions, error: funcError } = await supabase.rpc("increment_session_counter", {
+      p_session_id: "00000000-0000-0000-0000-000000000000", // Dummy UUID (won't match anything)
+      p_counter_name: "walk_in_sales",
+      p_amount: 0,
+    });
 
     if (funcError) {
       if (funcError.message.includes("Could not find the function")) {
@@ -28,8 +26,7 @@ export async function POST(request: NextRequest) {
           {
             success: false,
             error: "Function does not exist",
-            message:
-              "The increment_session_counter function was not found in the database",
+            message: "The increment_session_counter function was not found in the database",
           },
           { status: 404 },
         );
@@ -60,18 +57,15 @@ export async function POST(request: NextRequest) {
 
     // Step 3: Test the function with a small amount
     const testAmount = 0.01;
-    const { error: incrementError } = await supabase.rpc(
-      "increment_session_counter",
-      {
-        p_session_id: session.id,
-        p_counter_name: "walk_in_sales",
-        p_amount: testAmount,
-      },
-    );
+    const { error: incrementError } = await supabase.rpc("increment_session_counter", {
+      p_session_id: session.id,
+      p_counter_name: "walk_in_sales",
+      p_amount: testAmount,
+    });
 
     if (incrementError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Increment failed:", incrementError);
+        logger.error("❌ Increment failed:", incrementError);
       }
       return NextResponse.json(
         {
@@ -115,8 +109,7 @@ export async function POST(request: NextRequest) {
 
     // Verify the function worked
     const walkInIncreased = afterWalkIn === beforeWalkIn + 1;
-    const totalIncreased =
-      Math.abs(afterTotal - (parseFloat(beforeTotal) + testAmount)) < 0.001;
+    const totalIncreased = Math.abs(afterTotal - (parseFloat(beforeTotal) + testAmount)) < 0.001;
 
     if (walkInIncreased && totalIncreased) {
       return NextResponse.json({
@@ -157,7 +150,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Test failed:", error);
+      logger.error("❌ Test failed:", error);
     }
     return NextResponse.json(
       {

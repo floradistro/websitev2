@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createAlpineIQClient } from "@/lib/marketing/alpineiq-client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -32,10 +33,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!vendor || (vendor as any).marketing_provider !== "alpineiq") {
-      return NextResponse.json(
-        { error: "Vendor not configured for Alpine IQ" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Vendor not configured for Alpine IQ" }, { status: 400 });
     }
 
     // Initialize Alpine IQ client
@@ -44,21 +42,7 @@ export async function POST(request: NextRequest) {
     // Test connection
     const connected = await alpineiq.testConnection();
     if (!connected) {
-      return NextResponse.json(
-        { error: "Failed to connect to Alpine IQ" },
-        { status: 500 },
-      );
-    }
-
-    // Get loyalty audience info
-
-    const audienceInfo = await alpineiq.getLoyaltyAudienceInfo();
-
-    if (!audienceInfo) {
-      return NextResponse.json({
-        success: false,
-        error: "No loyalty program found in Alpine IQ",
-      });
+      return NextResponse.json({ error: "Failed to connect to Alpine IQ" }, { status: 500 });
     }
 
     // Get customers who have ordered from this vendor
@@ -76,7 +60,6 @@ export async function POST(request: NextRequest) {
         success: true,
         synced: 0,
         message: "No orders found for this vendor",
-        audienceInfo,
       });
     }
 
@@ -95,15 +78,11 @@ export async function POST(request: NextRequest) {
         success: true,
         synced: 0,
         message: "No customers found in orders",
-        audienceInfo,
       });
     }
 
     // Get unique customer IDs
-    const customerIds = [...new Set(orders.map((o) => o.customer_id))].slice(
-      0,
-      limit,
-    );
+    const customerIds = [...new Set(orders.map((o) => o.customer_id))].slice(0, limit);
 
     // Now get customer details
     const { data: customers } = await supabase
@@ -117,7 +96,6 @@ export async function POST(request: NextRequest) {
         success: true,
         synced: 0,
         message: "No customers with email addresses found",
-        audienceInfo,
       });
     }
 
@@ -125,9 +103,7 @@ export async function POST(request: NextRequest) {
     // Look up each customer in Alpine IQ
     for (const customer of customers) {
       try {
-        const loyaltyData = await alpineiq.lookupCustomerLoyalty(
-          customer.email,
-        );
+        const loyaltyData = await alpineiq.lookupCustomerLoyalty(customer.email);
 
         if (loyaltyData) {
           members.push({
@@ -137,7 +113,7 @@ export async function POST(request: NextRequest) {
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error(`Failed to lookup ${customer.email}:`, error);
+          logger.error(`Failed to lookup ${customer.email}:`, error);
         }
       }
     }
@@ -146,9 +122,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         synced: 0,
-        message:
-          "None of your customers were found in Alpine IQ loyalty program",
-        audienceInfo,
+        message: "None of your customers were found in Alpine IQ loyalty program",
         customersChecked: customers.length,
       });
     }
@@ -161,23 +135,21 @@ export async function POST(request: NextRequest) {
     for (const member of members) {
       try {
         // Upsert loyalty data
-        const { error: loyaltyError } = await supabase
-          .from("customer_loyalty")
-          .upsert({
-            customer_id: member.customerId,
-            vendor_id: vendorId,
-            provider: "alpineiq",
-            points_balance: member.points || 0,
-            tier_name: member.tier || "Member",
-            tier_level: member.tierLevel || 1,
-            lifetime_points: member.lifetimePoints || 0,
-            alpineiq_customer_id: member.id,
-            last_synced_at: new Date().toISOString(),
-          });
+        const { error: loyaltyError } = await supabase.from("customer_loyalty").upsert({
+          customer_id: member.customerId,
+          vendor_id: vendorId,
+          provider: "alpineiq",
+          points_balance: member.points || 0,
+          tier_name: member.tier || "Member",
+          tier_level: member.tierLevel || 1,
+          lifetime_points: member.lifetimePoints || 0,
+          alpineiq_customer_id: member.id,
+          last_synced_at: new Date().toISOString(),
+        });
 
         if (loyaltyError) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Failed to sync loyalty data:", loyaltyError);
+            logger.error("Failed to sync loyalty data:", loyaltyError);
           }
           errors++;
         } else {
@@ -190,7 +162,7 @@ export async function POST(request: NextRequest) {
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error processing member:", error);
+          logger.error("Error processing member:", error);
         }
         errors++;
       }
@@ -201,12 +173,11 @@ export async function POST(request: NextRequest) {
       synced,
       errors,
       customersChecked: customers.length,
-      totalLoyaltyMembers: audienceInfo.totalMembers,
       sample: results.slice(0, 5),
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Loyalty sync error:", error);
+      logger.error("Loyalty sync error:", error);
     }
     return NextResponse.json(
       {

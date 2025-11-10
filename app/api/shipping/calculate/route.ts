@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -34,9 +35,7 @@ export async function POST(request: NextRequest) {
             cost: 0,
             currency: "USD",
             delivery_days: "3-5 business days",
-            delivery_date: new Date(
-              Date.now() + 5 * 24 * 60 * 60 * 1000,
-            ).toLocaleDateString(),
+            delivery_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString(),
           },
         ],
       });
@@ -50,9 +49,7 @@ export async function POST(request: NextRequest) {
         cost: 8.99,
         currency: "USD",
         delivery_days: "3-5 business days",
-        delivery_date: new Date(
-          Date.now() + 5 * 24 * 60 * 60 * 1000,
-        ).toLocaleDateString(),
+        delivery_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString(),
       },
       {
         method_id: "expedited",
@@ -60,9 +57,7 @@ export async function POST(request: NextRequest) {
         cost: 14.99,
         currency: "USD",
         delivery_days: "1-2 business days",
-        delivery_date: new Date(
-          Date.now() + 2 * 24 * 60 * 60 * 1000,
-        ).toLocaleDateString(),
+        delivery_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString(),
       },
     ];
 
@@ -72,7 +67,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Shipping calculation error:", error);
+      logger.error("Shipping calculation error:", error);
     }
     return NextResponse.json(
       {

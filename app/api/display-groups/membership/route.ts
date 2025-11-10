@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/display-groups/membership?device_id=xxx
  * Check if a device is part of a display group
@@ -11,10 +12,7 @@ export async function GET(request: NextRequest) {
     const deviceId = searchParams.get("device_id");
 
     if (!deviceId) {
-      return NextResponse.json(
-        { success: false, error: "Device ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Device ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -32,12 +30,9 @@ export async function GET(request: NextRequest) {
 
     if (memberError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error checking group membership:", memberError);
+        logger.error("Error checking group membership:", memberError);
       }
-      return NextResponse.json(
-        { success: false, error: memberError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: memberError.message }, { status: 500 });
     }
 
     // Check if any results were returned
@@ -61,11 +56,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Group membership GET error:", error);
+      logger.error("Group membership GET error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

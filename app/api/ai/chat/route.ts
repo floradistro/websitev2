@@ -10,6 +10,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { ExaClient } from "@/lib/ai/exa-client";
 
+import { logger } from "@/lib/logger";
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
@@ -22,19 +23,12 @@ export const maxDuration = 300;
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
 
-  const {
-    messages,
-    agentId,
-    conversationId,
-    context = {},
-  } = await request.json();
+  const { messages, agentId, conversationId, context = {} } = await request.json();
 
   const stream = new ReadableStream({
     async start(controller) {
       const send = (event: string, data: any) => {
-        controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ event, ...data })}\n\n`),
-        );
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ event, ...data })}\n\n`));
       };
 
       try {
@@ -160,7 +154,7 @@ export async function POST(request: NextRequest) {
         controller.close();
       } catch (error: any) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Chat API error:", error);
+          logger.error("Chat API error:", error);
         }
         send("error", {
           message: error.message || "Failed to generate response",

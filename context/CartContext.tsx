@@ -1,5 +1,7 @@
 "use client";
 
+import { logger } from "@/lib/logger";
+
 import {
   createContext,
   useContext,
@@ -62,13 +64,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (Array.isArray(parsed)) {
           setItems(parsed);
         } else {
-          console.warn(
-            "Cart data in localStorage is not an array, clearing it",
-          );
+          logger.warn("Cart data in localStorage is not an array, clearing it");
           localStorage.removeItem("flora-cart");
         }
       } catch (error) {
-        console.error("Failed to load cart:", error);
+        logger.error("Failed to load cart:", error);
         localStorage.removeItem("flora-cart");
       }
     }
@@ -86,7 +86,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.setItem("flora-cart", JSON.stringify(items));
       } catch (error) {
-        console.error("Failed to save cart:", error);
+        logger.error("Failed to save cart:", error);
       }
     }, 300);
 
@@ -150,24 +150,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
 
       setItems((prev) =>
-        prev.map((item) =>
-          item.productId === productId ? { ...item, quantity } : item,
-        ),
+        prev.map((item) => (item.productId === productId ? { ...item, quantity } : item)),
       );
     },
     [removeFromCart],
   );
 
-  const updateCartItem = useCallback(
-    (productId: number, updates: Partial<CartItem>) => {
-      setItems((prev) =>
-        prev.map((item) =>
-          item.productId === productId ? { ...item, ...updates } : item,
-        ),
-      );
-    },
-    [],
-  );
+  const updateCartItem = useCallback((productId: number, updates: Partial<CartItem>) => {
+    setItems((prev) =>
+      prev.map((item) => (item.productId === productId ? { ...item, ...updates } : item)),
+    );
+  }, []);
 
   const clearCart = useCallback(() => {
     setItems([]);
@@ -196,21 +189,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       itemCount,
       total,
     }),
-    [
-      items,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      updateCartItem,
-      clearCart,
-      itemCount,
-      total,
-    ],
+    [items, addToCart, removeFromCart, updateQuantity, updateCartItem, clearCart, itemCount, total],
   );
 
-  return (
-    <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>
-  );
+  return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {

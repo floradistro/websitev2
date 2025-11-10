@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  CheckCircle,
-  XCircle,
-  Loader2,
-  Zap,
-  Image,
-  TrendingUp,
-} from "lucide-react";
+import { CheckCircle, XCircle, Loader2, Zap, Image, TrendingUp } from "lucide-react";
 
 interface ProcessingItem {
   id: string;
@@ -42,9 +35,7 @@ export default function ProcessingMonitor({
   if (!isOpen) return null;
 
   const totalItems = items.length;
-  const completed = items.filter(
-    (i) => i.status === "success" || i.status === "error",
-  ).length;
+  const completed = items.filter((i) => i.status === "success" || i.status === "error").length;
   const successful = items.filter((i) => i.status === "success").length;
   const failed = items.filter((i) => i.status === "error").length;
   const processing = items.filter((i) => i.status === "processing").length;
@@ -53,8 +44,7 @@ export default function ProcessingMonitor({
   const avgTime =
     items
       .filter((i) => i.endTime && i.startTime)
-      .reduce((acc, i) => acc + (i.endTime! - i.startTime!) / 1000, 0) /
-      successful || 0;
+      .reduce((acc, i) => acc + (i.endTime! - i.startTime!) / 1000, 0) / successful || 0;
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -65,9 +55,7 @@ export default function ProcessingMonitor({
       case "processing":
         return <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />;
       default:
-        return (
-          <div className="w-5 h-5 rounded-full border-2 border-white/20" />
-        );
+        return <div className="w-5 h-5 rounded-full border-2 border-white/20" />;
     }
   };
 
@@ -93,9 +81,7 @@ export default function ProcessingMonitor({
               {processing > 0 && (
                 <div className="flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 px-4 py-2">
                   <Zap className="w-4 h-4 text-blue-500 animate-pulse" />
-                  <span className="text-blue-500 text-sm font-medium">
-                    {processing} processing
-                  </span>
+                  <span className="text-blue-500 text-sm font-medium">{processing} processing</span>
                 </div>
               )}
             </div>
@@ -122,33 +108,23 @@ export default function ProcessingMonitor({
             <div className="bg-green-600/10 border border-green-500/20 p-3">
               <div className="flex items-center gap-2 mb-1">
                 <CheckCircle className="w-4 h-4 text-green-500" />
-                <span className="text-white/60 text-xs uppercase tracking-wider">
-                  Success
-                </span>
+                <span className="text-white/60 text-xs uppercase tracking-wider">Success</span>
               </div>
-              <div className="text-2xl font-light text-green-500">
-                {successful}
-              </div>
+              <div className="text-2xl font-light text-green-500">{successful}</div>
             </div>
             <div className="bg-red-600/10 border border-red-500/20 p-3">
               <div className="flex items-center gap-2 mb-1">
                 <XCircle className="w-4 h-4 text-red-500" />
-                <span className="text-white/60 text-xs uppercase tracking-wider">
-                  Failed
-                </span>
+                <span className="text-white/60 text-xs uppercase tracking-wider">Failed</span>
               </div>
               <div className="text-2xl font-light text-red-500">{failed}</div>
             </div>
             <div className="bg-blue-600/10 border border-blue-500/20 p-3">
               <div className="flex items-center gap-2 mb-1">
                 <TrendingUp className="w-4 h-4 text-blue-500" />
-                <span className="text-white/60 text-xs uppercase tracking-wider">
-                  Total
-                </span>
+                <span className="text-white/60 text-xs uppercase tracking-wider">Total</span>
               </div>
-              <div className="text-2xl font-light text-blue-500">
-                {totalItems}
-              </div>
+              <div className="text-2xl font-light text-blue-500">{totalItems}</div>
             </div>
           </div>
         </div>
@@ -176,18 +152,12 @@ export default function ProcessingMonitor({
 
               {/* File Info */}
               <div className="flex-1 min-w-0">
-                <div className="text-white text-sm font-medium truncate">
-                  {item.name}
-                </div>
+                <div className="text-white text-sm font-medium truncate">{item.name}</div>
                 {item.error && (
-                  <div className="text-red-400 text-xs mt-1 truncate">
-                    {item.error}
-                  </div>
+                  <div className="text-red-400 text-xs mt-1 truncate">{item.error}</div>
                 )}
                 {item.status === "processing" && (
-                  <div className="text-blue-400 text-xs mt-1">
-                    AI processing...
-                  </div>
+                  <div className="text-blue-400 text-xs mt-1">AI processing...</div>
                 )}
               </div>
 

@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useReducer,
-  useCallback,
-  ReactNode,
-} from "react";
+import React, { createContext, useContext, useReducer, useCallback, ReactNode } from "react";
 
 /**
  * Product filter state
@@ -57,10 +51,7 @@ const initialFilters: ProductFilters = {
 /**
  * Filter reducer
  */
-function filterReducer(
-  state: ProductFilters,
-  action: FilterAction,
-): ProductFilters {
+function filterReducer(state: ProductFilters, action: FilterAction): ProductFilters {
   switch (action.type) {
     case "SET_SEARCH":
       return { ...state, search: action.payload, page: 1 }; // Reset to page 1 on search
@@ -125,9 +116,7 @@ interface ProductFiltersContextType {
 /**
  * Create context
  */
-const ProductFiltersContext = createContext<
-  ProductFiltersContextType | undefined
->(undefined);
+const ProductFiltersContext = createContext<ProductFiltersContextType | undefined>(undefined);
 
 /**
  * Provider component
@@ -141,8 +130,7 @@ export function ProductFiltersProvider({ children }: { children: ReactNode }) {
     [],
   );
   const setStatus = useCallback(
-    (status: ProductFilters["status"]) =>
-      dispatch({ type: "SET_STATUS", payload: status }),
+    (status: ProductFilters["status"]) => dispatch({ type: "SET_STATUS", payload: status }),
     [],
   );
   const setCategory = useCallback(
@@ -150,40 +138,28 @@ export function ProductFiltersProvider({ children }: { children: ReactNode }) {
     [],
   );
   const setSubcategory = useCallback(
-    (subcategory: string) =>
-      dispatch({ type: "SET_SUBCATEGORY", payload: subcategory }),
+    (subcategory: string) => dispatch({ type: "SET_SUBCATEGORY", payload: subcategory }),
     [],
   );
   const setConsistency = useCallback(
-    (consistency: string) =>
-      dispatch({ type: "SET_CONSISTENCY", payload: consistency }),
+    (consistency: string) => dispatch({ type: "SET_CONSISTENCY", payload: consistency }),
     [],
   );
   const setStrainType = useCallback(
-    (strainType: string) =>
-      dispatch({ type: "SET_STRAIN_TYPE", payload: strainType }),
+    (strainType: string) => dispatch({ type: "SET_STRAIN_TYPE", payload: strainType }),
     [],
   );
   const setPricingTier = useCallback(
     (tier: string) => dispatch({ type: "SET_PRICING_TIER", payload: tier }),
     [],
   );
-  const setPage = useCallback(
-    (page: number) => dispatch({ type: "SET_PAGE", payload: page }),
-    [],
-  );
+  const setPage = useCallback((page: number) => dispatch({ type: "SET_PAGE", payload: page }), []);
   const setItemsPerPage = useCallback(
     (items: number) => dispatch({ type: "SET_ITEMS_PER_PAGE", payload: items }),
     [],
   );
-  const resetFilters = useCallback(
-    () => dispatch({ type: "RESET_FILTERS" }),
-    [],
-  );
-  const resetCategoryFilters = useCallback(
-    () => dispatch({ type: "RESET_CATEGORY_FILTERS" }),
-    [],
-  );
+  const resetFilters = useCallback(() => dispatch({ type: "RESET_FILTERS" }), []);
+  const resetCategoryFilters = useCallback(() => dispatch({ type: "RESET_CATEGORY_FILTERS" }), []);
 
   const value: ProductFiltersContextType = {
     filters,
@@ -201,11 +177,7 @@ export function ProductFiltersProvider({ children }: { children: ReactNode }) {
     resetCategoryFilters,
   };
 
-  return (
-    <ProductFiltersContext.Provider value={value}>
-      {children}
-    </ProductFiltersContext.Provider>
-  );
+  return <ProductFiltersContext.Provider value={value}>{children}</ProductFiltersContext.Provider>;
 }
 
 /**
@@ -215,9 +187,7 @@ export function useProductFilters() {
   const context = useContext(ProductFiltersContext);
 
   if (!context) {
-    throw new Error(
-      "useProductFilters must be used within ProductFiltersProvider",
-    );
+    throw new Error("useProductFilters must be used within ProductFiltersProvider");
   }
 
   return context;

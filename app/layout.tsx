@@ -30,9 +30,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
-  ),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"),
   title: "WhaleTools | Multi-Tenant Commerce Platform",
   description:
     "Enterprise-grade multi-tenant commerce platform. Build, manage, and scale unlimited vendor storefronts with visual builders, custom domains, and advanced analytics.",
@@ -84,15 +82,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {process.env.NODE_ENV === "development" && (
-          <script src="/sw-killer.js" />
-        )}
+        {process.env.NODE_ENV === "development" && <script src="/sw-killer.js" />}
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta
-          name="apple-mobile-web-app-status-bar-style"
-          content="black-translucent"
-        />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="WhaleTools" />
         <link rel="apple-touch-icon" href="/yacht-club-logo.png" />
         <link rel="apple-touch-startup-image" href="/yacht-club-logo.png" />

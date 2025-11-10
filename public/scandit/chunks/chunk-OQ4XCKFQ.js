@@ -2,11 +2,7 @@ import { a as a$1 } from "./chunk-GPJEB376.js";
 import { a as a$3 } from "./chunk-QCZSSQAQ.js";
 import { a } from "./chunk-UCD6YLP3.js";
 import { a as a$2 } from "./chunk-XR65N6EG.js";
-var q = ((p) => (
-    (p.WorldFacing = "worldFacing"),
-    (p.UserFacing = "userFacing"),
-    p
-  ))(q || {}),
+var q = ((p) => ((p.WorldFacing = "worldFacing"), (p.UserFacing = "userFacing"), p))(q || {}),
   J = ((c) => (
     (c[(c.ULTRA_HD = 0)] = "ULTRA_HD"),
     (c[(c.FULL_HD = 1)] = "FULL_HD"),
@@ -269,9 +265,7 @@ var q = ((p) => (
       typeof navigator.mediaDevices == "object" &&
       typeof navigator.mediaDevices.enumerateDevices == "function"
     )
-      return navigator.mediaDevices.enumerateDevices.bind(
-        navigator.mediaDevices,
-      );
+      return navigator.mediaDevices.enumerateDevices.bind(navigator.mediaDevices);
   }
   function S() {
     D = true;
@@ -339,8 +333,7 @@ var q = ((p) => (
     }
   }
   function z(e, i) {
-    let { areSomeCameraLabelsFilled: a$1, areAllCameraLabelsUnfilled: n } =
-      K(e);
+    let { areSomeCameraLabelsFilled: a$1, areAllCameraLabelsUnfilled: n } = K(e);
     if (n) return e[i === "userFacing" ? 0 : e.length - 1];
     if (a$1) {
       let r = e.filter((t) => t.position === i);
@@ -350,9 +343,7 @@ var q = ((p) => (
       let r = j(e, i);
       if (r) return r;
     }
-    return e
-      .filter((r) => r.position === i)
-      .sort((r, t) => r.label.localeCompare(t.label))[0];
+    return e.filter((r) => r.position === i).sort((r, t) => r.label.localeCompare(t.label))[0];
   }
   function re(e, i) {
     return a.isDesktopDevice() ? R(e, i) : z(e, i);
@@ -364,12 +355,7 @@ var q = ((p) => (
   function ie(e, i) {
     function a$1(t, o) {
       let s = l.mainCameraForPositionOverridesOnDesktop.get(o);
-      return (
-        s != null &&
-          t.includes(s) &&
-          ((t = t.filter((f) => f !== s)), t.unshift(s)),
-        t
-      );
+      return (s != null && t.includes(s) && ((t = t.filter((f) => f !== s)), t.unshift(s)), t);
     }
     let n = e.filter((t) => t.position === "userFacing"),
       r = e.filter((t) => t.position === "worldFacing");
@@ -398,27 +384,21 @@ var q = ((p) => (
         ((r = n.getSettings()),
         r.facingMode != null &&
           r.facingMode.length > 0 &&
-          (i.position =
-            r.facingMode === "environment" ? "worldFacing" : "userFacing"));
+          (i.position = r.facingMode === "environment" ? "worldFacing" : "userFacing"));
       let { label: t = "" } = n;
       t.length > 0 && (i.label = t);
     }
   }
   l.adjustCameraFromMediaStream = _;
   function H(e, i, a$1) {
-    if (l.deviceIdToCameraObjects.has(e.deviceId))
-      return l.deviceIdToCameraObjects.get(e.deviceId);
+    if (l.deviceIdToCameraObjects.has(e.deviceId)) return l.deviceIdToCameraObjects.get(e.deviceId);
     let { label: n = "", deviceId: r } = e,
       t;
     return (
       !a.isDesktopDevice() &&
-      a$1.every(
-        (o) => o.label === "" && !l.deviceIdToCameraObjects.has(o.deviceId),
-      )
+      a$1.every((o) => o.label === "" && !l.deviceIdToCameraObjects.has(o.deviceId))
         ? (t =
-            a$1.length === 1 || i + 1 <= Math.floor(a$1.length / 2)
-              ? "userFacing"
-              : "worldFacing")
+            a$1.length === 1 || i + 1 <= Math.floor(a$1.length / 2) ? "userFacing" : "worldFacing")
         : (t = B(n) ? "worldFacing" : "userFacing"),
       { position: t, label: n, deviceId: r }
     );
@@ -426,24 +406,14 @@ var q = ((p) => (
   function V(e) {
     let i = e
       .map((a, n, r) => H(a, n, r))
-      .map(
-        (a) => (
-          a.deviceId !== "" && l.deviceIdToCameraObjects.set(a.deviceId, a),
-          a
-        ),
-      )
+      .map((a) => (a.deviceId !== "" && l.deviceIdToCameraObjects.set(a.deviceId, a), a))
       .filter(
         (a) =>
-          !/\b(?:ir|infrared)\b/i.test(a.label) ||
-          /^IR UVC WebCam$/i.test(a.label.toUpperCase()),
+          !/\b(?:ir|infrared)\b/i.test(a.label) || /^IR UVC WebCam$/i.test(a.label.toUpperCase()),
       )
       .filter((a) => !p.has(a.label))
       .filter((a) => !l.inaccessibleDeviceIds.has(a.deviceId));
-    if (
-      !a.isDesktopDevice() &&
-      i.length > 1 &&
-      !i.some((a) => a.position === "worldFacing")
-    ) {
+    if (!a.isDesktopDevice() && i.length > 1 && !i.some((a) => a.position === "worldFacing")) {
       let a = i.length - 1,
         n = i.map((r) => {
           let t = /\b(\d+)mp?\b/i.exec(r.label);
@@ -458,9 +428,7 @@ var q = ((p) => (
     if (
       d != null &&
       d.length > 0 &&
-      d.every(
-        (e) => e.label === "" && !l.deviceIdToCameraObjects.has(e.deviceId),
-      )
+      d.every((e) => e.label === "" && !l.deviceIdToCameraObjects.has(e.deviceId))
     )
       try {
         return await F()({ video: true, audio: false });
@@ -468,24 +436,15 @@ var q = ((p) => (
   }
   function G(e, i) {
     var a, n;
-    if (
-      i.length > 0 &&
-      e.length === i.length &&
-      !i.every((r, t) => e[t].deviceId === r.deviceId)
-    ) {
+    if (i.length > 0 && e.length === i.length && !i.every((r, t) => e[t].deviceId === r.deviceId)) {
       let r = {};
       for (let [t, o] of e.entries()) {
         let s = l.deviceIdToCameraObjects.get(o.deviceId);
-        if (
-          s == null ||
-          s.label !==
-            ((n = (a = i[t]) == null ? void 0 : a.label) != null ? n : "")
-        )
+        if (s == null || s.label !== ((n = (a = i[t]) == null ? void 0 : a.label) != null ? n : ""))
           continue;
         let f = i[t].deviceId;
         ((r[s.deviceId] = f),
-          l.inaccessibleDeviceIds.has(s.deviceId) &&
-            l.inaccessibleDeviceIds.add(f),
+          l.inaccessibleDeviceIds.has(s.deviceId) && l.inaccessibleDeviceIds.add(f),
           (s.deviceId = f),
           l.deviceIdToCameraObjects.set(f, s));
       }
@@ -536,10 +495,7 @@ var q = ((p) => (
       } catch (s) {
         throw (I(s), s);
       } finally {
-        for (let s of (r = t == null ? void 0 : t.getVideoTracks()) != null
-          ? r
-          : [])
-          s.stop();
+        for (let s of (r = t == null ? void 0 : t.getVideoTracks()) != null ? r : []) s.stop();
       }
     }
     let n = V(d);
@@ -638,11 +594,7 @@ var q = ((p) => (
     } catch (r) {
       throw (
         I(r),
-        [
-          "OverconstrainedError",
-          "NotReadableError",
-          "NotAllowedError",
-        ].includes(r.name) || $(e),
+        ["OverconstrainedError", "NotReadableError", "NotAllowedError"].includes(r.name) || $(e),
         r
       );
     }

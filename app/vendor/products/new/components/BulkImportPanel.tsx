@@ -1,15 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Upload,
-  Loader,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Sparkles,
-  CheckCircle,
-} from "lucide-react";
+import { Upload, Loader, ChevronLeft, ChevronRight, X, Sparkles, CheckCircle } from "lucide-react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { POSInput, POSLabel, POSSelect, POSTextarea } from "@/components/ui";
 import { PricingBlueprint } from "@/lib/types/product";
@@ -108,14 +100,7 @@ export default function BulkImportPanel({
 }: BulkImportPanelProps) {
   // Field selection and custom prompt for AI enrichment
   const [selectedFields, setSelectedFields] = useState<Set<string>>(
-    new Set([
-      "description",
-      "strain_type",
-      "lineage",
-      "nose",
-      "effects",
-      "terpene_profile",
-    ]),
+    new Set(["description", "strain_type", "lineage", "nose", "effects", "terpene_profile"]),
   );
   const [customPrompt, setCustomPrompt] = useState("");
 
@@ -139,11 +124,7 @@ export default function BulkImportPanel({
     setSelectedFields(newSelected);
   };
 
-  const handleProductFieldChange = (
-    index: number,
-    field: string,
-    value: string | number,
-  ) => {
+  const handleProductFieldChange = (index: number, field: string, value: string | number) => {
     const updated = [...bulkProducts];
     if (field.startsWith("custom_fields.")) {
       const blueprintField = field.replace("custom_fields.", "");
@@ -254,12 +235,7 @@ export default function BulkImportPanel({
 
           {/* Uploaded Images Preview */}
           {bulkImages.length > 0 && (
-            <div
-              className={cn(
-                ds.colors.bg.primary,
-                "mt-3 border border-white/5 rounded-xl p-3",
-              )}
-            >
+            <div className={cn(ds.colors.bg.primary, "mt-3 border border-white/5 rounded-xl p-3")}>
               <div
                 className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-2 font-black"
                 style={{ fontWeight: 900 }}
@@ -275,11 +251,7 @@ export default function BulkImportPanel({
                       "relative aspect-square rounded-lg overflow-hidden group",
                     )}
                   >
-                    <img
-                      src={img.url}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={img.url} alt="" className="w-full h-full object-cover" />
                     {img.matchedTo && (
                       <div className="absolute bottom-0 left-0 right-0 bg-green-500/20 border-t border-green-500/40 p-1">
                         <div
@@ -302,11 +274,7 @@ export default function BulkImportPanel({
           <div className={cn(ds.components.card, "mt-4 rounded-2xl")}>
             <SectionHeader withMargin={false} className="mb-3">
               <div className="flex items-center gap-2">
-                <Sparkles
-                  size={12}
-                  strokeWidth={1.5}
-                  className="text-white/60"
-                />
+                <Sparkles size={12} strokeWidth={1.5} className="text-white/60" />
                 AI Enrichment Options
               </div>
             </SectionHeader>
@@ -366,9 +334,7 @@ export default function BulkImportPanel({
                     >
                       <span className="text-[14px]">{field.icon}</span>
                       <span className="flex-1">{field.label}</span>
-                      {isSelected && (
-                        <CheckCircle size={10} strokeWidth={1.5} />
-                      )}
+                      {isSelected && <CheckCircle size={10} strokeWidth={1.5} />}
                     </button>
                   );
                 })}
@@ -383,9 +349,7 @@ export default function BulkImportPanel({
             {/* AI Enrichment Button */}
             <button
               type="button"
-              onClick={() =>
-                onBulkAIEnrich(Array.from(selectedFields), customPrompt)
-              }
+              onClick={() => onBulkAIEnrich(Array.from(selectedFields), customPrompt)}
               disabled={
                 !bulkInput.trim() ||
                 !bulkCategory ||
@@ -412,28 +376,18 @@ export default function BulkImportPanel({
 
         {/* Review Products (after AI enrichment) */}
         {bulkProducts.length > 0 && (
-          <div
-            className={cn(
-              ds.colors.bg.primary,
-              "mt-4 border border-white/10 rounded-xl p-4",
-            )}
-          >
+          <div className={cn(ds.colors.bg.primary, "mt-4 border border-white/10 rounded-xl p-4")}>
             <div className="flex items-center justify-between mb-4">
               <h3
                 className="text-white text-[10px] uppercase tracking-[0.15em] font-black"
                 style={{ fontWeight: 900 }}
               >
-                Review & Edit Products ({currentReviewIndex + 1}/
-                {bulkProducts.length})
+                Review & Edit Products ({currentReviewIndex + 1}/{bulkProducts.length})
               </h3>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() =>
-                    onCurrentReviewIndexChange(
-                      Math.max(0, currentReviewIndex - 1),
-                    )
-                  }
+                  onClick={() => onCurrentReviewIndexChange(Math.max(0, currentReviewIndex - 1))}
                   disabled={currentReviewIndex === 0}
                   className="p-1.5 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 disabled:opacity-30 transition-all"
                 >
@@ -463,11 +417,7 @@ export default function BulkImportPanel({
                   type="text"
                   value={bulkProducts[currentReviewIndex].name}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleProductFieldChange(
-                      currentReviewIndex,
-                      "name",
-                      e.target.value,
-                    )
+                    handleProductFieldChange(currentReviewIndex, "name", e.target.value)
                   }
                   className={ds.components.card}
                 />
@@ -504,11 +454,7 @@ export default function BulkImportPanel({
                         step="0.01"
                         value={bulkProducts[currentReviewIndex].price}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          handleProductFieldChange(
-                            currentReviewIndex,
-                            "price",
-                            e.target.value,
-                          )
+                          handleProductFieldChange(currentReviewIndex, "price", e.target.value)
                         }
                         className={cn(
                           ds.components.card,
@@ -528,15 +474,9 @@ export default function BulkImportPanel({
                       <input
                         type="number"
                         step="0.01"
-                        value={
-                          bulkProducts[currentReviewIndex].cost_price || ""
-                        }
+                        value={bulkProducts[currentReviewIndex].cost_price || ""}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          handleProductFieldChange(
-                            currentReviewIndex,
-                            "cost_price",
-                            e.target.value,
-                          )
+                          handleProductFieldChange(currentReviewIndex, "cost_price", e.target.value)
                         }
                         className={cn(
                           ds.components.card,
@@ -549,34 +489,32 @@ export default function BulkImportPanel({
 
                 {/* Blueprint Fields */}
                 <div className="grid grid-cols-2 gap-3">
-                  {Object.keys(
-                    bulkProducts[currentReviewIndex].custom_fields || {},
-                  ).map((fieldKey) => (
-                    <div key={fieldKey}>
-                      <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">
-                        {fieldKey.replace(/_/g, " ")}
-                      </label>
-                      <input
-                        type="text"
-                        value={String(
-                          bulkProducts[currentReviewIndex].custom_fields[
-                            fieldKey
-                          ] || "",
-                        )}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          handleProductFieldChange(
-                            currentReviewIndex,
-                            `custom_fields.${fieldKey}`,
-                            e.target.value,
-                          )
-                        }
-                        className={cn(
-                          ds.components.card,
-                          "w-full rounded-xl text-white px-3 py-2 text-[10px]",
-                        )}
-                      />
-                    </div>
-                  ))}
+                  {Object.keys(bulkProducts[currentReviewIndex].custom_fields || {}).map(
+                    (fieldKey) => (
+                      <div key={fieldKey}>
+                        <label className="block text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5">
+                          {fieldKey.replace(/_/g, " ")}
+                        </label>
+                        <input
+                          type="text"
+                          value={String(
+                            bulkProducts[currentReviewIndex].custom_fields[fieldKey] || "",
+                          )}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            handleProductFieldChange(
+                              currentReviewIndex,
+                              `custom_fields.${fieldKey}`,
+                              e.target.value,
+                            )
+                          }
+                          className={cn(
+                            ds.components.card,
+                            "w-full rounded-xl text-white px-3 py-2 text-[10px]",
+                          )}
+                        />
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -592,16 +530,13 @@ export default function BulkImportPanel({
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {(() => {
-                    const currentCategory = categories.find(
-                      (c) => c.id === bulkCategory,
-                    );
+                    const currentCategory = categories.find((c) => c.id === bulkCategory);
 
                     return pricingConfigs.filter((config: PricingConfig) => {
                       const blueprint = config.blueprint;
                       if (!blueprint) return false;
 
-                      const applicableCategories =
-                        blueprint.applicable_to_categories || [];
+                      const applicableCategories = blueprint.applicable_to_categories || [];
 
                       // Show if no category restrictions
                       if (applicableCategories.length === 0) return true;
@@ -654,16 +589,11 @@ export default function BulkImportPanel({
                   </div>
 
                   {/* Success/Fail Counts */}
-                  {(bulkProgress.successCount > 0 ||
-                    bulkProgress.failCount > 0) && (
+                  {(bulkProgress.successCount > 0 || bulkProgress.failCount > 0) && (
                     <div className="flex items-center gap-3 text-[9px]">
                       {bulkProgress.successCount > 0 && (
                         <div className="flex items-center gap-1">
-                          <CheckCircle
-                            size={12}
-                            strokeWidth={1.5}
-                            className="text-green-400"
-                          />
+                          <CheckCircle size={12} strokeWidth={1.5} className="text-green-400" />
                           <span className="text-green-400">
                             {bulkProgress.successCount} created
                           </span>
@@ -671,14 +601,8 @@ export default function BulkImportPanel({
                       )}
                       {bulkProgress.failCount > 0 && (
                         <div className="flex items-center gap-1">
-                          <X
-                            size={12}
-                            strokeWidth={1.5}
-                            className="text-red-400"
-                          />
-                          <span className="text-red-400">
-                            {bulkProgress.failCount} failed
-                          </span>
+                          <X size={12} strokeWidth={1.5} className="text-red-400" />
+                          <span className="text-red-400">{bulkProgress.failCount} failed</span>
                         </div>
                       )}
                     </div>
@@ -708,9 +632,7 @@ export default function BulkImportPanel({
                 className="flex-1 px-4 py-2 bg-white/10 border-2 border-white/20 text-white rounded-xl text-[9px] uppercase tracking-[0.15em] font-black hover:bg-white/20 hover:border-white/30 transition-all disabled:opacity-30"
                 style={{ fontWeight: 900 }}
               >
-                {bulkProcessing
-                  ? "Submitting..."
-                  : `Submit All (${bulkProducts.length})`}
+                {bulkProcessing ? "Submitting..." : `Submit All (${bulkProducts.length})`}
               </button>
             </div>
           </div>

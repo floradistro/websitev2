@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const { user_id, location_ids, is_primary_location } = await request.json();
@@ -25,8 +26,7 @@ export async function POST(request: NextRequest) {
       user_id,
       location_id,
       is_primary_location:
-        is_primary_location === location_id ||
-        (index === 0 && !is_primary_location),
+        is_primary_location === location_id || (index === 0 && !is_primary_location),
       can_sell: true,
       can_manage_inventory: true,
       can_manage: false,
@@ -34,13 +34,11 @@ export async function POST(request: NextRequest) {
     }));
 
     if (assignments.length > 0) {
-      const { error } = await supabase
-        .from("user_locations")
-        .insert(assignments);
+      const { error } = await supabase.from("user_locations").insert(assignments);
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error assigning locations:", error);
+          logger.error("Error assigning locations:", error);
         }
         return NextResponse.json(
           {
@@ -58,7 +56,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in user-locations API:", error);
+      logger.error("Error in user-locations API:", error);
     }
     return NextResponse.json(
       {
@@ -104,7 +102,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching user locations:", error);
+        logger.error("Error fetching user locations:", error);
       }
       return NextResponse.json(
         {
@@ -121,7 +119,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in user-locations GET:", error);
+      logger.error("Error in user-locations GET:", error);
     }
     return NextResponse.json(
       {

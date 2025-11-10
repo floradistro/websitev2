@@ -1,13 +1,9 @@
 /// <reference types="emscripten" />
 type PointerEventsNames = {
-  [K in keyof HTMLElementEventMap]: HTMLElementEventMap[K] extends PointerEvent
-    ? K
-    : never;
+  [K in keyof HTMLElementEventMap]: HTMLElementEventMap[K] extends PointerEvent ? K : never;
 }[keyof HTMLElementEventMap];
 type TouchEventsNames = {
-  [K in keyof HTMLElementEventMap]: HTMLElementEventMap[K] extends TouchEvent
-    ? K
-    : never;
+  [K in keyof HTMLElementEventMap]: HTMLElementEventMap[K] extends TouchEvent ? K : never;
 }[keyof HTMLElementEventMap];
 type MSPointerEventsNames =
   | "MSGotPointerCapture"
@@ -26,9 +22,7 @@ declare class PointerEventsDetector {
   hasTouch: boolean;
   private requiresPrefix;
   detect(): void;
-  prefixIfNeeded(
-    value: PointerEventsNames,
-  ): MSPointerEventsNames | PointerEventsNames;
+  prefixIfNeeded(value: PointerEventsNames): MSPointerEventsNames | PointerEventsNames;
 }
 declare const _default: PointerEventsDetector;
 

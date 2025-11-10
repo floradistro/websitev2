@@ -55,9 +55,7 @@ export const PRICE_BREAK_LABELS: Record<string, string> = {
  * Get available price breaks for a category
  */
 export function getAvailablePriceBreaks(category: string): string[] {
-  return (
-    CATEGORY_PRICING_DEFAULTS[category] || CATEGORY_PRICING_DEFAULTS["Default"]
-  );
+  return CATEGORY_PRICING_DEFAULTS[category] || CATEGORY_PRICING_DEFAULTS["Default"];
 }
 
 /**

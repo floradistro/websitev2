@@ -101,15 +101,7 @@ export interface DynamicField {
   id: string;
   fieldId: string;
   label: string;
-  type:
-    | "text"
-    | "textarea"
-    | "number"
-    | "select"
-    | "checkbox"
-    | "date"
-    | "url"
-    | "email";
+  type: "text" | "textarea" | "number" | "select" | "checkbox" | "date" | "url" | "email";
   required?: boolean;
   placeholder?: string;
   description?: string;

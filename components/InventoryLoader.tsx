@@ -51,9 +51,7 @@ export function EmptyInventoryState() {
           />
         </svg>
       </div>
-      <h3 className="text-white text-lg font-medium mb-2">
-        No Inventory Found
-      </h3>
+      <h3 className="text-white text-lg font-medium mb-2">No Inventory Found</h3>
       <p className="text-white/60 text-sm mb-6">
         Create products and add them to your inventory to get started
       </p>

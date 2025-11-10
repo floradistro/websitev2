@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 var createModule = (() =>
   async function (moduleArg = {}) {
     var moduleRtn;
@@ -9,9 +11,7 @@ var createModule = (() =>
     (da = h).expectedDataFileDownloads ?? (da.expectedDataFileDownloads = 0);
     h.expectedDataFileDownloads++;
     (() => {
-      var a =
-        "undefined" != typeof ENVIRONMENT_IS_WASM_WORKER &&
-        ENVIRONMENT_IS_WASM_WORKER;
+      var a = "undefined" != typeof ENVIRONMENT_IS_WASM_WORKER && ENVIRONMENT_IS_WASM_WORKER;
       ("undefined" != typeof n && n) ||
         a ||
         (function (b) {
@@ -19,12 +19,9 @@ var createModule = (() =>
             let u;
             (u = h).dataFileDownloads ?? (u.dataFileDownloads = {});
             fetch(l)
-              .catch((x) =>
-                Promise.reject(Error(`Network Error: ${l}`, { cause: x })),
-              )
+              .catch((x) => Promise.reject(Error(`Network Error: ${l}`, { cause: x })))
               .then((x) => {
-                if (!x.ok)
-                  return Promise.reject(Error(`${x.status}: ${x.url}`));
+                if (!x.ok) return Promise.reject(Error(`${x.status}: ${x.url}`));
                 if (!x.body && x.arrayBuffer) return x.arrayBuffer().then(p);
                 const w = x.body.getReader(),
                   y = () =>
@@ -33,10 +30,7 @@ var createModule = (() =>
                       .then(L)
                       .catch((t) =>
                         Promise.reject(
-                          Error(
-                            `Unexpected error while handling : ${x.url} ${t}`,
-                            { cause: t },
-                          ),
+                          Error(`Unexpected error while handling : ${x.url} ${t}`, { cause: t }),
                         ),
                       ),
                   A = [],
@@ -44,9 +38,7 @@ var createModule = (() =>
                 let F = 0;
                 const L = ({ done: t, value: H }) => {
                   if (t) {
-                    var G = new Uint8Array(
-                      A.map((aa) => aa.length).reduce((aa, sa) => aa + sa, 0),
-                    );
+                    var G = new Uint8Array(A.map((aa) => aa.length).reduce((aa, sa) => aa + sa, 0));
                     t = 0;
                     for (var C of A) (G.set(C, t), (t += C.length));
                     p(G.buffer);
@@ -55,8 +47,7 @@ var createModule = (() =>
                     F += H.length;
                     h.dataFileDownloads[l] = { loaded: F, total: J };
                     t = C = 0;
-                    for (G of Object.values(h.dataFileDownloads))
-                      ((C += G.loaded), (t += G.total));
+                    for (G of Object.values(h.dataFileDownloads)) ((C += G.loaded), (t += G.total));
                     h.setStatus?.(`Downloading data... (${C}/${t})`);
                     return y();
                   }
@@ -66,7 +57,7 @@ var createModule = (() =>
               });
           }
           function d(l) {
-            console.error("package error:", l);
+            logger.error("package error:", l);
           }
           function e(l) {
             function q(w, y, A) {
@@ -81,8 +72,7 @@ var createModule = (() =>
               w = new Uint8Array(w);
               q.prototype.xc = w;
               w = b.files;
-              for (var y = 0; y < w.length; ++y)
-                q.prototype.bc[w[y].filename].onload();
+              for (var y = 0; y < w.length; ++y) q.prototype.bc[w[y].filename].onload();
               l.removeRunDependency(
                 "datafile_/Users/mkresic/Code/" +
                   atob("bWljcm9ibGluaw==") +
@@ -93,12 +83,7 @@ var createModule = (() =>
               );
             }
             l.FS_createPath("/", atob("bWljcm9ibGluaw=="), !0, !0);
-            l.FS_createPath(
-              "/" + atob("bWljcm9ibGluaw=="),
-              atob("YmxpbmtpZA=="),
-              !0,
-              !0,
-            );
+            l.FS_createPath("/" + atob("bWljcm9ibGluaw=="), atob("YmxpbmtpZA=="), !0, !0);
             q.prototype = {
               bc: {},
               open: function (w, y) {
@@ -117,10 +102,7 @@ var createModule = (() =>
               },
             };
             for (var u = b.files, x = 0; x < u.length; ++x)
-              new q(u[x].start, u[x].end, u[x].audio || 0).open(
-                "GET",
-                u[x].filename,
-              );
+              new q(u[x].start, u[x].end, u[x].audio || 0).open("GET", u[x].filename);
             l.addRunDependency(
               "datafile_/Users/mkresic/Code/" +
                 atob("bWljcm9ibGluaw==") +
@@ -142,22 +124,15 @@ var createModule = (() =>
           }
           "object" === typeof window
             ? window.encodeURIComponent(
-                window.location.pathname.substring(
-                  0,
-                  window.location.pathname.lastIndexOf("/"),
-                ) + "/",
+                window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/")) +
+                  "/",
               )
             : "undefined" === typeof process &&
               "undefined" !== typeof location &&
               encodeURIComponent(
-                location.pathname.substring(
-                  0,
-                  location.pathname.lastIndexOf("/"),
-                ) + "/",
+                location.pathname.substring(0, location.pathname.lastIndexOf("/")) + "/",
               );
-          var f = h.locateFile
-              ? h.locateFile("Centaurus.data", "")
-              : "Centaurus.data",
+          var f = h.locateFile ? h.locateFile("Centaurus.data", "") : "Centaurus.data",
             g = b.remote_package_size,
             k = null,
             m = h.getPreloadedPackage ? h.getPreloadedPackage(f, g) : null;
@@ -364,11 +339,7 @@ var createModule = (() =>
       var a = "",
         b = !1;
       try {
-        if (
-          "undefined" !== typeof self &&
-          self.location &&
-          self.location.href
-        ) {
+        if ("undefined" !== typeof self && self.location && self.location.href) {
           var c = self.location.href;
           0 === c.indexOf("blob:") && ((a = c), (b = !0));
         }
@@ -527,9 +498,7 @@ var createModule = (() =>
       a = "Aborted(" + a + ")";
       r(a);
       na = !0;
-      a = new WebAssembly.RuntimeError(
-        a + ". Build with -sASSERTIONS for more info.",
-      );
+      a = new WebAssembly.RuntimeError(a + ". Build with -sASSERTIONS for more info.");
       ta?.(a);
       throw a;
     }
@@ -673,11 +642,7 @@ var createModule = (() =>
       },
       M = 0,
       N = (a, b, ...c) => {
-        for (
-          var d = 2 * c.length, e = Fc(), f = Gc(8 * d), g = f >> 3, k = 0;
-          k < c.length;
-          k++
-        ) {
+        for (var d = 2 * c.length, e = Fc(), f = Gc(8 * d), g = f >> 3, k = 0; k < c.length; k++) {
           var m = c[k];
           "bigint" == typeof m
             ? (((v(), K)[g + 2 * k] = 1n), ((v(), K)[g + 2 * k + 1] = m))
@@ -753,9 +718,7 @@ var createModule = (() =>
           else g && r(`worker sent an unknown command ${g}`);
         };
         a.onerror = (f) => {
-          r(
-            `${"worker sent an error!"} ${f.filename}:${f.lineno}: ${f.message}`,
-          );
+          r(`${"worker sent an error!"} ${f.filename}:${f.lineno}: ${f.message}`);
           throw f;
         };
         var c = [],
@@ -841,17 +804,14 @@ var createModule = (() =>
         return (b ? "/" : "") + a;
       },
       bd = (a) => {
-        var b = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/
-          .exec(a)
-          .slice(1);
+        var b = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/.exec(a).slice(1);
         a = b[0];
         b = b[1];
         if (!a && !b) return ".";
         b &&= b.slice(0, -1);
         return a + b;
       },
-      cd = () => (a) =>
-        a.set(crypto.getRandomValues(new Uint8Array(a.byteLength))),
+      cd = () => (a) => a.set(crypto.getRandomValues(new Uint8Array(a.byteLength))),
       dd = (a) => {
         (dd = cd())(a);
       },
@@ -875,9 +835,7 @@ var createModule = (() =>
         var d = b + c;
         for (c = b; a[c] && !(c >= d); ) ++c;
         if (16 < c - b && a.buffer && fd)
-          return fd.decode(
-            a.buffer instanceof ArrayBuffer ? a.subarray(b, c) : a.slice(b, c),
-          );
+          return fd.decode(a.buffer instanceof ArrayBuffer ? a.subarray(b, c) : a.slice(b, c));
         for (d = ""; b < c; ) {
           var e = a[b++];
           if (e & 128) {
@@ -891,11 +849,7 @@ var createModule = (() =>
                   : ((e & 7) << 18) | (f << 12) | (g << 6) | (a[b++] & 63);
               65536 > e
                 ? (d += String.fromCharCode(e))
-                : ((e -= 65536),
-                  (d += String.fromCharCode(
-                    55296 | (e >> 10),
-                    56320 | (e & 1023),
-                  )));
+                : ((e -= 65536), (d += String.fromCharCode(55296 | (e >> 10), 56320 | (e & 1023))));
             }
           } else d += String.fromCharCode(e);
         }
@@ -1015,9 +969,7 @@ var createModule = (() =>
           return a;
         },
         Zb(a, b) {
-          null === b || 10 === b
-            ? (ka(gd(a.output)), (a.output = []))
-            : 0 != b && a.output.push(b);
+          null === b || 10 === b ? (ka(gd(a.output)), (a.output = [])) : 0 != b && a.output.push(b);
         },
         Jb(a) {
           0 < a.output?.length && (ka(gd(a.output)), (a.output = []));
@@ -1029,8 +981,8 @@ var createModule = (() =>
             kd: 191,
             md: 35387,
             jd: [
-              3, 28, 127, 21, 4, 0, 1, 0, 17, 19, 26, 0, 18, 15, 23, 22, 0, 0,
-              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              3, 28, 127, 21, 4, 0, 1, 0, 17, 19, 26, 0, 18, 15, 23, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0,
             ],
           };
         },
@@ -1043,9 +995,7 @@ var createModule = (() =>
       },
       rd = {
         Zb(a, b) {
-          null === b || 10 === b
-            ? (r(gd(a.output)), (a.output = []))
-            : 0 != b && a.output.push(b);
+          null === b || 10 === b ? (r(gd(a.output)), (a.output = [])) : 0 != b && a.output.push(b);
         },
         Jb(a) {
           0 < a.output?.length && (r(gd(a.output)), (a.output = []));
@@ -1100,14 +1050,10 @@ var createModule = (() =>
           Q(c.mode)
             ? ((c.Ta = P.kb.dir.node), (c.Ra = P.kb.dir.stream), (c.Sa = {}))
             : 32768 === (c.mode & 61440)
-              ? ((c.Ta = P.kb.file.node),
-                (c.Ra = P.kb.file.stream),
-                (c.Ya = 0),
-                (c.Sa = null))
+              ? ((c.Ta = P.kb.file.node), (c.Ra = P.kb.file.stream), (c.Ya = 0), (c.Sa = null))
               : 40960 === (c.mode & 61440)
                 ? ((c.Ta = P.kb.link.node), (c.Ra = P.kb.link.stream))
-                : 8192 === (c.mode & 61440) &&
-                  ((c.Ta = P.kb.hc.node), (c.Ra = P.kb.hc.stream));
+                : 8192 === (c.mode & 61440) && ((c.Ta = P.kb.hc.node), (c.Ra = P.kb.hc.stream));
           c.sb = c.eb = c.cb = Date.now();
           a && ((a.Sa[b] = c), (a.sb = a.eb = a.cb = c.sb));
           return c;
@@ -1144,8 +1090,7 @@ var createModule = (() =>
             return b;
           },
           nb(a, b) {
-            for (var c of ["mode", "atime", "mtime", "ctime"])
-              null != b[c] && (a[c] = b[c]);
+            for (var c of ["mode", "atime", "mtime", "ctime"]) null != b[c] && (a[c] = b[c]);
             void 0 !== b.size &&
               ((b = b.size),
               a.Ya != b &&
@@ -1215,8 +1160,7 @@ var createModule = (() =>
             a.eb = a.cb = Date.now();
             if (b.subarray && (!a.Sa || a.Sa.subarray)) {
               if (f) return ((a.Sa = b.subarray(c, c + d)), (a.Ya = d));
-              if (0 === a.Ya && 0 === e)
-                return ((a.Sa = b.slice(c, c + d)), (a.Ya = d));
+              if (0 === a.Ya && 0 === e) return ((a.Sa = b.slice(c, c + d)), (a.Ya = d));
               if (e + d <= a.Ya) return (a.Sa.set(b.subarray(c, c + d), e), d);
             }
             f = e + d;
@@ -1248,9 +1192,7 @@ var createModule = (() =>
               if (!e) throw new O(48);
               if (a) {
                 if (0 < c || c + b < a.length)
-                  a = a.subarray
-                    ? a.subarray(c, c + b)
-                    : Array.prototype.slice.call(a, c, c + b);
+                  a = a.subarray ? a.subarray(c, c + b) : Array.prototype.slice.call(a, c, c + b);
                 (v(), z).set(a, e);
               }
             } else ((d = !1), (e = a.byteOffset));
@@ -1393,17 +1335,13 @@ var createModule = (() =>
     function Ld(a) {
       for (var b; ; ) {
         if (a === a.parent)
-          return (
-            (a = a.pb.pc),
-            b ? ("/" !== a[a.length - 1] ? `${a}/${b}` : a + b) : a
-          );
+          return ((a = a.pb.pc), b ? ("/" !== a[a.length - 1] ? `${a}/${b}` : a + b) : a);
         b = b ? `${a.name}/${b}` : a.name;
         a = a.parent;
       }
     }
     function Md(a, b) {
-      for (var c = 0, d = 0; d < b.length; d++)
-        c = ((c << 5) - c + b.charCodeAt(d)) | 0;
+      for (var c = 0, d = 0; d < b.length; d++) c = ((c << 5) - c + b.charCodeAt(d)) | 0;
       return ((a + c) >>> 0) % Gd.length;
     }
     function xd(a) {
@@ -1444,11 +1382,7 @@ var createModule = (() =>
     function Nd(a, b) {
       if (Pa) return 0;
       if (!b.includes("r") || a.mode & 292) {
-        if (
-          (b.includes("w") && !(a.mode & 146)) ||
-          (b.includes("x") && !(a.mode & 73))
-        )
-          return 2;
+        if ((b.includes("w") && !(a.mode & 146)) || (b.includes("x") && !(a.mode & 73))) return 2;
       } else return 2;
       return 0;
     }
@@ -1585,8 +1519,7 @@ var createModule = (() =>
       if ("" === a) throw new O(44);
       if ("string" == typeof b) {
         var d = { r: 0, "r+": 2, w: 577, "w+": 578, a: 1089, "a+": 1090 }[b];
-        if ("undefined" == typeof d)
-          throw Error(`Unknown file open mode: ${b}`);
+        if ("undefined" == typeof d) throw Error(`Unknown file open mode: ${b}`);
         b = d;
       }
       c = b & 64 ? (c & 4095) | 32768 : 0;
@@ -1700,8 +1633,7 @@ var createModule = (() =>
     }
     function ge(a, b, c, d, e, f) {
       var g = b;
-      a &&
-        ((a = "string" == typeof a ? a : Ld(a)), (g = b ? ad(a + "/" + b) : a));
+      a && ((a = "string" == typeof a ? a : Ld(a)), (g = b ? ad(a + "/" + b) : a));
       a = Bd(d, e);
       g = Wd(g, a);
       if (c) {
@@ -1814,27 +1746,18 @@ var createModule = (() =>
             L = Math.min(L, u - 1);
             if ("undefined" == typeof A.Hb[J]) {
               var t = A.Hb;
-              if (F > L)
-                throw Error(
-                  "invalid range (" + F + ", " + L + ") or no bytes requested!",
-                );
-              if (L > u - 1)
-                throw Error(
-                  "only " + u + " bytes available! programmer error!",
-                );
+              if (F > L) throw Error("invalid range (" + F + ", " + L + ") or no bytes requested!");
+              if (L > u - 1) throw Error("only " + u + " bytes available! programmer error!");
               var H = new XMLHttpRequest();
               H.open("GET", c, !1);
               u !== y && H.setRequestHeader("Range", "bytes=" + F + "-" + L);
               H.responseType = "arraybuffer";
-              H.overrideMimeType &&
-                H.overrideMimeType("text/plain; charset=x-user-defined");
+              H.overrideMimeType && H.overrideMimeType("text/plain; charset=x-user-defined");
               H.send(null);
               if (!((200 <= H.status && 300 > H.status) || 304 === H.status))
                 throw Error("Couldn't load " + c + ". Status: " + H.status);
               F =
-                void 0 !== H.response
-                  ? new Uint8Array(H.response || [])
-                  : ld(H.responseText || "");
+                void 0 !== H.response ? new Uint8Array(H.response || []) : ld(H.responseText || "");
               t[J] = F;
             }
             if ("undefined" == typeof A.Hb[J]) throw Error("doXHR failed!");
@@ -1843,9 +1766,7 @@ var createModule = (() =>
           if (p || !u)
             ((y = u = 1),
               (y = u = this.zb(0).length),
-              ka(
-                "LazyFiles on gzip forces download of the whole file when length is accessed",
-              ));
+              ka("LazyFiles on gzip forces download of the whole file when length is accessed"));
           this.ec = u;
           this.dc = y;
           this.Yb = !0;
@@ -1988,8 +1909,8 @@ var createModule = (() =>
             if (!d.Wa) return -59;
             if (d.Wa.qb.Mc) {
               a = [
-                3, 28, 127, 21, 4, 0, 1, 0, 17, 19, 26, 0, 18, 15, 23, 22, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                3, 28, 127, 21, 4, 0, 1, 0, 17, 19, 26, 0, 18, 15, 23, 22, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
               ];
               var e = Zc();
               (v(), E)[e >> 2] = 25856;
@@ -2107,8 +2028,7 @@ var createModule = (() =>
       te = (a, b, c) => {
         function d(k) {
           k = c(k);
-          if (k.length !== a.length)
-            throw new re("Mismatched type converter count");
+          if (k.length !== a.length) throw new re("Mismatched type converter count");
           for (var m = 0; m < a.length; ++m) se(a[m], k[m]);
         }
         a.forEach((k) => (qe[k] = b));
@@ -2166,8 +2086,7 @@ var createModule = (() =>
               },
               toWireType: (m, l) => {
                 for (var q in k)
-                  if (!(q in l || k[q].optional))
-                    throw new TypeError(`Missing field: "${q}"`);
+                  if (!(q in l || k[q].optional)) throw new TypeError(`Missing field: "${q}"`);
                 var p = c();
                 for (q in k) k[q].write(p, l[q]);
                 null !== m && m.push(d, p);
@@ -2195,16 +2114,14 @@ var createModule = (() =>
       };
     function ve(a, b, c = {}) {
       var d = b.name;
-      if (!a)
-        throw new V(`type "${d}" must have a positive integer typeid pointer`);
+      if (!a) throw new V(`type "${d}" must have a positive integer typeid pointer`);
       if (pe.hasOwnProperty(a)) {
         if (c.Jc) return;
         throw new V(`Cannot register type '${d}' twice`);
       }
       pe[a] = b;
       delete qe[a];
-      oe.hasOwnProperty(a) &&
-        ((b = oe[a]), delete oe[a], b.forEach((e) => e()));
+      oe.hasOwnProperty(a) && ((b = oe[a]), delete oe[a], b.forEach((e) => e()));
     }
     function se(a, b, c = {}) {
       return ve(a, b, c);
@@ -2268,8 +2185,7 @@ var createModule = (() =>
       ye = !1,
       ze = () => {},
       Ae = (a) => {
-        if ("undefined" === typeof FinalizationRegistry)
-          return ((Ae = (b) => b), a);
+        if ("undefined" === typeof FinalizationRegistry) return ((Ae = (b) => b), a);
         ye = new FinalizationRegistry((b) => {
           b = b.Qa;
           --b.count.value;
@@ -2334,9 +2250,7 @@ var createModule = (() =>
     var Je = (a, b, c) => {
         for (; b !== c; ) {
           if (!b.Gb)
-            throw new V(
-              `Expected null or instance of ${c.name}, got an instance of ${b.name}`,
-            );
+            throw new V(`Expected null or instance of ${c.name}, got an instance of ${b.name}`);
           a = b.Gb(a);
           b = b.bb;
         }
@@ -2345,9 +2259,7 @@ var createModule = (() =>
       Ke = (a) => {
         if (null === a) return "null";
         var b = typeof a;
-        return "object" === b || "array" === b || "function" === b
-          ? a.toString()
-          : "" + a;
+        return "object" === b || "array" === b || "function" === b ? a.toString() : "" + a;
       };
     function Le(a, b) {
       if (null === b) {
@@ -2355,10 +2267,7 @@ var createModule = (() =>
         return 0;
       }
       if (!b.Qa) throw new V(`Cannot pass "${Ke(b)}" as a ${this.name}`);
-      if (!b.Qa.Va)
-        throw new V(
-          `Cannot pass deleted object as a pointer of type ${this.name}`,
-        );
+      if (!b.Qa.Va) throw new V(`Cannot pass deleted object as a pointer of type ${this.name}`);
       return Je(b.Qa.Va, b.Qa.Xa.Ua, this.Ua);
     }
     function Me(a, b) {
@@ -2372,18 +2281,14 @@ var createModule = (() =>
         return 0;
       }
       if (!b || !b.Qa) throw new V(`Cannot pass "${Ke(b)}" as a ${this.name}`);
-      if (!b.Qa.Va)
-        throw new V(
-          `Cannot pass deleted object as a pointer of type ${this.name}`,
-        );
+      if (!b.Qa.Va) throw new V(`Cannot pass deleted object as a pointer of type ${this.name}`);
       if (!this.Kb && b.Qa.Xa.Kb)
         throw new V(
           `Cannot convert argument of type ${b.Qa.fb ? b.Qa.fb.name : b.Qa.Xa.name} to parameter type ${this.name}`,
         );
       c = Je(b.Qa.Va, b.Qa.Xa.Ua, this.Ua);
       if (this.Lb) {
-        if (void 0 === b.Qa.ab)
-          throw new V("Passing raw pointer to smart pointer is illegal");
+        if (void 0 === b.Qa.ab) throw new V("Passing raw pointer to smart pointer is illegal");
         switch (this.ad) {
           case 0:
             if (b.Qa.fb === this) c = b.Qa.ab;
@@ -2418,10 +2323,7 @@ var createModule = (() =>
         return 0;
       }
       if (!b.Qa) throw new V(`Cannot pass "${Ke(b)}" as a ${this.name}`);
-      if (!b.Qa.Va)
-        throw new V(
-          `Cannot pass deleted object as a pointer of type ${this.name}`,
-        );
+      if (!b.Qa.Va) throw new V(`Cannot pass deleted object as a pointer of type ${this.name}`);
       if (b.Qa.Xa.Kb)
         throw new V(
           `Cannot convert argument of type ${b.Qa.Xa.name} to parameter type ${this.name}`,
@@ -2441,10 +2343,8 @@ var createModule = (() =>
         return Qe[b];
       },
       Se = (a, b) => {
-        if (!b.Xa || !b.Va)
-          throw new re("makeClassHandle requires ptr and ptrType");
-        if (!!b.fb !== !!b.ab)
-          throw new re("Both smartPtrType and smartPtr must be specified");
+        if (!b.Xa || !b.Va) throw new re("makeClassHandle requires ptr and ptrType");
+        if (!!b.fb !== !!b.ab) throw new re("Both smartPtrType and smartPtr must be specified");
         b.count = { value: 1 };
         return Ae(Object.create(a, { Qa: { value: b, writable: !0 } }));
       };
@@ -2465,11 +2365,8 @@ var createModule = (() =>
         : ((this.toWireType = d ? Le : Oe), (this.hb = null));
     }
     var Ue = (a, b, c) => {
-        if (!h.hasOwnProperty(a))
-          throw new re("Replacing nonexistent public symbol");
-        void 0 !== h[a].$a && void 0 !== c
-          ? (h[a].$a[c] = b)
-          : ((h[a] = b), (h[a].xb = c));
+        if (!h.hasOwnProperty(a)) throw new re("Replacing nonexistent public symbol");
+        void 0 !== h[a].$a && void 0 !== c ? (h[a].$a[c] = b) : ((h[a] = b), (h[a].xb = c));
       },
       W = (a, b) => {
         a = U(a);
@@ -2487,9 +2384,7 @@ var createModule = (() =>
       },
       Ze = (a, b) => {
         function c(f) {
-          e[f] ||
-            pe[f] ||
-            (qe[f] ? qe[f].forEach(c) : (d.push(f), (e[f] = !0)));
+          e[f] || pe[f] || (qe[f] ? qe[f].forEach(c) : (d.push(f), (e[f] = !0)));
         }
         var d = [],
           e = {};
@@ -2513,10 +2408,8 @@ var createModule = (() =>
             var A = y.vb;
           } else A = Ce.prototype;
           w = De(q, function (...t) {
-            if (Object.getPrototypeOf(this) !== J)
-              throw new V(`Use 'new' to construct ${q}`);
-            if (void 0 === F.ub)
-              throw new V(`${q} has no accessible constructor`);
+            if (Object.getPrototypeOf(this) !== J) throw new V(`Use 'new' to construct ${q}`);
+            if (void 0 === F.ub) throw new V(`${q} has no accessible constructor`);
             var H = F.ub[t.length];
             if (void 0 === H)
               throw new V(
@@ -2545,8 +2438,7 @@ var createModule = (() =>
         return c;
       };
     function af(a) {
-      for (var b = 1; b < a.length; ++b)
-        if (null !== a[b] && void 0 === a[b].hb) return !0;
+      for (var b = 1; b < a.length; ++b) if (null !== a[b] && void 0 === a[b].hb) return !0;
       return !1;
     }
     function bf(a, b, c, d, e) {
@@ -2570,8 +2462,7 @@ var createModule = (() =>
           var w = b[1].toWireType(u, this);
           p[1] = w;
         }
-        for (var y = 0; y < l; ++y)
-          ((q[y] = b[y + 2].toWireType(u, x[y])), p.push(q[y]));
+        for (var y = 0; y < l; ++y) ((q[y] = b[y + 2].toWireType(u, x[y])), p.push(q[y]));
         x = d(...p);
         if (k) me(u);
         else
@@ -2625,15 +2516,12 @@ var createModule = (() =>
           k && l.Ua.Vc.push(b);
           var u = l.Ua.vb,
             x = u[b];
-          void 0 === x ||
-          (void 0 === x.$a && x.className !== l.name && x.xb === c - 2)
+          void 0 === x || (void 0 === x.$a && x.className !== l.name && x.xb === c - 2)
             ? ((q.xb = c - 2), (q.className = l.name), (u[b] = q))
             : (Fe(u, b, p), (u[b].$a[c - 2] = q));
           te([], m, (w) => {
             w = bf(p, w, l, f, g);
-            void 0 === u[b].$a
-              ? ((w.xb = c - 2), (u[b] = w))
-              : (u[b].$a[c - 2] = w);
+            void 0 === u[b].$a ? ((w.xb = c - 2), (u[b] = w)) : (u[b].$a[c - 2] = w);
             return [];
           });
           return [];
@@ -2756,11 +2644,7 @@ var createModule = (() =>
           BigUint64Array,
         ][b];
         c = U(c);
-        se(
-          a,
-          { name: c, fromWireType: d, gb: ue, readValueFromPointer: d },
-          { Jc: !0 },
-        );
+        se(a, { name: c, fromWireType: d, gb: ue, readValueFromPointer: d }, { Jc: !0 });
       },
       Y = (a, b, c) => kd(a, (v(), B), b, c),
       vb = (a, b) => {
@@ -2768,17 +2652,11 @@ var createModule = (() =>
         se(a, {
           name: b,
           fromWireType: function (c) {
-            for (
-              var d = (v(), I)[c >> 2], e = c + 4, f, g = e, k = 0;
-              k <= d;
-              ++k
-            ) {
+            for (var d = (v(), I)[c >> 2], e = c + 4, f, g = e, k = 0; k <= d; ++k) {
               var m = e + k;
               if (k == d || 0 == (v(), B)[m])
                 ((g = T(g, m - g)),
-                  void 0 === f
-                    ? (f = g)
-                    : ((f += String.fromCharCode(0)), (f += g)),
+                  void 0 === f ? (f = g) : ((f += String.fromCharCode(0)), (f += g)),
                   (g = m + 1));
             }
             Xe(c);
@@ -2804,10 +2682,7 @@ var createModule = (() =>
           },
         });
       },
-      jf =
-        "undefined" != typeof TextDecoder
-          ? new TextDecoder("utf-16le")
-          : void 0,
+      jf = "undefined" != typeof TextDecoder ? new TextDecoder("utf-16le") : void 0,
       kf = (a, b) => {
         a >>= 1;
         b = a + b / 2;
@@ -2864,8 +2739,7 @@ var createModule = (() =>
         return b - d;
       },
       pf = (a) => {
-        for (var b = 0, c = 0; c < a.length; ++c)
-          (65535 < a.codePointAt(c) && c++, (b += 4));
+        for (var b = 0, c = 0; c < a.length; ++c) (65535 < a.codePointAt(c) && c++, (b += 4));
         return b;
       },
       wb = (a, b, c) => {
@@ -2875,9 +2749,7 @@ var createModule = (() =>
           var e = lf;
           var f = mf;
           var g = (k) => (v(), Ea)[k >> 1];
-        } else
-          4 === b &&
-            ((d = nf), (e = of), (f = pf), (g = (k) => (v(), I)[k >> 2]));
+        } else 4 === b && ((d = nf), (e = of), (f = pf), (g = (k) => (v(), I)[k >> 2]));
         se(a, {
           name: c,
           fromWireType: (k) => {
@@ -2885,17 +2757,14 @@ var createModule = (() =>
               var u = k + 4 + p * b;
               if (p == m || 0 == g(u))
                 ((q = d(q, u - q)),
-                  void 0 === l
-                    ? (l = q)
-                    : ((l += String.fromCharCode(0)), (l += q)),
+                  void 0 === l ? (l = q) : ((l += String.fromCharCode(0)), (l += q)),
                   (q = u + b));
             }
             Xe(k);
             return l;
           },
           toWireType: (k, m) => {
-            if ("string" != typeof m)
-              throw new V(`Cannot pass non-string to C++ string type ${c}`);
+            if ("string" != typeof m) throw new V(`Cannot pass non-string to C++ string type ${c}`);
             var l = f(m),
               q = hf(4 + l + b);
             (v(), I)[q >> 2] = l / b;
@@ -2992,8 +2861,7 @@ var createModule = (() =>
       Fb = () => {},
       wf = (a, b) => {
         var c = pe[a];
-        if (void 0 === c)
-          throw ((a = `${b} has unknown type ${Ye(a)}`), new V(a));
+        if (void 0 === c) throw ((a = `${b} has unknown type ${Ye(a)}`), new V(a));
         return c;
       },
       xf = (a, b, c) => {
@@ -3099,8 +2967,7 @@ var createModule = (() =>
       (v(), E)[(b + 16) >> 2] = a.getMonth();
       (v(), E)[(b + 20) >> 2] = a.getFullYear() - 1900;
       (v(), E)[(b + 24) >> 2] = a.getDay();
-      var c =
-        ((Df(a.getFullYear()) ? Ef : Ff)[a.getMonth()] + a.getDate() - 1) | 0;
+      var c = ((Df(a.getFullYear()) ? Ef : Ff)[a.getMonth()] + a.getDate() - 1) | 0;
       (v(), E)[(b + 28) >> 2] = c;
       (v(), E)[(b + 36) >> 2] = -60 * a.getTimezoneOffset();
       c = new Date(a.getFullYear(), 6, 1).getTimezoneOffset();
@@ -3126,8 +2993,7 @@ var createModule = (() =>
       0 > c
         ? ((v(), E)[(a + 32) >> 2] = Number(e != f && g == d))
         : 0 < c != (g == d) &&
-          ((e = Math.max(f, e)),
-          b.setTime(b.getTime() + 6e4 * ((0 < c ? g : e) - d)));
+          ((e = Math.max(f, e)), b.setTime(b.getTime() + 6e4 * ((0 < c ? g : e) - d)));
       (v(), E)[(a + 24) >> 2] = b.getDay();
       c = ((Df(b.getFullYear()) ? Ef : Ff)[b.getMonth()] + b.getDate() - 1) | 0;
       (v(), E)[(a + 28) >> 2] = c;
@@ -3221,10 +3087,7 @@ var createModule = (() =>
         for (var c = 1; 4 >= c; c *= 2) {
           a: {
             var d =
-              ((Math.min(
-                2147483648,
-                65536 * Math.ceil(Math.max(a, b + 2097152 / c) / 65536),
-              ) -
+              ((Math.min(2147483648, 65536 * Math.ceil(Math.max(a, b + 2097152 / c) / 65536)) -
                 pa.buffer.byteLength +
                 65535) /
                 65536) |
@@ -3277,10 +3140,7 @@ var createModule = (() =>
       function f() {
         var G = 0,
           C = 0;
-        t.response &&
-          J &&
-          0 === (v(), I)[(a + 12) >> 2] &&
-          (C = t.response.byteLength);
+        t.response && J && 0 === (v(), I)[(a + 12) >> 2] && (C = t.response.byteLength);
         0 < C && ((G = hf(C)), (v(), B).set(new Uint8Array(t.response), G));
         (v(), I)[(a + 12) >> 2] = G;
         Z(a + 16, C);
@@ -3332,9 +3192,7 @@ var createModule = (() =>
         (v(), I)[a >> 2] = H;
         g = w && y ? (v(), B).slice(w, w + y) : null;
         t.onload = (G) => {
-          Kf.has(H) &&
-            (f(),
-            200 <= t.status && 300 > t.status ? b?.(a, t, G) : c?.(a, t, G));
+          Kf.has(H) && (f(), 200 <= t.status && 300 > t.status ? b?.(a, t, G) : c?.(a, t, G));
         };
         t.onerror = (G) => {
           Kf.has(H) && (f(), c?.(a, t, G));
@@ -3346,19 +3204,13 @@ var createModule = (() =>
           if (Kf.has(H)) {
             var C = J && F && t.response ? t.response.byteLength : 0,
               aa = 0;
-            0 < C &&
-              J &&
-              F &&
-              ((aa = hf(C)), (v(), B).set(new Uint8Array(t.response), aa));
+            0 < C && J && F && ((aa = hf(C)), (v(), B).set(new Uint8Array(t.response), aa));
             (v(), I)[(a + 12) >> 2] = aa;
             Z(a + 16, C);
             Z(a + 24, G.loaded - C);
             Z(a + 32, G.total);
             (v(), D)[(a + 40) >> 1] = t.readyState;
-            3 <= t.readyState &&
-              0 === t.status &&
-              0 < G.loaded &&
-              (t.status = 200);
+            3 <= t.readyState && 0 === t.status && 0 < G.loaded && (t.status = 200);
             (v(), D)[(a + 42) >> 1] = t.status;
             t.statusText && Y(t.statusText, a + 44, 64);
             d?.(a, t, G);
@@ -3401,10 +3253,7 @@ var createModule = (() =>
         (f = (v(), I)[(f + 64) >> 2]) || (f = (v(), I)[(a + 8) >> 2]);
         var g = T(f);
         try {
-          var k = e
-            .transaction(["FILES"], "readwrite")
-            .objectStore("FILES")
-            .put(b, g);
+          var k = e.transaction(["FILES"], "readwrite").objectStore("FILES").put(b, g);
           k.onsuccess = () => {
             (v(), D)[(a + 40) >> 1] = 4;
             (v(), D)[(a + 42) >> 1] = 200;
@@ -3429,10 +3278,7 @@ var createModule = (() =>
         (e = (v(), I)[(e + 64) >> 2]) || (e = (v(), I)[(a + 8) >> 2]);
         e = T(e);
         try {
-          var f = d
-            .transaction(["FILES"], "readonly")
-            .objectStore("FILES")
-            .get(e);
+          var f = d.transaction(["FILES"], "readonly").objectStore("FILES").get(e);
           f.onsuccess = (g) => {
             if (g.target.result) {
               g = g.target.result;
@@ -3471,10 +3317,7 @@ var createModule = (() =>
         (e = (v(), I)[(e + 64) >> 2]) || (e = (v(), I)[(a + 8) >> 2]);
         e = T(e);
         try {
-          var f = d
-            .transaction(["FILES"], "readwrite")
-            .objectStore("FILES")
-            .delete(e);
+          var f = d.transaction(["FILES"], "readwrite").objectStore("FILES").delete(e);
           f.onsuccess = (g) => {
             g = g.target.result;
             (v(), I)[(a + 12) >> 2] = 0;
@@ -3580,10 +3423,8 @@ var createModule = (() =>
               PWD: "/",
               HOME: "/home/web_user",
               LANG:
-                (
-                  ("object" == typeof navigator && navigator.language) ||
-                  "C"
-                ).replace("-", "_") + ".UTF-8",
+                (("object" == typeof navigator && navigator.language) || "C").replace("-", "_") +
+                ".UTF-8",
               _: ea || "./this.program",
             },
             b;
@@ -3824,8 +3665,7 @@ var createModule = (() =>
         },
         ["delete"]() {
           this.Qa.Va || xe(this);
-          if (this.Qa.yb && !this.Qa.Db)
-            throw new V("Object already scheduled for deletion");
+          if (this.Qa.yb && !this.Qa.Db) throw new V("Object already scheduled for deletion");
           ze(this);
           var c = this.Qa;
           --c.count.value;
@@ -3837,8 +3677,7 @@ var createModule = (() =>
         },
         deleteLater: function () {
           this.Qa.Va || xe(this);
-          if (this.Qa.yb && !this.Qa.Db)
-            throw new V("Object already scheduled for deletion");
+          if (this.Qa.yb && !this.Qa.Db) throw new V("Object already scheduled for deletion");
           Be.push(this);
           this.Qa.yb = !0;
           return this;
@@ -3867,8 +3706,7 @@ var createModule = (() =>
         if (!c) return (this.jc(a), null);
         var d = Re(this.Ua, c);
         if (void 0 !== d) {
-          if (0 === d.Qa.count.value)
-            return ((d.Qa.Va = c), (d.Qa.ab = a), d.clone());
+          if (0 === d.Qa.count.value) return ((d.Qa.Va = c), (d.Qa.ab = a), d.clone());
           d = d.clone();
           this.jc(a);
           return d;
@@ -3954,8 +3792,7 @@ var createModule = (() =>
           e = -9007199254740992 > e || 9007199254740992 < e ? NaN : Number(e);
           try {
             var k = R(d);
-            if (0 !== (b & 2) && 0 === (c & 2) && 2 !== (k.flags & 2097155))
-              throw new O(2);
+            if (0 !== (b & 2) && 0 === (c & 2) && 2 !== (k.flags & 2097155)) throw new O(2);
             if (1 === (k.flags & 2097155)) throw new O(2);
             if (!k.Ra.Bb) throw new O(43);
             if (!a) throw new O(28);
@@ -4086,11 +3923,7 @@ var createModule = (() =>
         h.calledRun = !0;
         if (!na && (Ja(), ra?.(h), h.onRuntimeInitialized?.(), !n)) {
           if (h.postRun)
-            for (
-              "function" == typeof h.postRun && (h.postRun = [h.postRun]);
-              h.postRun.length;
-
-            ) {
+            for ("function" == typeof h.postRun && (h.postRun = [h.postRun]); h.postRun.length; ) {
               var b = h.postRun.shift();
               Rc.push(b);
             }
@@ -4101,11 +3934,7 @@ var createModule = (() =>
       else if (n) (ra?.(h), Ja());
       else {
         if (h.preRun)
-          for (
-            "function" == typeof h.preRun && (h.preRun = [h.preRun]);
-            h.preRun.length;
-
-          )
+          for ("function" == typeof h.preRun && (h.preRun = [h.preRun]); h.preRun.length; )
             yc.push(h.preRun.shift());
         xc(yc);
         0 < Qa
@@ -4120,11 +3949,7 @@ var createModule = (() =>
       }
     }
     if (h.preInit)
-      for (
-        "function" == typeof h.preInit && (h.preInit = [h.preInit]);
-        0 < h.preInit.length;
-
-      )
+      for ("function" == typeof h.preInit && (h.preInit = [h.preInit]); 0 < h.preInit.length; )
         h.preInit.shift()();
     Xf();
     moduleRtn = Ia

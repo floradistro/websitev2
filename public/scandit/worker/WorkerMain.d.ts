@@ -33,16 +33,11 @@ import "../LoadingStatus.js";
 
 declare class WorkerMain<E extends DataCaptureEngine<M>, M extends Module> {
   dataCaptureInstance: E;
-  onMessageListener: (
-    event: MessageEvent<AnyDataCaptureActionMessage>,
-  ) => boolean;
+  onMessageListener: (event: MessageEvent<AnyDataCaptureActionMessage>) => boolean;
   private readonly workerSelf;
   constructor(workerSelf: AugmentedWorker<M>, module: ModuleHandler<M>);
   listenToMessages(): void;
-  postMessage(
-    message: DataCaptureCallbackMessage,
-    transfer?: Transferable[],
-  ): void;
+  postMessage(message: DataCaptureCallbackMessage, transfer?: Transferable[]): void;
   getOffscreenCanvas(): OffscreenCanvas | undefined;
   hasPayload(result: unknown): result is {
     payload: unknown;

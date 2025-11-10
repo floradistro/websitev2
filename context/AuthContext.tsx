@@ -11,6 +11,7 @@ import {
 } from "react";
 import axios from "axios";
 
+import { logger } from "@/lib/logger";
 interface User {
   id: string | number;
   email: string;
@@ -27,12 +28,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string,
-  ) => Promise<void>;
+  register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => Promise<void>;
   isAuthenticated: boolean;
@@ -55,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userData = JSON.parse(savedUser);
         setUser(userData);
       } catch (error) {
-        console.error("Failed to load user:", error);
+        logger.error("Failed to load user:", error);
         localStorage.removeItem("flora-user");
       }
     }
@@ -81,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (response.data.success && response.data.user) {
-        console.log("✅ Setting user in context:", response.data.user);
+        logger.debug("✅ Setting user in context:", response.data.user);
         setUser(response.data.user);
         // Save user data to localStorage (but NOT the session token)
         localStorage.setItem("flora-user", JSON.stringify(response.data.user));
@@ -91,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(response.data.error || "Invalid email or password");
       }
     } catch (error: any) {
-      console.error("Login error:", error);
+      logger.error("Login error:", error);
       throw new Error(
         error.response?.data?.error ||
           error.message ||
@@ -101,12 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(
-    async (
-      email: string,
-      password: string,
-      firstName: string,
-      lastName: string,
-    ) => {
+    async (email: string, password: string, firstName: string, lastName: string) => {
       try {
         // Create customer via Supabase API
         const response = await axios.post("/api/auth/register", {
@@ -122,11 +113,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error(response.data.error || "Registration failed");
         }
       } catch (error: any) {
-        console.error("Registration error:", error);
+        logger.error("Registration error:", error);
         throw new Error(
-          error.response?.data?.error ||
-            error.message ||
-            "Registration failed. Please try again.",
+          error.response?.data?.error || error.message || "Registration failed. Please try again.",
         );
       }
     },
@@ -164,11 +153,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           throw new Error(response.data.error || "Failed to update profile");
         }
       } catch (error: any) {
-        console.error("Update user error:", error);
+        logger.error("Update user error:", error);
         throw new Error(
-          error.response?.data?.error ||
-            error.message ||
-            "Failed to update profile.",
+          error.response?.data?.error || error.message || "Failed to update profile.",
         );
       }
     },
@@ -189,9 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user, loading, login, register, logout, updateUser],
   );
 
-  return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

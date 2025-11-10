@@ -4,7 +4,7 @@ import { Fragment, ReactNode } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { X } from "lucide-react";
 import { ds, cn } from "@/lib/design-system";
-import { IconButton } from "./Button";
+import { IconButton } from "@/components/ui/Button";
 
 interface ModalProps {
   isOpen: boolean;
@@ -101,10 +101,11 @@ export function Modal({
                     )}
                     {showClose && (
                       <IconButton
-                        icon={X}
-                        size="xs"
+                        icon={<X size={14} />}
+                        size="sm"
                         onClick={onClose}
                         className="ml-auto"
+                        aria-label="Close modal"
                       />
                     )}
                   </div>

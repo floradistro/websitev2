@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  SmartComponentWrapper,
-  SmartComponentBaseProps,
-} from "@/lib/smart-component-base";
+import { SmartComponentWrapper, SmartComponentBaseProps } from "@/lib/smart-component-base";
 
 export interface FloraDistroHeroProps extends SmartComponentBaseProps {
   headline?: string;
@@ -45,9 +42,7 @@ export function FloraDistroHero({
         fetchPromises.push(
           fetch("/api/products/featured?limit=3")
             .then((res) => res.json())
-            .then((data) =>
-              setFeaturedProducts(Array.isArray(data) ? data : []),
-            )
+            .then((data) => setFeaturedProducts(Array.isArray(data) ? data : []))
             .catch(() => setFeaturedProducts([])),
         );
       }
@@ -122,10 +117,7 @@ export function FloraDistroHero({
                 {showTrustBadges && trustBadges.length > 0 && (
                   <div className="flex flex-wrap justify-center gap-6 mb-12">
                     {trustBadges.map((badge) => (
-                      <div
-                        key={badge.id}
-                        className="flex flex-col items-center gap-2"
-                      >
+                      <div key={badge.id} className="flex flex-col items-center gap-2">
                         <div className="w-12 h-12 bg-white/5 border border-emerald-500/20 rounded-xl flex items-center justify-center">
                           <span className="text-2xl">{badge.icon}</span>
                         </div>
@@ -157,16 +149,12 @@ export function FloraDistroHero({
                             <h4 className="text-white font-black uppercase text-sm mb-1">
                               {product.name}
                             </h4>
-                            <p className="text-white/40 text-xs mb-2">
-                              {product.strain}
-                            </p>
+                            <p className="text-white/40 text-xs mb-2">{product.strain}</p>
                             <div className="flex items-center gap-2">
                               <span className="text-emerald-400 font-black text-lg">
                                 ${product.price}
                               </span>
-                              <span className="text-white/40 text-xs">
-                                {product.thc}% THC
-                              </span>
+                              <span className="text-white/40 text-xs">{product.thc}% THC</span>
                             </div>
                           </div>
                         </div>
@@ -198,9 +186,7 @@ export function FloraDistroHero({
                     {headline}
                   </h1>
 
-                  <p className="text-xl text-white/60 leading-relaxed max-w-lg">
-                    {subheadline}
-                  </p>
+                  <p className="text-xl text-white/60 leading-relaxed max-w-lg">{subheadline}</p>
 
                   <div className="flex gap-4 pt-4">
                     <a
@@ -260,17 +246,13 @@ export function FloraDistroHero({
                               <h4 className="text-white font-black uppercase text-xl mb-2 group-hover:text-emerald-400 transition-colors">
                                 {product.name}
                               </h4>
-                              <p className="text-white/40 text-sm mb-3">
-                                {product.strain}
-                              </p>
+                              <p className="text-white/40 text-sm mb-3">{product.strain}</p>
                               <div className="flex items-center justify-between">
                                 <div className="flex items-baseline gap-2">
                                   <span className="text-emerald-400 font-black text-2xl">
                                     ${product.price}
                                   </span>
-                                  <span className="text-white/40 text-sm">
-                                    /3.5g
-                                  </span>
+                                  <span className="text-white/40 text-sm">/3.5g</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-xs text-white/40 font-bold uppercase">
                                   <span className="bg-white/5 px-3 py-1 rounded-lg">

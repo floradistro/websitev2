@@ -35,9 +35,7 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         const send = (data: any) => {
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
-          );
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
         };
 
         try {
@@ -61,15 +59,12 @@ export async function POST(request: NextRequest) {
 
               try {
                 // Upload to Cloudinary (just store the image first)
-                const uploadResult = await cloudinary.uploader.upload(
-                  file.url,
-                  {
-                    folder: `vendors/${vendorId}`,
-                    public_id: file.name.replace(/\.[^/.]+$/, ""),
-                    overwrite: true,
-                    invalidate: true,
-                  },
-                );
+                const uploadResult = await cloudinary.uploader.upload(file.url, {
+                  folder: `vendors/${vendorId}`,
+                  public_id: file.name.replace(/\.[^/.]+$/, ""),
+                  overwrite: true,
+                  invalidate: true,
+                });
 
                 // Build TRANSFORMED URL with aggressive enhancements
                 const transformedUrl = cloudinary.url(uploadResult.public_id, {
@@ -115,9 +110,7 @@ export async function POST(request: NextRequest) {
 
                 const {
                   data: { publicUrl },
-                } = supabase.storage
-                  .from("vendor-product-images")
-                  .getPublicUrl(finalPath);
+                } = supabase.storage.from("vendor-product-images").getPublicUrl(finalPath);
 
                 const endTime = Date.now();
                 completedCount++;

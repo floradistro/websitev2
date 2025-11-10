@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { createAuthCookie } from "@/lib/auth/middleware";
 import { cookies } from "next/headers";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -28,10 +29,9 @@ export async function POST(request: NextRequest) {
 
     // CRITICAL FIX: Refresh the Supabase session using refresh token
     // This prevents session timeout by extending the session
-    const { data: refreshData, error: refreshError } =
-      await supabase.auth.refreshSession({
-        refresh_token: refreshToken,
-      });
+    const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
 
     let authUser;
     let newAccessToken = authToken;
@@ -82,10 +82,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (userError || !user) {
-      return NextResponse.json(
-        { success: false, error: "User not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
     }
 
     const vendor = Array.isArray(user.vendors) ? user.vendors[0] : user.vendors;
@@ -121,8 +118,7 @@ export async function POST(request: NextRequest) {
         allVendorLocs?.map((l) => ({
           id: l.id,
           name: l.name,
-          address:
-            `${l.address_line1 || ""} ${l.city || ""}, ${l.state || ""}`.trim(),
+          address: `${l.address_line1 || ""} ${l.city || ""}, ${l.state || ""}`.trim(),
           is_primary: l.is_primary || false,
           settings: l.settings,
         })) || [];
@@ -184,11 +180,7 @@ export async function POST(request: NextRequest) {
     // Update cookies with new tokens if session was refreshed
     if (sessionRefreshed) {
       const accessCookie = createAuthCookie(newAccessToken);
-      response.cookies.set(
-        accessCookie.name,
-        accessCookie.value,
-        accessCookie.options,
-      );
+      response.cookies.set(accessCookie.name, accessCookie.value, accessCookie.options);
 
       const refreshCookie = {
         name: "refresh-token",
@@ -201,17 +193,13 @@ export async function POST(request: NextRequest) {
           path: "/",
         },
       };
-      response.cookies.set(
-        refreshCookie.name,
-        refreshCookie.value,
-        refreshCookie.options,
-      );
+      response.cookies.set(refreshCookie.name, refreshCookie.value, refreshCookie.options);
     }
 
     return response;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Auth refresh error:", error);
+      logger.error("Auth refresh error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Failed to refresh user data" },

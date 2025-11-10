@@ -1,9 +1,7 @@
 /// <reference types="emscripten" />
 interface ContextBridgeApi {
   getAppInfo: () => Promise<GetAppInfoResponse["payload"]>;
-  getKey: (options: {
-    licenseDataPath: string;
-  }) => Promise<GetLicenseKeyResponse["payload"]>;
+  getKey: (options: { licenseDataPath: string }) => Promise<GetLicenseKeyResponse["payload"]>;
 }
 type GetAppInfoMessageKey = "get-app-info";
 type GetLicenseMessageKey = "get-license-key";
@@ -26,8 +24,4 @@ interface GenericResponse<T> {
 type GetLicenseKeyResponse = GenericResponse<GetLicenseMessageKey>;
 type GetAppInfoResponse = GenericResponse<GetAppInfoMessageKey>;
 
-export type {
-  ContextBridgeApi as C,
-  GetAppInfoResponse as G,
-  GetLicenseKeyResponse as a,
-};
+export type { ContextBridgeApi as C, GetAppInfoResponse as G, GetLicenseKeyResponse as a };

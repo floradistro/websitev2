@@ -7,15 +7,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
     const authResult = await requireVendor(request);
@@ -44,7 +42,7 @@ export async function PATCH(
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Automation rule update error:", updateError);
+        logger.error("Automation rule update error:", updateError);
       }
       return NextResponse.json(
         {
@@ -61,7 +59,7 @@ export async function PATCH(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Automation rule update error:", error);
+      logger.error("Automation rule update error:", error);
     }
     return NextResponse.json(
       { error: "Failed to update automation rule", message: error.message },
@@ -91,7 +89,7 @@ export async function DELETE(
 
     if (deleteError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Automation rule deletion error:", deleteError);
+        logger.error("Automation rule deletion error:", deleteError);
       }
       return NextResponse.json(
         {
@@ -108,7 +106,7 @@ export async function DELETE(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Automation rule deletion error:", error);
+      logger.error("Automation rule deletion error:", error);
     }
     return NextResponse.json(
       { error: "Failed to delete automation rule", message: error.message },

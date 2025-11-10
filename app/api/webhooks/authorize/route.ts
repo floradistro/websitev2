@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import crypto from "crypto";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -12,12 +13,9 @@ export async function POST(request: NextRequest) {
 
     if (!signatureKey) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Signature key not configured");
+        logger.error("Signature key not configured");
       }
-      return NextResponse.json(
-        { error: "Server configuration error" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
     // Validate signature
@@ -32,12 +30,9 @@ export async function POST(request: NextRequest) {
 
       if (hash !== signature.toUpperCase()) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Invalid webhook signature");
+          logger.error("Invalid webhook signature");
         }
-        return NextResponse.json(
-          { error: "Invalid signature" },
-          { status: 401 },
-        );
+        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
       }
     }
 
@@ -307,7 +302,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Webhook error:", error);
+      logger.error("Webhook error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Webhook processing failed" },

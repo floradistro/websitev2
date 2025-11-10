@@ -14,16 +14,16 @@ Audited all RPC calls in the codebase, specifically focusing on `exec_sql` calls
 
 All `exec_sql` calls use **hardcoded SQL strings** with **NO user input**. This is SAFE.
 
-| File | Line | Purpose | Risk Level | Notes |
-|------|------|---------|------------|-------|
-| `app/api/migrations/run/route.ts` | 23 | ALTER TABLE constraint | ✅ SAFE | Hardcoded SQL |
-| `app/api/admin/migrations/wholesale-system/route.ts` | 32 | Migration script | ✅ SAFE | Hardcoded SQL |
-| `app/api/admin/run-wholesale-migration/route.ts` | 29 | Migration | ✅ SAFE | Hardcoded SQL |
-| `app/api/admin/run-migration/route.ts` | 14 | Constraint update | ✅ SAFE | Hardcoded SQL |
-| `app/api/admin/fix-session-function/route.ts` | 120 | Function definition | ✅ SAFE | Hardcoded SQL |
-| `app/api/admin/migrate-theme/route.ts` | 12 | Theme migration | ✅ SAFE | Hardcoded SQL |
-| `app/api/admin/run-session-migration/route.ts` | 58 | Session migration | ✅ SAFE | Hardcoded SQL |
-| `app/api/migrate-kpi-table/route.ts` | 12 | KPI table setup | ✅ SAFE | Hardcoded SQL |
+| File                                                 | Line | Purpose                | Risk Level | Notes         |
+| ---------------------------------------------------- | ---- | ---------------------- | ---------- | ------------- |
+| `app/api/migrations/run/route.ts`                    | 23   | ALTER TABLE constraint | ✅ SAFE    | Hardcoded SQL |
+| `app/api/admin/migrations/wholesale-system/route.ts` | 32   | Migration script       | ✅ SAFE    | Hardcoded SQL |
+| `app/api/admin/run-wholesale-migration/route.ts`     | 29   | Migration              | ✅ SAFE    | Hardcoded SQL |
+| `app/api/admin/run-migration/route.ts`               | 14   | Constraint update      | ✅ SAFE    | Hardcoded SQL |
+| `app/api/admin/fix-session-function/route.ts`        | 120  | Function definition    | ✅ SAFE    | Hardcoded SQL |
+| `app/api/admin/migrate-theme/route.ts`               | 12   | Theme migration        | ✅ SAFE    | Hardcoded SQL |
+| `app/api/admin/run-session-migration/route.ts`       | 58   | Session migration      | ✅ SAFE    | Hardcoded SQL |
+| `app/api/migrate-kpi-table/route.ts`                 | 12   | KPI table setup        | ✅ SAFE    | Hardcoded SQL |
 
 ### Other RPC Calls
 
@@ -48,6 +48,7 @@ All other RPC calls use **parameterized function calls** with proper Supabase SD
 ## Conclusion
 
 **No SQL injection vulnerabilities found.** All database operations use either:
+
 - Hardcoded SQL (for migrations only)
 - Parameterized queries via Supabase SDK
 - PostgreSQL functions with typed parameters

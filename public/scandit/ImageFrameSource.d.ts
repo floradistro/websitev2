@@ -33,9 +33,7 @@ interface ImageFrameSourceJSON {
    */
   type: "imageFrameSource";
 }
-declare class ImageFrameSource
-  implements FrameSource, Serializable<ImageFrameSourceJSON>
-{
+declare class ImageFrameSource implements FrameSource, Serializable<ImageFrameSourceJSON> {
   /**
    * The official type should be "image", but we cannot use it because it would not work in conjunction
    * with Centaurus.

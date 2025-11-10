@@ -19,6 +19,7 @@ import { useAppAuth } from "@/context/AppAuthContext";
 import { StatCard } from "@/components/ui/StatCard";
 import { Badge } from "@/components/ui/Badge";
 
+import { logger } from "@/lib/logger";
 interface OrderItem {
   id: string;
   productId: string;
@@ -79,12 +80,7 @@ interface OrderStats {
 }
 
 type OrderTypeFilter = "all" | "pickup" | "delivery" | "instore";
-type StatusFilter =
-  | "all"
-  | "completed"
-  | "processing"
-  | "pending"
-  | "cancelled";
+type StatusFilter = "all" | "completed" | "processing" | "pending" | "cancelled";
 type LocationFilter = "all" | string;
 
 export default function VendorOrders() {
@@ -98,8 +94,7 @@ export default function VendorOrders() {
   // Filter state
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [orderTypeFilter, setOrderTypeFilter] =
-    useState<OrderTypeFilter>("all");
+  const [orderTypeFilter, setOrderTypeFilter] = useState<OrderTypeFilter>("all");
   const [locationFilter, setLocationFilter] = useState<LocationFilter>("all");
 
   // UI state - using force update pattern to prevent re-render loops
@@ -166,7 +161,7 @@ export default function VendorOrders() {
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error loading orders:", error);
+          logger.error("Error loading orders:", error);
         }
         setOrders([]);
         setStats(null);
@@ -176,14 +171,7 @@ export default function VendorOrders() {
     }
 
     loadOrders();
-  }, [
-    authLoading,
-    isAuthenticated,
-    vendor?.id,
-    statusFilter,
-    orderTypeFilter,
-    locationFilter,
-  ]);
+  }, [authLoading, isAuthenticated, vendor?.id, statusFilter, orderTypeFilter, locationFilter]);
 
   // Filter orders by search
   const filteredOrders = orders.filter((order) => {
@@ -197,9 +185,7 @@ export default function VendorOrders() {
   });
 
   // Get status badge variant
-  const getStatusVariant = (
-    status: string,
-  ): "success" | "warning" | "error" | "neutral" => {
+  const getStatusVariant = (status: string): "success" | "warning" | "error" | "neutral" => {
     switch (status) {
       case "completed":
         return "success";
@@ -262,9 +248,7 @@ export default function VendorOrders() {
         />
         <StatCard
           label="Commission"
-          value={
-            loading ? "—" : `$${(stats?.total_commission || 0).toFixed(2)}`
-          }
+          value={loading ? "—" : `$${(stats?.total_commission || 0).toFixed(2)}`}
           sublabel="Platform Fee"
           icon={TrendingUp}
           loading={loading}
@@ -283,39 +267,31 @@ export default function VendorOrders() {
       {/* Location Stats */}
       {stats && Object.keys(stats.by_location).length > 1 && (
         <div className="mb-8">
-          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-4">
-            By Location
-          </h3>
+          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-4">By Location</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-            {Object.entries(stats.by_location).map(
-              ([locationName, locationStats]) => (
-                <div key={locationName} className="minimal-glass p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <MapPin size={16} className="text-white/40" />
-                      <h4 className="text-white text-sm font-medium">
-                        {locationName}
-                      </h4>
-                    </div>
-                    <Badge variant="neutral">{locationStats.order_count}</Badge>
+            {Object.entries(stats.by_location).map(([locationName, locationStats]) => (
+              <div key={locationName} className="minimal-glass p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <MapPin size={16} className="text-white/40" />
+                    <h4 className="text-white text-sm font-medium">{locationName}</h4>
                   </div>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between text-white/60">
-                      <span>Revenue</span>
-                      <span className="text-white">
-                        ${locationStats.revenue.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-white/60">
-                      <span>Net Earnings</span>
-                      <span className="text-green-500/80">
-                        ${locationStats.net_earnings.toFixed(2)}
-                      </span>
-                    </div>
+                  <Badge variant="neutral">{locationStats.order_count}</Badge>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between text-white/60">
+                    <span>Revenue</span>
+                    <span className="text-white">${locationStats.revenue.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-white/60">
+                    <span>Net Earnings</span>
+                    <span className="text-green-500/80">
+                      ${locationStats.net_earnings.toFixed(2)}
+                    </span>
                   </div>
                 </div>
-              ),
-            )}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -325,10 +301,7 @@ export default function VendorOrders() {
         <div className="flex flex-col gap-4">
           {/* Search */}
           <div className="relative">
-            <Search
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"
-            />
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
             <input
               type="text"
               placeholder="Search by customer, order number, or email..."
@@ -377,10 +350,7 @@ export default function VendorOrders() {
 
             {/* Status Filter */}
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              <FilterButton
-                active={statusFilter === "all"}
-                onClick={() => setStatusFilter("all")}
-              >
+              <FilterButton active={statusFilter === "all"} onClick={() => setStatusFilter("all")}>
                 All Status
               </FilterButton>
               <FilterButton
@@ -431,9 +401,7 @@ export default function VendorOrders() {
       {/* Orders Table */}
       {loading ? (
         <div className="minimal-glass p-12 text-center">
-          <div className="text-white/40 text-xs uppercase tracking-wider">
-            Loading orders...
-          </div>
+          <div className="text-white/40 text-xs uppercase tracking-wider">Loading orders...</div>
         </div>
       ) : filteredOrders.length === 0 ? (
         <div className="minimal-glass p-12">
@@ -465,16 +433,10 @@ export default function VendorOrders() {
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex-1">
-                    <div className="text-white text-sm font-medium mb-1">
-                      {order.customerName}
-                    </div>
-                    <div className="text-white/40 text-xs font-mono">
-                      {order.orderNumber}
-                    </div>
+                    <div className="text-white text-sm font-medium mb-1">{order.customerName}</div>
+                    <div className="text-white/40 text-xs font-mono">{order.orderNumber}</div>
                   </div>
-                  <Badge variant={getStatusVariant(order.status)}>
-                    {order.status}
-                  </Badge>
+                  <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                 </div>
                 <div className="flex items-center justify-between text-xs mb-2">
                   <div className="flex items-center gap-2 text-white/60">
@@ -532,16 +494,11 @@ export default function VendorOrders() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filteredOrders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="hover:bg-white/[0.02] transition-all group"
-                  >
+                  <tr key={order.id} className="hover:bg-white/[0.02] transition-all group">
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <Package size={16} className="text-white/40" />
-                        <span className="text-white font-mono text-sm">
-                          {order.orderNumber}
-                        </span>
+                        <span className="text-white font-mono text-sm">{order.orderNumber}</span>
                       </div>
                     </td>
                     <td className="p-4">
@@ -553,25 +510,19 @@ export default function VendorOrders() {
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <User size={14} className="text-white/40" />
-                        <span className="text-white text-sm">
-                          {order.customerName}
-                        </span>
+                        <span className="text-white text-sm">{order.customerName}</span>
                       </div>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         {getOrderTypeIcon(order.orderType)}
-                        <span className="text-white/60 text-sm">
-                          {order.orderType}
-                        </span>
+                        <span className="text-white/60 text-sm">{order.orderType}</span>
                       </div>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <MapPin size={14} className="text-white/40" />
-                        <span className="text-white/60 text-sm">
-                          {order.locationName}
-                        </span>
+                        <span className="text-white/60 text-sm">{order.locationName}</span>
                       </div>
                     </td>
                     <td className="p-4">
@@ -590,9 +541,7 @@ export default function VendorOrders() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <Badge variant={getStatusVariant(order.status)}>
-                        {order.status}
-                      </Badge>
+                      <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                     </td>
                     <td className="p-4">
                       <button
@@ -658,9 +607,7 @@ function FilterButton({
       {icon}
       {children}
       {count !== undefined && count > 0 && (
-        <span className={`ml-1 ${active ? "text-white/60" : "text-white/40"}`}>
-          ({count})
-        </span>
+        <span className={`ml-1 ${active ? "text-white/60" : "text-white/40"}`}>({count})</span>
       )}
     </button>
   );
@@ -675,9 +622,7 @@ function OrderDetailModal({
 }: {
   order: Order;
   onClose: () => void;
-  getStatusVariant: (
-    status: string,
-  ) => "success" | "warning" | "error" | "neutral";
+  getStatusVariant: (status: string) => "success" | "warning" | "error" | "neutral";
   getOrderTypeIcon: (type: string) => React.ReactNode;
 }) {
   // Prevent body scroll when modal is open
@@ -725,9 +670,7 @@ function OrderDetailModal({
         {/* Header */}
         <div className="flex justify-between items-start mb-6 pb-6 border-b border-white/10">
           <div>
-            <h2 className="text-xl font-light text-white mb-2">
-              {order.orderNumber}
-            </h2>
+            <h2 className="text-xl font-light text-white mb-2">{order.orderNumber}</h2>
             <div className="flex items-center gap-3 text-sm">
               <div className="flex items-center gap-2 text-white/60">
                 <User size={14} />
@@ -743,10 +686,7 @@ function OrderDetailModal({
               </div>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-white/60 hover:text-white transition-colors"
-          >
+          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
             <svg
               className="w-6 h-6"
               fill="none"
@@ -754,20 +694,14 @@ function OrderDetailModal({
               viewBox="0 0 24 24"
               strokeWidth={1.5}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
         {/* Customer Info */}
         <div className="mb-6 p-4 bg-white/5 border border-white/5 rounded-2xl">
-          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">
-            Customer Details
-          </h3>
+          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Customer Details</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <div className="text-white/60 text-xs mb-1">Email</div>
@@ -792,9 +726,7 @@ function OrderDetailModal({
               {order.trackingNumber && (
                 <div>
                   <span className="text-white/60">Tracking: </span>
-                  <span className="text-white font-mono">
-                    {order.trackingNumber}
-                  </span>
+                  <span className="text-white font-mono">{order.trackingNumber}</span>
                   {order.trackingUrl && (
                     <a
                       href={order.trackingUrl}
@@ -819,9 +751,7 @@ function OrderDetailModal({
 
         {/* Order Items */}
         <div className="mb-6">
-          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">
-            Order Items
-          </h3>
+          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Order Items</h3>
           <div className="space-y-2">
             {order.items.map((item) => (
               <div
@@ -836,20 +766,14 @@ function OrderDetailModal({
                   />
                 )}
                 <div className="flex-1">
-                  <div className="text-white text-sm font-medium mb-1">
-                    {item.productName}
-                  </div>
+                  <div className="text-white text-sm font-medium mb-1">{item.productName}</div>
                   <div className="flex items-center gap-3 text-xs text-white/60">
                     <span>Qty: {item.quantityDisplay || item.quantity}</span>
                     <span>@${item.unitPrice.toFixed(2)}</span>
-                    {item.tierName && (
-                      <Badge variant="neutral">{item.tierName}</Badge>
-                    )}
+                    {item.tierName && <Badge variant="neutral">{item.tierName}</Badge>}
                   </div>
                 </div>
-                <div className="text-white font-medium">
-                  ${item.lineTotal.toFixed(2)}
-                </div>
+                <div className="text-white font-medium">${item.lineTotal.toFixed(2)}</div>
               </div>
             ))}
           </div>
@@ -857,21 +781,15 @@ function OrderDetailModal({
 
         {/* Order Summary */}
         <div className="mb-6 p-4 bg-white/5 border border-white/5 rounded-2xl">
-          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">
-            Financial Summary
-          </h3>
+          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Financial Summary</h3>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-white/60">Subtotal</span>
-              <span className="text-white font-medium">
-                ${order.vendorSubtotal.toFixed(2)}
-              </span>
+              <span className="text-white font-medium">${order.vendorSubtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-white/60">Platform Commission</span>
-              <span className="text-red-500/80">
-                -${order.vendorCommission.toFixed(2)}
-              </span>
+              <span className="text-red-500/80">-${order.vendorCommission.toFixed(2)}</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-white/10">
               <span className="text-white font-medium">Your Net Earnings</span>
@@ -886,31 +804,21 @@ function OrderDetailModal({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
             <div className="text-white/60 text-xs mb-1">Order Date</div>
-            <div className="text-white">
-              {new Date(order.date).toLocaleDateString()}
-            </div>
+            <div className="text-white">{new Date(order.date).toLocaleDateString()}</div>
           </div>
           <div>
             <div className="text-white/60 text-xs mb-1">Order Status</div>
-            <Badge variant={getStatusVariant(order.status)}>
-              {order.status}
-            </Badge>
+            <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
           </div>
           <div>
             <div className="text-white/60 text-xs mb-1">Payment</div>
-            <Badge
-              variant={order.paymentStatus === "paid" ? "success" : "warning"}
-            >
+            <Badge variant={order.paymentStatus === "paid" ? "success" : "warning"}>
               {order.paymentStatus}
             </Badge>
           </div>
           <div>
             <div className="text-white/60 text-xs mb-1">Fulfillment</div>
-            <Badge
-              variant={
-                order.fulfillmentStatus === "fulfilled" ? "success" : "neutral"
-              }
-            >
+            <Badge variant={order.fulfillmentStatus === "fulfilled" ? "success" : "neutral"}>
               {order.fulfillmentStatus}
             </Badge>
           </div>

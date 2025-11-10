@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const authResult = await requireVendor(request);
@@ -57,16 +58,14 @@ export async function GET(request: NextRequest) {
 
     if (coasError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching COAs:", coasError);
+        logger.error("Error fetching COAs:", coasError);
       }
       return NextResponse.json({ error: coasError.message }, { status: 500 });
     }
 
     // Transform data to match frontend interface with comprehensive details
     const transformedCoas = (coas || []).map((coa) => {
-      const product = Array.isArray(coa.products)
-        ? coa.products[0]
-        : coa.products;
+      const product = Array.isArray(coa.products) ? coa.products[0] : coa.products;
       const category = product?.categories;
       const testResults = coa.test_results || {};
 
@@ -74,8 +73,7 @@ export async function GET(request: NextRequest) {
       const isExpired = coa.expiry_date
         ? new Date(coa.expiry_date) < new Date()
         : coa.test_date &&
-          new Date().getTime() - new Date(coa.test_date).getTime() >
-            90 * 24 * 60 * 60 * 1000;
+          new Date().getTime() - new Date(coa.test_date).getTime() > 90 * 24 * 60 * 60 * 1000;
 
       return {
         id: coa.id,
@@ -94,11 +92,7 @@ export async function GET(request: NextRequest) {
         testDate: coa.test_date,
         uploadDate: coa.upload_date,
         expiryDate: coa.expiry_date,
-        status: isExpired
-          ? "expired"
-          : coa.is_verified
-            ? "approved"
-            : "pending",
+        status: isExpired ? "expired" : coa.is_verified ? "approved" : "pending",
         fileUrl: coa.file_url,
         fileName: coa.file_name,
         fileSize: coa.file_size,
@@ -117,30 +111,17 @@ export async function GET(request: NextRequest) {
           : null,
         // Terpenes
         terpenes: testResults.terpenes || null,
-        totalTerpenes: testResults.total_terpenes
-          ? `${testResults.total_terpenes}%`
-          : null,
+        totalTerpenes: testResults.total_terpenes ? `${testResults.total_terpenes}%` : null,
         // Safety tests
         pesticides:
-          testResults.pesticides_passed !== undefined
-            ? testResults.pesticides_passed
-            : null,
+          testResults.pesticides_passed !== undefined ? testResults.pesticides_passed : null,
         heavyMetals:
-          testResults.heavy_metals_passed !== undefined
-            ? testResults.heavy_metals_passed
-            : null,
+          testResults.heavy_metals_passed !== undefined ? testResults.heavy_metals_passed : null,
         microbials:
-          testResults.microbials_passed !== undefined
-            ? testResults.microbials_passed
-            : null,
+          testResults.microbials_passed !== undefined ? testResults.microbials_passed : null,
         mycotoxins:
-          testResults.mycotoxins_passed !== undefined
-            ? testResults.mycotoxins_passed
-            : null,
-        solvents:
-          testResults.solvents_passed !== undefined
-            ? testResults.solvents_passed
-            : null,
+          testResults.mycotoxins_passed !== undefined ? testResults.mycotoxins_passed : null,
+        solvents: testResults.solvents_passed !== undefined ? testResults.solvents_passed : null,
         // Metadata
         metadata: coa.metadata || {},
         // Raw test results for detailed view
@@ -192,12 +173,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Vendor COAs API error:", error);
+      logger.error("Vendor COAs API error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Failed to fetch COAs" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Failed to fetch COAs" }, { status: 500 });
   }
 }
 
@@ -216,9 +194,7 @@ export async function POST(request: NextRequest) {
     const testDate = formData.get("test_date") as string;
     const expiryDate = formData.get("expiry_date") as string | null;
     const batchNumber = formData.get("batch_number") as string;
-    const productNameOnCoa = formData.get("product_name_on_coa") as
-      | string
-      | null;
+    const productNameOnCoa = formData.get("product_name_on_coa") as string | null;
 
     // Parse test results JSON
     const testResultsStr = formData.get("test_results") as string;
@@ -228,7 +204,7 @@ export async function POST(request: NextRequest) {
         testResults = JSON.parse(testResultsStr);
       } catch (e) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to parse test_results:", e);
+          logger.error("Failed to parse test_results:", e);
         }
       }
     }
@@ -238,26 +214,17 @@ export async function POST(request: NextRequest) {
     }
 
     if (!productId) {
-      return NextResponse.json(
-        { error: "Product ID is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Product ID is required" }, { status: 400 });
     }
 
     // Validate file type and size
     if (file.type !== "application/pdf" && !file.type.startsWith("image/")) {
-      return NextResponse.json(
-        { error: "Only PDF and image files are allowed" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Only PDF and image files are allowed" }, { status: 400 });
     }
 
     if (file.size > 25 * 1024 * 1024) {
       // 25MB limit
-      return NextResponse.json(
-        { error: "File size must be less than 25MB" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "File size must be less than 25MB" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -276,12 +243,9 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Storage upload error:", uploadError);
+        logger.error("Storage upload error:", uploadError);
       }
-      return NextResponse.json(
-        { error: "Failed to upload file" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
     }
 
     // Get public URL (for private bucket, this will require signed URL for viewing)
@@ -313,7 +277,7 @@ export async function POST(request: NextRequest) {
 
     if (coaError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("COA creation error:", coaError);
+        logger.error("COA creation error:", coaError);
       }
       // Clean up uploaded file if DB insert fails
       await supabase.storage.from("vendor-coas").remove([fileName]);
@@ -327,12 +291,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("COA upload error:", error);
+      logger.error("COA upload error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Failed to upload COA" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Failed to upload COA" }, { status: 500 });
   }
 }
 
@@ -355,10 +316,7 @@ export async function PUT(request: NextRequest) {
     const { product_id } = body;
 
     if (!product_id) {
-      return NextResponse.json(
-        { error: "Product ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Product ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -384,7 +342,7 @@ export async function PUT(request: NextRequest) {
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("COA update error:", updateError);
+        logger.error("COA update error:", updateError);
       }
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
@@ -395,12 +353,9 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("COA update error:", error);
+      logger.error("COA update error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Failed to update COA" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Failed to update COA" }, { status: 500 });
   }
 }
 
@@ -442,7 +397,7 @@ export async function DELETE(request: NextRequest) {
 
     if (deleteError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("COA delete error:", deleteError);
+        logger.error("COA delete error:", deleteError);
       }
       return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
@@ -453,11 +408,8 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("COA delete error:", error);
+      logger.error("COA delete error:", error);
     }
-    return NextResponse.json(
-      { error: error.message || "Failed to delete COA" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: error.message || "Failed to delete COA" }, { status: 500 });
   }
 }

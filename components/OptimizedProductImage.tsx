@@ -30,9 +30,7 @@ export default function OptimizedProductImage({
   sizes,
   quality = 75,
 }: OptimizedProductImageProps) {
-  const [imgSrc, setImgSrc] = useState<string>(
-    src || "/placeholder-product.jpg",
-  );
+  const [imgSrc, setImgSrc] = useState<string>(src || "/placeholder-product.jpg");
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const mountedRef = useRef(true);
@@ -74,19 +72,14 @@ export default function OptimizedProductImage({
     onError: handleError,
     className: `${className} ${isLoading ? "opacity-0" : "opacity-100"} transition-opacity duration-300`,
     quality,
-    sizes:
-      sizes || fill
-        ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        : undefined,
+    sizes: sizes || fill ? "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" : undefined,
     priority,
   };
 
   return (
     <div className={`relative ${fill ? "w-full h-full" : ""} bg-neutral-900`}>
       {/* Loading skeleton */}
-      {isLoading && (
-        <div className="absolute inset-0 bg-neutral-800 animate-pulse rounded" />
-      )}
+      {isLoading && <div className="absolute inset-0 bg-neutral-800 animate-pulse rounded" />}
 
       {/* Image */}
       {fill ? (

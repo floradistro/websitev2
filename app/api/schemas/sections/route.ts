@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/schemas/sections
  * Get all section schemas (for building editor UI)
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, schemas });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching section schemas:", error);
+      logger.error("Error fetching section schemas:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -36,10 +37,7 @@ export async function POST(request: NextRequest) {
     const { section_key } = await request.json();
 
     if (!section_key) {
-      return NextResponse.json(
-        { error: "section_key required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "section_key required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -56,7 +54,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, schema });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching section schema:", error);
+      logger.error("Error fetching section schema:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

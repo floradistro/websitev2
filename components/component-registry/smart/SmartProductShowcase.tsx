@@ -10,6 +10,7 @@ import { ProductGrid } from "../composite/ProductGrid";
 import { Text } from "../atomic/Text";
 import { Badge } from "../atomic/Badge";
 
+import { logger } from "@/lib/logger";
 export interface SmartProductShowcaseProps {
   vendorId: string;
 
@@ -72,7 +73,7 @@ export function SmartProductShowcase({
         setProducts(data.products || []);
       } catch (err) {
         if (process.env.NODE_ENV === "development") {
-          console.error("SmartProductShowcase fetch error:", err);
+          logger.error("SmartProductShowcase fetch error:", err);
         }
       } finally {
         setLoading(false);
@@ -87,12 +88,8 @@ export function SmartProductShowcase({
     return (
       <div className={`py-12 ${className}`}>
         <div className="animate-pulse space-y-4">
-          {headline && (
-            <div className="h-10 bg-white/5 rounded w-1/3 mx-auto"></div>
-          )}
-          {subheadline && (
-            <div className="h-6 bg-white/5 rounded w-1/2 mx-auto"></div>
-          )}
+          {headline && <div className="h-10 bg-white/5 rounded w-1/3 mx-auto"></div>}
+          {subheadline && <div className="h-6 bg-white/5 rounded w-1/2 mx-auto"></div>}
           <div className={`grid grid-cols-${columns} gap-6 mt-8`}>
             {[...Array(columns)].map((_, i) => (
               <div key={i} className="space-y-3">
@@ -112,14 +109,7 @@ export function SmartProductShowcase({
       {/* Header */}
       {(headline || subheadline) && (
         <div className="text-center mb-8">
-          {headline && (
-            <Text
-              content={headline}
-              variant="headline"
-              size="3xl"
-              align="center"
-            />
-          )}
+          {headline && <Text content={headline} variant="headline" size="3xl" align="center" />}
           {subheadline && (
             <Text
               content={subheadline}
@@ -178,11 +168,7 @@ export function SmartProductShowcase({
 
       {products.length === 0 && (
         <div className="text-center py-12">
-          <Text
-            content="No products found"
-            variant="paragraph"
-            color="#737373"
-          />
+          <Text content="No products found" variant="paragraph" color="#737373" />
         </div>
       )}
     </div>

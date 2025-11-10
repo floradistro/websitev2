@@ -9,10 +9,7 @@ export { css } from "./css.js";
 export { html } from "./html.js";
 export { waitTransitionEndForElement } from "./waitTransitionEndForElement.js";
 export { wait } from "./wait.js";
-export {
-  safeAwaitAnimation,
-  safeCancelAnimation,
-} from "./safeCancelAnimation.js";
+export { safeAwaitAnimation, safeCancelAnimation } from "./safeCancelAnimation.js";
 export { ScanditHTMLElement } from "./ScanditHTMLElement.js";
 export { isWorkerScope } from "./isWorkerScope.js";
 export { throttle } from "./throttle.js";

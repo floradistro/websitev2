@@ -49,16 +49,9 @@ const CONDITION_OPTIONS = [
   },
 ];
 
-export function ReceiveModal({
-  isOpen,
-  onClose,
-  purchaseOrder,
-  onSuccess,
-}: ReceiveModalProps) {
+export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: ReceiveModalProps) {
   const { user, vendor } = useAppAuth();
-  const [receiveData, setReceiveData] = useState<
-    Record<string, ReceiveItemData>
-  >({});
+  const [receiveData, setReceiveData] = useState<Record<string, ReceiveItemData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -112,11 +105,7 @@ export function ReceiveModal({
     }));
   };
 
-  const handleNotesChange = (
-    itemId: string,
-    field: "quality_notes" | "notes",
-    value: string,
-  ) => {
+  const handleNotesChange = (itemId: string, field: "quality_notes" | "notes", value: string) => {
     setReceiveData((prev) => ({
       ...prev,
       [itemId]: {
@@ -130,9 +119,7 @@ export function ReceiveModal({
     if (!purchaseOrder || !vendor) return;
 
     // Get items to receive (quantity > 0)
-    const itemsToReceive = Object.values(receiveData).filter(
-      (item) => item.quantity_received > 0,
-    );
+    const itemsToReceive = Object.values(receiveData).filter((item) => item.quantity_received > 0);
 
     if (itemsToReceive.length === 0) {
       setError("Please enter quantities to receive");
@@ -172,8 +159,7 @@ export function ReceiveModal({
   };
 
   const receivableItems =
-    purchaseOrder?.items.filter((item) => (item.quantity_remaining || 0) > 0) ||
-    [];
+    purchaseOrder?.items.filter((item) => (item.quantity_remaining || 0) > 0) || [];
   const totalReceiving = Object.values(receiveData).reduce(
     (sum, item) => sum + item.quantity_received,
     0,
@@ -187,12 +173,7 @@ export function ReceiveModal({
       size="xl"
       footer={
         <>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
+          <Button variant="ghost" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button
@@ -201,11 +182,7 @@ export function ReceiveModal({
             onClick={handleSubmit}
             disabled={isSubmitting || totalReceiving === 0 || success}
           >
-            {isSubmitting
-              ? "Receiving..."
-              : success
-                ? "Received!"
-                : "Receive Items"}
+            {isSubmitting ? "Receiving..." : success ? "Received!" : "Receive Items"}
           </Button>
         </>
       }
@@ -234,9 +211,7 @@ export function ReceiveModal({
           )}
         >
           <XCircle size={16} className="text-red-400" />
-          <span className={cn(ds.typography.size.xs, "text-red-400")}>
-            {error}
-          </span>
+          <span className={cn(ds.typography.size.xs, "text-red-400")}>{error}</span>
         </div>
       )}
 
@@ -245,34 +220,18 @@ export function ReceiveModal({
         <div className={cn("rounded-lg p-3 mb-4", ds.colors.bg.secondary)}>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div
-                className={cn(
-                  ds.typography.size.xs,
-                  ds.colors.text.quaternary,
-                  "mb-1",
-                )}
-              >
+              <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1")}>
                 Supplier
               </div>
-              <div
-                className={cn(ds.typography.size.sm, ds.colors.text.secondary)}
-              >
+              <div className={cn(ds.typography.size.sm, ds.colors.text.secondary)}>
                 {purchaseOrder.supplier?.external_name || "N/A"}
               </div>
             </div>
             <div>
-              <div
-                className={cn(
-                  ds.typography.size.xs,
-                  ds.colors.text.quaternary,
-                  "mb-1",
-                )}
-              >
+              <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1")}>
                 Status
               </div>
-              <div
-                className={cn(ds.typography.size.sm, ds.colors.text.secondary)}
-              >
+              <div className={cn(ds.typography.size.sm, ds.colors.text.secondary)}>
                 {purchaseOrder.status}
               </div>
             </div>
@@ -284,21 +243,12 @@ export function ReceiveModal({
       {receivableItems.length === 0 ? (
         <div className={cn("text-center py-8", ds.colors.text.tertiary)}>
           <Package size={48} className="mx-auto mb-3 opacity-20" />
-          <p className={cn(ds.typography.size.sm)}>
-            All items have been received
-          </p>
+          <p className={cn(ds.typography.size.sm)}>All items have been received</p>
         </div>
       ) : (
         <div className="space-y-3">
-          <div
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.quaternary,
-              "mb-2",
-            )}
-          >
-            Receiving {totalReceiving} units across {receivableItems.length}{" "}
-            items
+          <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-2")}>
+            Receiving {totalReceiving} units across {receivableItems.length} items
           </div>
 
           {receivableItems.map((item) => {
@@ -321,24 +271,12 @@ export function ReceiveModal({
               >
                 {/* Product Info */}
                 <div className="mb-3">
-                  <h4
-                    className={cn(
-                      ds.typography.size.sm,
-                      ds.colors.text.secondary,
-                      "mb-1",
-                    )}
-                  >
+                  <h4 className={cn(ds.typography.size.sm, ds.colors.text.secondary, "mb-1")}>
                     {item.product?.name || "Unknown Product"}
                   </h4>
-                  <div
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.tertiary,
-                    )}
-                  >
+                  <div className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                     {item.product?.sku && `SKU: ${item.product.sku} • `}
-                    Ordered: {item.quantity} • Received:{" "}
-                    {item.quantity_received} • Remaining:{" "}
+                    Ordered: {item.quantity} • Received: {item.quantity_received} • Remaining:{" "}
                     {item.quantity_remaining}
                   </div>
                 </div>
@@ -347,20 +285,14 @@ export function ReceiveModal({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                   <div>
                     <label
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.quaternary,
-                        "mb-1 block",
-                      )}
+                      className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1 block")}
                     >
                       Quantity Receiving *
                     </label>
                     <Input
                       type="number"
-                      value={data.quantity_received}
-                      onChange={(e) =>
-                        handleQuantityChange(item.id, e.target.value)
-                      }
+                      value={String(data.quantity_received)}
+                      onChange={(e) => handleQuantityChange(item.id, e.target.value)}
                       min={0}
                       max={item.quantity_remaining}
                       step={0.01}
@@ -370,19 +302,13 @@ export function ReceiveModal({
 
                   <div>
                     <label
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.quaternary,
-                        "mb-1 block",
-                      )}
+                      className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1 block")}
                     >
                       Condition *
                     </label>
                     <select
                       value={data.condition}
-                      onChange={(e) =>
-                        handleConditionChange(item.id, e.target.value)
-                      }
+                      onChange={(e) => handleConditionChange(item.id, e.target.value)}
                       className={cn(
                         "w-full rounded-lg px-3 py-2 text-sm",
                         "bg-white/5 border border-white/10",
@@ -404,19 +330,13 @@ export function ReceiveModal({
                   <div
                     className={cn(
                       "flex items-center gap-2 p-2 rounded text-xs mb-2",
-                      data.condition === "damaged" &&
-                        "bg-yellow-500/10 text-yellow-400",
-                      data.condition === "expired" &&
-                        "bg-orange-500/10 text-orange-400",
-                      data.condition === "rejected" &&
-                        "bg-red-500/10 text-red-400",
+                      data.condition === "damaged" && "bg-yellow-500/10 text-yellow-400",
+                      data.condition === "expired" && "bg-orange-500/10 text-orange-400",
+                      data.condition === "rejected" && "bg-red-500/10 text-red-400",
                     )}
                   >
                     <AlertCircle size={12} />
-                    {
-                      CONDITION_OPTIONS.find((o) => o.value === data.condition)
-                        ?.description
-                    }
+                    {CONDITION_OPTIONS.find((o) => o.value === data.condition)?.description}
                   </div>
                 )}
 
@@ -424,23 +344,13 @@ export function ReceiveModal({
                 {data.condition !== "good" && (
                   <div className="mb-2">
                     <label
-                      className={cn(
-                        ds.typography.size.xs,
-                        ds.colors.text.quaternary,
-                        "mb-1 block",
-                      )}
+                      className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1 block")}
                     >
                       Quality Notes * (Required for {data.condition} items)
                     </label>
                     <Input
                       value={data.quality_notes}
-                      onChange={(e) =>
-                        handleNotesChange(
-                          item.id,
-                          "quality_notes",
-                          e.target.value,
-                        )
-                      }
+                      onChange={(e) => handleNotesChange(item.id, "quality_notes", e.target.value)}
                       placeholder="Describe the issue..."
                     />
                   </div>
@@ -449,19 +359,13 @@ export function ReceiveModal({
                 {/* Additional Notes (optional) */}
                 <div>
                   <label
-                    className={cn(
-                      ds.typography.size.xs,
-                      ds.colors.text.quaternary,
-                      "mb-1 block",
-                    )}
+                    className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1 block")}
                   >
                     Additional Notes
                   </label>
                   <Input
                     value={data.notes}
-                    onChange={(e) =>
-                      handleNotesChange(item.id, "notes", e.target.value)
-                    }
+                    onChange={(e) => handleNotesChange(item.id, "notes", e.target.value)}
                     placeholder="Optional notes..."
                   />
                 </div>

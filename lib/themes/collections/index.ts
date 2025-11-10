@@ -12,9 +12,9 @@ import { premiumThemes } from "./premium";
  * Steve Jobs-approved: Minimal, elegant, and sophisticated
  */
 export const themes = [
-  ...appleThemes,      // 2 themes
-  ...luxuryThemes,     // 8 themes
-  ...premiumThemes,    // 12 themes
+  ...appleThemes, // 2 themes
+  ...luxuryThemes, // 8 themes
+  ...premiumThemes, // 12 themes
 ]; // Total: 22 themes
 
 // Re-export individual collections for direct access

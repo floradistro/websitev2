@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -68,9 +69,7 @@ export async function GET(request: NextRequest) {
     const secondHalfRevenue = secondHalf.reduce((sum, d) => sum + d.revenue, 0);
 
     const growth =
-      firstHalfRevenue > 0
-        ? ((secondHalfRevenue - firstHalfRevenue) / firstHalfRevenue) * 100
-        : 0;
+      firstHalfRevenue > 0 ? ((secondHalfRevenue - firstHalfRevenue) / firstHalfRevenue) * 100 : 0;
 
     return NextResponse.json({
       success: true,
@@ -84,7 +83,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Vendor sales trend error:", error);
+      logger.error("Vendor sales trend error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to fetch sales trend" },

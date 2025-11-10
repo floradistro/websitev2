@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -117,12 +118,9 @@ export async function POST() {
 
     if (tableError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Migration error:", tableError);
+        logger.error("Migration error:", tableError);
       }
-      return NextResponse.json(
-        { success: false, error: tableError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: tableError.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -131,11 +129,8 @@ export async function POST() {
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Migration error:", error);
+      logger.error("Migration error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

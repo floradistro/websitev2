@@ -166,9 +166,7 @@ export function VendorLowStockWidget({
         <div className="flex items-center gap-2">
           <AlertTriangle size={20} className="text-yellow-400" />
           <h3 className="text-lg font-medium text-white">Low Stock Alerts</h3>
-          {refreshing && (
-            <RefreshCw size={16} className="text-white/60 animate-spin" />
-          )}
+          {refreshing && <RefreshCw size={16} className="text-white/60 animate-spin" />}
         </div>
         <button
           onClick={fetchLowStock}
@@ -185,27 +183,19 @@ export function VendorLowStockWidget({
         <div className="grid grid-cols-4 gap-3 mb-6">
           <div className="bg-white/5 border border-white/10 rounded-lg p-3">
             <div className="text-xs text-white/60 mb-1">Total</div>
-            <div className="text-xl font-semibold text-white">
-              {stats.total_low_stock}
-            </div>
+            <div className="text-xl font-semibold text-white">{stats.total_low_stock}</div>
           </div>
           <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
             <div className="text-xs text-red-400 mb-1">Critical</div>
-            <div className="text-xl font-semibold text-red-400">
-              {stats.critical}
-            </div>
+            <div className="text-xl font-semibold text-red-400">{stats.critical}</div>
           </div>
           <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3">
             <div className="text-xs text-orange-400 mb-1">High</div>
-            <div className="text-xl font-semibold text-orange-400">
-              {stats.high}
-            </div>
+            <div className="text-xl font-semibold text-orange-400">{stats.high}</div>
           </div>
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
             <div className="text-xs text-yellow-400 mb-1">Medium</div>
-            <div className="text-xl font-semibold text-yellow-400">
-              {stats.medium}
-            </div>
+            <div className="text-xl font-semibold text-yellow-400">{stats.medium}</div>
           </div>
         </div>
       )}
@@ -228,9 +218,7 @@ export function VendorLowStockWidget({
         <div className="text-center py-8">
           <Package size={48} className="mx-auto mb-3 text-green-400/50" />
           <p className="text-white/60">All inventory levels are healthy!</p>
-          <p className="text-xs text-white/40 mt-1">
-            No items below reorder point
-          </p>
+          <p className="text-xs text-white/40 mt-1">No items below reorder point</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -243,16 +231,12 @@ export function VendorLowStockWidget({
                 <div className="flex items-start gap-3 flex-1">
                   {getUrgencyIcon(item.urgency)}
                   <div className="flex-1">
-                    <div className="font-medium text-white mb-1">
-                      {item.product.name}
-                    </div>
+                    <div className="font-medium text-white mb-1">{item.product.name}</div>
                     <div className="text-xs text-white/60 space-y-1">
                       {item.product.sku && <div>SKU: {item.product.sku}</div>}
                       <div>{item.location?.name}</div>
                       {item.product.categories && (
-                        <div className="text-white/40">
-                          {item.product.categories.name}
-                        </div>
+                        <div className="text-white/40">{item.product.categories.name}</div>
                       )}
                     </div>
                   </div>
@@ -261,13 +245,9 @@ export function VendorLowStockWidget({
                   <div className="text-sm font-semibold text-white">
                     {item.available_quantity} left
                   </div>
-                  <div className="text-xs text-white/60">
-                    of {item.quantity} total
-                  </div>
+                  <div className="text-xs text-white/60">of {item.quantity} total</div>
                   {item.reserved_quantity > 0 && (
-                    <div className="text-xs text-white/40">
-                      {item.reserved_quantity} reserved
-                    </div>
+                    <div className="text-xs text-white/40">{item.reserved_quantity} reserved</div>
                   )}
                 </div>
               </div>

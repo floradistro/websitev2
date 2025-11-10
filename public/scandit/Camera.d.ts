@@ -1,9 +1,5 @@
 /// <reference types="emscripten" />
-export {
-  g as Camera,
-  e as CameraJSON,
-  f as VideoFrameResolution,
-} from "./Camera-C_4xOv5n.js";
+export { g as Camera, e as CameraJSON, f as VideoFrameResolution } from "./Camera-C_4xOv5n.js";
 import "./Common.js";
 import "./private/Serializable.js";
 import "./private/FrameReaders/WatermarkStack.js";

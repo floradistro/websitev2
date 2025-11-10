@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 import { getVendorDashboardData } from "@/lib/parallel-queries";
 import { vendorCache, generateCacheKey } from "@/lib/cache-manager";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -28,9 +29,7 @@ export async function GET(request: NextRequest) {
       const supabase = getServiceSupabase();
       const { data: recentSubmissions } = await supabase
         .from("products")
-        .select(
-          "id, name, featured_image_storage, featured_image, status, created_at",
-        )
+        .select("id, name, featured_image_storage, featured_image, status, created_at")
         .eq("vendor_id", vendorId)
         .order("created_at", { ascending: false })
         .limit(5);
@@ -40,11 +39,7 @@ export async function GET(request: NextRequest) {
         name: p.name,
         image: p.featured_image_storage || p.featured_image || "",
         status:
-          p.status === "published"
-            ? "approved"
-            : p.status === "archived"
-              ? "rejected"
-              : "pending",
+          p.status === "published" ? "approved" : p.status === "archived" ? "rejected" : "pending",
         submittedDate: new Date(p.created_at).toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
@@ -55,8 +50,7 @@ export async function GET(request: NextRequest) {
       const lowStockItems = dashboardData.inventory.filter(
         (inv: any) =>
           parseFloat(inv.quantity || 0) > 0 &&
-          parseFloat(inv.quantity || 0) <=
-            parseFloat(inv.low_stock_threshold || 10),
+          parseFloat(inv.quantity || 0) <= parseFloat(inv.low_stock_threshold || 10),
       );
 
       // Calculate 30-day sales
@@ -95,10 +89,7 @@ export async function GET(request: NextRequest) {
       );
     } catch (parallelError) {
       if (process.env.NODE_ENV === "development") {
-        console.warn(
-          "⚠️  Optimized query failed, falling back to original:",
-          parallelError,
-        );
+        logger.warn("Optimized query failed, falling back to original", { error: parallelError });
       }
     }
 
@@ -106,50 +97,39 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceSupabase();
 
     // Run all queries in parallel for instant response
-    const [
-      publishedProductsResult,
-      pendingProductsResult,
-      inventoryResult,
-      ordersResult,
-    ] = await Promise.all([
-      // Live products (published with stock)
-      supabase
-        .from("products")
-        .select("id, stock_quantity")
-        .eq("vendor_id", vendorId)
-        .eq("status", "published")
-        .gt("stock_quantity", 0),
+    const [publishedProductsResult, pendingProductsResult, inventoryResult, ordersResult] =
+      await Promise.all([
+        // Live products (published with stock)
+        supabase
+          .from("products")
+          .select("id, stock_quantity")
+          .eq("vendor_id", vendorId)
+          .eq("status", "published")
+          .gt("stock_quantity", 0),
 
-      // Pending review
-      supabase
-        .from("products")
-        .select("id")
-        .eq("vendor_id", vendorId)
-        .eq("status", "pending"),
+        // Pending review
+        supabase.from("products").select("id").eq("vendor_id", vendorId).eq("status", "pending"),
 
-      // Low stock items (quantity <= threshold)
-      supabase
-        .from("inventory")
-        .select("id, quantity, low_stock_threshold, product_id")
-        .eq("vendor_id", vendorId),
+        // Low stock items (quantity <= threshold)
+        supabase
+          .from("inventory")
+          .select("id, quantity, low_stock_threshold, product_id")
+          .eq("vendor_id", vendorId),
 
-      // Recent orders (last 30 days)
-      supabase
-        .from("orders")
-        .select(
-          `
+        // Recent orders (last 30 days)
+        supabase
+          .from("orders")
+          .select(
+            `
           id,
           total,
           created_at,
           order_items!inner(vendor_id)
         `,
-        )
-        .eq("order_items.vendor_id", vendorId)
-        .gte(
-          "created_at",
-          new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        ),
-    ]);
+          )
+          .eq("order_items.vendor_id", vendorId)
+          .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+      ]);
 
     const liveProducts = publishedProductsResult.data || [];
     const pendingProducts = pendingProductsResult.data || [];
@@ -160,22 +140,16 @@ export async function GET(request: NextRequest) {
     const lowStockItems = inventory.filter(
       (inv) =>
         parseFloat(inv.quantity || 0) > 0 &&
-        parseFloat(inv.quantity || 0) <=
-          parseFloat(inv.low_stock_threshold || 10),
+        parseFloat(inv.quantity || 0) <= parseFloat(inv.low_stock_threshold || 10),
     );
 
     // Calculate 30-day sales
-    const totalSales30d = orders.reduce(
-      (sum, order) => sum + parseFloat(order.total || 0),
-      0,
-    );
+    const totalSales30d = orders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0);
 
     // Get recent product submissions with images
     const { data: recentSubmissions } = await supabase
       .from("products")
-      .select(
-        "id, name, featured_image_storage, featured_image, status, created_at",
-      )
+      .select("id, name, featured_image_storage, featured_image, status, created_at")
       .eq("vendor_id", vendorId)
       .order("created_at", { ascending: false })
       .limit(5);
@@ -185,11 +159,7 @@ export async function GET(request: NextRequest) {
       name: p.name,
       image: p.featured_image_storage || p.featured_image || "",
       status:
-        p.status === "published"
-          ? "approved"
-          : p.status === "archived"
-            ? "rejected"
-            : "pending",
+        p.status === "published" ? "approved" : p.status === "archived" ? "rejected" : "pending",
       submittedDate: new Date(p.created_at).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -218,7 +188,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Dashboard error:", error);
+      logger.error("❌ Dashboard error:", error);
     }
     return NextResponse.json(
       {

@@ -3,23 +3,15 @@
 import { useEffect, useState } from "react";
 import { useAppAuth } from "@/context/AppAuthContext";
 import { AppsGrid } from "@/components/admin/AppsGrid";
-import {
-  MapPin,
-  User,
-  Briefcase,
-  Store,
-  Sparkles,
-  TrendingUp,
-  Package,
-} from "lucide-react";
+import { MapPin, User, Briefcase, Store, Sparkles, TrendingUp, Package } from "lucide-react";
 import { useVendorDashboard } from "@/hooks/useVendorData";
 import { DashboardSkeleton } from "@/components/vendor/VendorSkeleton";
 import { KPIWidget } from "@/components/dashboard/KPIWidget";
 import { AIKPICreator } from "@/components/dashboard/AIKPICreator";
 
+import { logger } from "@/lib/logger";
 export default function MegaDashboard() {
-  const { user, vendor, locations, primaryLocation, role, isLoading } =
-    useAppAuth();
+  const { user, vendor, locations, primaryLocation, role, isLoading } = useAppAuth();
   const { data: dashboardData, loading } = useVendorDashboard();
 
   const [stats, setStats] = useState({
@@ -54,7 +46,7 @@ export default function MegaDashboard() {
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error loading KPI widgets:", error);
+          logger.error("Error loading KPI widgets:", error);
         }
       }
     };
@@ -66,16 +58,14 @@ export default function MegaDashboard() {
     const fetchBadgeCounts = async () => {
       if (!vendor?.id) return;
       try {
-        const response = await fetch(
-          `/api/vendor/badge-counts?vendorId=${vendor.id}`,
-        );
+        const response = await fetch(`/api/vendor/badge-counts?vendorId=${vendor.id}`);
         const data = await response.json();
         if (data.success) {
           setBadgeCounts(data.badgeCounts);
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error fetching badge counts:", error);
+          logger.error("Error fetching badge counts:", error);
         }
       }
     };
@@ -103,7 +93,7 @@ export default function MegaDashboard() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error saving KPI widget:", error);
+        logger.error("Error saving KPI widget:", error);
       }
     }
   };
@@ -119,7 +109,7 @@ export default function MegaDashboard() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error deleting KPI widget:", error);
+        logger.error("Error deleting KPI widget:", error);
       }
     }
   };
@@ -171,9 +161,7 @@ export default function MegaDashboard() {
                 />
               </div>
               <div>
-                <h1 className="text-white text-xl tracking-tight font-medium">
-                  {getGreeting()}
-                </h1>
+                <h1 className="text-white text-xl tracking-tight font-medium">{getGreeting()}</h1>
                 <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-medium">
                   {vendor?.store_name || "Your Store"}
                 </p>

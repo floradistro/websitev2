@@ -1,4 +1,1 @@
-export {
-  b as HintPresenter,
-  a as HintPresenterEvents,
-} from "../../../chunks/chunk-DUFF6WVD.js";
+export { b as HintPresenter, a as HintPresenterEvents } from "../../../chunks/chunk-DUFF6WVD.js";

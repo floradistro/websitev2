@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 // GET - List all domains (admin)
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, domains });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching domains:", error);
+      logger.error("Error fetching domains:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -34,18 +35,12 @@ export async function DELETE(request: NextRequest) {
     const domainId = searchParams.get("id");
 
     if (!domainId) {
-      return NextResponse.json(
-        { error: "Domain ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Domain ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
 
-    const { error } = await supabase
-      .from("vendor_domains")
-      .delete()
-      .eq("id", domainId);
+    const { error } = await supabase.from("vendor_domains").delete().eq("id", domainId);
 
     if (error) throw error;
 
@@ -55,7 +50,7 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error deleting domain:", error);
+      logger.error("Error deleting domain:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

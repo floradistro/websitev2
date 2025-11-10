@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Display Groups API
  * Manage groups of displays for video wall cohesion
@@ -16,10 +17,7 @@ export async function GET(request: NextRequest) {
     const vendorId = searchParams.get("vendor_id");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "Vendor ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Vendor ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -46,12 +44,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching display groups:", error);
+        logger.error("Error fetching display groups:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -60,12 +55,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Display groups GET error:", error);
+      logger.error("Display groups GET error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -110,12 +102,9 @@ export async function POST(request: NextRequest) {
 
     if (groupError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating group:", groupError);
+        logger.error("Error creating group:", groupError);
       }
-      return NextResponse.json(
-        { success: false, error: groupError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: groupError.message }, { status: 500 });
     }
 
     // Add members
@@ -132,14 +121,11 @@ export async function POST(request: NextRequest) {
 
     if (membersError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error adding members:", membersError);
+        logger.error("Error adding members:", membersError);
       }
       // Rollback group creation
       await supabase.from("tv_display_groups").delete().eq("id", group.id);
-      return NextResponse.json(
-        { success: false, error: membersError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: membersError.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -148,11 +134,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Display groups POST error:", error);
+      logger.error("Display groups POST error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

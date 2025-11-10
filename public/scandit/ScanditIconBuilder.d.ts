@@ -54,9 +54,7 @@ declare class ScanditIconBuilder {
   private iconSize;
   constructor();
   withIcon(icon: ScanditIconType): ScanditIconBuilder;
-  withBackgroundShape(
-    backgroundShape: ScanditIconShape | null,
-  ): ScanditIconBuilder;
+  withBackgroundShape(backgroundShape: ScanditIconShape | null): ScanditIconBuilder;
   withIconColor(color: Color): ScanditIconBuilder;
   withBackgroundColor(color: Color): ScanditIconBuilder;
   withBackgroundStrokeColor(backgroundStrokeColor: Color): ScanditIconBuilder;
@@ -67,9 +65,4 @@ declare class ScanditIconBuilder {
   withHeight(height: number): ScanditIconBuilder;
 }
 
-export {
-  ScanditIconBuilder,
-  ScanditIconForIconType,
-  ScanditIconShape,
-  ScanditIconType,
-};
+export { ScanditIconBuilder, ScanditIconForIconType, ScanditIconShape, ScanditIconType };

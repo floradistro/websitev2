@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -50,13 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/svg+xml",
-      "image/gif",
-    ];
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         {
@@ -97,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Supabase storage error:", error);
+        logger.error("Supabase storage error:", error);
       }
       throw error;
     }
@@ -114,7 +109,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error uploading category image:", error);
+      logger.error("Error uploading category image:", error);
     }
     return NextResponse.json(
       {
@@ -144,9 +139,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const { error } = await supabase.storage
-      .from("category-images")
-      .remove([path]);
+    const { error } = await supabase.storage.from("category-images").remove([path]);
 
     if (error) throw error;
 
@@ -156,7 +149,7 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error deleting category image:", error);
+      logger.error("Error deleting category image:", error);
     }
     return NextResponse.json(
       {

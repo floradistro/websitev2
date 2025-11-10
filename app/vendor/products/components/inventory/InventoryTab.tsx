@@ -11,6 +11,7 @@ import { InventoryList } from "./InventoryList";
 import { ProductsPagination } from "../ProductsPagination";
 import axios from "axios";
 
+import { logger } from "@/lib/logger";
 interface LocationInventory {
   inventory_id: string;
   location_id: string;
@@ -49,9 +50,9 @@ export function InventoryTab() {
 
   // Filter state
   const [search, setSearch] = useState("");
-  const [stockFilter, setStockFilter] = useState<
-    "all" | "in_stock" | "low_stock" | "out_of_stock"
-  >("all");
+  const [stockFilter, setStockFilter] = useState<"all" | "in_stock" | "low_stock" | "out_of_stock">(
+    "all",
+  );
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
 
@@ -79,7 +80,7 @@ export function InventoryTab() {
       }
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Inventory load error:", error);
+        logger.error("Inventory load error:", error);
       }
       showNotification({
         type: "error",
@@ -103,16 +104,14 @@ export function InventoryTab() {
       const s = search.toLowerCase();
       items = items.filter(
         (p) =>
-          p.product_name.toLowerCase().includes(s) ||
-          (p.sku && p.sku.toLowerCase().includes(s)),
+          p.product_name.toLowerCase().includes(s) || (p.sku && p.sku.toLowerCase().includes(s)),
       );
     }
 
     if (stockFilter !== "all") {
       items = items.filter((p) => {
         if (stockFilter === "out_of_stock") return p.total_quantity === 0;
-        if (stockFilter === "low_stock")
-          return p.total_quantity > 0 && p.total_quantity <= 10;
+        if (stockFilter === "low_stock") return p.total_quantity > 0 && p.total_quantity <= 10;
         if (stockFilter === "in_stock") return p.total_quantity > 10;
         return true;
       });
@@ -123,9 +122,7 @@ export function InventoryTab() {
     }
 
     if (locationFilter !== "all") {
-      items = items.filter((p) =>
-        p.locations.some((loc) => loc.location_id === locationFilter),
-      );
+      items = items.filter((p) => p.locations.some((loc) => loc.location_id === locationFilter));
     }
 
     return items;
@@ -149,26 +146,16 @@ export function InventoryTab() {
   const stats = useMemo(() => {
     const total = products.length;
     const inStock = products.filter((p) => p.total_quantity > 10).length;
-    const lowStock = products.filter(
-      (p) => p.total_quantity > 0 && p.total_quantity <= 10,
-    ).length;
+    const lowStock = products.filter((p) => p.total_quantity > 0 && p.total_quantity <= 10).length;
     const outOfStock = products.filter((p) => p.total_quantity === 0).length;
-    const totalValue = products.reduce(
-      (sum, p) => sum + p.price * p.total_quantity,
-      0,
-    );
+    const totalValue = products.reduce((sum, p) => sum + p.price * p.total_quantity, 0);
 
     return { total, inStock, lowStock, outOfStock, totalValue };
   }, [products]);
 
   // Handle stock adjustment
   const handleAdjust = useCallback(
-    async (
-      productId: string,
-      locationId: string,
-      inventoryId: string,
-      amount: number,
-    ) => {
+    async (productId: string, locationId: string, inventoryId: string, amount: number) => {
       const key = `${productId}-${locationId}`;
       setAdjusting((prev) => ({ ...prev, [key]: true }));
 
@@ -180,8 +167,7 @@ export function InventoryTab() {
             productId,
             locationId,
             adjustment: amount,
-            reason:
-              amount > 0 ? `Added ${amount}g` : `Removed ${Math.abs(amount)}g`,
+            reason: amount > 0 ? `Added ${amount}g` : `Removed ${Math.abs(amount)}g`,
           },
           {
             headers: { "x-vendor-id": vendor?.id },
@@ -222,15 +208,10 @@ export function InventoryTab() {
               ds.colors.text.quaternary,
             )}
           >
-            {filteredProducts.length} of {products.length} items ·{" "}
-            {locations.length} locations
+            {filteredProducts.length} of {products.length} items · {locations.length} locations
           </p>
         </div>
-        <Button
-          onClick={loadInventory}
-          className="flex items-center gap-2"
-          disabled={loading}
-        >
+        <Button onClick={loadInventory} className="flex items-center gap-2" disabled={loading}>
           <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           Refresh
         </Button>

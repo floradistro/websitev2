@@ -1,17 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Star,
-  Search,
-  MessageSquare,
-  ThumbsUp,
-  User,
-  Calendar,
-} from "lucide-react";
+import { Star, Search, MessageSquare, ThumbsUp, User, Calendar } from "lucide-react";
 import Link from "next/link";
 import { useAppAuth } from "@/context/AppAuthContext";
 
+import { logger } from "@/lib/logger";
 interface Review {
   id: number;
   productId: number;
@@ -42,7 +36,7 @@ export default function VendorReviews() {
 
         if (!vendorId) {
           if (process.env.NODE_ENV === "development") {
-            console.error("No vendor ID found");
+            logger.error("No vendor ID found");
           }
           setLoading(false);
           return;
@@ -58,13 +52,13 @@ export default function VendorReviews() {
           setReviews(data.reviews || []);
         } else {
           if (process.env.NODE_ENV === "development") {
-            console.error("Failed to fetch reviews");
+            logger.error("Failed to fetch reviews");
           }
           setReviews([]);
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error fetching reviews:", error);
+          logger.error("Error fetching reviews:", error);
         }
         setReviews([]);
       } finally {
@@ -112,7 +106,7 @@ export default function VendorReviews() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error submitting response:", error);
+        logger.error("Error submitting response:", error);
       }
     } finally {
       setRespondingTo(null);
@@ -126,8 +120,7 @@ export default function VendorReviews() {
       review.customerName.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const avgRating =
-    reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length || 0;
+  const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length || 0;
   const needsResponse = reviews.filter((r) => !r.response).length;
 
   return (
@@ -154,14 +147,10 @@ export default function VendorReviews() {
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">
-                Total Reviews
-              </div>
+              <div className="text-white/60 text-xs uppercase tracking-wider">Total Reviews</div>
               <MessageSquare size={20} className="text-white/40" />
             </div>
-            <div className="text-3xl font-light text-white mb-1">
-              {reviews.length}
-            </div>
+            <div className="text-3xl font-light text-white mb-1">{reviews.length}</div>
             <div className="text-white/40 text-xs">All products</div>
           </div>
         </div>
@@ -170,23 +159,17 @@ export default function VendorReviews() {
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">
-                Average Rating
-              </div>
+              <div className="text-white/60 text-xs uppercase tracking-wider">Average Rating</div>
               <Star size={20} className="text-white/40 fill-white/40" />
             </div>
-            <div className="text-3xl font-light text-white mb-1">
-              {avgRating.toFixed(1)}
-            </div>
+            <div className="text-3xl font-light text-white mb-1">{avgRating.toFixed(1)}</div>
             <div className="flex gap-1 mt-2">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
                   size={14}
                   className={
-                    star <= Math.round(avgRating)
-                      ? "text-white fill-white"
-                      : "text-white/20"
+                    star <= Math.round(avgRating) ? "text-white fill-white" : "text-white/20"
                   }
                 />
               ))}
@@ -198,24 +181,17 @@ export default function VendorReviews() {
           <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-white/60 text-xs uppercase tracking-wider">
-                Needs Response
-              </div>
+              <div className="text-white/60 text-xs uppercase tracking-wider">Needs Response</div>
               <MessageSquare size={20} className="text-white/40" />
             </div>
-            <div className="text-3xl font-light text-white mb-1">
-              {needsResponse}
-            </div>
+            <div className="text-3xl font-light text-white mb-1">{needsResponse}</div>
             <div className="text-white/40 text-xs">Awaiting reply</div>
           </div>
         </div>
       </div>
 
       {/* Search */}
-      <div
-        className="mb-6 -mx-4 lg:mx-0"
-        style={{ animation: "fadeInUp 0.6s ease-out 0.2s both" }}
-      >
+      <div className="mb-6 -mx-4 lg:mx-0" style={{ animation: "fadeInUp 0.6s ease-out 0.2s both" }}>
         <div className="relative px-4 lg:px-0">
           <Search
             size={18}
@@ -247,9 +223,7 @@ export default function VendorReviews() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <User size={16} className="text-white/40" />
-                    <span className="text-white font-medium">
-                      {review.customerName}
-                    </span>
+                    <span className="text-white font-medium">{review.customerName}</span>
                     {review.verified && (
                       <span className="px-2 py-0.5 bg-white/5 text-white/60 text-xs border border-white/10">
                         Verified
@@ -270,9 +244,7 @@ export default function VendorReviews() {
                         key={star}
                         size={16}
                         className={
-                          star <= review.rating
-                            ? "text-white fill-white"
-                            : "text-white/20"
+                          star <= review.rating ? "text-white fill-white" : "text-white/20"
                         }
                       />
                     ))}
@@ -284,23 +256,17 @@ export default function VendorReviews() {
               </div>
 
               {/* Review Comment */}
-              <p className="text-white/80 text-sm leading-relaxed break-words">
-                {review.comment}
-              </p>
+              <p className="text-white/80 text-sm leading-relaxed break-words">{review.comment}</p>
             </div>
 
             {/* Response Section */}
             {review.response ? (
               <div className="px-4 lg:p-6 py-4 bg-white/5">
                 <div className="flex items-start gap-3">
-                  <MessageSquare
-                    size={16}
-                    className="text-white/60 flex-shrink-0 mt-1"
-                  />
+                  <MessageSquare size={16} className="text-white/60 flex-shrink-0 mt-1" />
                   <div className="flex-1 min-w-0">
                     <div className="text-white/40 text-xs mb-2">
-                      Your Response •{" "}
-                      {new Date(review.responseDate!).toLocaleDateString()}
+                      Your Response • {new Date(review.responseDate!).toLocaleDateString()}
                     </div>
                     <p className="text-white/80 text-sm leading-relaxed break-words">
                       {review.response}

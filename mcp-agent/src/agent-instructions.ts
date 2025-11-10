@@ -275,8 +275,7 @@ export const CANNABIS_VENDOR_SPECIFIC_CONTENT = {
     },
     {
       question: "Are your products lab tested?",
-      answer:
-        "Absolutely. All products are third-party tested for safety and potency.",
+      answer: "Absolutely. All products are third-party tested for safety and potency.",
     },
     {
       question: "What payment methods do you accept?",

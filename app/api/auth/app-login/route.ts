@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { LoginSchema, validateData } from "@/lib/validation/schemas";
 import { createAuthCookie } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * UNIFIED LOGIN - One clean auth flow
  * No legacy code, no fallbacks, just simple authentication
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     const validation = validateData(LoginSchema, body);
     if (!validation.success) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Validation failed:", validation.error);
+        logger.error("❌ Validation failed:", validation.error);
       }
       return NextResponse.json(
         { success: false, error: validation.error },
@@ -47,15 +48,14 @@ export async function POST(request: NextRequest) {
     const supabase = getServiceSupabase();
 
     // Step 1: Authenticate with Supabase
-    const { data: authData, error: authError } =
-      await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
     if (authError || !authData.session) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Auth failed:", authError?.message);
+        logger.error("❌ Auth failed:", authError?.message);
       }
       return NextResponse.json(
         { success: false, error: "Invalid email or password" },
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     if (userError || !user) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ User not found in users table:", userError);
+        logger.error("❌ User not found in users table:", userError);
       }
       return NextResponse.json(
         { success: false, error: "User account not found" },
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     if (!vendor) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ No vendor linked to user");
+        logger.error("❌ No vendor linked to user");
       }
       return NextResponse.json(
         { success: false, error: "No vendor account linked" },
@@ -121,8 +121,7 @@ export async function POST(request: NextRequest) {
         allVendorLocs?.map((l) => ({
           id: l.id,
           name: l.name,
-          address:
-            `${l.address_line1 || ""} ${l.city || ""}, ${l.state || ""}`.trim(),
+          address: `${l.address_line1 || ""} ${l.city || ""}, ${l.state || ""}`.trim(),
           is_primary: l.is_primary || false,
           settings: l.settings,
         })) || [];
@@ -146,8 +145,7 @@ export async function POST(request: NextRequest) {
           locs?.map((l) => ({
             id: l.id,
             name: l.name,
-            address:
-              `${l.address_line1 || ""} ${l.city || ""}, ${l.state || ""}`.trim(),
+            address: `${l.address_line1 || ""} ${l.city || ""}, ${l.state || ""}`.trim(),
             is_primary: l.is_primary || false,
             settings: l.settings,
           })) || [];
@@ -169,9 +167,7 @@ export async function POST(request: NextRequest) {
         user: {
           id: user.id,
           email: user.email,
-          name:
-            `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
-            user.email,
+          name: `${user.first_name || ""} ${user.last_name || ""}`.trim() || user.email,
           role: user.role,
           vendor_id: user.vendor_id,
           employee_code: user.employee_id,
@@ -193,11 +189,7 @@ export async function POST(request: NextRequest) {
 
     // Set HTTP-only cookies with both access and refresh tokens
     const accessCookie = createAuthCookie(authData.session.access_token);
-    response.cookies.set(
-      accessCookie.name,
-      accessCookie.value,
-      accessCookie.options,
-    );
+    response.cookies.set(accessCookie.name, accessCookie.value, accessCookie.options);
 
     // Also store refresh token (needed for session refresh)
     const refreshCookie = {
@@ -211,16 +203,12 @@ export async function POST(request: NextRequest) {
         path: "/",
       },
     };
-    response.cookies.set(
-      refreshCookie.name,
-      refreshCookie.value,
-      refreshCookie.options,
-    );
+    response.cookies.set(refreshCookie.name, refreshCookie.value, refreshCookie.options);
 
     return response;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Login error:", error);
+      logger.error("❌ Login error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Login failed. Please try again." },

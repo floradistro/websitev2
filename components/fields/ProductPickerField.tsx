@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, X, Check } from "lucide-react";
 import Image from "next/image";
 
+import { logger } from "@/lib/logger";
 interface Product {
   id: string;
   name: string;
@@ -51,7 +52,7 @@ export function ProductPickerField({
 
       if (!response.ok) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to fetch products:", response.status);
+          logger.error("Failed to fetch products:", response.status);
         }
         setLoading(false);
         return;
@@ -60,9 +61,7 @@ export function ProductPickerField({
       const data = await response.json();
 
       if (data.success && data.data && data.data.products) {
-        let vendorProducts = data.data.products.filter(
-          (p: any) => p.vendor_id === vendorId,
-        );
+        let vendorProducts = data.data.products.filter((p: any) => p.vendor_id === vendorId);
 
         // Apply filters
         if (filter.min_stock) {
@@ -73,9 +72,7 @@ export function ProductPickerField({
 
         if (filter.categories && filter.categories.length > 0) {
           vendorProducts = vendorProducts.filter((p: any) =>
-            p.categories?.some((cat: any) =>
-              filter.categories!.includes(cat.slug || cat.name),
-            ),
+            p.categories?.some((cat: any) => filter.categories!.includes(cat.slug || cat.name)),
           );
         }
 
@@ -83,7 +80,7 @@ export function ProductPickerField({
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading products:", error);
+        logger.error("Error loading products:", error);
       }
     } finally {
       setLoading(false);
@@ -130,9 +127,7 @@ export function ProductPickerField({
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <div className="text-white text-xs truncate">
-                  {product.name}
-                </div>
+                <div className="text-white text-xs truncate">{product.name}</div>
                 <div className="text-white/40 text-[10px]">
                   ${product.price} • {product.total_stock}g stock
                 </div>
@@ -221,12 +216,8 @@ export function ProductPickerField({
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="text-white font-medium text-sm">
-                          {product.name}
-                        </div>
-                        <div className="text-white/60 text-xs mt-1">
-                          ${product.price}
-                        </div>
+                        <div className="text-white font-medium text-sm">{product.name}</div>
+                        <div className="text-white/60 text-xs mt-1">${product.price}</div>
                         <div className="flex items-center gap-2 mt-1">
                           <span
                             className={`text-[10px] px-1.5 py-0.5 rounded ${
@@ -241,12 +232,7 @@ export function ProductPickerField({
                           </span>
                         </div>
                       </div>
-                      {isSelected && (
-                        <Check
-                          size={20}
-                          className="text-purple-400 flex-shrink-0"
-                        />
-                      )}
+                      {isSelected && <Check size={20} className="text-purple-400 flex-shrink-0" />}
                     </div>
                   );
                 })

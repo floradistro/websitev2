@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     // SECURITY: Require vendor authentication (Phase 2)
@@ -19,10 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!uploadType) {
-      return NextResponse.json(
-        { error: "Upload type required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Upload type required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -53,10 +51,7 @@ export async function POST(request: NextRequest) {
         folder = `${vendorId}`;
         break;
       default:
-        return NextResponse.json(
-          { error: "Invalid upload type" },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: "Invalid upload type" }, { status: 400 });
     }
 
     // Generate unique filename
@@ -79,7 +74,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Upload error:", uploadError);
+        logger.error("❌ Upload error:", uploadError);
       }
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
@@ -91,15 +86,9 @@ export async function POST(request: NextRequest) {
 
     // Update vendor record if logo or banner
     if (uploadType === "logo") {
-      await supabase
-        .from("vendors")
-        .update({ logo_url: publicUrl })
-        .eq("id", vendorId);
+      await supabase.from("vendors").update({ logo_url: publicUrl }).eq("id", vendorId);
     } else if (uploadType === "banner") {
-      await supabase
-        .from("vendors")
-        .update({ banner_url: publicUrl })
-        .eq("id", vendorId);
+      await supabase.from("vendors").update({ banner_url: publicUrl }).eq("id", vendorId);
     }
 
     // If COA, create COA record
@@ -125,7 +114,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

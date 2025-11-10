@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * GET - Fetch single vendor details for admin
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = getServiceSupabase();
     const { id: vendorId } = await params;
@@ -25,7 +23,7 @@ export async function GET(
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Get vendor error:", error);
+        logger.error("Get vendor error:", error);
       }
       return NextResponse.json(
         { error: "Vendor not found", details: error.message },
@@ -39,7 +37,7 @@ export async function GET(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get vendor error:", error);
+      logger.error("Get vendor error:", error);
     }
     return NextResponse.json(
       { error: "Failed to get vendor", details: error.message },
@@ -51,10 +49,7 @@ export async function GET(
 /**
  * PUT - Update vendor details
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = getServiceSupabase();
     const { id: vendorId } = await params;
@@ -83,7 +78,7 @@ export async function PUT(
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Update vendor error:", updateError);
+        logger.error("Update vendor error:", updateError);
       }
       return NextResponse.json(
         { error: "Failed to update vendor", details: updateError.message },
@@ -97,7 +92,7 @@ export async function PUT(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Update vendor error:", error);
+      logger.error("Update vendor error:", error);
     }
     return NextResponse.json(
       { error: "Failed to update vendor", details: error.message },

@@ -1,12 +1,7 @@
 var o = class n {
     static fromJSON(e) {
       let t = new n();
-      return (
-        (t._code = e.code),
-        (t._message = e.message),
-        (t._isValid = e.isValid),
-        t
-      );
+      return ((t._code = e.code), (t._message = e.message), (t._isValid = e.isValid), t);
     }
     get message() {
       return this._message;

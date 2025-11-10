@@ -68,10 +68,7 @@ export default function ProductsClient() {
 
   return (
     <main
-      className={cn(
-        ds.colors.bg.primary,
-        "min-h-screen px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-6",
-      )}
+      className={cn(ds.colors.bg.primary, "min-h-screen px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-6")}
       role="main"
       aria-label="Product management"
     >
@@ -100,21 +97,12 @@ export default function ProductsClient() {
               ds.typography.weight.light,
               activeTab === "products"
                 ? "border-white text-white"
-                : cn(
-                    ds.colors.text.quaternary,
-                    "hover:text-white/60",
-                    "border-transparent",
-                  ),
+                : cn(ds.colors.text.quaternary, "hover:text-white/60", "border-transparent"),
             )}
           >
             <Package size={14} strokeWidth={1} className="opacity-60" />
             Products
-            <span
-              className={cn(
-                "px-1.5 sm:px-2 py-0.5 rounded text-[8px]",
-                ds.colors.bg.hover,
-              )}
-            >
+            <span className={cn("px-1.5 sm:px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
               {total}
             </span>
           </button>
@@ -132,21 +120,12 @@ export default function ProductsClient() {
               ds.typography.weight.light,
               activeTab === "categories"
                 ? "border-white text-white"
-                : cn(
-                    ds.colors.text.quaternary,
-                    "hover:text-white/60",
-                    "border-transparent",
-                  ),
+                : cn(ds.colors.text.quaternary, "hover:text-white/60", "border-transparent"),
             )}
           >
             <FolderTree size={14} strokeWidth={1} className="opacity-60" />
             Categories
-            <span
-              className={cn(
-                "px-1.5 sm:px-2 py-0.5 rounded text-[8px]",
-                ds.colors.bg.hover,
-              )}
-            >
+            <span className={cn("px-1.5 sm:px-2 py-0.5 rounded text-[8px]", ds.colors.bg.hover)}>
               {categoriesData?.length || 0}
             </span>
           </button>
@@ -164,11 +143,7 @@ export default function ProductsClient() {
               ds.typography.weight.light,
               activeTab === "inventory"
                 ? "border-white text-white"
-                : cn(
-                    ds.colors.text.quaternary,
-                    "hover:text-white/60",
-                    "border-transparent",
-                  ),
+                : cn(ds.colors.text.quaternary, "hover:text-white/60", "border-transparent"),
             )}
           >
             <Warehouse size={14} strokeWidth={1} className="opacity-60" />
@@ -188,11 +163,7 @@ export default function ProductsClient() {
               ds.typography.weight.light,
               activeTab === "purchase-orders"
                 ? "border-white text-white"
-                : cn(
-                    ds.colors.text.quaternary,
-                    "hover:text-white/60",
-                    "border-transparent",
-                  ),
+                : cn(ds.colors.text.quaternary, "hover:text-white/60", "border-transparent"),
             )}
           >
             <FileText size={14} strokeWidth={1} className="opacity-60" />
@@ -202,11 +173,7 @@ export default function ProductsClient() {
 
         {/* Products Tab */}
         {activeTab === "products" && (
-          <div
-            id="products-panel"
-            role="tabpanel"
-            aria-labelledby="products-tab"
-          >
+          <div id="products-panel" role="tabpanel" aria-labelledby="products-tab">
             {/* Stats Cards */}
             <ProductsStats
               total={total}
@@ -242,33 +209,21 @@ export default function ProductsClient() {
 
         {/* Categories Tab */}
         {activeTab === "categories" && (
-          <div
-            id="categories-panel"
-            role="tabpanel"
-            aria-labelledby="categories-tab"
-          >
+          <div id="categories-panel" role="tabpanel" aria-labelledby="categories-tab">
             <CategoriesManagement vendorId={vendor?.id || ""} />
           </div>
         )}
 
         {/* Inventory Tab */}
         {activeTab === "inventory" && (
-          <div
-            id="inventory-panel"
-            role="tabpanel"
-            aria-labelledby="inventory-tab"
-          >
+          <div id="inventory-panel" role="tabpanel" aria-labelledby="inventory-tab">
             <InventoryTab />
           </div>
         )}
 
         {/* Purchase Orders Tab */}
         {activeTab === "purchase-orders" && (
-          <div
-            id="purchase-orders-panel"
-            role="tabpanel"
-            aria-labelledby="purchase-orders-tab"
-          >
+          <div id="purchase-orders-panel" role="tabpanel" aria-labelledby="purchase-orders-tab">
             <PurchaseOrdersTab />
           </div>
         )}

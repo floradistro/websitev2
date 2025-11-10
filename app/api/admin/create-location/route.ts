@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -13,10 +14,7 @@ export async function POST(request: NextRequest) {
     const { vendorEmail } = await request.json();
 
     if (!vendorEmail) {
-      return NextResponse.json(
-        { error: "vendorEmail is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "vendorEmail is required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -65,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     if (locationError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating location:", locationError);
+        logger.error("Error creating location:", locationError);
       }
       return NextResponse.json(
         { error: "Failed to create location", details: locationError.message },
@@ -81,7 +79,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Create location error:", error);
+      logger.error("Create location error:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

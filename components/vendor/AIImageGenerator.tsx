@@ -1,17 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  X,
-  Sparkles,
-  Search,
-  Wand2,
-  Loader2,
-  CheckCircle,
-  Image as ImageIcon,
-} from "lucide-react";
+import { X, Sparkles, Search, Wand2, Loader2, CheckCircle, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
 
+import { logger } from "@/lib/logger";
 interface AIImageGeneratorProps {
   vendorId: string;
   onClose: () => void;
@@ -31,9 +24,7 @@ export default function AIImageGenerator({
   onImageGenerated,
 }: AIImageGeneratorProps) {
   const [prompt, setPrompt] = useState("");
-  const [size, setSize] = useState<"1024x1024" | "1024x1792" | "1792x1024">(
-    "1024x1024",
-  );
+  const [size, setSize] = useState<"1024x1024" | "1024x1792" | "1792x1024">("1024x1024");
   const [quality, setQuality] = useState<"standard" | "hd">("standard");
   const [style, setStyle] = useState<"vivid" | "natural">("vivid");
   const [generating, setGenerating] = useState(false);
@@ -85,7 +76,7 @@ export default function AIImageGenerator({
       setShowInspiration(true);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Search error:", err);
+        logger.error("Search error:", err);
       }
       setError(err.message);
     } finally {
@@ -131,7 +122,7 @@ export default function AIImageGenerator({
       // onImageGenerated(); is now called when user clicks "Done" button
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Generation error:", err);
+        logger.error("Generation error:", err);
       }
       setError(err.message);
     } finally {
@@ -169,9 +160,7 @@ export default function AIImageGenerator({
               >
                 Generate with AI
               </h2>
-              <p className="text-white/40 text-xs">
-                DALL-E 3 • Powered by OpenAI
-              </p>
+              <p className="text-white/40 text-xs">DALL-E 3 • Powered by OpenAI</p>
             </div>
           </div>
           {!generating && (
@@ -207,9 +196,7 @@ export default function AIImageGenerator({
                 </div>
                 {revisedPrompt && (
                   <p className="text-white/40 text-xs">
-                    <span className="text-white/60 font-medium">
-                      AI Enhanced:{" "}
-                    </span>
+                    <span className="text-white/60 font-medium">AI Enhanced: </span>
                     {revisedPrompt}
                   </p>
                 )}
@@ -293,9 +280,7 @@ export default function AIImageGenerator({
                     >
                       {item.title}
                     </a>
-                    <p className="text-white/40 text-xs line-clamp-2">
-                      {item.snippet}
-                    </p>
+                    <p className="text-white/40 text-xs line-clamp-2">{item.snippet}</p>
                   </div>
                 ))}
               </div>

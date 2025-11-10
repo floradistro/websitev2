@@ -1,6 +1,4 @@
-var i = ((e) => ((e.Minimal = "minimal"), (e.Extended = "extended"), e))(
-    i || {},
-  ),
+var i = ((e) => ((e.Minimal = "minimal"), (e.Extended = "extended"), e))(i || {}),
   t = class {
     constructor() {
       this.type = "tapToFocus";

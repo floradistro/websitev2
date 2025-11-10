@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
-import type {
-  VendorBranding,
-  GetBrandingResponse,
-  BrandingError,
-} from "@/types/branding";
+import { logger } from "@/lib/logger";
+import type { VendorBranding, GetBrandingResponse, BrandingError } from "@/types/branding";
 
 export async function GET(
   request: NextRequest,
@@ -13,8 +10,7 @@ export async function GET(
   try {
     // SECURITY: Require vendor authentication (Phase 2)
     const authResult = await requireVendor(request);
-    if (authResult instanceof NextResponse)
-      return authResult as NextResponse<BrandingError>;
+    if (authResult instanceof NextResponse) return authResult as NextResponse<BrandingError>;
     const { vendorId } = authResult;
 
     const supabase = getServiceSupabase();
@@ -37,7 +33,7 @@ export async function GET(
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching branding:", error);
+      logger.error("Error fetching branding:", error);
     }
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -50,8 +46,7 @@ export async function PUT(
   try {
     // SECURITY: Require vendor authentication (Phase 2)
     const authResult = await requireVendor(request);
-    if (authResult instanceof NextResponse)
-      return authResult as NextResponse<BrandingError>;
+    if (authResult instanceof NextResponse) return authResult as NextResponse<BrandingError>;
     const { vendorId } = authResult;
 
     const body = await request.json();
@@ -62,22 +57,15 @@ export async function PUT(
 
     if (body.logo_url !== undefined) updates.logo_url = body.logo_url;
     if (body.banner_url !== undefined) updates.banner_url = body.banner_url;
-    if (body.store_description !== undefined)
-      updates.store_description = body.store_description;
-    if (body.store_tagline !== undefined)
-      updates.store_tagline = body.store_tagline;
-    if (body.brand_colors !== undefined)
-      updates.brand_colors = body.brand_colors;
-    if (body.social_links !== undefined)
-      updates.social_links = body.social_links;
+    if (body.store_description !== undefined) updates.store_description = body.store_description;
+    if (body.store_tagline !== undefined) updates.store_tagline = body.store_tagline;
+    if (body.brand_colors !== undefined) updates.brand_colors = body.brand_colors;
+    if (body.social_links !== undefined) updates.social_links = body.social_links;
     if (body.custom_css !== undefined) updates.custom_css = body.custom_css;
     if (body.custom_font !== undefined) updates.custom_font = body.custom_font;
-    if (body.business_hours !== undefined)
-      updates.business_hours = body.business_hours;
-    if (body.return_policy !== undefined)
-      updates.return_policy = body.return_policy;
-    if (body.shipping_policy !== undefined)
-      updates.shipping_policy = body.shipping_policy;
+    if (body.business_hours !== undefined) updates.business_hours = body.business_hours;
+    if (body.return_policy !== undefined) updates.return_policy = body.return_policy;
+    if (body.shipping_policy !== undefined) updates.shipping_policy = body.shipping_policy;
 
     const { data, error } = await supabase
       .from("vendors")
@@ -96,7 +84,7 @@ export async function PUT(
     });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating branding:", error);
+      logger.error("Error updating branding:", error);
     }
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

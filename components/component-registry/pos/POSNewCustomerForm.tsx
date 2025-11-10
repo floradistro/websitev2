@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface Customer {
   id: string;
   first_name: string;
@@ -42,9 +43,7 @@ export function NewCustomerForm({
   const [lastName, setLastName] = useState(prefilledData?.lastName || "");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState(
-    prefilledData?.dateOfBirth || "",
-  );
+  const [dateOfBirth, setDateOfBirth] = useState(prefilledData?.dateOfBirth || "");
   const [address, setAddress] = useState(prefilledData?.address || "");
   const [city, setCity] = useState(prefilledData?.city || "");
   const [state, setState] = useState(prefilledData?.state || "");
@@ -70,9 +69,7 @@ export function NewCustomerForm({
           middleName: middleName || null,
           lastName,
           phone: phone || null,
-          email:
-            email ||
-            `${firstName.toLowerCase()}.${lastName.toLowerCase()}@walk-in.local`,
+          email: email || `${firstName.toLowerCase()}.${lastName.toLowerCase()}@walk-in.local`,
           dateOfBirth: dateOfBirth || null,
           address: address || null,
           city: city || null,
@@ -90,7 +87,7 @@ export function NewCustomerForm({
       onCustomerCreated(data.customer);
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating customer:", error);
+        logger.error("Error creating customer:", error);
       }
       setCreating(false);
     }
@@ -106,10 +103,7 @@ export function NewCustomerForm({
           >
             New Customer
           </h3>
-          <button
-            onClick={onCancel}
-            className="text-white/40 hover:text-white transition-colors"
-          >
+          <button onClick={onCancel} className="text-white/40 hover:text-white transition-colors">
             <X size={20} />
           </button>
         </div>

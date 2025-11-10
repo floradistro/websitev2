@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
-import {
-  rateLimiter,
-  RateLimitConfigs,
-  getIdentifier,
-} from "@/lib/rate-limiter";
+import { logger } from "@/lib/logger";
+import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
 
 /**
  * Update customer profile
@@ -16,10 +13,7 @@ export async function PUT(request: NextRequest) {
     const allowed = rateLimiter.check(identifier, RateLimitConfigs.api);
 
     if (!allowed) {
-      const resetTime = rateLimiter.getResetTime(
-        identifier,
-        RateLimitConfigs.api,
-      );
+      const resetTime = rateLimiter.getResetTime(identifier, RateLimitConfigs.api);
       return NextResponse.json(
         {
           success: false,
@@ -39,10 +33,7 @@ export async function PUT(request: NextRequest) {
     const { userId, ...updateData } = body;
 
     if (!userId) {
-      return NextResponse.json(
-        { success: false, error: "User ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "User ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -67,7 +58,7 @@ export async function PUT(request: NextRequest) {
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Update error:", updateError);
+        logger.error("Update error:", updateError);
       }
       return NextResponse.json(
         { success: false, error: "Failed to update profile" },
@@ -92,7 +83,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Update profile error:", error);
+      logger.error("Update profile error:", error);
     }
     return NextResponse.json(
       { success: false, error: "Update failed. Please try again." },

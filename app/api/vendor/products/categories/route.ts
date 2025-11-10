@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     // Use secure middleware to get vendor_id from session
@@ -22,12 +23,9 @@ export async function GET(request: NextRequest) {
 
     if (categoriesError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching vendor categories:", categoriesError);
+        logger.error("❌ Error fetching vendor categories:", categoriesError);
       }
-      return NextResponse.json(
-        { success: false, error: categoriesError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: categoriesError.message }, { status: 500 });
     }
 
     const categories = (allCategories || []).map((c) => c.name).filter(Boolean);
@@ -38,11 +36,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error in categories API:", error);
+      logger.error("❌ Error in categories API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

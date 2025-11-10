@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Get wholesale products
  * Only accessible to vendors and wholesale-approved customers
@@ -72,15 +73,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Pagination
-    query = query
-      .range(offset, offset + limit - 1)
-      .order("created_at", { ascending: false });
+    query = query.range(offset, offset + limit - 1).order("created_at", { ascending: false });
 
     const { data: products, error, count } = await query;
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Get wholesale products error:", error);
+        logger.error("Get wholesale products error:", error);
       }
       return NextResponse.json(
         { error: "Failed to get products", details: error.message },
@@ -97,7 +96,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get wholesale products error:", error);
+      logger.error("Get wholesale products error:", error);
     }
     return NextResponse.json(
       { error: "Failed to get products", details: error.message },

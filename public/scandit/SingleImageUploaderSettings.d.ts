@@ -12,9 +12,7 @@ interface SingleImageUploaderSettingsJSON {
   buttonStyle: CSS.Properties;
   onlyCameraCapture: boolean;
 }
-declare class SingleImageUploaderSettings
-  implements Serializable<SingleImageUploaderSettingsJSON>
-{
+declare class SingleImageUploaderSettings implements Serializable<SingleImageUploaderSettingsJSON> {
   iconElement: HTMLElement | SVGElement;
   informationElement: HTMLElement;
   buttonElement: HTMLElement;

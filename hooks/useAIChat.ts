@@ -5,6 +5,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 
+import { logger } from "@/lib/logger";
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
@@ -50,8 +51,7 @@ interface UseAIChatReturn {
 }
 
 export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
-  const { appId, sessionId, onMessage, onToolUse, onFileChange, onError } =
-    options;
+  const { appId, sessionId, onMessage, onToolUse, onFileChange, onError } = options;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
@@ -82,7 +82,7 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
   const sendMessage = useCallback(
     async (message: string) => {
       if (isProcessing) {
-        console.warn("Already processing a message");
+        logger.warn("Already processing a message");
         return;
       }
 
@@ -155,7 +155,7 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
                 const data = JSON.parse(line.substring(6));
                 handleSSEMessage(data);
               } catch (e) {
-                console.error("Failed to parse SSE message:", e);
+                logger.error("Failed to parse SSE message:", e);
               }
             }
           }
@@ -164,17 +164,14 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
         // Mark message as complete
         if (currentMessageRef.current) {
           currentMessageRef.current.isStreaming = false;
-          setMessages((prev) => [
-            ...prev.slice(0, -1),
-            currentMessageRef.current!,
-          ]);
+          setMessages((prev) => [...prev.slice(0, -1), currentMessageRef.current!]);
         }
 
         setIsConnected(false);
         setIsProcessing(false);
         setCurrentTool(null);
       } catch (error: any) {
-        console.error("Send message error:", error);
+        logger.error("Send message error:", error);
         setIsConnected(false);
         setIsProcessing(false);
         setCurrentTool(null);
@@ -210,10 +207,7 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
         case "text_delta":
           if (currentMessageRef.current) {
             currentMessageRef.current.content += data.data.text;
-            setMessages((prev) => [
-              ...prev.slice(0, -1),
-              currentMessageRef.current!,
-            ]);
+            setMessages((prev) => [...prev.slice(0, -1), currentMessageRef.current!]);
           }
           break;
 
@@ -227,13 +221,8 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
           toolUsesRef.current.set(data.data.toolId, newToolUse);
 
           if (currentMessageRef.current) {
-            currentMessageRef.current.toolUses = Array.from(
-              toolUsesRef.current.values(),
-            );
-            setMessages((prev) => [
-              ...prev.slice(0, -1),
-              currentMessageRef.current!,
-            ]);
+            currentMessageRef.current.toolUses = Array.from(toolUsesRef.current.values());
+            setMessages((prev) => [...prev.slice(0, -1), currentMessageRef.current!]);
           }
 
           setCurrentTool(data.data.toolName);
@@ -262,13 +251,8 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
             toolUsesRef.current.set(data.data.toolId, existingTool);
 
             if (currentMessageRef.current) {
-              currentMessageRef.current.toolUses = Array.from(
-                toolUsesRef.current.values(),
-              );
-              setMessages((prev) => [
-                ...prev.slice(0, -1),
-                currentMessageRef.current!,
-              ]);
+              currentMessageRef.current.toolUses = Array.from(toolUsesRef.current.values());
+              setMessages((prev) => [...prev.slice(0, -1), currentMessageRef.current!]);
             }
 
             onToolUse?.(existingTool);
@@ -294,10 +278,7 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
         case "message_complete":
           if (currentMessageRef.current) {
             currentMessageRef.current.isStreaming = false;
-            setMessages((prev) => [
-              ...prev.slice(0, -1),
-              currentMessageRef.current!,
-            ]);
+            setMessages((prev) => [...prev.slice(0, -1), currentMessageRef.current!]);
             onMessage?.(currentMessageRef.current);
           }
           setIsConnected(false);
@@ -312,10 +293,7 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatReturn {
           if (currentMessageRef.current) {
             currentMessageRef.current.content += `\n\n❌ Error: ${errorMessage}`;
             currentMessageRef.current.isStreaming = false;
-            setMessages((prev) => [
-              ...prev.slice(0, -1),
-              currentMessageRef.current!,
-            ]);
+            setMessages((prev) => [...prev.slice(0, -1), currentMessageRef.current!]);
           }
 
           setIsConnected(false);

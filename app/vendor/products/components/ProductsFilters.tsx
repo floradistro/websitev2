@@ -10,8 +10,7 @@ interface ProductsFiltersProps {
 
 export function ProductsFilters({ categories }: ProductsFiltersProps) {
   const { filters, setSearch, setStatus, setCategory } = useProductFilters();
-  const { searchValue, debouncedValue, setSearchValue, isDebouncing } =
-    useDebouncedSearch("", 500);
+  const { searchValue, debouncedValue, setSearchValue, isDebouncing } = useDebouncedSearch("", 500);
 
   // Update context when debounced value changes
   useEffect(() => {
@@ -19,11 +18,7 @@ export function ProductsFilters({ categories }: ProductsFiltersProps) {
   }, [debouncedValue, setSearch]);
 
   return (
-    <div
-      className="mb-6 space-y-4"
-      role="search"
-      aria-label="Product filters and search"
-    >
+    <div className="mb-6 space-y-4" role="search" aria-label="Product filters and search">
       {/* Search Bar */}
       <div className="relative">
         <Search
@@ -130,9 +125,7 @@ export function ProductsFilters({ categories }: ProductsFiltersProps) {
         </select>
 
         {/* Active Filters Count */}
-        {(filters.status !== "all" ||
-          filters.category !== "all" ||
-          filters.search) && (
+        {(filters.status !== "all" || filters.category !== "all" || filters.search) && (
           <button
             onClick={() => {
               setSearchValue("");

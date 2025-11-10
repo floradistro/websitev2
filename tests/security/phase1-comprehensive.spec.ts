@@ -13,6 +13,7 @@
 import { test, expect } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 // Supabase setup
@@ -38,24 +39,23 @@ async function getVendorAuthToken(vendorId: string): Promise<string | null> {
       .single();
 
     if (error || !user || !user.auth_user_id) {
-      console.log("No auth-enabled user found for vendor:", vendorId);
+      logger.debug("No auth-enabled user found for vendor:", vendorId);
       return null;
     }
 
     // Create a session for this user using admin API
-    const { data: sessionData, error: sessionError } =
-      await supabase.auth.admin.createSession({
-        user_id: user.auth_user_id,
-      });
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
+      user_id: user.auth_user_id,
+    });
 
     if (sessionError || !sessionData.session) {
-      console.error("Failed to create session:", sessionError);
+      logger.error("Failed to create session:", sessionError);
       return null;
     }
 
     return sessionData.session.access_token;
   } catch (error) {
-    console.error("Error getting auth token:", error);
+    logger.error("Error getting auth token:", error);
     return null;
   }
 }
@@ -70,99 +70,72 @@ test.describe("Phase 1: Inventory Management Routes", () => {
   test.beforeAll(async () => {
     authToken = await getVendorAuthToken(VENDOR_A_ID);
     if (!authToken) {
-      console.warn("Warning: Could not get auth token, some tests may fail");
+      logger.warn("Warning: Could not get auth token, some tests may fail");
     }
   });
 
-  test("GET /api/vendor/inventory/grouped - should require auth", async ({
-    request,
-  }) => {
+  test("GET /api/vendor/inventory/grouped - should require auth", async ({ request }) => {
     // Test 1: Reject without auth
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/vendor/inventory/grouped`,
-    );
+    const responseNoAuth = await request.get(`${BASE_URL}/api/vendor/inventory/grouped`);
     expect(responseNoAuth.status()).toBe(401);
 
     // Test 2: Accept with valid token
     if (authToken) {
-      const responseWithAuth = await request.get(
-        `${BASE_URL}/api/vendor/inventory/grouped`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-        },
-      );
+      const responseWithAuth = await request.get(`${BASE_URL}/api/vendor/inventory/grouped`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
       expect([200, 403]).toContain(responseWithAuth.status());
 
       if (responseWithAuth.status() === 200) {
         const data = await responseWithAuth.json();
         expect(data.success).toBe(true);
-        console.log(
-          `✅ Grouped inventory: ${data.products?.length || 0} products`,
-        );
+        logger.debug(`✅ Grouped inventory: ${data.products?.length || 0} products`);
       }
     }
 
     // Test 3: Ignore spoofed header
     if (authToken) {
-      const responseSpoofed = await request.get(
-        `${BASE_URL}/api/vendor/inventory/grouped`,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "x-vendor-id": "fake-vendor-uuid", // Try to spoof
-          },
+      const responseSpoofed = await request.get(`${BASE_URL}/api/vendor/inventory/grouped`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "x-vendor-id": "fake-vendor-uuid", // Try to spoof
         },
-      );
+      });
       expect([200, 403]).toContain(responseSpoofed.status());
       // Should still return Vendor A's data (header ignored)
     }
   });
 
-  test("POST /api/vendor/inventory/adjust - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.post(
-      `${BASE_URL}/api/vendor/inventory/adjust`,
-      {
-        headers: { "Content-Type": "application/json" },
-        data: { productId: "test-uuid", adjustment: 5 },
-      },
-    );
+  test("POST /api/vendor/inventory/adjust - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.post(`${BASE_URL}/api/vendor/inventory/adjust`, {
+      headers: { "Content-Type": "application/json" },
+      data: { productId: "test-uuid", adjustment: 5 },
+    });
     expect(responseNoAuth.status()).toBe(401);
   });
 
-  test("POST /api/vendor/inventory/transfer - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.post(
-      `${BASE_URL}/api/vendor/inventory/transfer`,
-      {
-        headers: { "Content-Type": "application/json" },
-        data: {
-          productId: "test-uuid",
-          fromLocationId: "loc1",
-          toLocationId: "loc2",
-          quantity: 5,
-        },
+  test("POST /api/vendor/inventory/transfer - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.post(`${BASE_URL}/api/vendor/inventory/transfer`, {
+      headers: { "Content-Type": "application/json" },
+      data: {
+        productId: "test-uuid",
+        fromLocationId: "loc1",
+        toLocationId: "loc2",
+        quantity: 5,
       },
-    );
+    });
     expect(responseNoAuth.status()).toBe(401);
   });
 
-  test("POST /api/vendor/inventory/create - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.post(
-      `${BASE_URL}/api/vendor/inventory/create`,
-      {
-        headers: { "Content-Type": "application/json" },
-        data: {
-          productId: "test-uuid",
-          locationId: "loc1",
-          quantity: 10,
-        },
+  test("POST /api/vendor/inventory/create - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.post(`${BASE_URL}/api/vendor/inventory/create`, {
+      headers: { "Content-Type": "application/json" },
+      data: {
+        productId: "test-uuid",
+        locationId: "loc1",
+        quantity: 10,
       },
-    );
+    });
     expect(responseNoAuth.status()).toBe(401);
   });
 });
@@ -178,55 +151,36 @@ test.describe("Phase 1: Analytics Routes", () => {
     authToken = await getVendorAuthToken(VENDOR_A_ID);
   });
 
-  test("GET /api/vendor/analytics - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/vendor/analytics`,
-    );
+  test("GET /api/vendor/analytics - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.get(`${BASE_URL}/api/vendor/analytics`);
     expect(responseNoAuth.status()).toBe(401);
 
     if (authToken) {
-      const responseWithAuth = await request.get(
-        `${BASE_URL}/api/vendor/analytics`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-        },
-      );
+      const responseWithAuth = await request.get(`${BASE_URL}/api/vendor/analytics`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
       expect([200, 403]).toContain(responseWithAuth.status());
 
       if (responseWithAuth.status() === 200) {
         const data = await responseWithAuth.json();
         expect(data.success).toBe(true);
-        console.log(`✅ Analytics loaded successfully`);
+        logger.debug(`✅ Analytics loaded successfully`);
       }
     }
   });
 
-  test("GET /api/vendor/analytics/sales-trend - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/vendor/analytics/sales-trend`,
-    );
+  test("GET /api/vendor/analytics/sales-trend - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.get(`${BASE_URL}/api/vendor/analytics/sales-trend`);
     expect(responseNoAuth.status()).toBe(401);
   });
 
-  test("GET /api/vendor/analytics/overview - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/vendor/analytics/overview`,
-    );
+  test("GET /api/vendor/analytics/overview - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.get(`${BASE_URL}/api/vendor/analytics/overview`);
     expect(responseNoAuth.status()).toBe(401);
   });
 
-  test("GET /api/vendor/analytics/products - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/vendor/analytics/products`,
-    );
+  test("GET /api/vendor/analytics/products - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.get(`${BASE_URL}/api/vendor/analytics/products`);
     expect(responseNoAuth.status()).toBe(401);
   });
 });
@@ -246,19 +200,14 @@ test.describe("Phase 1: Employee Management Routes", () => {
     request,
   }) => {
     // Test 1: Reject without auth
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/vendor/employees`,
-    );
+    const responseNoAuth = await request.get(`${BASE_URL}/api/vendor/employees`);
     expect(responseNoAuth.status()).toBe(401);
 
     // Test 2: Return only vendor's employees
     if (authToken) {
-      const responseWithAuth = await request.get(
-        `${BASE_URL}/api/vendor/employees`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-        },
-      );
+      const responseWithAuth = await request.get(`${BASE_URL}/api/vendor/employees`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
       expect([200, 403]).toContain(responseWithAuth.status());
 
       if (responseWithAuth.status() === 200) {
@@ -267,60 +216,44 @@ test.describe("Phase 1: Employee Management Routes", () => {
 
         // All employees should belong to Vendor A
         if (data.employees && data.employees.length > 0) {
-          const allBelongToVendor = data.employees.every(
-            (e: any) => e.vendor_id === VENDOR_A_ID,
-          );
+          const allBelongToVendor = data.employees.every((e: any) => e.vendor_id === VENDOR_A_ID);
           expect(allBelongToVendor).toBe(true);
-          console.log(
-            `✅ Employees: ${data.employees.length} (all belong to vendor)`,
-          );
+          logger.debug(`✅ Employees: ${data.employees.length} (all belong to vendor)`);
         }
       }
     }
 
     // Test 3: Header spoofing should be ignored
     if (authToken) {
-      const responseSpoofed = await request.get(
-        `${BASE_URL}/api/vendor/employees`,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "x-vendor-id": "different-vendor-uuid", // Try to spoof
-          },
+      const responseSpoofed = await request.get(`${BASE_URL}/api/vendor/employees`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "x-vendor-id": "different-vendor-uuid", // Try to spoof
         },
-      );
+      });
 
       if (responseSpoofed.status() === 200) {
         const data = await responseSpoofed.json();
         // Should still return Vendor A's employees (header ignored)
         if (data.employees && data.employees.length > 0) {
-          const allBelongToVendor = data.employees.every(
-            (e: any) => e.vendor_id === VENDOR_A_ID,
-          );
+          const allBelongToVendor = data.employees.every((e: any) => e.vendor_id === VENDOR_A_ID);
           expect(allBelongToVendor).toBe(true);
-          console.log(
-            `✅ Header spoofing blocked: still returned vendor A's data`,
-          );
+          logger.debug(`✅ Header spoofing blocked: still returned vendor A's data`);
         }
       }
     }
   });
 
-  test("POST /api/vendor/employees - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.post(
-      `${BASE_URL}/api/vendor/employees`,
-      {
-        headers: { "Content-Type": "application/json" },
-        data: {
-          action: "create",
-          email: "attacker@evil.com",
-          first_name: "Attacker",
-          last_name: "McHacker",
-        },
+  test("POST /api/vendor/employees - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.post(`${BASE_URL}/api/vendor/employees`, {
+      headers: { "Content-Type": "application/json" },
+      data: {
+        action: "create",
+        email: "attacker@evil.com",
+        first_name: "Attacker",
+        last_name: "McHacker",
       },
-    );
+    });
     expect(responseNoAuth.status()).toBe(401);
   });
 });
@@ -336,43 +269,29 @@ test.describe("Phase 1: Product Management Routes", () => {
     authToken = await getVendorAuthToken(VENDOR_A_ID);
   });
 
-  test("GET /api/page-data/vendor-products - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/page-data/vendor-products`,
-    );
+  test("GET /api/page-data/vendor-products - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.get(`${BASE_URL}/api/page-data/vendor-products`);
     expect(responseNoAuth.status()).toBe(401);
 
     if (authToken) {
-      const responseWithAuth = await request.get(
-        `${BASE_URL}/api/page-data/vendor-products`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-        },
-      );
+      const responseWithAuth = await request.get(`${BASE_URL}/api/page-data/vendor-products`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
       expect([200, 403]).toContain(responseWithAuth.status());
 
       if (responseWithAuth.status() === 200) {
         const data = await responseWithAuth.json();
         expect(data.success).toBe(true);
-        console.log(
-          `✅ Vendor products: ${data.products?.length || 0} products`,
-        );
+        logger.debug(`✅ Vendor products: ${data.products?.length || 0} products`);
       }
     }
   });
 
-  test("PUT /api/supabase/products/[id] - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.put(
-      `${BASE_URL}/api/supabase/products/test-product-id`,
-      {
-        headers: { "Content-Type": "application/json" },
-        data: { name: "Hacked Product" },
-      },
-    );
+  test("PUT /api/supabase/products/[id] - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.put(`${BASE_URL}/api/supabase/products/test-product-id`, {
+      headers: { "Content-Type": "application/json" },
+      data: { name: "Hacked Product" },
+    });
     expect(responseNoAuth.status()).toBe(401);
   });
 });
@@ -388,23 +307,18 @@ test.describe("Phase 1: Location Management Routes", () => {
     authToken = await getVendorAuthToken(VENDOR_A_ID);
   });
 
-  test("GET /api/supabase/locations - public endpoint behavior", async ({
-    request,
-  }) => {
+  test("GET /api/supabase/locations - public endpoint behavior", async ({ request }) => {
     // Locations endpoint may be public for retail locations
     // But should NOT return vendor-specific locations without auth
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/supabase/locations`,
-    );
+    const responseNoAuth = await request.get(`${BASE_URL}/api/supabase/locations`);
 
     // Accept either 401 OR 200 with only public/retail locations
     if (responseNoAuth.status() === 200) {
       const data = await responseNoAuth.json();
       // Should not include vendor-specific locations
-      const vendorLocations =
-        data.locations?.filter((l: any) => l.type === "vendor") || [];
+      const vendorLocations = data.locations?.filter((l: any) => l.type === "vendor") || [];
       expect(vendorLocations.length).toBe(0);
-      console.log(
+      logger.debug(
         `✅ Public locations: ${data.locations?.length || 0} (no vendor locations without auth)`,
       );
     } else {
@@ -424,27 +338,20 @@ test.describe("Phase 1: Financial Routes", () => {
     authToken = await getVendorAuthToken(VENDOR_A_ID);
   });
 
-  test("GET /api/vendor/profit-stats - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/vendor/profit-stats`,
-    );
+  test("GET /api/vendor/profit-stats - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.get(`${BASE_URL}/api/vendor/profit-stats`);
     expect(responseNoAuth.status()).toBe(401);
 
     if (authToken) {
-      const responseWithAuth = await request.get(
-        `${BASE_URL}/api/vendor/profit-stats`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-        },
-      );
+      const responseWithAuth = await request.get(`${BASE_URL}/api/vendor/profit-stats`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
       expect([200, 403]).toContain(responseWithAuth.status());
 
       if (responseWithAuth.status() === 200) {
         const data = await responseWithAuth.json();
         expect(data.success).toBe(true);
-        console.log(`✅ Profit stats loaded successfully`);
+        logger.debug(`✅ Profit stats loaded successfully`);
       }
     }
   });
@@ -461,21 +368,13 @@ test.describe("Phase 1: Configuration Routes", () => {
     authToken = await getVendorAuthToken(VENDOR_A_ID);
   });
 
-  test("GET /api/vendor/custom-fields - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/vendor/custom-fields`,
-    );
+  test("GET /api/vendor/custom-fields - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.get(`${BASE_URL}/api/vendor/custom-fields`);
     expect(responseNoAuth.status()).toBe(401);
   });
 
-  test("GET /api/vendor/pricing-templates - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/vendor/pricing-templates`,
-    );
+  test("GET /api/vendor/pricing-templates - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.get(`${BASE_URL}/api/vendor/pricing-templates`);
     expect(responseNoAuth.status()).toBe(401);
   });
 
@@ -499,29 +398,20 @@ test.describe("Phase 1: Page Data Routes", () => {
     authToken = await getVendorAuthToken(VENDOR_A_ID);
   });
 
-  test("GET /api/page-data/vendor-inventory - should require auth", async ({
-    request,
-  }) => {
-    const responseNoAuth = await request.get(
-      `${BASE_URL}/api/page-data/vendor-inventory`,
-    );
+  test("GET /api/page-data/vendor-inventory - should require auth", async ({ request }) => {
+    const responseNoAuth = await request.get(`${BASE_URL}/api/page-data/vendor-inventory`);
     expect(responseNoAuth.status()).toBe(401);
 
     if (authToken) {
-      const responseWithAuth = await request.get(
-        `${BASE_URL}/api/page-data/vendor-inventory`,
-        {
-          headers: { Authorization: `Bearer ${authToken}` },
-        },
-      );
+      const responseWithAuth = await request.get(`${BASE_URL}/api/page-data/vendor-inventory`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
       expect([200, 403]).toContain(responseWithAuth.status());
 
       if (responseWithAuth.status() === 200) {
         const data = await responseWithAuth.json();
         expect(data.success).toBe(true);
-        console.log(
-          `✅ Vendor inventory: ${data.data?.inventory?.length || 0} items`,
-        );
+        logger.debug(`✅ Vendor inventory: ${data.data?.inventory?.length || 0} items`);
       }
     }
   });
@@ -537,9 +427,9 @@ test.describe("Phase 1: Database RLS Policies", () => {
 
     // Function should exist (may return null without a session, that's ok)
     if (error && !error.message.includes("null value")) {
-      console.log("Helper function check:", error.message);
+      logger.debug("Helper function check:", error.message);
     }
-    console.log("✅ Helper function get_vendor_id_from_jwt() exists");
+    logger.debug("✅ Helper function get_vendor_id_from_jwt() exists");
   });
 
   test("Verify RLS is enabled on critical tables", async () => {
@@ -554,9 +444,7 @@ test.describe("Phase 1: Database RLS Policies", () => {
         .single();
 
       if (!error && data) {
-        console.log(
-          `✅ RLS enabled on ${table}: ${data.rowsecurity || "checking..."}`,
-        );
+        logger.debug(`✅ RLS enabled on ${table}: ${data.rowsecurity || "checking..."}`);
       }
     }
   });
@@ -568,13 +456,13 @@ test.describe("Phase 1: Database RLS Policies", () => {
 
 test.describe("Phase 1: Summary", () => {
   test("Phase 1 security fixes validation", async () => {
-    console.log("\n=== PHASE 1 SECURITY VALIDATION ===");
-    console.log("✅ All 18 P1 routes tested");
-    console.log("✅ Header-based auth bypass prevented");
-    console.log("✅ JWT-based authentication enforced");
-    console.log("✅ Vendor isolation verified");
-    console.log("✅ Database RLS policies active");
-    console.log("===================================\n");
+    logger.debug("\n=== PHASE 1 SECURITY VALIDATION ===");
+    logger.debug("✅ All 18 P1 routes tested");
+    logger.debug("✅ Header-based auth bypass prevented");
+    logger.debug("✅ JWT-based authentication enforced");
+    logger.debug("✅ Vendor isolation verified");
+    logger.debug("✅ Database RLS policies active");
+    logger.debug("===================================\n");
 
     // This test always passes - it's just a summary
     expect(true).toBe(true);

@@ -4,13 +4,7 @@
  */
 
 import Link from "next/link";
-import {
-  LucideIcon,
-  AlertCircle,
-  CheckCircle,
-  Info,
-  AlertTriangle,
-} from "lucide-react";
+import { LucideIcon, AlertCircle, CheckCircle, Info, AlertTriangle } from "lucide-react";
 
 interface AlertBannerProps {
   type?: "info" | "warning" | "success" | "error";
@@ -66,9 +60,7 @@ export function AlertBanner({
       <div className="flex-1 min-w-0">
         <p className="text-white text-sm font-light mb-1">{title}</p>
         {description && (
-          <p className="text-white/40 text-xs font-light tracking-wide uppercase">
-            {description}
-          </p>
+          <p className="text-white/40 text-xs font-light tracking-wide uppercase">{description}</p>
         )}
       </div>
       {href && (
@@ -78,12 +70,7 @@ export function AlertBanner({
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M9 5l7 7-7 7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
         </svg>
       )}
       {dismissable && (

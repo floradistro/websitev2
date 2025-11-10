@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Segment estimation error:", error);
+      logger.error("Segment estimation error:", error);
     }
     return NextResponse.json(
       { error: "Failed to estimate segment size", message: error.message },
@@ -42,10 +43,7 @@ export async function POST(request: NextRequest) {
 /**
  * Calculate segment size based on rules
  */
-async function calculateSegmentSize(
-  vendorId: string,
-  rules: any[],
-): Promise<number> {
+async function calculateSegmentSize(vendorId: string, rules: any[]): Promise<number> {
   if (!rules || rules.length === 0) {
     // No rules = all customers
     const { count } = await supabase

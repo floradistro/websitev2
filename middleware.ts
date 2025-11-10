@@ -5,12 +5,8 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 /**
  * Apply comprehensive security headers to response
  */
-function applySecurityHeaders(
-  response: NextResponse,
-  hostname: string,
-): NextResponse {
-  const isDevelopment =
-    hostname.includes("localhost") || hostname.includes("127.0.0.1");
+function applySecurityHeaders(response: NextResponse, hostname: string): NextResponse {
+  const isDevelopment = hostname.includes("localhost") || hostname.includes("127.0.0.1");
 
   // Basic Security Headers
   response.headers.set("X-Frame-Options", "SAMEORIGIN");
@@ -148,8 +144,7 @@ export async function middleware(request: NextRequest) {
       // Check if coming soon mode is active - rewrite to storefront to show coming soon page
       if (vendor?.coming_soon) {
         // Allow preview mode to bypass
-        const isPreview =
-          request.nextUrl.searchParams.get("preview") === "true";
+        const isPreview = request.nextUrl.searchParams.get("preview") === "true";
         if (!isPreview) {
           // Rewrite to /storefront so the coming soon page is rendered
           const url = request.nextUrl.clone();
@@ -182,11 +177,7 @@ export async function middleware(request: NextRequest) {
 
     // Check if this is a subdomain storefront (vendor-slug.yachtclub.com)
     const subdomain = domain.split(".")[0];
-    if (
-      domain.includes(".") &&
-      !domain.startsWith("www") &&
-      !isYachtClubDomain
-    ) {
+    if (domain.includes(".") && !domain.startsWith("www") && !isYachtClubDomain) {
       const { data: vendor, error: vendorError } = await supabase
         .from("vendors")
         .select("id, status, coming_soon")
@@ -197,8 +188,7 @@ export async function middleware(request: NextRequest) {
       if (vendor && !vendorError) {
         // Check if coming soon mode is active - block entire site
         if (vendor.coming_soon) {
-          const isPreview =
-            request.nextUrl.searchParams.get("preview") === "true";
+          const isPreview = request.nextUrl.searchParams.get("preview") === "true";
           if (!isPreview) {
             const response = NextResponse.next();
             response.headers.set("x-vendor-id", vendor.id);
@@ -246,8 +236,7 @@ export async function middleware(request: NextRequest) {
         if (vendor) {
           // Check if coming soon mode is active - block entire site
           if (vendor.coming_soon) {
-            const isPreview =
-              request.nextUrl.searchParams.get("preview") === "true";
+            const isPreview = request.nextUrl.searchParams.get("preview") === "true";
             if (!isPreview) {
               const response = NextResponse.next();
               response.headers.set("x-vendor-id", vendor.id);

@@ -73,10 +73,4 @@ declare global {
   }
 }
 
-export {
-  type DidHideEvent,
-  type DidShowEvent,
-  Toast,
-  ToastEvents,
-  type WillShowEvent,
-};
+export { type DidHideEvent, type DidShowEvent, Toast, ToastEvents, type WillShowEvent };

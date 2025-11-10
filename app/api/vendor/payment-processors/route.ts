@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { getPaymentProcessorById } from "@/lib/payment-processors";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/vendor/payment-processors
  * List all payment processors for vendor's locations
@@ -55,23 +56,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching payment processors:", error);
+        logger.error("Error fetching payment processors:", error);
       }
-      return NextResponse.json(
-        { error: "Failed to fetch payment processors" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to fetch payment processors" }, { status: 500 });
     }
 
     return NextResponse.json({ processors });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Payment processors API error:", error);
+      logger.error("Payment processors API error:", error);
     }
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -110,20 +105,10 @@ export async function POST(request: NextRequest) {
     // Handle different actions
     switch (action) {
       case "create":
-        return await createProcessor(
-          supabase,
-          userData.vendor_id,
-          user.id,
-          processorData,
-        );
+        return await createProcessor(supabase, userData.vendor_id, user.id, processorData);
 
       case "update":
-        return await updateProcessor(
-          supabase,
-          userData.vendor_id,
-          id,
-          processorData,
-        );
+        return await updateProcessor(supabase, userData.vendor_id, id, processorData);
 
       case "delete":
         return await deleteProcessor(supabase, userData.vendor_id, id);
@@ -144,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Payment processors API error:", error);
+      logger.error("Payment processors API error:", error);
     }
     return NextResponse.json(
       {
@@ -159,18 +144,12 @@ export async function POST(request: NextRequest) {
 // HELPER FUNCTIONS
 // ============================================================
 
-async function createProcessor(
-  supabase: any,
-  vendorId: string,
-  userId: string,
-  data: any,
-) {
+async function createProcessor(supabase: any, vendorId: string, userId: string, data: any) {
   // Validate required fields
   if (!data.location_id || !data.processor_type || !data.processor_name) {
     return NextResponse.json(
       {
-        error:
-          "Missing required fields: location_id, processor_type, processor_name",
+        error: "Missing required fields: location_id, processor_type, processor_name",
       },
       { status: 400 },
     );
@@ -185,10 +164,7 @@ async function createProcessor(
     .single();
 
   if (locationError || !location) {
-    return NextResponse.json(
-      { error: "Location not found or access denied" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Location not found or access denied" }, { status: 403 });
   }
 
   // Create processor
@@ -226,12 +202,9 @@ async function createProcessor(
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error creating processor:", error);
+      logger.error("Error creating processor:", error);
     }
-    return NextResponse.json(
-      { error: "Failed to create processor" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to create processor" }, { status: 500 });
   }
 
   return NextResponse.json({
@@ -240,17 +213,9 @@ async function createProcessor(
   });
 }
 
-async function updateProcessor(
-  supabase: any,
-  vendorId: string,
-  id: string,
-  data: any,
-) {
+async function updateProcessor(supabase: any, vendorId: string, id: string, data: any) {
   if (!id) {
-    return NextResponse.json(
-      { error: "Processor ID required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Processor ID required" }, { status: 400 });
   }
 
   // Verify processor belongs to vendor
@@ -262,10 +227,7 @@ async function updateProcessor(
     .single();
 
   if (checkError || !existing) {
-    return NextResponse.json(
-      { error: "Processor not found or access denied" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Processor not found or access denied" }, { status: 403 });
   }
 
   // Update processor
@@ -306,12 +268,9 @@ async function updateProcessor(
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating processor:", error);
+      logger.error("Error updating processor:", error);
     }
-    return NextResponse.json(
-      { error: "Failed to update processor" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to update processor" }, { status: 500 });
   }
 
   return NextResponse.json({
@@ -322,10 +281,7 @@ async function updateProcessor(
 
 async function deleteProcessor(supabase: any, vendorId: string, id: string) {
   if (!id) {
-    return NextResponse.json(
-      { error: "Processor ID required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Processor ID required" }, { status: 400 });
   }
 
   // Verify processor belongs to vendor
@@ -337,35 +293,25 @@ async function deleteProcessor(supabase: any, vendorId: string, id: string) {
     .single();
 
   if (checkError || !existing) {
-    return NextResponse.json(
-      { error: "Processor not found or access denied" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Processor not found or access denied" }, { status: 403 });
   }
 
   if (existing.is_default) {
     return NextResponse.json(
       {
-        error:
-          "Cannot delete default processor. Set another processor as default first.",
+        error: "Cannot delete default processor. Set another processor as default first.",
       },
       { status: 400 },
     );
   }
 
-  const { error } = await supabase
-    .from("payment_processors")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("payment_processors").delete().eq("id", id);
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error deleting processor:", error);
+      logger.error("Error deleting processor:", error);
     }
-    return NextResponse.json(
-      { error: "Failed to delete processor" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to delete processor" }, { status: 500 });
   }
 
   return NextResponse.json({
@@ -375,10 +321,7 @@ async function deleteProcessor(supabase: any, vendorId: string, id: string) {
 
 async function testProcessor(id: string) {
   if (!id) {
-    return NextResponse.json(
-      { error: "Processor ID required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Processor ID required" }, { status: 400 });
   }
 
   try {
@@ -398,9 +341,7 @@ async function testProcessor(id: string) {
 
     return NextResponse.json({
       success,
-      message: success
-        ? "Connection test successful"
-        : "Connection test failed",
+      message: success ? "Connection test successful" : "Connection test failed",
     });
   } catch (error) {
     const supabase = getServiceSupabase();
@@ -409,8 +350,7 @@ async function testProcessor(id: string) {
       .update({
         last_tested_at: new Date().toISOString(),
         last_test_status: "failed",
-        last_test_error:
-          error instanceof Error ? error.message : "Unknown error",
+        last_test_error: error instanceof Error ? error.message : "Unknown error",
       })
       .eq("id", id);
 
@@ -431,10 +371,7 @@ async function setDefaultProcessor(
   locationId: string,
 ) {
   if (!id || !locationId) {
-    return NextResponse.json(
-      { error: "Processor ID and location ID required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Processor ID and location ID required" }, { status: 400 });
   }
 
   // Verify processor belongs to vendor and location
@@ -447,10 +384,7 @@ async function setDefaultProcessor(
     .single();
 
   if (checkError || !processor) {
-    return NextResponse.json(
-      { error: "Processor not found or access denied" },
-      { status: 403 },
-    );
+    return NextResponse.json({ error: "Processor not found or access denied" }, { status: 403 });
   }
 
   // Unset other defaults for this location
@@ -470,12 +404,9 @@ async function setDefaultProcessor(
 
   if (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error setting default processor:", error);
+      logger.error("Error setting default processor:", error);
     }
-    return NextResponse.json(
-      { error: "Failed to set default processor" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to set default processor" }, { status: 500 });
   }
 
   return NextResponse.json({

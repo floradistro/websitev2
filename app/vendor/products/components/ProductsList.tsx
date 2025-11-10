@@ -30,10 +30,7 @@ export function ProductsList({
   if (error) {
     return (
       <div
-        className={cn(
-          "border rounded-lg p-6 text-center",
-          "bg-white/5 border-white/20",
-        )}
+        className={cn("border rounded-lg p-6 text-center", "bg-white/5 border-white/20")}
         role="alert"
         aria-live="assertive"
       >
@@ -43,17 +40,11 @@ export function ProductsList({
           aria-hidden="true"
         />
         <h3
-          className={cn(
-            ds.typography.size.base,
-            ds.typography.weight.medium,
-            "text-white/90 mb-2",
-          )}
+          className={cn(ds.typography.size.base, ds.typography.weight.medium, "text-white/90 mb-2")}
         >
           Failed to Load Products
         </h3>
-        <p className={cn(ds.typography.size.xs, "text-white/60 mb-4")}>
-          {error.message}
-        </p>
+        <p className={cn(ds.typography.size.xs, "text-white/60 mb-4")}>{error.message}</p>
         <button
           onClick={onRetry || (() => window.location.reload())}
           className={cn(
@@ -107,17 +98,12 @@ export function ProductsList({
             </svg>
           </div>
           <h3
-            className={cn(
-              ds.typography.size.sm,
-              ds.typography.weight.medium,
-              "text-white/90 mb-2",
-            )}
+            className={cn(ds.typography.size.sm, ds.typography.weight.medium, "text-white/90 mb-2")}
           >
             No Products Found
           </h3>
           <p className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
-            No products match your current filters. Try adjusting your search or
-            filters.
+            No products match your current filters. Try adjusting your search or filters.
           </p>
         </div>
       </div>
@@ -132,11 +118,7 @@ export function ProductsList({
       aria-label={`${products.length} products`}
     >
       {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          onView={onViewProduct}
-        />
+        <ProductCard key={product.id} product={product} onView={onViewProduct} />
       ))}
     </div>
   );

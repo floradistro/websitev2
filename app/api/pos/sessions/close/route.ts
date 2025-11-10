@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error closing session:", updateError);
+        logger.error("Error closing session:", updateError);
       }
       return NextResponse.json(
         { error: "Failed to close session", details: updateError.message },
@@ -77,18 +78,13 @@ export async function POST(request: NextRequest) {
         closing_cash: closingCash,
         expected_cash: expectedCash,
         cash_difference: cashDifference,
-        status:
-          cashDifference === 0
-            ? "balanced"
-            : cashDifference > 0
-              ? "over"
-              : "short",
+        status: cashDifference === 0 ? "balanced" : cashDifference > 0 ? "over" : "short",
       },
       message: `Session ${session.session_number} closed successfully`,
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in close session endpoint:", error);
+      logger.error("Error in close session endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

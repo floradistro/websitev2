@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 export const revalidate = 60; // Cache for 60 seconds
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     const authResult = await requireVendor(request);
     if (authResult instanceof NextResponse) {
       if (process.env.NODE_ENV === "development") {
-        console.error("[Products API] Auth failed:", authResult);
+        logger.error("[Products API] Auth failed:", authResult);
       }
       return authResult;
     }
@@ -125,18 +126,14 @@ export async function GET(request: NextRequest) {
     const inventoryMap = new Map<string, number>();
     (inventoryRecords || []).forEach((inv: any) => {
       const currentQty = inventoryMap.get(inv.product_id) || 0;
-      inventoryMap.set(
-        inv.product_id,
-        currentQty + parseFloat(inv.quantity || "0"),
-      );
+      inventoryMap.set(inv.product_id, currentQty + parseFloat(inv.quantity || "0"));
     });
 
     // Fetch pricing templates (NEW SYSTEM) if any products use them
     const templateIds = new Set<string>();
     (products || []).forEach((p: any) => {
       // Check both pricing_data and meta_data for template_id
-      const templateId =
-        p.pricing_data?.template_id || p.meta_data?.pricing_template_id;
+      const templateId = p.pricing_data?.template_id || p.meta_data?.pricing_template_id;
       if (templateId) templateIds.add(templateId);
     });
 
@@ -162,10 +159,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Add gallery images if they exist
-      if (
-        product.image_gallery_storage &&
-        Array.isArray(product.image_gallery_storage)
-      ) {
+      if (product.image_gallery_storage && Array.isArray(product.image_gallery_storage)) {
         // Filter out featured image to avoid duplicates
         const additionalImages = product.image_gallery_storage.filter(
           (img: string) => img && img !== product.featured_image_storage,
@@ -174,21 +168,13 @@ export async function GET(request: NextRequest) {
       }
 
       // Get pricing mode from pricing_data or meta_data
-      const pricingMode =
-        product.pricing_data?.mode ||
-        product.meta_data?.pricing_mode ||
-        "single";
+      const pricingMode = product.pricing_data?.mode || product.meta_data?.pricing_mode || "single";
 
       // Get LIVE pricing from NEW template system ONLY - no fallback to stale data
       let pricingTiers = [];
       const templateId =
-        product.pricing_data?.template_id ||
-        product.meta_data?.pricing_template_id;
-      if (
-        pricingMode === "tiered" &&
-        templateId &&
-        templatesMap.has(templateId)
-      ) {
+        product.pricing_data?.template_id || product.meta_data?.pricing_template_id;
+      if (pricingMode === "tiered" && templateId && templatesMap.has(templateId)) {
         const template = templatesMap.get(templateId);
         // Convert template default_tiers to pricing_tiers format
         pricingTiers = (template.default_tiers || []).map((tier: any) => ({
@@ -205,9 +191,7 @@ export async function GET(request: NextRequest) {
         sku: product.sku || "",
         category: product.categories?.name || "Uncategorized", // Get category from primary_category_id relation
         price: parseFloat(product.regular_price) || 0,
-        cost_price: product.cost_price
-          ? parseFloat(product.cost_price)
-          : undefined,
+        cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
         description: product.description || "",
         status: product.status || "pending",
         total_stock: inventoryMap.get(product.id) || 0, // LIVE inventory from all locations
@@ -251,7 +235,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Full products API error:", error);
+      logger.error("Full products API error:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Internal server error" },

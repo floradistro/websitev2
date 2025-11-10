@@ -5,13 +5,10 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { sessionManager, Message, ContentBlock } from "./session-manager";
-import {
-  executeToolsParallel,
-  formatToolResultsForClaude,
-  ToolResult,
-} from "./tool-executor";
+import { executeToolsParallel, formatToolResultsForClaude, ToolResult } from "./tool-executor";
 import { withTimeout, retryWithBackoff } from "./utils";
 
+import { logger } from "@/lib/logger";
 // Claude API configuration
 const CLAUDE_MODEL = "claude-sonnet-4-5-20250929";
 const CLAUDE_MAX_TOKENS = 8000;
@@ -75,11 +72,7 @@ export class AIOrchestrator {
       let session = await sessionManager.getSession(sessionId);
 
       if (!session) {
-        session = await sessionManager.createSession(
-          sessionId,
-          appId,
-          vendorId,
-        );
+        session = await sessionManager.createSession(sessionId, appId, vendorId);
       }
 
       // Add user message to session
@@ -103,7 +96,7 @@ export class AIOrchestrator {
       });
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Orchestrator error:", error);
+        logger.error("❌ Orchestrator error:", error);
       }
       sendUpdate({
         type: "error",
@@ -162,9 +155,7 @@ export class AIOrchestrator {
       });
 
       // Extract tool uses
-      const toolUses = response.content.filter(
-        (block: any) => block.type === "tool_use",
-      );
+      const toolUses = response.content.filter((block: any) => block.type === "tool_use");
 
       // If no tools to execute, we're done
       if (toolUses.length === 0) {
@@ -212,7 +203,7 @@ export class AIOrchestrator {
 
     if (iteration >= maxIterations) {
       if (process.env.NODE_ENV === "development") {
-        console.warn("⚠️  Max conversation iterations reached");
+        logger.warn("⚠️  Max conversation iterations reached");
       }
     }
   }
@@ -345,8 +336,7 @@ export class AIOrchestrator {
           properties: {
             file_path: {
               type: "string",
-              description:
-                'The path to the file (e.g., "src/App.tsx", "styles.css")',
+              description: 'The path to the file (e.g., "src/App.tsx", "styles.css")',
             },
           },
           required: ["file_path"],
@@ -365,8 +355,7 @@ export class AIOrchestrator {
             },
             old_content: {
               type: "string",
-              description:
-                "The current content of the file (use get_current_code first)",
+              description: "The current content of the file (use get_current_code first)",
             },
             new_content: {
               type: "string",

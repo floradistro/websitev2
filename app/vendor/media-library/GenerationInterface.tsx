@@ -3,15 +3,17 @@
 import { useState, useEffect } from "react";
 import {
   Sparkles,
-  Wand2,
   Loader2,
-  Image as ImageIcon,
   ChevronRight,
+  ChevronLeft,
   Check,
+  X,
+  RefreshCw,
   TrendingUp,
 } from "lucide-react";
 import type { PromptTemplate } from "@/lib/types/prompt-template";
 
+import { logger } from "@/lib/logger";
 interface Product {
   id: string;
   name: string;
@@ -22,6 +24,14 @@ interface GenerationInterfaceProps {
   selectedProducts: Set<string>;
   products: Product[];
   onGenerated?: () => void;
+}
+
+interface GeneratedImage {
+  url: string;
+  tempPath?: string;
+  productId: string;
+  productName: string;
+  status: "pending" | "approved" | "rejected";
 }
 
 export default function GenerationInterface({
@@ -35,9 +45,11 @@ export default function GenerationInterface({
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null);
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<
-    Array<{ url: string; productId: string; productName: string }>
-  >([]);
+  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [artStyle, setArtStyle] = useState<string>("default");
+  const [format, setFormat] = useState<string>("digital");
+  const [includeText, setIncludeText] = useState<string>("none");
 
   const selectedProductsList = Array.from(selectedProducts)
     .map((id) => products.find((p) => p.id === id))
@@ -50,123 +62,354 @@ export default function GenerationInterface({
     }
   }, [selectedProducts]);
 
-  // Auto-fill prompt when template or products change
+  // Auto-fill prompt when template changes
   useEffect(() => {
-    if (selectedTemplate && selectedProducts.size > 0) {
-      const productNames = selectedProductsList.map((p) => p.name);
-      let filledPrompt = selectedTemplate.prompt_text;
-
-      if (productNames.length === 1) {
-        filledPrompt = filledPrompt.replace(/\{product_name\}/g, productNames[0]);
-        filledPrompt = filledPrompt.replace(/\{product\}/g, productNames[0]);
-      } else {
-        filledPrompt = filledPrompt.replace(/\{product_name\}/g, productNames.join(", "));
-        filledPrompt = filledPrompt.replace(/\{product\}/g, productNames.join(", "));
-      }
-      setPrompt(filledPrompt);
+    if (selectedTemplate) {
+      setPrompt(selectedTemplate.prompt_text);
     }
-  }, [selectedTemplate, selectedProducts]);
+  }, [selectedTemplate]);
 
   const loadTemplates = async () => {
     setLoadingTemplates(true);
     try {
-      const response = await fetch(
-        "/api/vendor/media/prompt-templates?category=product",
-        { headers: { "x-vendor-id": vendorId } }
-      );
+      const response = await fetch("/api/vendor/media/prompt-templates?category=product", {
+        headers: { "x-vendor-id": vendorId },
+      });
       const data = await response.json();
       if (data.success) {
         setTemplates(data.templates || []);
       }
     } catch (error) {
-      console.error("Error loading templates:", error);
+      logger.error("Error loading templates:", error);
     } finally {
       setLoadingTemplates(false);
     }
   };
 
+  const handleApprove = async (index: number) => {
+    const image = generatedImages[index];
+
+    // Mark as approved and show saving state
+    setGeneratedImages((prev) =>
+      prev.map((img, i) => (i === index ? { ...img, status: "approved" as const } : img)),
+    );
+
+    try {
+      // Auto-save immediately when approved
+      const response = await fetch("/api/vendor/media/approve-generated", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-vendor-id": vendorId,
+        },
+        body: JSON.stringify({
+          imageUrl: image.url,
+          tempPath: image.tempPath,
+          productId: image.productId,
+          productName: image.productName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save image");
+      }
+
+      // Refresh the media library and product list
+      onGenerated?.();
+
+      // Move to next image
+      if (index < generatedImages.length - 1) {
+        setCurrentReviewIndex(index + 1);
+      }
+    } catch (error) {
+      logger.error("Error saving approved image", error instanceof Error ? error : new Error(String(error)));
+      alert("Failed to save image. Please try again.");
+      // Revert approval status on error
+      setGeneratedImages((prev) =>
+        prev.map((img, i) => (i === index ? { ...img, status: "pending" as const } : img)),
+      );
+    }
+  };
+
+  const handleReject = (index: number) => {
+    setGeneratedImages((prev) =>
+      prev.map((img, i) => (i === index ? { ...img, status: "rejected" as const } : img)),
+    );
+    if (index < generatedImages.length - 1) {
+      setCurrentReviewIndex(index + 1);
+    }
+  };
+
+
   const handleGenerate = async () => {
     if (!prompt.trim() || selectedProducts.size === 0) return;
 
     setGenerating(true);
-    const results = [];
+    setGeneratedImages([]);
+    setCurrentReviewIndex(0);
 
     try {
-      for (const productId of selectedProducts) {
+      const styleMap: Record<string, string> = {
+        banksy: "in the style of Banksy",
+        futura2000: "in the style of Futura 2000",
+        ladypink: "in the style of Lady Pink",
+        "shepard-fairey": "in the style of Shepard Fairey (Obey Giant)",
+        "leonardo-da-vinci": "in the style of Leonardo da Vinci",
+        "jackson-pollock": "in the style of Jackson Pollock",
+        "salvador-dali": "in the style of Salvador Dali",
+        "andy-warhol": "in the style of Andy Warhol",
+      };
+
+      const formatMap: Record<string, string> = {
+        stamp: "as a rubber stamp design",
+        canvas: "as a canvas painting",
+        sticker: "as a die-cut sticker design",
+        poster: "as a vintage poster",
+      };
+
+      const generationPromises = Array.from(selectedProducts).map(async (productId) => {
         const product = products.find((p) => p.id === productId);
-        if (!product) continue;
+        if (!product) return null;
 
-        const response = await fetch("/api/vendor/media/ai-generate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-vendor-id": vendorId,
-          },
-          body: JSON.stringify({
-            prompt: prompt.trim(),
-            size: selectedTemplate?.parameters?.size || "1024x1024",
-            quality: selectedTemplate?.parameters?.quality || "standard",
-            productId: productId,
-          }),
-        });
+        let styleModifier = "";
+        let formatModifier = "";
 
-        const data = await response.json();
-        if (data.success && data.file) {
-          results.push({
-            url: data.file.file_url,
-            productId: productId,
-            productName: product.name,
+        if (artStyle === "random") {
+          const styles = Object.keys(styleMap);
+          const randomSeed = Date.now() + product.id.charCodeAt(0);
+          const randomIndex = Math.floor((randomSeed * Math.random()) % styles.length);
+          styleModifier = styleMap[styles[randomIndex]];
+        } else if (artStyle !== "default") {
+          styleModifier = styleMap[artStyle] || "";
+        }
+
+        if (format === "random") {
+          const formats = Object.keys(formatMap);
+          const randomSeed = Date.now() + product.id.charCodeAt(1);
+          const randomIndex = Math.floor((randomSeed * Math.random()) % formats.length);
+          formatModifier = formatMap[formats[randomIndex]];
+        } else if (format !== "digital") {
+          formatModifier = formatMap[format] || "";
+        }
+
+        let individualPrompt = prompt
+          .replace(/\{product_name\}/g, product.name)
+          .replace(/\{product\}/g, product.name);
+
+        let textModifier = "";
+        if (includeText === "none") {
+          textModifier =
+            "Important: create a purely visual icon with no text, letters, words, numbers, labels, or typography anywhere in the image.";
+        } else if (includeText === "product_name") {
+          textModifier = `Include the text "${product.name}" prominently in the design.`;
+        }
+
+        if (textModifier) individualPrompt += ` ${textModifier}`;
+        if (styleModifier) individualPrompt += ` ${styleModifier}`;
+        if (formatModifier) individualPrompt += ` ${formatModifier}`;
+
+        try {
+          const response = await fetch("/api/vendor/media/ai-generate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-vendor-id": vendorId,
+            },
+            body: JSON.stringify({
+              prompt: individualPrompt,
+            }),
           });
 
-          // Track template usage
-          if (selectedTemplate) {
-            await fetch(
-              `/api/vendor/media/prompt-templates/${selectedTemplate.id}`,
-              {
-                method: "POST",
-                headers: { "x-vendor-id": vendorId },
-              }
-            );
+          const data = await response.json();
+          if (data.success && data.tempUrl) {
+            return {
+              url: data.tempUrl,
+              tempPath: data.tempPath,
+              productId: productId,
+              productName: product.name,
+              status: "pending" as const,
+            };
           }
+        } catch (error) {
+          logger.error(`Error generating for ${product.name}:`, error);
         }
-      }
+        return null;
+      });
 
-      setGeneratedImages(results);
-      if (onGenerated) onGenerated();
+      const results = (await Promise.all(generationPromises)).filter(Boolean);
+      setGeneratedImages(results as typeof generatedImages);
+
+      if (selectedTemplate && results.length > 0) {
+        await fetch(`/api/vendor/media/prompt-templates/${selectedTemplate.id}`, {
+          method: "POST",
+          headers: { "x-vendor-id": vendorId },
+        });
+      }
     } catch (error) {
-      console.error("Generation error:", error);
+      logger.error("Generation error:", error);
       alert("Failed to generate images");
     } finally {
       setGenerating(false);
     }
   };
 
-  // No products selected - show prompt
+  // No products selected
   if (selectedProducts.size === 0) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center max-w-md">
           <Sparkles className="w-16 h-16 text-white/30 mx-auto mb-4" strokeWidth={1} />
-          <h3 className="text-xl text-white font-light mb-2">
-            Product AI Generation
-          </h3>
+          <h3 className="text-xl text-white font-light mb-2">AI Product Generation</h3>
           <p className="text-sm text-white/50 font-light">
-            Select products from the left sidebar to generate AI-powered images
+            Select products from the left sidebar to generate stunning product icons
           </p>
         </div>
       </div>
     );
   }
 
-  // Template selection view
+  // Review mode - full-screen approval interface
+  if (generatedImages.length > 0 && !generating) {
+    const currentImage = generatedImages[currentReviewIndex];
+    const approvedCount = generatedImages.filter((img) => img.status === "approved").length;
+    const rejectedCount = generatedImages.filter((img) => img.status === "rejected").length;
+
+    return (
+      <div className="h-full flex flex-col bg-black">
+        {/* Header */}
+        <div className="flex-shrink-0 px-6 py-4 border-b border-white/10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg text-white font-light">Review Generated Images</h2>
+              <p className="text-sm text-white/50 font-light">
+                {currentReviewIndex + 1} of {generatedImages.length} •
+                {approvedCount > 0 && ` ${approvedCount} approved`}
+                {rejectedCount > 0 && ` • ${rejectedCount} rejected`}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setGeneratedImages([])}
+                className="px-6 py-2 bg-white text-black rounded-lg text-sm font-medium hover:bg-white/90 transition-all"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="max-w-4xl w-full">
+            {/* Image */}
+            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white mb-6">
+              <img
+                src={currentImage.url}
+                alt={currentImage.productName}
+                className="w-full h-full object-contain"
+              />
+
+              {/* Status badge */}
+              {currentImage.status !== "pending" && (
+                <div
+                  className={`absolute top-4 right-4 px-4 py-2 rounded-full text-sm font-medium ${
+                    currentImage.status === "approved"
+                      ? "bg-green-500 text-white"
+                      : "bg-red-500 text-white"
+                  }`}
+                >
+                  {currentImage.status === "approved" ? "Approved" : "Rejected"}
+                </div>
+              )}
+            </div>
+
+            {/* Product name */}
+            <div className="text-center mb-6">
+              <h3 className="text-2xl text-white font-light mb-1">{currentImage.productName}</h3>
+              <p className="text-sm text-white/50 font-light">
+                Will be saved as:{" "}
+                {currentImage.productName
+                  .replace(/[^a-zA-Z0-9\s-]/g, "")
+                  .replace(/\s+/g, "-")
+                  .toLowerCase()}
+                .png
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-center gap-4">
+              <button
+                onClick={() => handleReject(currentReviewIndex)}
+                disabled={currentImage.status === "rejected"}
+                className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all disabled:opacity-50"
+              >
+                <X className="w-5 h-5" strokeWidth={2} />
+                Reject
+              </button>
+
+              <button
+                onClick={() => handleApprove(currentReviewIndex)}
+                disabled={currentImage.status === "approved"}
+                className="flex items-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-600 rounded-xl text-white transition-all disabled:opacity-50"
+              >
+                <Check className="w-5 h-5" strokeWidth={2} />
+                Approve
+              </button>
+            </div>
+
+            {/* Navigation */}
+            <div className="flex items-center justify-center gap-3 mt-8">
+              <button
+                onClick={() => setCurrentReviewIndex(Math.max(0, currentReviewIndex - 1))}
+                disabled={currentReviewIndex === 0}
+                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-5 h-5 text-white" strokeWidth={2} />
+              </button>
+
+              <div className="flex gap-2">
+                {generatedImages.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentReviewIndex(idx)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      idx === currentReviewIndex
+                        ? "bg-white w-6"
+                        : generatedImages[idx].status === "approved"
+                          ? "bg-green-500"
+                          : generatedImages[idx].status === "rejected"
+                            ? "bg-red-500"
+                            : "bg-white/30"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={() =>
+                  setCurrentReviewIndex(
+                    Math.min(generatedImages.length - 1, currentReviewIndex + 1),
+                  )
+                }
+                disabled={currentReviewIndex === generatedImages.length - 1}
+                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="w-5 h-5 text-white" strokeWidth={2} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Template selection
   if (!selectedTemplate) {
     return (
       <div className="h-full overflow-y-auto p-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
-            <h2 className="text-2xl text-white font-light mb-2">
-              Choose a Template
-            </h2>
+            <h2 className="text-2xl text-white font-light mb-2">Choose a Style</h2>
             <p className="text-sm text-white/50 font-light">
               Generating for{" "}
               {selectedProducts.size === 1
@@ -177,7 +420,7 @@ export default function GenerationInterface({
 
           {loadingTemplates ? (
             <div className="text-center py-20">
-              <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
+              <Loader2 className="w-12 h-12 text-white/20 mx-auto mb-4 animate-spin" />
               <p className="text-white/40 text-sm font-light">Loading templates...</p>
             </div>
           ) : templates.length === 0 ? (
@@ -233,157 +476,122 @@ export default function GenerationInterface({
 
   // Generation interface
   return (
-    <div className="h-full flex">
-      {/* Left: Prompt Editor */}
-      <div className="flex-1 p-8 overflow-y-auto border-r border-white/10">
-        <div className="max-w-2xl">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <button
-                onClick={() => {
-                  setSelectedTemplate(null);
-                  setGeneratedImages([]);
-                }}
-                className="text-white/40 hover:text-white transition-colors"
-              >
-                <ChevronRight className="w-4 h-4 rotate-180" strokeWidth={2} />
-              </button>
-              <h2 className="text-xl text-white font-light">
-                {selectedTemplate.name}
-              </h2>
-            </div>
-            <p className="text-sm text-white/50 font-light">
-              Generating for{" "}
-              {selectedProducts.size === 1
-                ? `"${selectedProductsList[0]?.name}"`
-                : `${selectedProducts.size} products`}
-            </p>
+    <div className="h-full flex flex-col p-8">
+      <div className="max-w-3xl mx-auto w-full">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <button
+              onClick={() => {
+                setSelectedTemplate(null);
+                setGeneratedImages([]);
+              }}
+              className="text-white/40 hover:text-white transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" strokeWidth={2} />
+            </button>
+            <h2 className="text-xl text-white font-light">{selectedTemplate.name}</h2>
           </div>
+          <p className="text-sm text-white/50 font-light">
+            Generating for{" "}
+            {selectedProducts.size === 1
+              ? `"${selectedProductsList[0]?.name}"`
+              : `${selectedProducts.size} products`}
+          </p>
+        </div>
 
-          {/* Prompt Editor */}
-          <div className="mb-6">
-            <label className="block text-sm text-white/70 mb-2 font-light">
-              Customize Your Prompt
+        {/* Options */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <div>
+            <label className="block text-xs text-white/50 mb-2 font-light uppercase tracking-wider">
+              Artist Style
             </label>
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              rows={10}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/30 font-mono resize-none"
-              placeholder="Describe the image you want to generate..."
-            />
+            <select
+              value={artStyle}
+              onChange={(e) => setArtStyle(e.target.value)}
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/30"
+            >
+              <option value="default">Default</option>
+              <option value="random">🎲 Random</option>
+              <option value="banksy">Banksy</option>
+              <option value="futura2000">Futura 2000</option>
+              <option value="ladypink">Lady Pink</option>
+              <option value="shepard-fairey">Shepard Fairey</option>
+              <option value="leonardo-da-vinci">Leonardo da Vinci</option>
+              <option value="jackson-pollock">Jackson Pollock</option>
+              <option value="salvador-dali">Salvador Dali</option>
+              <option value="andy-warhol">Andy Warhol</option>
+            </select>
           </div>
-
-          {/* Parameters */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <div>
-              <label className="block text-xs text-white/50 mb-1 font-light uppercase tracking-wider">
-                Size
-              </label>
-              <div className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/70 font-light">
-                {selectedTemplate.parameters?.size || "1024x1024"}
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs text-white/50 mb-1 font-light uppercase tracking-wider">
-                Quality
-              </label>
-              <div className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white/70 font-light">
-                {selectedTemplate.parameters?.quality || "standard"}
-              </div>
-            </div>
+          <div>
+            <label className="block text-xs text-white/50 mb-2 font-light uppercase tracking-wider">
+              Format
+            </label>
+            <select
+              value={format}
+              onChange={(e) => setFormat(e.target.value)}
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/30"
+            >
+              <option value="digital">Digital</option>
+              <option value="random">🎲 Random</option>
+              <option value="stamp">Stamp</option>
+              <option value="canvas">Canvas</option>
+              <option value="sticker">Sticker</option>
+              <option value="poster">Poster</option>
+            </select>
           </div>
-
-          {/* Generate Button */}
-          <button
-            onClick={handleGenerate}
-            disabled={generating || !prompt.trim()}
-            className="w-full px-6 py-4 bg-white/10 hover:bg-white/15 disabled:bg-white/5 border border-white/20 hover:border-white/30 disabled:border-white/10 rounded-lg text-white disabled:text-white/40 font-light transition-all flex items-center justify-center gap-2"
-          >
-            {generating ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" strokeWidth={1.5} />
-                <span>
-                  Generating {selectedProducts.size}{" "}
-                  {selectedProducts.size === 1 ? "image" : "images"}...
-                </span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" strokeWidth={1.5} />
-                <span>
-                  Generate {selectedProducts.size}{" "}
-                  {selectedProducts.size === 1 ? "Image" : "Images"}
-                </span>
-              </>
-            )}
-          </button>
+          <div>
+            <label className="block text-xs text-white/50 mb-2 font-light uppercase tracking-wider">
+              Include Text
+            </label>
+            <select
+              value={includeText}
+              onChange={(e) => setIncludeText(e.target.value)}
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/30"
+            >
+              <option value="none">No Text</option>
+              <option value="product_name">Product Name</option>
+              <option value="custom">Custom (in prompt)</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      {/* Right: Preview */}
-      <div className="w-1/2 p-8 bg-black/20 overflow-y-auto">
-        <div className="max-w-2xl">
-          <label className="block text-sm text-white/70 mb-4 font-light">
-            Preview
+        {/* Prompt */}
+        <div className="mb-6">
+          <label className="block text-sm text-white/70 mb-2 font-light">
+            Customize Your Prompt
           </label>
-
-          {generatedImages.length > 0 ? (
-            <div className="space-y-4">
-              {generatedImages.map((img, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white/5 border border-white/10 rounded-lg overflow-hidden"
-                >
-                  <div className="aspect-square bg-black/30 flex items-center justify-center">
-                    <img
-                      src={img.url}
-                      alt={img.productName}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-3 border-t border-white/10">
-                    <p className="text-sm text-white/70 font-light">
-                      {img.productName}
-                    </p>
-                    <p className="text-xs text-green-400 font-light flex items-center gap-1 mt-1">
-                      <Check className="w-3 h-3" strokeWidth={2} />
-                      Generated successfully
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : generating ? (
-            <div className="aspect-square bg-black/30 border border-white/10 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-white/40 text-sm font-light">
-                  Creating your images...
-                </p>
-                <p className="text-white/30 text-xs mt-1 font-light">
-                  This may take 10-20 seconds per image
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="aspect-square bg-black/30 border border-white/10 rounded-lg flex items-center justify-center">
-              <div className="text-center px-6">
-                <ImageIcon
-                  className="w-16 h-16 text-white/20 mx-auto mb-4"
-                  strokeWidth={1}
-                />
-                <p className="text-white/40 text-sm font-light">
-                  Your generated images will appear here
-                </p>
-                <p className="text-white/30 text-xs mt-1 font-light">
-                  Customize the prompt and click Generate
-                </p>
-              </div>
-            </div>
-          )}
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            rows={6}
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/30 font-mono resize-none"
+            placeholder="Describe the image you want to generate..."
+          />
+          <p className="text-xs text-white/40 mt-2 font-light">
+            Use {"{product_name}"} to insert the product name
+          </p>
         </div>
+
+        {/* Generate button */}
+        <button
+          onClick={handleGenerate}
+          disabled={generating || !prompt.trim()}
+          className="w-full py-4 bg-white text-black rounded-xl font-medium hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {generating ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Generating {selectedProducts.size} {selectedProducts.size === 1 ? "image" : "images"}
+              ...
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-5 h-5" strokeWidth={2} />
+              Generate {selectedProducts.size} {selectedProducts.size === 1 ? "Image" : "Images"}
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

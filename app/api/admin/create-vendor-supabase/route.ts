@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const { store_name, email, username, password } = await request.json();
@@ -45,17 +46,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Create Supabase auth user
-    const { data: authUser, error: authError } =
-      await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          vendor_id: vendor.id,
-          store_name,
-          role: "vendor_owner",
-        },
-      });
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        vendor_id: vendor.id,
+        store_name,
+        role: "vendor_owner",
+      },
+    });
 
     if (authError) {
       // Rollback vendor creation if auth fails
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     if (userError) {
       if (process.env.NODE_ENV === "development") {
-        console.warn("User profile creation error:", userError);
+        logger.warn("User profile creation error:", userError);
       }
       // Don't fail - auth user exists
     }
@@ -111,21 +111,23 @@ export async function POST(request: NextRequest) {
 
     if (locationError) {
       if (process.env.NODE_ENV === "development") {
-        console.warn("⚠️ Failed to create vendor location:", locationError);
+        logger.warn("⚠️ Failed to create vendor location:", locationError);
       }
       // Don't fail - vendor can create location later
     }
 
     // 5. Send password reset email so vendor can set their own password
 
-    const { data: resetData, error: resetError } =
-      await supabase.auth.resetPasswordForEmail(email, {
+    const { data: resetData, error: resetError } = await supabase.auth.resetPasswordForEmail(
+      email,
+      {
         redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/reset-password`,
-      });
+      },
+    );
 
     if (resetError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Failed to send password reset email:", resetError);
+        logger.error("❌ Failed to send password reset email:", resetError);
       }
       return NextResponse.json({
         success: true,
@@ -160,7 +162,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Create vendor error:", error);
+      logger.error("Create vendor error:", error);
     }
     return NextResponse.json(
       {

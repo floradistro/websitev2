@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, Sparkles, Loader2, Save, Eye } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface AIKPICreatorProps {
   isOpen: boolean;
   onClose: () => void;
@@ -10,12 +11,7 @@ interface AIKPICreatorProps {
   vendorId: string;
 }
 
-export function AIKPICreator({
-  isOpen,
-  onClose,
-  onSave,
-  vendorId,
-}: AIKPICreatorProps) {
+export function AIKPICreator({ isOpen, onClose, onSave, vendorId }: AIKPICreatorProps) {
   const [prompt, setPrompt] = useState("");
   const [generating, setGenerating] = useState(false);
   const [preview, setPreview] = useState<any>(null);
@@ -49,7 +45,7 @@ export function AIKPICreator({
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error generating KPI:", err);
+        logger.error("Error generating KPI:", err);
       }
       setError("Failed to generate KPI. Please try again.");
     } finally {
@@ -86,15 +82,10 @@ export function AIKPICreator({
               <Sparkles size={20} className="text-purple-400" />
             </div>
             <div>
-              <h2
-                className="text-xl font-black text-white"
-                style={{ fontWeight: 900 }}
-              >
+              <h2 className="text-xl font-black text-white" style={{ fontWeight: 900 }}>
                 AI KPI Creator
               </h2>
-              <p className="text-sm text-white/40">
-                Describe what you want to track
-              </p>
+              <p className="text-sm text-white/40">Describe what you want to track</p>
             </div>
           </div>
           <button
@@ -169,30 +160,20 @@ export function AIKPICreator({
                   <div className="text-white/60 text-sm font-medium uppercase tracking-wider mb-2">
                     {preview.title}
                   </div>
-                  <div
-                    className="text-5xl font-black text-white mb-2"
-                    style={{ fontWeight: 900 }}
-                  >
+                  <div className="text-5xl font-black text-white mb-2" style={{ fontWeight: 900 }}>
                     {preview.value}
                   </div>
                   {preview.subtitle && (
-                    <div className="text-white/40 text-sm">
-                      {preview.subtitle}
-                    </div>
+                    <div className="text-white/40 text-sm">{preview.subtitle}</div>
                   )}
                 </div>
 
                 {preview.data && preview.visualization === "list" && (
                   <div className="space-y-2 pt-4 border-t border-white/10">
                     {preview.data.slice(0, 3).map((item: any, idx: number) => (
-                      <div
-                        key={idx}
-                        className="flex justify-between items-center text-sm"
-                      >
+                      <div key={idx} className="flex justify-between items-center text-sm">
                         <span className="text-white/80">{item.label}</span>
-                        <span className="text-white font-medium">
-                          {item.value}
-                        </span>
+                        <span className="text-white font-medium">{item.value}</span>
                       </div>
                     ))}
                   </div>

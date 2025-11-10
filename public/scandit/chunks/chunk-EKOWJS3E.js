@@ -83,8 +83,7 @@ var a = class f extends b {
   getArea(n) {
     let t = [n.topLeft, n.topRight, n.bottomRight, n.bottomLeft, n.topLeft],
       h = 0;
-    for (let e = 0; e < t.length - 1; e++)
-      h += t[e].x * t[e + 1].y - t[e + 1].x * t[e].y;
+    for (let e = 0; e < t.length - 1; e++) h += t[e].x * t[e + 1].y - t[e + 1].x * t[e].y;
     return Math.abs(h) / 2;
   }
 };

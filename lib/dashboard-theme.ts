@@ -89,12 +89,9 @@ const themes = {
       cardHover: "hover:bg-white/[0.03] transition-all duration-300",
       button: {
         base: "px-6 py-3 text-xs uppercase tracking-wider transition-all duration-300 rounded-[14px]",
-        primary:
-          "bg-white/10 text-white border border-white/20 hover:bg-white/20",
-        secondary:
-          "bg-white/5 text-white/70 border border-white/10 hover:bg-white/10",
-        danger:
-          "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20",
+        primary: "bg-white/10 text-white border border-white/20 hover:bg-white/20",
+        secondary: "bg-white/5 text-white/70 border border-white/10 hover:bg-white/10",
+        danger: "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20",
         ghost: "text-white/60 hover:text-white hover:bg-white/5",
       },
       input:
@@ -161,12 +158,9 @@ const themes = {
       cardHover: "hover:bg-white/[0.03] transition-all duration-300",
       button: {
         base: "px-6 py-3 text-xs uppercase tracking-wider transition-all duration-300 rounded-[14px]",
-        primary:
-          "bg-white/10 text-white border border-white/20 hover:bg-white/20",
-        secondary:
-          "bg-white/5 text-white/70 border border-white/10 hover:bg-white/10",
-        danger:
-          "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20",
+        primary: "bg-white/10 text-white border border-white/20 hover:bg-white/20",
+        secondary: "bg-white/5 text-white/70 border border-white/10 hover:bg-white/10",
+        danger: "bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20",
         ghost: "text-white/60 hover:text-white hover:bg-white/5",
       },
       input:
@@ -218,8 +212,7 @@ export function getComponentClasses(
   extra?: string,
 ): string {
   const themeObj = getTheme(theme);
-  const componentStyles =
-    themeObj.components[component as keyof typeof themeObj.components];
+  const componentStyles = themeObj.components[component as keyof typeof themeObj.components];
 
   if (typeof componentStyles === "string") {
     return tw(componentStyles, extra);

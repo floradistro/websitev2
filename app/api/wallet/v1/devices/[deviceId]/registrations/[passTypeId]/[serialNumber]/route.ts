@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -44,10 +45,7 @@ export async function POST(request: NextRequest, segmentData: RouteParams) {
     const authToken = authHeader?.replace("ApplePass ", "");
 
     if (!authToken) {
-      return NextResponse.json(
-        { error: "Authorization token required" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Authorization token required" }, { status: 401 });
     }
 
     // Verify pass exists and token is valid
@@ -60,10 +58,7 @@ export async function POST(request: NextRequest, segmentData: RouteParams) {
       .single();
 
     if (passError || !pass) {
-      return NextResponse.json(
-        { error: "Invalid pass or token" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Invalid pass or token" }, { status: 401 });
     }
 
     // Get push token from request body
@@ -71,17 +66,12 @@ export async function POST(request: NextRequest, segmentData: RouteParams) {
     const pushToken = body.pushToken;
 
     if (!pushToken) {
-      return NextResponse.json(
-        { error: "Push token required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Push token required" }, { status: 400 });
     }
 
     // Update pass devices array
     const devices = Array.isArray(pass.devices) ? pass.devices : [];
-    const existingDeviceIndex = devices.findIndex(
-      (d: any) => d.device_id === deviceId,
-    );
+    const existingDeviceIndex = devices.findIndex((d: any) => d.device_id === deviceId);
 
     if (existingDeviceIndex >= 0) {
       // Update existing device
@@ -120,7 +110,7 @@ export async function POST(request: NextRequest, segmentData: RouteParams) {
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Device registration error:", error);
+      logger.error("Device registration error:", error);
     }
     return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
@@ -137,10 +127,7 @@ export async function DELETE(request: NextRequest, segmentData: RouteParams) {
     const authToken = authHeader?.replace("ApplePass ", "");
 
     if (!authToken) {
-      return NextResponse.json(
-        { error: "Authorization token required" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Authorization token required" }, { status: 401 });
     }
 
     // Verify pass
@@ -152,10 +139,7 @@ export async function DELETE(request: NextRequest, segmentData: RouteParams) {
       .single();
 
     if (passError || !pass) {
-      return NextResponse.json(
-        { error: "Invalid pass or token" },
-        { status: 401 },
-      );
+      return NextResponse.json({ error: "Invalid pass or token" }, { status: 401 });
     }
 
     // Remove device from array
@@ -163,10 +147,7 @@ export async function DELETE(request: NextRequest, segmentData: RouteParams) {
     const updatedDevices = devices.filter((d: any) => d.device_id !== deviceId);
 
     // Update database
-    await supabase
-      .from("wallet_passes")
-      .update({ devices: updatedDevices })
-      .eq("id", pass.id);
+    await supabase.from("wallet_passes").update({ devices: updatedDevices }).eq("id", pass.id);
 
     // Log event
     await supabase.from("wallet_pass_events").insert({
@@ -179,11 +160,8 @@ export async function DELETE(request: NextRequest, segmentData: RouteParams) {
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Device unregistration error:", error);
+      logger.error("Device unregistration error:", error);
     }
-    return NextResponse.json(
-      { error: "Unregistration failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Unregistration failed" }, { status: 500 });
   }
 }

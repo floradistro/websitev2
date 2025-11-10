@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { logger } from "@/lib/logger";
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -44,7 +45,7 @@ export async function GET() {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching categories:", error);
+      logger.error("Error fetching categories:", error);
     }
     return NextResponse.json(
       {
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error creating category:", error);
+      logger.error("Error creating category:", error);
     }
     return NextResponse.json(
       {
@@ -165,7 +166,7 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error updating category:", error);
+      logger.error("Error updating category:", error);
     }
     return NextResponse.json(
       {
@@ -208,8 +209,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Cannot delete category with products. Please reassign products first.",
+          error: "Cannot delete category with products. Please reassign products first.",
         },
         { status: 400 },
       );
@@ -245,7 +245,7 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error deleting category:", error);
+      logger.error("Error deleting category:", error);
     }
     return NextResponse.json(
       {

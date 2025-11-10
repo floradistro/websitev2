@@ -46,18 +46,12 @@ interface POSQuickViewProps {
   onAddToCart: (product: Product, quantity: number) => void;
 }
 
-export function POSQuickView({
-  product,
-  onClose,
-  onAddToCart,
-}: POSQuickViewProps) {
+export function POSQuickView({ product, onClose, onAddToCart }: POSQuickViewProps) {
   const [selectedTier, setSelectedTier] = useState<string>("custom");
   const [customQuantity, setCustomQuantity] = useState<string>("1");
 
   const sortedTiers = product.pricing_tiers
-    ? [...product.pricing_tiers].sort(
-        (a, b) => (a.sort_order || 0) - (b.sort_order || 0),
-      )
+    ? [...product.pricing_tiers].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
     : [];
 
   const handleQuickAdd = () => {
@@ -171,9 +165,7 @@ export function POSQuickView({
                       <div className="text-white/40 text-[10px] uppercase tracking-[0.15em] mb-2">
                         Full Description
                       </div>
-                      <p className="text-white/70 text-xs leading-relaxed">
-                        {product.description}
-                      </p>
+                      <p className="text-white/70 text-xs leading-relaxed">{product.description}</p>
                     </div>
                   )}
                 </div>
@@ -204,10 +196,7 @@ export function POSQuickView({
                     <div className="text-white/40 text-[9px] uppercase tracking-wider mb-1">
                       Base Price
                     </div>
-                    <div
-                      className="text-white font-black text-xl"
-                      style={{ fontWeight: 900 }}
-                    >
+                    <div className="text-white font-black text-xl" style={{ fontWeight: 900 }}>
                       ${product.price.toFixed(2)}
                     </div>
                   </div>
@@ -233,9 +222,7 @@ export function POSQuickView({
                             className="bg-black text-white"
                           >
                             {tier.label} - {tier.qty} {tier.unit}
-                            {tier.price !== undefined
-                              ? ` ($${tier.price.toFixed(2)})`
-                              : ""}
+                            {tier.price !== undefined ? ` ($${tier.price.toFixed(2)})` : ""}
                           </option>
                         ))}
                       </select>
@@ -290,10 +277,7 @@ export function POSQuickView({
                     className="bg-white/5 border border-white/10 rounded-xl p-3 hover:bg-white/[0.07] hover:border-white/15 transition-all"
                   >
                     <div className="flex items-start gap-2 mb-1.5">
-                      <Tag
-                        size={10}
-                        className="text-white/30 mt-0.5 flex-shrink-0"
-                      />
+                      <Tag size={10} className="text-white/30 mt-0.5 flex-shrink-0" />
                       <div className="text-white/40 text-[9px] uppercase tracking-wider leading-tight">
                         {field.label}
                       </div>

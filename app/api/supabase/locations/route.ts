@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { inventoryCache, generateCacheKey } from "@/lib/cache-manager";
 import { monitor } from "@/lib/performance-monitor";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   const endTimer = monitor.startTimer("Locations API");
 
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching locations:", error);
+        logger.error("Error fetching locations:", error);
       }
       endTimer();
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -97,8 +98,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const vendorId = body.vendor_id; // Get vendor_id from request body
 
-    const { name, slug, type, address_line1, city, state, zip, phone, email } =
-      body;
+    const { name, slug, type, address_line1, city, state, zip, phone, email } = body;
 
     if (!name || !slug || !type) {
       return NextResponse.json(
@@ -136,12 +136,9 @@ export async function POST(request: NextRequest) {
 
     if (locationError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating location:", locationError);
+        logger.error("Error creating location:", locationError);
       }
-      return NextResponse.json(
-        { error: locationError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: locationError.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -150,7 +147,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

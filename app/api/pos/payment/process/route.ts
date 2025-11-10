@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
-import {
-  getPaymentProcessorForRegister,
-  getPaymentProcessor,
-} from "@/lib/payment-processors";
+import { getPaymentProcessorForRegister, getPaymentProcessor } from "@/lib/payment-processors";
 import type { ProcessPaymentRequest } from "@/lib/payment-processors/types";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -114,7 +112,7 @@ export async function POST(request: NextRequest) {
       });
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Payment processing error:", error);
+        logger.error("Payment processing error:", error);
       }
       // Check if it's a Dejavoo-specific error
       const isDeclined = error.isDeclined?.() || error.statusCode !== "0000";
@@ -135,7 +133,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Payment API error:", error);
+      logger.error("Payment API error:", error);
     }
     return NextResponse.json(
       {
@@ -172,10 +170,7 @@ export async function PUT(request: NextRequest) {
     } = await request.json();
 
     if (!transactionId) {
-      return NextResponse.json(
-        { error: "Missing required field: transactionId" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing required field: transactionId" }, { status: 400 });
     }
 
     // Get authenticated user
@@ -191,20 +186,13 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (txnError || !paymentTxn) {
-      return NextResponse.json(
-        { error: "Transaction not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     }
 
     try {
       // Get payment processor
-      const { getPaymentProcessorById } = await import(
-        "@/lib/payment-processors"
-      );
-      const processor = await getPaymentProcessorById(
-        paymentTxn.payment_processor_id,
-      );
+      const { getPaymentProcessorById } = await import("@/lib/payment-processors");
+      const processor = await getPaymentProcessorById(paymentTxn.payment_processor_id);
 
       // Process refund
       const result = await processor.processRefund({
@@ -223,7 +211,7 @@ export async function PUT(request: NextRequest) {
       });
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Refund processing error:", error);
+        logger.error("Refund processing error:", error);
       }
       return NextResponse.json(
         {
@@ -235,7 +223,7 @@ export async function PUT(request: NextRequest) {
     }
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Refund API error:", error);
+      logger.error("Refund API error:", error);
     }
     return NextResponse.json(
       {
@@ -285,20 +273,13 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (txnError || !paymentTxn) {
-      return NextResponse.json(
-        { error: "Transaction not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
     }
 
     try {
       // Get payment processor
-      const { getPaymentProcessorById } = await import(
-        "@/lib/payment-processors"
-      );
-      const processor = await getPaymentProcessorById(
-        paymentTxn.payment_processor_id,
-      );
+      const { getPaymentProcessorById } = await import("@/lib/payment-processors");
+      const processor = await getPaymentProcessorById(paymentTxn.payment_processor_id);
 
       // Void transaction
       const result = await processor.voidTransaction({
@@ -314,7 +295,7 @@ export async function DELETE(request: NextRequest) {
       });
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Void processing error:", error);
+        logger.error("Void processing error:", error);
       }
       return NextResponse.json(
         {
@@ -326,7 +307,7 @@ export async function DELETE(request: NextRequest) {
     }
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Void API error:", error);
+      logger.error("Void API error:", error);
     }
     return NextResponse.json(
       {

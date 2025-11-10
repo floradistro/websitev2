@@ -1,17 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Upload,
-  Image as ImageIcon,
-  Trash2,
-  Download,
-  Copy,
-  Check,
-} from "lucide-react";
+import { Upload, Image as ImageIcon, Trash2, Download, Copy, Check } from "lucide-react";
 import { ds, cn } from "@/lib/design-system";
 import type { AssetVariant } from "@/types/branding";
 
+import { logger } from "@/lib/logger";
 interface BrandAssetLibraryProps {
   vendorId: string;
   onAssetSelect?: (asset: AssetVariant) => void;
@@ -22,10 +16,7 @@ interface BrandAssetLibraryProps {
  *
  * Manage multiple brand assets (logos, banners, icons)
  */
-export function BrandAssetLibrary({
-  vendorId,
-  onAssetSelect,
-}: BrandAssetLibraryProps) {
+export function BrandAssetLibrary({ vendorId, onAssetSelect }: BrandAssetLibraryProps) {
   const [assets, setAssets] = useState<AssetVariant[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<AssetVariant | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -62,7 +53,7 @@ export function BrandAssetLibrary({
       setAssets((prev) => [...prev, newAsset]);
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Upload failed:", err);
+        logger.error("Upload failed:", err);
       }
     } finally {
       setUploading(false);
@@ -85,7 +76,7 @@ export function BrandAssetLibrary({
       setTimeout(() => setCopiedUrl(null), 2000);
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to copy:", err);
+        logger.error("Failed to copy:", err);
       }
     }
   };
@@ -160,26 +151,13 @@ export function BrandAssetLibrary({
               disabled={uploading}
             />
 
-            <Upload
-              size={24}
-              className={cn(ds.colors.text.quaternary, "mx-auto mb-2")}
-            />
+            <Upload size={24} className={cn(ds.colors.text.quaternary, "mx-auto mb-2")} />
             <div
-              className={cn(
-                ds.typography.size.xs,
-                ds.colors.text.tertiary,
-                "capitalize",
-                "mb-1",
-              )}
+              className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "capitalize", "mb-1")}
             >
               {type}
             </div>
-            <div
-              className={cn(
-                ds.typography.size.micro,
-                ds.colors.text.quaternary,
-              )}
-            >
+            <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}>
               Click to upload
             </div>
           </label>
@@ -211,9 +189,7 @@ export function BrandAssetLibrary({
                   className={cn(
                     "relative group",
                     "border",
-                    selectedAsset?.id === asset.id
-                      ? "border-white/30"
-                      : ds.colors.border.default,
+                    selectedAsset?.id === asset.id ? "border-white/30" : ds.colors.border.default,
                     ds.effects.radius.lg,
                     "overflow-hidden",
                     "cursor-pointer",
@@ -241,10 +217,7 @@ export function BrandAssetLibrary({
                         className="w-full h-full object-contain p-2"
                       />
                     ) : (
-                      <ImageIcon
-                        size={32}
-                        className={ds.colors.text.quaternary}
-                      />
+                      <ImageIcon size={32} className={ds.colors.text.quaternary} />
                     )}
                   </div>
 
@@ -266,12 +239,7 @@ export function BrandAssetLibrary({
                     >
                       {asset.name}
                     </div>
-                    <div
-                      className={cn(
-                        ds.typography.size.micro,
-                        ds.colors.text.quaternary,
-                      )}
-                    >
+                    <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}>
                       {formatFileSize(asset.fileSize)}
                     </div>
                   </div>
@@ -368,22 +336,12 @@ export function BrandAssetLibrary({
             ds.effects.radius.lg,
           )}
         >
-          <ImageIcon
-            size={48}
-            className={cn(ds.colors.text.quaternary, "mx-auto mb-4")}
-          />
-          <p
-            className={cn(
-              ds.typography.size.sm,
-              ds.colors.text.tertiary,
-              "mb-2",
-            )}
-          >
+          <ImageIcon size={48} className={cn(ds.colors.text.quaternary, "mx-auto mb-4")} />
+          <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary, "mb-2")}>
             No assets uploaded yet
           </p>
           <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
-            Upload logos, banners, icons, and patterns to build your brand
-            library
+            Upload logos, banners, icons, and patterns to build your brand library
           </p>
         </div>
       )}
@@ -398,13 +356,7 @@ export function BrandAssetLibrary({
           ds.effects.radius.lg,
         )}
       >
-        <div
-          className={cn(
-            ds.typography.size.micro,
-            ds.colors.text.quaternary,
-            "space-y-1",
-          )}
-        >
+        <div className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "space-y-1")}>
           <div>
             💡 <strong>Asset Tips:</strong>
           </div>

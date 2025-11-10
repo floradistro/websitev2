@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Exa from "exa-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const exa = new Exa("c6064aa5-e664-4bb7-9de9-d09ff153aa53");
 
 /**
@@ -19,10 +20,7 @@ export async function POST(request: NextRequest) {
     const { query, numResults = 5 } = body;
 
     if (!query) {
-      return NextResponse.json(
-        { error: "Search query required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Search query required" }, { status: 400 });
     }
 
     // Search with Exa
@@ -51,7 +49,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Exa search error:", error);
+      logger.error("❌ Exa search error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to search for inspiration" },

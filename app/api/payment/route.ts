@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { PaymentSchema, validateData } from "@/lib/validation/schemas";
-import {
-  rateLimiter,
-  RateLimitConfigs,
-  getIdentifier,
-} from "@/lib/rate-limiter";
+import { rateLimiter, RateLimitConfigs, getIdentifier } from "@/lib/rate-limiter";
 // Type definitions now available in types/authorizenet.d.ts
-import {
-  APIContracts as ApiContracts,
-  APIControllers as ApiControllers,
-} from "authorizenet";
+import { APIContracts as ApiContracts, APIControllers as ApiControllers } from "authorizenet";
 import { withErrorHandler } from "@/lib/api-handler";
-import type {
-  CartItem,
-  AuthorizeNetTransactionResponse,
-} from "@/types/payment";
+import { logger } from "@/lib/logger";
+import type { CartItem, AuthorizeNetTransactionResponse } from "@/types/payment";
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
   const supabase = getServiceSupabase();
@@ -32,10 +23,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     const allowed = rateLimiter.check(identifier, paymentRateLimitConfig);
 
     if (!allowed) {
-      const resetTime = rateLimiter.getResetTime(
-        identifier,
-        paymentRateLimitConfig,
-      );
+      const resetTime = rateLimiter.getResetTime(identifier, paymentRateLimitConfig);
       return NextResponse.json(
         {
           success: false,
@@ -65,23 +53,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     if (!validation.success) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Validation error:", validation.error);
+        logger.error("Validation error:", validation.error);
       }
-      return NextResponse.json(
-        { success: false, error: validation.error },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: validation.error }, { status: 400 });
     }
 
-    const {
-      payment_token,
-      billing,
-      shipping,
-      items,
-      shipping_cost,
-      total,
-      shipping_method,
-    } = body;
+    const { payment_token, billing, shipping, items, shipping_cost, total, shipping_method } = body;
 
     if (!payment_token || !billing || !items || items.length === 0) {
       return NextResponse.json(
@@ -100,16 +77,13 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     }
 
     // Create merchant authentication
-    const merchantAuthenticationType =
-      new ApiContracts.MerchantAuthenticationType();
+    const merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
     merchantAuthenticationType.setName(apiLoginId);
     merchantAuthenticationType.setTransactionKey(transactionKey);
 
     // Create payment data
     const opaqueData = new ApiContracts.OpaqueDataType();
-    opaqueData.setDataDescriptor(
-      payment_token.dataDescriptor || "COMMON.ACCEPT.INAPP.PAYMENT",
-    );
+    opaqueData.setDataDescriptor(payment_token.dataDescriptor || "COMMON.ACCEPT.INAPP.PAYMENT");
     opaqueData.setDataValue(payment_token.dataValue);
 
     const paymentType = new ApiContracts.PaymentType();
@@ -154,9 +128,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     createRequest.setTransactionRequest(transactionRequestType);
 
     // Execute transaction
-    const ctrl = new ApiControllers.CreateTransactionController(
-      createRequest.getJSON(),
-    );
+    const ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
 
     if (environment === "sandbox") {
       ctrl.setEnvironment(ApiControllers.SDKConstants.endpoint.sandbox);
@@ -164,26 +136,19 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       ctrl.setEnvironment(ApiControllers.SDKConstants.endpoint.production);
     }
 
-    const authResult = await new Promise<AuthorizeNetTransactionResponse>(
-      (resolve, reject) => {
-        ctrl.execute(() => {
-          const apiResponse = ctrl.getResponse();
-          const response = new ApiContracts.CreateTransactionResponse(
-            apiResponse,
-          );
+    const authResult = await new Promise<AuthorizeNetTransactionResponse>((resolve, reject) => {
+      ctrl.execute(() => {
+        const apiResponse = ctrl.getResponse();
+        const response = new ApiContracts.CreateTransactionResponse(apiResponse);
 
-          if (
-            response.getMessages().getResultCode() ===
-            ApiContracts.MessageTypeEnum.OK
-          ) {
-            resolve(response.getTransactionResponse());
-          } else {
-            const errors = response.getMessages().getMessage();
-            reject(new Error(errors[0].getText()));
-          }
-        });
-      },
-    );
+        if (response.getMessages().getResultCode() === ApiContracts.MessageTypeEnum.OK) {
+          resolve(response.getTransactionResponse());
+        } else {
+          const errors = response.getMessages().getMessage();
+          reject(new Error(errors[0].getText()));
+        }
+      });
+    });
 
     // Payment successful, create order in Supabase
     const transactionId = authResult.getTransId();
@@ -197,9 +162,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     if (existingOrder) {
       if (process.env.NODE_ENV === "development") {
-        console.warn(
-          `⚠️  Duplicate payment attempt detected for transaction ${transactionId}`,
-        );
+        logger.warn(`⚠️  Duplicate payment attempt detected for transaction ${transactionId}`);
       }
       return NextResponse.json({
         success: true,
@@ -244,7 +207,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     if (customerError || !customer) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error upserting customer:", customerError);
+        logger.error("Error upserting customer:", customerError);
       }
       throw new Error("Failed to create or find customer");
     }
@@ -254,21 +217,15 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     // Calculate totals
     const subtotal = items.reduce(
       (sum: number, item: CartItem) =>
-        sum +
-        parseFloat(item.price.toString()) *
-          parseFloat(item.quantity.toString()),
+        sum + parseFloat(item.price.toString()) * parseFloat(item.quantity.toString()),
       0,
     );
 
-    const deliveryItems = items.filter(
-      (item: CartItem) => item.orderType === "delivery",
-    );
+    const deliveryItems = items.filter((item: CartItem) => item.orderType === "delivery");
     const hasDeliveryItems = deliveryItems.length > 0;
 
     // Determine delivery type
-    const pickupItems = items.filter(
-      (item: CartItem) => item.orderType === "pickup",
-    );
+    const pickupItems = items.filter((item: CartItem) => item.orderType === "pickup");
     let deliveryType = "delivery";
     if (pickupItems.length > 0 && deliveryItems.length === 0) {
       deliveryType = "pickup";
@@ -320,8 +277,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         delivery_type: deliveryType,
         transaction_id: authResult.getTransId(),
         customer_ip_address:
-          request.headers.get("x-forwarded-for") ||
-          request.headers.get("x-real-ip"),
+          request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip"),
         customer_user_agent: request.headers.get("user-agent"),
         order_date: new Date().toISOString(),
         paid_date: new Date().toISOString(),
@@ -331,7 +287,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     if (orderError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating order:", orderError);
+        logger.error("Error creating order:", orderError);
       }
       throw new Error("Failed to create order");
     }
@@ -345,12 +301,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       product_image: item.image,
       unit_price: parseFloat(item.price.toString()),
       quantity: parseFloat(item.quantity.toString()),
-      line_subtotal:
-        parseFloat(item.price.toString()) *
-        parseFloat(item.quantity.toString()),
-      line_total:
-        parseFloat(item.price.toString()) *
-        parseFloat(item.quantity.toString()),
+      line_subtotal: parseFloat(item.price.toString()) * parseFloat(item.quantity.toString()),
+      line_total: parseFloat(item.price.toString()) * parseFloat(item.quantity.toString()),
       tax_amount: 0,
       vendor_id: item.vendor_id,
       order_type: item.orderType,
@@ -358,13 +310,11 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       pickup_location_name: item.locationName,
     }));
 
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems);
+    const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
 
     if (itemsError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating order items:", itemsError);
+        logger.error("Error creating order items:", itemsError);
       }
       throw new Error("Failed to create order items");
     }
@@ -384,7 +334,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Payment error:", error);
+      logger.error("Payment error:", error);
     }
     return NextResponse.json(
       {

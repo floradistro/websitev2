@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * GET - Get all vendors with their POS status
  */
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching vendors:", error);
+        logger.error("Error fetching vendors:", error);
       }
       return NextResponse.json(
         { success: false, error: "Failed to fetch vendors" },
@@ -29,12 +30,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get vendors error:", error);
+      logger.error("Get vendors error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -67,7 +65,7 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error updating vendor POS status:", error);
+        logger.error("Error updating vendor POS status:", error);
       }
       return NextResponse.json(
         { success: false, error: "Failed to update vendor POS status" },
@@ -82,11 +80,8 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Update vendor POS error:", error);
+      logger.error("Update vendor POS error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

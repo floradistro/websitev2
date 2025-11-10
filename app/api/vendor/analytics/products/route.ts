@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -142,15 +143,14 @@ export async function GET(request: NextRequest) {
           totalUnitsSold: products.reduce((sum, p) => sum + p.units_sold, 0),
           avgRevenuePerProduct:
             products.length > 0
-              ? products.reduce((sum, p) => sum + p.revenue, 0) /
-                products.length
+              ? products.reduce((sum, p) => sum + p.revenue, 0) / products.length
               : 0,
         },
       },
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Vendor product analytics error:", error);
+      logger.error("Vendor product analytics error:", error);
     }
     return NextResponse.json(
       { error: error.message || "Failed to fetch product analytics" },

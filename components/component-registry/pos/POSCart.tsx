@@ -64,9 +64,7 @@ export function POSCart({
   taxError,
   isProcessing = false,
 }: POSCartProps) {
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-    null,
-  );
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showIDScanner, setShowIDScanner] = useState(false);
   const [prefilledData, setPrefilledData] = useState<any>(null);
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
@@ -95,9 +93,7 @@ export function POSCart({
       {/* Customer Selector with Quick Scan */}
       <div className="flex-shrink-0 px-4 py-3 border-b border-white/5">
         <div className="flex items-center justify-between mb-2">
-          <label className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-            Customer
-          </label>
+          <label className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Customer</label>
           <button
             onClick={() => {
               setShowIDScanner(true);
@@ -131,9 +127,7 @@ export function POSCart({
                 <div className="text-green-400 text-xs font-black">
                   {selectedCustomer.loyalty_points.toLocaleString()}
                 </div>
-                <div className="text-white/40 text-[8px] uppercase tracking-wider">
-                  Points
-                </div>
+                <div className="text-white/40 text-[8px] uppercase tracking-wider">Points</div>
               </div>
             </div>
           </div>
@@ -155,9 +149,7 @@ export function POSCart({
             <div className="text-[10px] uppercase tracking-[0.15em] text-white/60">
               Cart is empty
             </div>
-            <div className="text-[10px] text-white/40 mt-1">
-              Add products to start
-            </div>
+            <div className="text-[10px] text-white/40 mt-1">Add products to start</div>
           </div>
         ) : (
           items.map((item) => (
@@ -223,9 +215,7 @@ export function POSCart({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() =>
-                      onUpdateQuantity(item.productId, item.quantity - 1)
-                    }
+                    onClick={() => onUpdateQuantity(item.productId, item.quantity - 1)}
                     disabled={item.quantity <= 1}
                     className="w-8 h-8 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-black hover:bg-white/10 hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center"
                     style={{ fontWeight: 900 }}
@@ -239,9 +229,7 @@ export function POSCart({
                     {item.quantity}
                   </div>
                   <button
-                    onClick={() =>
-                      onUpdateQuantity(item.productId, item.quantity + 1)
-                    }
+                    onClick={() => onUpdateQuantity(item.productId, item.quantity + 1)}
                     className="w-8 h-8 bg-white/5 border border-white/10 rounded-xl text-white text-sm font-black hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center"
                     style={{ fontWeight: 900 }}
                   >
@@ -328,9 +316,7 @@ export function POSCart({
         {items.length > 0 && (
           <>
             <button
-              onClick={() =>
-                taxError ? alert(taxError) : onCheckout(selectedCustomer)
-              }
+              onClick={() => (taxError ? alert(taxError) : onCheckout(selectedCustomer))}
               disabled={isProcessing || !!taxError}
               className="w-full bg-white/10 text-white border-2 border-white/20 rounded-2xl px-4 py-4 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               style={{ fontWeight: 900 }}

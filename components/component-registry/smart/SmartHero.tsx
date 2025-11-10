@@ -34,11 +34,7 @@ export function SmartHero({
           <div className="flex flex-col items-center justify-center text-center gap-6">
             {showLogo && vendorLogo && (
               <div className="mb-4">
-                <img
-                  src={vendorLogo}
-                  alt="Logo"
-                  className="h-24 w-auto object-contain"
-                />
+                <img src={vendorLogo} alt="Logo" className="h-24 w-auto object-contain" />
               </div>
             )}
 

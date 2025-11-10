@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Error in /api/page-data/vendor-products:", error);
+      logger.error("❌ Error in /api/page-data/vendor-products:", error);
     }
     return NextResponse.json(
       {

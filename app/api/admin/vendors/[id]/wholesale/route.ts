@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Update vendor wholesale settings
  * Admin only
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = getServiceSupabase();
     const { id: vendorId } = await params;
@@ -24,14 +22,8 @@ export async function PUT(
     } = body;
 
     // Validate vendor_type
-    if (
-      vendor_type &&
-      !["standard", "distributor", "both"].includes(vendor_type)
-    ) {
-      return NextResponse.json(
-        { error: "Invalid vendor type" },
-        { status: 400 },
-      );
+    if (vendor_type && !["standard", "distributor", "both"].includes(vendor_type)) {
+      return NextResponse.json({ error: "Invalid vendor type" }, { status: 400 });
     }
 
     // Update vendor
@@ -52,7 +44,7 @@ export async function PUT(
 
     if (updateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Update vendor error:", updateError);
+        logger.error("Update vendor error:", updateError);
       }
       return NextResponse.json(
         { error: "Failed to update vendor", details: updateError.message },
@@ -66,7 +58,7 @@ export async function PUT(
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Update vendor wholesale settings error:", error);
+      logger.error("Update vendor wholesale settings error:", error);
     }
     return NextResponse.json(
       { error: "Failed to update settings", details: error.message },
@@ -78,10 +70,7 @@ export async function PUT(
 /**
  * Get vendor wholesale settings
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = getServiceSupabase();
     const { id: vendorId } = await params;
@@ -99,7 +88,7 @@ export async function GET(
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Get vendor error:", error);
+        logger.error("Get vendor error:", error);
       }
       return NextResponse.json(
         { error: "Vendor not found", details: error.message },
@@ -110,7 +99,7 @@ export async function GET(
     return NextResponse.json({ vendor });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Get vendor wholesale settings error:", error);
+      logger.error("Get vendor wholesale settings error:", error);
     }
     return NextResponse.json(
       { error: "Failed to get settings", details: error.message },

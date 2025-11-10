@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { LayoutOptimizer } from "@/lib/ai/layout-optimizer";
 import { LLMLayoutConsultant } from "@/lib/ai/llm-layout-consultant";
 
+import { logger } from "@/lib/logger";
 /**
  * AI Layout Optimization API
  *
@@ -37,8 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Display profile not found. Please configure display settings first.",
+          error: "Display profile not found. Please configure display settings first.",
           needsProfile: true,
         },
         { status: 404 },
@@ -126,9 +126,7 @@ export async function POST(request: NextRequest) {
     // 4. Optionally enhance with LLM
     if (useLLM && process.env.ANTHROPIC_API_KEY) {
       try {
-        const llmConsultant = new LLMLayoutConsultant(
-          process.env.ANTHROPIC_API_KEY,
-        );
+        const llmConsultant = new LLMLayoutConsultant(process.env.ANTHROPIC_API_KEY);
 
         // Load vendor for store context
         const { data: vendor } = await supabase
@@ -167,7 +165,7 @@ export async function POST(request: NextRequest) {
         };
       } catch (llmError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("LLM enhancement failed, using rule-based:", llmError);
+          logger.error("LLM enhancement failed, using rule-based:", llmError);
         }
       }
     }
@@ -193,7 +191,7 @@ export async function POST(request: NextRequest) {
 
     if (saveError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to save recommendation:", saveError);
+        logger.error("Failed to save recommendation:", saveError);
       }
     }
 
@@ -211,12 +209,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("AI layout optimization error:", error);
+      logger.error("AI layout optimization error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -231,10 +226,7 @@ export async function GET(request: NextRequest) {
     const deviceId = searchParams.get("deviceId");
 
     if (!deviceId) {
-      return NextResponse.json(
-        { success: false, error: "Device ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Device ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -253,11 +245,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error fetching recommendation:", error);
+      logger.error("Error fetching recommendation:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

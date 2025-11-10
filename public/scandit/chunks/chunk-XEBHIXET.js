@@ -4,9 +4,7 @@ var s = class o {
       this.memoryFallback = new Map();
       o.isStorageTypeSupported(e)
         ? ((this.storage =
-            e === "localStorage"
-              ? globalThis.localStorage
-              : globalThis.sessionStorage),
+            e === "localStorage" ? globalThis.localStorage : globalThis.sessionStorage),
           (this.isSupported = true))
         : ((this.isSupported = false),
           a.warn(`Failed to access ${e}. Fallback to memory storage.`));
@@ -30,9 +28,7 @@ var s = class o {
       }
     }
     key(e) {
-      return this.storage
-        ? this.storage.key(e)
-        : Array.from(this.memoryFallback.keys())[e];
+      return this.storage ? this.storage.key(e) : Array.from(this.memoryFallback.keys())[e];
     }
     getItem(e) {
       var t;

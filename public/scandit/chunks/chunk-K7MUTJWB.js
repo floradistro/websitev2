@@ -10,9 +10,7 @@ var o = class c {
     return this.cachedDOMRect.height;
   }
   static areEquivalentJSONStates(e, t) {
-    return !e || !t
-      ? false
-      : e.size.isSameAs(t.size) && e.visible === t.visible;
+    return !e || !t ? false : e.size.isSameAs(t.size) && e.visible === t.visible;
   }
   onStateChanged(e) {
     this.onStateChangedListener = e;
@@ -33,17 +31,12 @@ var o = class c {
     (this.resizeObserver.disconnect(), this.mutationObserver.disconnect());
   }
   isVisible() {
-    return (
-      (this.width > 0 && this.height > 0) ||
-      this.element.getClientRects().length > 0
-    );
+    return (this.width > 0 && this.height > 0) || this.element.getClientRects().length > 0;
   }
   setupListeners() {
     ((this.resizeObserver = new ResizeObserver(this.onSizeChange.bind(this))),
       this.resizeObserver.observe(this.element),
-      (this.mutationObserver = new MutationObserver(
-        this.onMutation.bind(this),
-      )),
+      (this.mutationObserver = new MutationObserver(this.onMutation.bind(this))),
       this.element.parentElement &&
         this.mutationObserver.observe(this.element.parentElement, {
           childList: true,

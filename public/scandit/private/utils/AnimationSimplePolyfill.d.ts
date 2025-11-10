@@ -19,10 +19,7 @@ declare class MockAnimation extends EventTarget implements Animation {
   ready: Promise<any>;
   startTime: number | null;
   currentTime: number | null;
-  constructor(
-    effect?: AnimationEffect | null,
-    timeline?: AnimationTimeline | null,
-  );
+  constructor(effect?: AnimationEffect | null, timeline?: AnimationTimeline | null);
   play(): void;
   pause(): void;
   finish(): void;

@@ -12,8 +12,7 @@ export default function InstallPWAPrompt() {
 
   useEffect(() => {
     // Check if already dismissed in this session
-    const isDismissed =
-      sessionStorage.getItem("pwa-prompt-dismissed") === "true";
+    const isDismissed = sessionStorage.getItem("pwa-prompt-dismissed") === "true";
     if (isDismissed) {
       setDismissed(true);
       return;
@@ -72,12 +71,10 @@ export default function InstallPWAPrompt() {
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <h3 className="text-white font-bold text-base mb-1">
-                Install WhaleTools
-              </h3>
+              <h3 className="text-white font-bold text-base mb-1">Install WhaleTools</h3>
               <p className="text-white/70 text-sm mb-3 leading-relaxed">
-                Install this app on your home screen for a fullscreen experience
-                without the browser bar.
+                Install this app on your home screen for a fullscreen experience without the browser
+                bar.
               </p>
 
               {/* Instructions */}
@@ -87,8 +84,7 @@ export default function InstallPWAPrompt() {
                     1
                   </span>
                   <span>
-                    Tap the <strong className="text-white/90">Share</strong>{" "}
-                    button below
+                    Tap the <strong className="text-white/90">Share</strong> button below
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-white/60">
@@ -96,10 +92,7 @@ export default function InstallPWAPrompt() {
                     2
                   </span>
                   <span>
-                    Select{" "}
-                    <strong className="text-white/90">
-                      "Add to Home Screen"
-                    </strong>
+                    Select <strong className="text-white/90">"Add to Home Screen"</strong>
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-white/60">
@@ -107,8 +100,7 @@ export default function InstallPWAPrompt() {
                     3
                   </span>
                   <span>
-                    Tap <strong className="text-white/90">"Add"</strong> to
-                    confirm
+                    Tap <strong className="text-white/90">"Add"</strong> to confirm
                   </span>
                 </div>
               </div>
@@ -116,9 +108,7 @@ export default function InstallPWAPrompt() {
               {/* Visual indicator */}
               <div className="flex items-center gap-2 text-xs text-blue-300">
                 <Download size={14} />
-                <span className="font-medium">
-                  Look for the Share icon in Safari toolbar
-                </span>
+                <span className="font-medium">Look for the Share icon in Safari toolbar</span>
               </div>
             </div>
           </div>

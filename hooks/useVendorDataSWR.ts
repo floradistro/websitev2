@@ -5,11 +5,7 @@
  */
 
 import useSWR from "swr";
-import {
-  vendorFetcher,
-  defaultSWRConfig,
-  realtimeConfig,
-} from "@/lib/swr-config";
+import { vendorFetcher, defaultSWRConfig, realtimeConfig } from "@/lib/swr-config";
 
 /**
  * Fetch vendor dashboard data
@@ -38,14 +34,10 @@ export function useVendorDashboardSWR() {
  * Prevents the 6+ duplicate calls seen in logs
  */
 export function useVendorProductsSWR() {
-  const { data, error, isLoading, mutate } = useSWR(
-    "/api/vendor/products/full",
-    vendorFetcher,
-    {
-      ...defaultSWRConfig,
-      dedupingInterval: 15000, // Products change less frequently
-    },
-  );
+  const { data, error, isLoading, mutate } = useSWR("/api/vendor/products/full", vendorFetcher, {
+    ...defaultSWRConfig,
+    dedupingInterval: 15000, // Products change less frequently
+  });
 
   return {
     products: data?.products || [],

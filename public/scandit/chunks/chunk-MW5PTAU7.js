@@ -2,10 +2,8 @@ var o = class {
   constructor(a, e) {
     var r, t;
     ((this._contextWebGL = a),
-      (this._maxPoolCapacity =
-        (r = e == null ? void 0 : e.maxPoolCapacity) != null ? r : 2),
-      (this._minPoolCapacity =
-        (t = e == null ? void 0 : e.minPoolCapacity) != null ? t : 1));
+      (this._maxPoolCapacity = (r = e == null ? void 0 : e.maxPoolCapacity) != null ? r : 2),
+      (this._minPoolCapacity = (t = e == null ? void 0 : e.minPoolCapacity) != null ? t : 1));
   }
   recycle(a) {
     var e;

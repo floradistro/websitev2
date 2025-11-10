@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import Exa from "exa-js";
 
+import { logger } from "@/lib/logger";
 export const maxDuration = 300; // 5 minutes
 export const dynamic = "force-dynamic";
 
@@ -99,12 +100,7 @@ function validateStrainData(
 // SEARCH
 // ============================================================================
 
-async function searchStrain(
-  name: string,
-  category: string,
-  exa: Exa,
-  attempt: number = 1,
-) {
+async function searchStrain(name: string, category: string, exa: Exa, attempt: number = 1) {
   // Build variations
   const variations = [name];
 
@@ -152,7 +148,7 @@ async function searchStrain(
     return response.results || [];
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error(`❌ [${name}] Search error:`, error.message);
+      logger.error(`❌ [${name}] Search error:`, error.message);
     }
     return [];
   }
@@ -252,16 +248,14 @@ Use extract_strain tool with ALL available data.`;
       product_name: name,
       strain_type: data.strain_type || null,
       lineage: data.lineage || null,
-      terpene_profile: Array.isArray(data.terpene_profile)
-        ? data.terpene_profile
-        : [],
+      terpene_profile: Array.isArray(data.terpene_profile) ? data.terpene_profile : [],
       effects: Array.isArray(data.effects) ? data.effects : [],
       nose: Array.isArray(data.nose) ? data.nose : [],
       description: data.description || null,
     };
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error(`❌ [${name}] AI error:`, error.message);
+      logger.error(`❌ [${name}] AI error:`, error.message);
     }
     return null;
   }
@@ -283,13 +277,7 @@ async function processProduct(
 
   for (let attempt = 1; attempt <= CONFIG.MAX_RETRIES; attempt++) {
     const sources = await searchStrain(name, category, exa, attempt);
-    const extracted = await extractData(
-      name,
-      sources,
-      requestedFields,
-      anthropic,
-      attempt,
-    );
+    const extracted = await extractData(name, sources, requestedFields, anthropic, attempt);
 
     if (!extracted) {
       continue;
@@ -338,12 +326,10 @@ export async function POST(request: NextRequest) {
       const send = (data: any) => {
         if (isClosed) return; // Don't try to send if already closed
         try {
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
-          );
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
         } catch (err) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Stream error:", err);
+            logger.error("Stream error:", err);
           }
           isClosed = true; // Mark as closed if error
         }
@@ -356,7 +342,7 @@ export async function POST(request: NextRequest) {
           isClosed = true;
         } catch (err) {
           if (process.env.NODE_ENV === "development") {
-            console.error("Error closing stream:", err);
+            logger.error("Error closing stream:", err);
           }
         }
       };
@@ -429,13 +415,7 @@ export async function POST(request: NextRequest) {
               message: `[Batch ${batchNum}] Processing ${name}... (${i + 1}/${batch.length})`,
             });
 
-            const data = await processProduct(
-              name,
-              category,
-              fields,
-              exa,
-              anthropic,
-            );
+            const data = await processProduct(name, category, fields, exa, anthropic);
             results[name] = data;
 
             send({
@@ -451,9 +431,7 @@ export async function POST(request: NextRequest) {
 
           // Validate batch
           const batchResults = batch.map((name) => results[name]);
-          const validations = batchResults.map((r) =>
-            validateStrainData(r, fields),
-          );
+          const validations = batchResults.map((r) => validateStrainData(r, fields));
           const allValid = validations.every((v) => v.valid);
           const validCount = validations.filter((v) => v.valid).length;
 
@@ -480,9 +458,7 @@ export async function POST(request: NextRequest) {
 
         // Final summary
         const allResults = Object.values(results);
-        const allValidations = allResults.map((r) =>
-          validateStrainData(r, fields),
-        );
+        const allValidations = allResults.map((r) => validateStrainData(r, fields));
         const completeCount = allValidations.filter((v) => v.valid).length;
 
         names.forEach((name) => {
@@ -492,9 +468,7 @@ export async function POST(request: NextRequest) {
         send({
           type: "complete",
           total: names.length,
-          successful: allResults.filter(
-            (r) => r.lineage || r.terpene_profile.length > 0,
-          ).length,
+          successful: allResults.filter((r) => r.lineage || r.terpene_profile.length > 0).length,
           complete: completeCount,
           withLineage: allResults.filter((r) => r.lineage).length,
           results: results,
@@ -504,7 +478,7 @@ export async function POST(request: NextRequest) {
         closeStream();
       } catch (error: any) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error:", error);
+          logger.error("❌ Error:", error);
         }
         send({ type: "error", message: error.message || "Processing failed" });
         closeStream();

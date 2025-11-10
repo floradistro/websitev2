@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useAppAuth } from "@/context/AppAuthContext";
 import { ds, cn } from "@/lib/design-system";
-import { Button } from "@/components/ds/Button";
+import { Button } from "@/components/ui/Button";
 import {
   ImageUploader,
   ColorPicker,
@@ -24,13 +24,10 @@ import {
   BrandAssetLibrary,
 } from "@/components/vendor/branding";
 import { FormField, FormSection, FormGrid } from "@/components/ui/FormField";
-import {
-  validateBrandingForm,
-  formatUrl,
-  sanitizeSocialHandle,
-} from "@/lib/branding-validation";
+import { validateBrandingForm, formatUrl, sanitizeSocialHandle } from "@/lib/branding-validation";
 import type { BrandingFormState, VendorBranding } from "@/types/branding";
 
+import { logger } from "@/lib/logger";
 const FONTS = [
   "Inter",
   "Playfair Display",
@@ -162,7 +159,7 @@ export default function VendorBranding() {
       setHasChanges(false);
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error(err);
+        logger.error("Failed to load branding", err);
       }
     }
   };
@@ -229,9 +226,7 @@ export default function VendorBranding() {
           }),
           social_links: JSON.stringify({
             website: form.website ? formatUrl(form.website) : "",
-            instagram: form.instagram
-              ? sanitizeSocialHandle(form.instagram)
-              : "",
+            instagram: form.instagram ? sanitizeSocialHandle(form.instagram) : "",
             facebook: form.facebook || "",
           }),
           custom_font: form.customFont,
@@ -267,13 +262,7 @@ export default function VendorBranding() {
   };
 
   return (
-    <div
-      className={cn(
-        ds.colors.bg.primary,
-        "min-h-screen p-4",
-        ds.colors.text.primary,
-      )}
-    >
+    <div className={cn(ds.colors.bg.primary, "min-h-screen p-4", ds.colors.text.primary)}>
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -288,9 +277,7 @@ export default function VendorBranding() {
           >
             Brand Settings
           </h1>
-          <p
-            className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}
-          >
+          <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary)}>
             Customize your brand identity
           </p>
         </div>
@@ -330,26 +317,12 @@ export default function VendorBranding() {
 
             {/* Save */}
             <div className="space-y-2">
-              <Button
-                type="submit"
-                variant="primary"
-                icon={Save}
-                loading={loading}
-                fullWidth
-              >
-                {loading
-                  ? "Saving..."
-                  : hasChanges
-                    ? "Save Changes *"
-                    : "Save Changes"}
+              <Button type="submit" variant="primary" icon={<Save size={14} />} loading={loading} fullWidth>
+                {loading ? "Saving..." : hasChanges ? "Save Changes *" : "Save Changes"}
               </Button>
               {hasChanges && (
                 <p
-                  className={cn(
-                    ds.typography.size.micro,
-                    ds.colors.text.quaternary,
-                    "text-center",
-                  )}
+                  className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "text-center")}
                 >
                   Unsaved changes • Press Cmd/Ctrl+S
                 </p>
@@ -507,9 +480,7 @@ export default function VendorBranding() {
                 />
               )}
 
-              {tab === "assets" && vendor?.id && (
-                <BrandAssetLibrary vendorId={vendor.id} />
-              )}
+              {tab === "assets" && vendor?.id && <BrandAssetLibrary vendorId={vendor.id} />}
             </div>
           </div>
         </form>

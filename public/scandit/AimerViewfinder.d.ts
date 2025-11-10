@@ -5,9 +5,7 @@ import { AimerViewfinderJSON } from "./ViewfinderPlusRelated.js";
 import { Serializable } from "./private/Serializable.js";
 import "./private/nativeHandle.js";
 
-declare class AimerViewfinder
-  implements Viewfinder, Serializable<AimerViewfinderJSON>
-{
+declare class AimerViewfinder implements Viewfinder, Serializable<AimerViewfinderJSON> {
   frameColor: Color;
   dotColor: Color;
   private readonly type;

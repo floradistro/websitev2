@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { productCache, generateCacheKey } from "@/lib/cache-manager";
 import { monitor } from "@/lib/performance-monitor";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   const endTimer = monitor.startTimer("Categories API");
 
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching categories:", error);
+        logger.error("Error fetching categories:", error);
       }
       endTimer();
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -143,12 +144,9 @@ export async function POST(request: NextRequest) {
 
     if (categoryError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating category:", categoryError);
+        logger.error("Error creating category:", categoryError);
       }
-      return NextResponse.json(
-        { error: categoryError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: categoryError.message }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -157,7 +155,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { readFileSync } from "fs";
 import { join } from "path";
 
+import { logger } from "@/lib/logger";
 // This endpoint uses service role key to run migrations
 export async function POST() {
   try {
@@ -54,7 +55,7 @@ export async function POST() {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Migration error:", error);
+      logger.error("Migration error:", error);
     }
     return NextResponse.json(
       {

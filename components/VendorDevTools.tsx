@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { logger } from "@/lib/logger";
 import {
   Settings,
   CheckCircle,
@@ -60,7 +61,7 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
       }
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error approving products:", error);
+        logger.error("Error approving products:", error);
       }
       setMessage(`❌ Error: ${error.message}`);
       setTimeout(() => setMessage(""), 3000);
@@ -136,9 +137,7 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
                 <Zap size={14} className="text-yellow-500" />
                 Development Tools
               </h3>
-              <p className="text-white/40 text-[10px] mt-1">
-                Quick actions for testing workflows
-              </p>
+              <p className="text-white/40 text-[10px] mt-1">Quick actions for testing workflows</p>
             </div>
 
             <div className="py-2">
@@ -153,12 +152,8 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
                   className="text-green-500 group-hover:scale-110 transition-transform"
                 />
                 <div className="text-left flex-1">
-                  <div className="text-xs font-medium">
-                    Approve All Products
-                  </div>
-                  <div className="text-[10px] text-white/40">
-                    Approve pending submissions
-                  </div>
+                  <div className="text-xs font-medium">Approve All Products</div>
+                  <div className="text-[10px] text-white/40">Approve pending submissions</div>
                 </div>
               </button>
 
@@ -174,9 +169,7 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
                 />
                 <div className="text-left flex-1">
                   <div className="text-xs font-medium">Refresh Data</div>
-                  <div className="text-[10px] text-white/40">
-                    Reload from API
-                  </div>
+                  <div className="text-[10px] text-white/40">Reload from API</div>
                 </div>
               </button>
 
@@ -192,9 +185,7 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
                 />
                 <div className="text-left flex-1">
                   <div className="text-xs font-medium">Clear Cache</div>
-                  <div className="text-[10px] text-white/40">
-                    Reset browser storage
-                  </div>
+                  <div className="text-[10px] text-white/40">Reset browser storage</div>
                 </div>
               </button>
 
@@ -211,9 +202,7 @@ export default function VendorDevTools({ onRefresh }: DevToolsProps) {
                 />
                 <div className="text-left flex-1">
                   <div className="text-xs font-medium">Admin Dashboard</div>
-                  <div className="text-[10px] text-white/40">
-                    Open admin panel
-                  </div>
+                  <div className="text-[10px] text-white/40">Open admin panel</div>
                 </div>
               </button>
             </div>

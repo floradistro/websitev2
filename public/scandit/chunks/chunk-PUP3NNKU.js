@@ -1,11 +1,7 @@
 import { d } from "./chunk-VW3DMTE7.js";
 import { n } from "./chunk-TPQTY3KB.js";
 var i = class e {
-  constructor(
-    r = d.Brush.fillColor,
-    o = d.Brush.strokeColor,
-    s = d.Brush.strokeWidth,
-  ) {
+  constructor(r = d.Brush.fillColor, o = d.Brush.strokeColor, s = d.Brush.strokeWidth) {
     ((this.fill = { color: r }), (this.stroke = { color: o, width: s }));
   }
   static get transparent() {
@@ -35,11 +31,7 @@ var i = class e {
     };
   }
   static fromJSONObject(r) {
-    return new e(
-      n.fromJSON(r.fill.color),
-      n.fromJSON(r.stroke.color),
-      r.stroke.width,
-    );
+    return new e(n.fromJSON(r.fill.color), n.fromJSON(r.stroke.color), r.stroke.width);
   }
 };
 export { i as a };

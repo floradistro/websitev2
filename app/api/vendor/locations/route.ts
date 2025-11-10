@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     // Support both header and query parameter
@@ -10,10 +11,7 @@ export async function GET(request: NextRequest) {
     const { vendorId } = authResult;
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "Vendor ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Vendor ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -28,23 +26,17 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading vendor locations:", error);
+        logger.error("Error loading vendor locations:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, locations: data || [] });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in vendor locations API:", error);
+      logger.error("Error in vendor locations API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
@@ -57,10 +49,7 @@ export async function POST(request: NextRequest) {
     const { action, location_id, ...data } = body;
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "Vendor ID required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "Vendor ID required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -90,7 +79,7 @@ export async function POST(request: NextRequest) {
 
       if (verifyError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error fetching location:", verifyError);
+          logger.error("❌ Error fetching location:", verifyError);
         }
         return NextResponse.json(
           {
@@ -118,10 +107,7 @@ export async function POST(request: NextRequest) {
         .eq("vendor_id", vendorId);
 
       if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 400 },
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 400 });
       }
 
       return NextResponse.json({
@@ -139,11 +125,8 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in vendor locations API:", error);
+      logger.error("Error in vendor locations API:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

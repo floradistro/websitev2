@@ -65,8 +65,7 @@ export default function SectionHeader({
 }: SectionHeaderProps) {
   const Tag = as;
 
-  const baseClasses =
-    "text-[10px] uppercase tracking-[0.15em] text-white/40 font-black";
+  const baseClasses = "text-[10px] uppercase tracking-[0.15em] text-white/40 font-black";
   const marginClass = withMargin ? "mb-4" : "";
   const finalClasses = `${baseClasses} ${marginClass} ${className}`.trim();
 

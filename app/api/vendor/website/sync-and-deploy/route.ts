@@ -32,8 +32,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(
     {
       error: "This endpoint is deprecated",
-      message:
-        "The monorepo sync architecture has been replaced with separate Vercel projects",
+      message: "The monorepo sync architecture has been replaced with separate Vercel projects",
       migration: {
         oldFlow: "Sync vendor code → Commit to main → Deploy entire platform",
         newFlow: "Push to your repo → Deploy only your project",

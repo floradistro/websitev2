@@ -8,11 +8,7 @@ interface BadgeProps {
   className?: string;
 }
 
-export function VendorBadge({
-  children,
-  variant = "draft",
-  className,
-}: BadgeProps) {
+export function VendorBadge({ children, variant = "draft", className }: BadgeProps) {
   return (
     <span
       className={tw(

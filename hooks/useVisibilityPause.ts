@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 
+import { logger } from "@/lib/logger";
 /**
  * Hook that pauses operations when page is hidden
  * Prevents crashes and memory leaks when user tabs away
@@ -20,7 +21,7 @@ export function useVisibilityPause() {
         // Page hidden - pause after 5 seconds
         timeoutRef.current = setTimeout(() => {
           setIsPaused(true);
-          console.log("🔵 Page hidden - pausing operations");
+          logger.debug("🔵 Page hidden - pausing operations");
         }, 5000);
       } else {
         // Page visible - resume immediately
@@ -28,7 +29,7 @@ export function useVisibilityPause() {
           clearTimeout(timeoutRef.current);
         }
         setIsPaused(false);
-        console.log("✅ Page visible - resuming operations");
+        logger.debug("✅ Page visible - resuming operations");
       }
     };
 
@@ -71,10 +72,7 @@ export function useFetchWithCleanup() {
     };
   }, []);
 
-  const fetchWithCleanup = async <T = any>(
-    url: string,
-    options: RequestInit = {},
-  ): Promise<T> => {
+  const fetchWithCleanup = async <T = any>(url: string, options: RequestInit = {}): Promise<T> => {
     // Cancel previous fetch
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();

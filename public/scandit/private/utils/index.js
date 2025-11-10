@@ -1,10 +1,7 @@
 export { a as Timeout } from "../../chunks/chunk-Q7JWDX4U.js";
 export { a as wait } from "../../chunks/chunk-UZWBB65W.js";
 export { a as waitTransitionEndForElement } from "../../chunks/chunk-2HTI5D6Y.js";
-export {
-  b as safeAwaitAnimation,
-  a as safeCancelAnimation,
-} from "../../chunks/chunk-SM5S3DDC.js";
+export { b as safeAwaitAnimation, a as safeCancelAnimation } from "../../chunks/chunk-SM5S3DDC.js";
 export { a as throttle } from "../../chunks/chunk-T3AOBMAS.js";
 export { a as defineCustomElements } from "../../chunks/chunk-3A4KLILV.js";
 export { a as domIdFromValues } from "../../chunks/chunk-2LSO6JEZ.js";

@@ -24,6 +24,7 @@ import DisplayConfigWizard from "@/components/ai/DisplayConfigWizard";
 import AIRecommendationViewer from "@/components/ai/AIRecommendationViewer";
 import MenuEditorModal from "@/components/tv-menus/MenuEditorModal";
 
+import { logger } from "@/lib/logger";
 interface Location {
   id: string;
   name: string;
@@ -54,9 +55,7 @@ export default function SimpleTVMenusPage() {
 
   // State
   const [locations, setLocations] = useState<Location[]>([]);
-  const [accessibleLocationIds, setAccessibleLocationIds] = useState<string[]>(
-    [],
-  );
+  const [accessibleLocationIds, setAccessibleLocationIds] = useState<string[]>([]);
   const [permissionsLoaded, setPermissionsLoaded] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [devices, setDevices] = useState<TVDevice[]>([]);
@@ -72,20 +71,12 @@ export default function SimpleTVMenusPage() {
   const [editMenuName, setEditMenuName] = useState("");
   const [editMenuDescription, setEditMenuDescription] = useState("");
   const [editMenuTheme, setEditMenuTheme] = useState("midnight-elegance");
-  const [editMenuDisplayMode, setEditMenuDisplayMode] = useState<
-    "dense" | "carousel"
-  >("dense");
-  const [editorTab, setEditorTab] = useState<"content" | "layout" | "style">(
-    "content",
-  );
+  const [editMenuDisplayMode, setEditMenuDisplayMode] = useState<"dense" | "carousel">("dense");
+  const [editorTab, setEditorTab] = useState<"content" | "layout" | "style">("content");
   const [editMenuCategories, setEditMenuCategories] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-  const [editMenuCustomFields, setEditMenuCustomFields] = useState<string[]>(
-    [],
-  );
-  const [availableCustomFields, setAvailableCustomFields] = useState<string[]>(
-    [],
-  );
+  const [editMenuCustomFields, setEditMenuCustomFields] = useState<string[]>([]);
+  const [availableCustomFields, setAvailableCustomFields] = useState<string[]>([]);
 
   // Grid configuration - moved from display groups
   const [gridColumns, setGridColumns] = useState(6);
@@ -101,20 +92,12 @@ export default function SimpleTVMenusPage() {
   const [layoutStyle, setLayoutStyle] = useState<"single" | "split">("single");
   const [splitLeftCategory, setSplitLeftCategory] = useState("");
   const [splitLeftTitle, setSplitLeftTitle] = useState("");
-  const [splitLeftCustomFields, setSplitLeftCustomFields] = useState<string[]>(
-    [],
-  );
-  const [splitLeftPriceBreaks, setSplitLeftPriceBreaks] = useState<string[]>(
-    [],
-  );
+  const [splitLeftCustomFields, setSplitLeftCustomFields] = useState<string[]>([]);
+  const [splitLeftPriceBreaks, setSplitLeftPriceBreaks] = useState<string[]>([]);
   const [splitRightCategory, setSplitRightCategory] = useState("");
   const [splitRightTitle, setSplitRightTitle] = useState("");
-  const [splitRightCustomFields, setSplitRightCustomFields] = useState<
-    string[]
-  >([]);
-  const [splitRightPriceBreaks, setSplitRightPriceBreaks] = useState<string[]>(
-    [],
-  );
+  const [splitRightCustomFields, setSplitRightCustomFields] = useState<string[]>([]);
+  const [splitRightPriceBreaks, setSplitRightPriceBreaks] = useState<string[]>([]);
 
   // Carousel / Auto-slide configuration
   const [enableCarousel, setEnableCarousel] = useState(true); // Enable auto-carousel when products exceed grid
@@ -141,10 +124,7 @@ export default function SimpleTVMenusPage() {
       if (!user || !vendor) return;
 
       // Check if user is admin (vendor_owner or vendor_manager can see all locations)
-      const isAdmin =
-        role === "vendor_owner" ||
-        role === "vendor_manager" ||
-        role === "admin";
+      const isAdmin = role === "vendor_owner" || role === "vendor_manager" || role === "admin";
 
       if (isAdmin) {
         setAccessibleLocationIds([]); // Empty array means "all locations"
@@ -161,7 +141,7 @@ export default function SimpleTVMenusPage() {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error fetching user locations:", error);
+          logger.error("❌ Error fetching user locations:", error);
         }
         setAccessibleLocationIds([]);
         setPermissionsLoaded(true);
@@ -184,12 +164,7 @@ export default function SimpleTVMenusPage() {
 
   // Auto-select location if there's only one (for admins too)
   useEffect(() => {
-    if (
-      permissionsLoaded &&
-      !selectedLocation &&
-      locations.length === 1 &&
-      locations[0]
-    ) {
+    if (permissionsLoaded && !selectedLocation && locations.length === 1 && locations[0]) {
       setSelectedLocation(locations[0].id);
     }
   }, [permissionsLoaded, selectedLocation, locations]);
@@ -206,9 +181,7 @@ export default function SimpleTVMenusPage() {
 
     try {
       // Load locations
-      const locRes = await fetch(
-        `/api/vendor/locations?vendor_id=${vendor.id}`,
-      );
+      const locRes = await fetch(`/api/vendor/locations?vendor_id=${vendor.id}`);
       const locData = await locRes.json();
 
       if (locData.success) {
@@ -245,7 +218,7 @@ export default function SimpleTVMenusPage() {
 
       if (devError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error loading devices:", devError);
+          logger.error("❌ Error loading devices:", devError);
         }
       } else {
         // Check heartbeat timestamps and update status
@@ -260,8 +233,7 @@ export default function SimpleTVMenusPage() {
               : Infinity;
 
             // Device is offline if no heartbeat in last 60 seconds
-            const actualStatus =
-              secondsSinceHeartbeat > 60 ? "offline" : device.connection_status;
+            const actualStatus = secondsSinceHeartbeat > 60 ? "offline" : device.connection_status;
 
             return {
               ...device,
@@ -272,9 +244,7 @@ export default function SimpleTVMenusPage() {
         // Filter devices based on location permissions (unless specific location is selected, which is already filtered)
         if (!selectedLocation && accessibleLocationIds.length > 0) {
           devicesWithStatus = devicesWithStatus.filter(
-            (device) =>
-              device.location_id &&
-              accessibleLocationIds.includes(device.location_id),
+            (device) => device.location_id && accessibleLocationIds.includes(device.location_id),
           );
         }
 
@@ -282,9 +252,7 @@ export default function SimpleTVMenusPage() {
       }
 
       // Load menus
-      const menuRes = await fetch(
-        `/api/vendor/tv-menus?vendor_id=${vendor.id}`,
-      );
+      const menuRes = await fetch(`/api/vendor/tv-menus?vendor_id=${vendor.id}`);
       const menuData = await menuRes.json();
 
       if (menuData.success) {
@@ -294,7 +262,7 @@ export default function SimpleTVMenusPage() {
       setLoading(false);
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error loading data:", err);
+        logger.error("❌ Error loading data:", err);
       }
       setLoading(false);
     }
@@ -390,12 +358,12 @@ export default function SimpleTVMenusPage() {
       } else {
         setError(data.error || "Failed to create menu");
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ API returned error:", data.error);
+          logger.error("❌ API returned error:", data.error);
         }
       }
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error creating menu:", err);
+        logger.error("❌ Error creating menu:", err);
       }
       setError(err.message || "Failed to create menu");
     } finally {
@@ -414,7 +382,7 @@ export default function SimpleTVMenusPage() {
 
       if (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error assigning menu:", error);
+          logger.error("❌ Error assigning menu:", error);
         }
         setError(`Failed to assign menu: ${error.message}`);
         return;
@@ -425,7 +393,7 @@ export default function SimpleTVMenusPage() {
       await loadData();
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Exception assigning menu:", err);
+        logger.error("❌ Exception assigning menu:", err);
       }
       setError(err.message || "Failed to assign menu");
     }
@@ -468,16 +436,14 @@ export default function SimpleTVMenusPage() {
     if (vendor) {
       try {
         // Fetch categories
-        const catResponse = await fetch(
-          `/api/vendor/products/categories?vendor_id=${vendor.id}`,
-        );
+        const catResponse = await fetch(`/api/vendor/products/categories?vendor_id=${vendor.id}`);
         const catData = await catResponse.json();
 
         if (catData.success) {
           setAvailableCategories(catData.categories || []);
         } else {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ Error fetching categories:", catData.error);
+            logger.error("❌ Error fetching categories:", catData.error);
           }
           setAvailableCategories([]);
         }
@@ -492,13 +458,13 @@ export default function SimpleTVMenusPage() {
           setAvailableCustomFields(fieldsData.customFields || []);
         } else {
           if (process.env.NODE_ENV === "development") {
-            console.error("❌ Error fetching custom fields:", fieldsData.error);
+            logger.error("❌ Error fetching custom fields:", fieldsData.error);
           }
           setAvailableCustomFields([]);
         }
       } catch (err) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Error fetching data:", err);
+          logger.error("❌ Error fetching data:", err);
         }
         setAvailableCategories([]);
         setAvailableCustomFields([]);
@@ -550,7 +516,7 @@ export default function SimpleTVMenusPage() {
 
       if (!data.success) {
         if (process.env.NODE_ENV === "development") {
-          console.error("❌ Update error:", data.error);
+          logger.error("❌ Update error:", data.error);
         }
         throw new Error(data.error || "Failed to update menu");
       }
@@ -562,7 +528,7 @@ export default function SimpleTVMenusPage() {
       await loadData();
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error updating menu:", err);
+        logger.error("Error updating menu:", err);
       }
       setError(err.message || "Failed to update menu");
     } finally {
@@ -594,7 +560,7 @@ export default function SimpleTVMenusPage() {
       await loadData();
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error deleting menu:", err);
+        logger.error("Error deleting menu:", err);
       }
       setError(err.message || "Failed to delete menu");
     } finally {
@@ -626,7 +592,7 @@ export default function SimpleTVMenusPage() {
       await loadData();
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error deleting device:", err);
+        logger.error("Error deleting device:", err);
       }
       setError(err.message || "Failed to delete device");
     } finally {
@@ -672,7 +638,7 @@ export default function SimpleTVMenusPage() {
       setShowAIRecommendation(true);
     } catch (err: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error generating AI recommendation:", err);
+        logger.error("Error generating AI recommendation:", err);
       }
       setError(err.message || "Failed to generate AI recommendation");
     } finally {
@@ -707,12 +673,10 @@ export default function SimpleTVMenusPage() {
       <div className="min-h-screen bg-black flex items-center justify-center p-6">
         <div className="text-center max-w-md">
           <Tv size={64} className="text-white/20 mx-auto mb-6" />
-          <h1 className="text-3xl font-black text-white mb-3">
-            No Locations Found
-          </h1>
+          <h1 className="text-3xl font-black text-white mb-3">No Locations Found</h1>
           <p className="text-white/60">
-            You need at least one location to manage digital signage displays.
-            Please contact your administrator.
+            You need at least one location to manage digital signage displays. Please contact your
+            administrator.
           </p>
         </div>
       </div>
@@ -728,57 +692,74 @@ export default function SimpleTVMenusPage() {
 
   if (needsLocationSelection) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl w-full"
-        >
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-black text-white mb-3">
-              Digital Signage
-            </h1>
-            <p className="text-white/60 text-lg">
-              Select a location to manage its displays
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {locations.map((location) => (
-              <motion.button
-                key={location.id}
-                onClick={() => setSelectedLocation(location.id)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-2xl p-8 text-left transition-all group"
+      <div className="h-screen bg-black flex items-center justify-center overflow-hidden">
+        <div className="w-full max-w-4xl px-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            {/* Vendor Logo */}
+            {vendor?.logo_url && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 }}
+                className="text-center mb-12"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <Tv
-                    size={32}
-                    className="text-white/40 group-hover:text-white/60 transition-colors"
-                  />
-                  <div className="text-white/40 text-sm">
-                    {
-                      devices.filter(
-                        (d) =>
-                          d.location_id === location.id &&
-                          d.connection_status === "online",
-                      ).length
-                    }{" "}
-                    online
+                <img
+                  src={vendor.logo_url}
+                  alt={vendor.store_name || ""}
+                  className="mx-auto max-w-xs max-h-32 object-contain mb-8"
+                  style={{
+                    filter: "drop-shadow(0 0 40px rgba(255, 255, 255, 0.1))",
+                  }}
+                />
+                <h1 className="text-3xl font-black text-white mb-2">Digital Signage</h1>
+                <p className="text-white/60 text-base">Select a location to manage its displays</p>
+              </motion.div>
+            )}
+
+            {/* No Logo Fallback */}
+            {!vendor?.logo_url && (
+              <div className="text-center mb-12">
+                <h1 className="text-4xl font-black text-white mb-3">Digital Signage</h1>
+                <p className="text-white/60 text-lg">Select a location to manage its displays</p>
+              </div>
+            )}
+
+            {/* Location Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto px-1">
+              {locations.map((location, index) => (
+                <motion.button
+                  key={location.id}
+                  onClick={() => setSelectedLocation(location.id)}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 + index * 0.05 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-2xl p-8 text-left transition-all group"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <Tv
+                      size={32}
+                      className="text-white/40 group-hover:text-white/60 transition-colors"
+                    />
+                    <div className="text-white/40 text-sm">
+                      {
+                        devices.filter(
+                          (d) => d.location_id === location.id && d.connection_status === "online",
+                        ).length
+                      }{" "}
+                      online
+                    </div>
                   </div>
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  {location.name}
-                </h2>
-                <p className="text-white/60 text-sm">
-                  {devices.filter((d) => d.location_id === location.id).length}{" "}
-                  displays
-                </p>
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
+                  <h2 className="text-2xl font-bold text-white mb-2">{location.name}</h2>
+                  <p className="text-white/60 text-sm">
+                    {devices.filter((d) => d.location_id === location.id).length} displays
+                  </p>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </div>
     );
   }
@@ -802,8 +783,8 @@ export default function SimpleTVMenusPage() {
               </h1>
               <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
                 {currentLocationName} ·{" "}
-                {devices.filter((d) => d.connection_status === "online").length}{" "}
-                of {devices.length} Displays Online · {menus.length} Menus
+                {devices.filter((d) => d.connection_status === "online").length} of {devices.length}{" "}
+                Displays Online · {menus.length} Menus
               </p>
             </div>
 
@@ -811,8 +792,7 @@ export default function SimpleTVMenusPage() {
               {/* Location Switcher - Show for multi-location users */}
               {permissionsLoaded &&
                 locations.length > 1 &&
-                (accessibleLocationIds.length === 0 ||
-                  accessibleLocationIds.length > 1) && (
+                (accessibleLocationIds.length === 0 || accessibleLocationIds.length > 1) && (
                   <select
                     value={selectedLocation || ""}
                     onChange={(e) => setSelectedLocation(e.target.value || null)}
@@ -850,11 +830,7 @@ export default function SimpleTVMenusPage() {
 
       {/* Tabs */}
       {/* Main Content */}
-      <div
-        className={
-          devices.length > 0 ? "pt-12 pb-8" : "max-w-7xl mx-auto px-6 py-8"
-        }
-      >
+      <div className={devices.length > 0 ? "pt-12 pb-8" : "max-w-7xl mx-auto px-6 py-8"}>
         {/* No Devices State */}
         {devices.length === 0 ? (
           <div className="text-center py-20">
@@ -901,9 +877,7 @@ export default function SimpleTVMenusPage() {
                     filter: "drop-shadow(0 0 30px rgba(255, 255, 255, 0.15))",
                   }}
                 />
-                <p className="text-white/60 text-sm mt-4 font-medium">
-                  Click to open display
-                </p>
+                <p className="text-white/60 text-sm mt-4 font-medium">Click to open display</p>
               </motion.button>
             ) : (
               <button
@@ -938,8 +912,7 @@ export default function SimpleTVMenusPage() {
               No displays yet{selectedLocation ? " at this location" : ""}
             </h2>
             <p className="text-white/40 max-w-md mx-auto mb-8">
-              Set up your first TV display by opening this URL on your display
-              device:
+              Set up your first TV display by opening this URL on your display device:
             </p>
             <code className="inline-block bg-white/5 border border-white/10 rounded-xl px-6 py-4 text-white/60 font-mono text-sm break-all">
               /tv-display?vendor_id={vendor?.id}&tv_number=1
@@ -949,9 +922,7 @@ export default function SimpleTVMenusPage() {
         ) : (
           <div className="flex gap-2 items-start px-2">
             {devices.map((device) => {
-              const assignedMenu = menus.find(
-                (m) => m.id === device.active_menu_id,
-              );
+              const assignedMenu = menus.find((m) => m.id === device.active_menu_id);
 
               // Calculate width to fit displays edge-to-edge on desktop
               const displayCount = devices.length;
@@ -974,8 +945,7 @@ export default function SimpleTVMenusPage() {
                     className="relative bg-black overflow-hidden"
                     style={{ aspectRatio: "16/9" }}
                   >
-                    {device.connection_status === "online" &&
-                    device.active_menu_id ? (
+                    {device.connection_status === "online" && device.active_menu_id ? (
                       <div
                         className="absolute inset-0"
                         style={{
@@ -995,15 +965,11 @@ export default function SimpleTVMenusPage() {
                             transformOrigin: "top left",
                           }}
                           onLoad={(e) => {
-                            const container =
-                              e.currentTarget.parentElement?.parentElement;
+                            const container = e.currentTarget.parentElement?.parentElement;
                             if (container) {
                               const containerWidth = container.offsetWidth;
                               const scale = containerWidth / 1920;
-                              e.currentTarget.style.setProperty(
-                                "--scale",
-                                scale.toString(),
-                              );
+                              e.currentTarget.style.setProperty("--scale", scale.toString());
                             }
                           }}
                         />
@@ -1011,10 +977,7 @@ export default function SimpleTVMenusPage() {
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <div className="text-center">
-                          <Tv
-                            size={48}
-                            className="text-white/10 mx-auto mb-3"
-                          />
+                          <Tv size={48} className="text-white/10 mx-auto mb-3" />
                           <p className="text-white/30 text-base">
                             {device.connection_status === "offline"
                               ? "Display Offline"
@@ -1072,26 +1035,16 @@ export default function SimpleTVMenusPage() {
                     <div className="flex items-center gap-2">
                       <select
                         value={device.active_menu_id || ""}
-                        onChange={(e) =>
-                          assignMenu(device.id, e.target.value || null)
-                        }
+                        onChange={(e) => assignMenu(device.id, e.target.value || null)}
                         className="flex-1 appearance-none bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm font-medium cursor-pointer hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-white/20"
                       >
                         <option value="" className="bg-black">
                           Select menu...
                         </option>
                         {menus
-                          .filter(
-                            (m) =>
-                              !m.location_id ||
-                              m.location_id === device.location_id,
-                          )
+                          .filter((m) => !m.location_id || m.location_id === device.location_id)
                           .map((menu) => (
-                            <option
-                              key={menu.id}
-                              value={menu.id}
-                              className="bg-black"
-                            >
+                            <option key={menu.id} value={menu.id} className="bg-black">
                               {menu.name}
                             </option>
                           ))}
@@ -1116,9 +1069,7 @@ export default function SimpleTVMenusPage() {
 
         {/* Unused Menus - Minimal, Only Show Orphans */}
         {(() => {
-          const unusedMenus = menus.filter(
-            (m) => !devices.some((d) => d.active_menu_id === m.id),
-          );
+          const unusedMenus = menus.filter((m) => !devices.some((d) => d.active_menu_id === m.id));
 
           if (unusedMenus.length === 0) return null;
 
@@ -1135,9 +1086,7 @@ export default function SimpleTVMenusPage() {
                     animate={{ opacity: 1, scale: 1 }}
                     className="flex-shrink-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2 hover:border-white/20 transition-all flex items-center gap-2"
                   >
-                    <span className="text-white text-sm font-medium">
-                      {menu.name}
-                    </span>
+                    <span className="text-white text-sm font-medium">{menu.name}</span>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => openEditMenu(menu)}
@@ -1183,10 +1132,7 @@ export default function SimpleTVMenusPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h2
-                  className="text-2xl font-black text-white"
-                  style={{ fontWeight: 900 }}
-                >
+                <h2 className="text-2xl font-black text-white" style={{ fontWeight: 900 }}>
                   New Menu
                 </h2>
                 <button
@@ -1199,16 +1145,12 @@ export default function SimpleTVMenusPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-white/60 text-sm font-medium mb-2">
-                    Menu Name
-                  </label>
+                  <label className="block text-white/60 text-sm font-medium mb-2">Menu Name</label>
                   <input
                     type="text"
                     value={newMenuName}
                     onChange={(e) => setNewMenuName(e.target.value)}
-                    onKeyPress={(e) =>
-                      e.key === "Enter" && !creating && createMenu()
-                    }
+                    onKeyPress={(e) => e.key === "Enter" && !creating && createMenu()}
                     placeholder="e.g., Main Menu, Daily Specials"
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all"
                     autoFocus
@@ -1288,10 +1230,7 @@ export default function SimpleTVMenusPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h2
-                  className="text-2xl font-black text-white"
-                  style={{ fontWeight: 900 }}
-                >
+                <h2 className="text-2xl font-black text-white" style={{ fontWeight: 900 }}>
                   Delete Menu
                 </h2>
                 <button
@@ -1312,8 +1251,7 @@ export default function SimpleTVMenusPage() {
                     <span className="font-bold">{deletingMenu.name}</span>?
                   </p>
                   <p className="text-white/60 text-sm mt-2">
-                    This will unassign it from all displays. This action cannot
-                    be undone.
+                    This will unassign it from all displays. This action cannot be undone.
                   </p>
                 </div>
 
@@ -1369,10 +1307,7 @@ export default function SimpleTVMenusPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-6">
-                <h2
-                  className="text-2xl font-black text-white"
-                  style={{ fontWeight: 900 }}
-                >
+                <h2 className="text-2xl font-black text-white" style={{ fontWeight: 900 }}>
                   Delete Display
                 </h2>
                 <button
@@ -1391,14 +1326,13 @@ export default function SimpleTVMenusPage() {
                   <p className="text-white text-sm">
                     Are you sure you want to delete{" "}
                     <span className="font-bold">
-                      {deletingDevice.device_name} (TV{" "}
-                      {deletingDevice.tv_number})
+                      {deletingDevice.device_name} (TV {deletingDevice.tv_number})
                     </span>
                     ?
                   </p>
                   <p className="text-white/60 text-sm mt-2">
-                    This will permanently remove this display from your account.
-                    This action cannot be undone.
+                    This will permanently remove this display from your account. This action cannot
+                    be undone.
                   </p>
                 </div>
 
@@ -1482,9 +1416,7 @@ export default function SimpleTVMenusPage() {
               className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 max-w-2xl w-full"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">
-                  Open New Display
-                </h2>
+                <h2 className="text-2xl font-bold text-white">Open New Display</h2>
                 <button
                   onClick={() => setShowOpenNewDisplay(false)}
                   className="p-2 hover:bg-white/10 rounded-xl transition-colors"
@@ -1591,12 +1523,8 @@ export default function SimpleTVMenusPage() {
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full mx-auto mb-4"
               />
-              <h3 className="text-xl font-bold text-white mb-2">
-                Analyzing Display...
-              </h3>
-              <p className="text-white/60 text-sm">
-                Our AI is optimizing your layout
-              </p>
+              <h3 className="text-xl font-bold text-white mb-2">Analyzing Display...</h3>
+              <p className="text-white/60 text-sm">Our AI is optimizing your layout</p>
             </div>
           </motion.div>
         )}

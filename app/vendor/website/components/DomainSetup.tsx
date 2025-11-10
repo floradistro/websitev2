@@ -1,18 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Globe,
-  Check,
-  Clock,
-  Copy,
-  ExternalLink,
-  AlertCircle,
-} from "lucide-react";
+import { Globe, Check, Clock, Copy, ExternalLink, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ds, cn } from "@/components/ds";
 import axios from "axios";
 
+import { logger } from "@/lib/logger";
 interface DomainSetupProps {
   onDomainVerified?: () => void;
 }
@@ -60,20 +54,16 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
       setSetupComplete(true);
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error setting up domain:", error);
+        logger.error("Error setting up domain:", error);
       }
-      const errorMsg =
-        error.response?.data?.error || error.message || "Unknown error";
+      const errorMsg = error.response?.data?.error || error.message || "Unknown error";
       alert(`Failed to setup domain: ${errorMsg}`);
     } finally {
       setSettingUp(false);
     }
   };
 
-  const checkDomainVerification = async (
-    domainToCheck: string,
-    silent = false,
-  ) => {
+  const checkDomainVerification = async (domainToCheck: string, silent = false) => {
     if (!silent) setVerifying(true);
 
     try {
@@ -109,11 +99,10 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
       }
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error verifying domain:", error);
+        logger.error("Error verifying domain:", error);
       }
       if (!silent) {
-        const errorMsg =
-          error.response?.data?.error || error.message || "Unknown error";
+        const errorMsg = error.response?.data?.error || error.message || "Unknown error";
         alert(`Verification failed: ${errorMsg}`);
       }
     } finally {
@@ -185,9 +174,7 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Your Domain
-            </label>
+            <label className="block text-sm font-medium mb-2">Your Domain</label>
             <input
               type="text"
               value={domain}
@@ -206,11 +193,7 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
             </p>
           </div>
 
-          <Button
-            onClick={handleSetupDomain}
-            disabled={!domain || settingUp}
-            className="w-full"
-          >
+          <Button onClick={handleSetupDomain} disabled={!domain || settingUp} className="w-full">
             {settingUp ? "Setting up..." : "Continue"}
           </Button>
         </div>
@@ -221,18 +204,13 @@ export function DomainSetup({ onDomainVerified }: DomainSetupProps) {
   // Show DNS instructions
   return (
     <div
-      className={cn(
-        "rounded-xl border-2 border-blue-500 p-8",
-        "bg-blue-50 dark:bg-blue-900/10",
-      )}
+      className={cn("rounded-xl border-2 border-blue-500 p-8", "bg-blue-50 dark:bg-blue-900/10")}
     >
       <div className="flex items-center gap-3 mb-6">
         <Clock className="w-8 h-8 text-blue-600 animate-pulse" />
         <div>
           <h3 className="text-xl font-semibold">Add DNS Records</h3>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            We'll auto-verify every 5 seconds
-          </p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">We'll auto-verify every 5 seconds</p>
         </div>
       </div>
 
@@ -368,15 +346,7 @@ interface DNSRecordProps {
   status?: boolean;
 }
 
-function DNSRecord({
-  type,
-  name,
-  value,
-  ttl,
-  description,
-  onCopy,
-  status,
-}: DNSRecordProps) {
+function DNSRecord({ type, name, value, ttl, description, onCopy, status }: DNSRecordProps) {
   return (
     <div
       className={cn(
@@ -401,10 +371,7 @@ function DNSRecord({
             </span>
             {status !== undefined && (
               <span
-                className={cn(
-                  "text-xs font-semibold",
-                  status ? "text-green-600" : "text-red-600",
-                )}
+                className={cn("text-xs font-semibold", status ? "text-green-600" : "text-red-600")}
               >
                 {status ? "✓ Configured" : "✗ Not Found"}
               </span>
@@ -413,28 +380,20 @@ function DNSRecord({
 
           <div className="space-y-1 text-sm">
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400 w-16">
-                Name:
-              </span>
+              <span className="text-gray-500 dark:text-gray-400 w-16">Name:</span>
               <span className="font-mono font-semibold">{name}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400 w-16">
-                Value:
-              </span>
+              <span className="text-gray-500 dark:text-gray-400 w-16">Value:</span>
               <span className="font-mono text-xs break-all">{value}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-500 dark:text-gray-400 w-16">
-                TTL:
-              </span>
+              <span className="text-gray-500 dark:text-gray-400 w-16">TTL:</span>
               <span className="font-mono">{ttl}</span>
             </div>
           </div>
 
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            {description}
-          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{description}</p>
         </div>
 
         <Button

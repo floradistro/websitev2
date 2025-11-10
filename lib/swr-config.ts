@@ -21,8 +21,7 @@ export const fetcher = async (url: string, options?: RequestInit) => {
 
 // Vendor-specific fetcher (adds vendor ID header)
 export const vendorFetcher = async (url: string) => {
-  const vendorId =
-    typeof window !== "undefined" ? localStorage.getItem("vendor_id") : null;
+  const vendorId = typeof window !== "undefined" ? localStorage.getItem("vendor_id") : null;
 
   const res = await fetch(url, {
     headers: vendorId ? { "x-vendor-id": vendorId } : {},

@@ -1,3 +1,5 @@
+import { logger } from "@/lib/logger";
+
 /**
  * Performance Monitoring & Observability
  * Track key metrics for scalability and debugging
@@ -34,11 +36,7 @@ class PerformanceMonitor {
   /**
    * Time an async operation
    */
-  async time<T>(
-    name: string,
-    fn: () => Promise<T>,
-    tags?: Record<string, string>,
-  ): Promise<T> {
+  async time<T>(name: string, fn: () => Promise<T>, tags?: Record<string, string>): Promise<T> {
     const start = performance.now();
     try {
       const result = await fn();
@@ -155,15 +153,9 @@ export async function trackQuery<T>(
  */
 const SLOW_THRESHOLD = 1000; // 1 second
 
-export function logIfSlow(
-  operation: string,
-  duration: number,
-  threshold = SLOW_THRESHOLD,
-) {
+export function logIfSlow(operation: string, duration: number, threshold = SLOW_THRESHOLD) {
   if (duration > threshold) {
-    console.warn(
-      `⚠️ Slow operation detected: ${operation} took ${duration.toFixed(0)}ms`,
-    );
+    logger.warn(`⚠️ Slow operation detected: ${operation} took ${duration.toFixed(0)}ms`);
 
     // In production, send to error tracking service (Sentry, etc.)
     if (process.env.NODE_ENV === "production") {

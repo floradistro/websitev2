@@ -12,6 +12,7 @@ import {
 import { useAuth } from "./AuthContext";
 import axios from "axios";
 
+import { logger } from "@/lib/logger";
 interface WishlistItem {
   productId: number;
   name: string;
@@ -30,9 +31,7 @@ interface WishlistContextType {
   itemCount: number;
 }
 
-const WishlistContext = createContext<WishlistContextType | undefined>(
-  undefined,
-);
+const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -41,15 +40,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
-    const wishlistKey = user?.id
-      ? `flora-wishlist-${user.id}`
-      : "flora-wishlist";
+    const wishlistKey = user?.id ? `flora-wishlist-${user.id}` : "flora-wishlist";
     const savedWishlist = localStorage.getItem(wishlistKey);
     if (savedWishlist) {
       try {
         setItems(JSON.parse(savedWishlist));
       } catch (error) {
-        console.error("Failed to load wishlist:", error);
+        logger.error("Failed to load wishlist:", error);
       }
     }
     setLoaded(true);
@@ -58,9 +55,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   // Save wishlist to localStorage whenever it changes
   useEffect(() => {
     if (loaded) {
-      const wishlistKey = user?.id
-        ? `flora-wishlist-${user.id}`
-        : "flora-wishlist";
+      const wishlistKey = user?.id ? `flora-wishlist-${user.id}` : "flora-wishlist";
       localStorage.setItem(wishlistKey, JSON.stringify(items));
     }
   }, [items, loaded, user?.id]);

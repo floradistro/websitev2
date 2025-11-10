@@ -5,6 +5,7 @@ import FormData from "form-data";
 import axios from "axios";
 import { removeBgRateLimiter } from "@/lib/rate-limiter-advanced";
 
+import { logger } from "@/lib/logger";
 const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY || "";
 
 export async function POST(request: NextRequest) {
@@ -51,9 +52,7 @@ export async function POST(request: NextRequest) {
     const filePath = `${vendorId}/${newFileName}`;
 
     // Delete original if it exists (to handle extension changes like .jpg -> .png)
-    await supabase.storage
-      .from("vendor-product-images")
-      .remove([`${vendorId}/${fileName}`]);
+    await supabase.storage.from("vendor-product-images").remove([`${vendorId}/${fileName}`]);
 
     // Upload with same name (as PNG)
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -66,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Upload error:", uploadError);
+        logger.error("❌ Upload error:", uploadError);
       }
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
@@ -91,7 +90,7 @@ export async function POST(request: NextRequest) {
       .eq("file_name", fileName);
 
     if (dbError) {
-      console.error("❌ Database update error:", dbError);
+      logger.error("❌ Database update error:", dbError);
     }
 
     return NextResponse.json({
@@ -104,10 +103,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error(
-        "❌ Remove.bg error:",
-        error.response?.data || error.message,
-      );
+      logger.error("❌ Remove.bg error:", error.response?.data || error.message);
     }
     // Handle remove.bg specific errors
     if (error.response?.status === 402) {
@@ -138,11 +134,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper function to process a single image with retry logic
-async function processImage(
-  file: { url: string; name: string },
-  vendorId: string,
-  retries = 3,
-) {
+async function processImage(file: { url: string; name: string }, vendorId: string, retries = 3) {
   let lastError;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -188,9 +180,7 @@ async function processImage(
       const filePath = `${vendorId}/${newFileName}`;
 
       // Delete original if it exists (to handle extension changes like .jpg -> .png)
-      await supabase.storage
-        .from("vendor-product-images")
-        .remove([`${vendorId}/${file.name}`]);
+      await supabase.storage.from("vendor-product-images").remove([`${vendorId}/${file.name}`]);
 
       // Upload with same name (as PNG)
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -222,7 +212,7 @@ async function processImage(
         .eq("file_name", file.name);
 
       if (dbError) {
-        console.error("❌ Database update error for", file.name, ":", dbError);
+        logger.error(`Database update error for ${file.name}`, dbError);
       }
 
       return {
@@ -260,7 +250,7 @@ async function processImage(
         }
 
         if (process.env.NODE_ENV === "development") {
-          console.error(`API Response:`, error.response.data);
+          logger.error(`API Response:`, error.response.data);
         }
       } else if (error.code) {
         // Network errors - retry
@@ -274,9 +264,7 @@ async function processImage(
       }
 
       // All retries exhausted or non-retryable error
-      console.error(
-        `❌ Failed processing ${file.name} after ${attempt} attempt(s)`,
-      );
+      logger.error(`❌ Failed processing ${file.name} after ${attempt} attempt(s)`);
       throw new Error(`${file.name}: ${errorMessage}`);
     }
   }
@@ -309,9 +297,7 @@ async function processInParallel(
           return { success: true, result, file };
         } catch (error: any) {
           if (process.env.NODE_ENV === "development") {
-            console.error(
-              `❌ Failed ${index + 1}/${files.length}: ${file.name} - ${error.message}`,
-            );
+            logger.error(`❌ Failed ${index + 1}/${files.length}: ${file.name} - ${error.message}`);
           }
           throw error;
         }
@@ -366,11 +352,7 @@ export async function PUT(request: NextRequest) {
     // PREMIUM: Adaptive concurrency (max 50 concurrent, auto-adjusts)
     const safeConcurrency = Math.min(Math.max(1, concurrency), 50);
 
-    const { results, errors } = await processInParallel(
-      files,
-      vendorId,
-      safeConcurrency,
-    );
+    const { results, errors } = await processInParallel(files, vendorId, safeConcurrency);
 
     return NextResponse.json({
       success: true,
@@ -381,7 +363,7 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * POST /api/ai/fields/create
  * AI creates a custom field
@@ -40,8 +41,7 @@ export async function POST(request: NextRequest) {
 
     // AI generates a unique field_id if not provided
     const field_id =
-      field_config.field_id ||
-      `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      field_config.field_id || `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     const { data, error } = await supabase
       .from("vendor_custom_fields")
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in AI field creation:", error);
+      logger.error("Error in AI field creation:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -145,7 +145,7 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in AI field update:", error);
+      logger.error("Error in AI field update:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -187,7 +187,7 @@ export async function DELETE(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in AI field deletion:", error);
+      logger.error("Error in AI field deletion:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -21,10 +21,7 @@ var r = class r {
     this._settings = e;
   }
   get canvas() {
-    return (
-      this._canvas || (this._canvas = document.createElement("canvas")),
-      this._canvas
-    );
+    return (this._canvas || (this._canvas = document.createElement("canvas")), this._canvas);
   }
   get canvasContext() {
     return (
@@ -40,9 +37,7 @@ var r = class r {
     if (this._mounted) return;
     if (!document.head.querySelector(`[data-component=${r.componentName}]`)) {
       let s = document.createElement("style");
-      ((s.dataset.component = r.componentName),
-        (s.textContent = c),
-        document.head.append(s));
+      ((s.dataset.component = r.componentName), (s.textContent = c), document.head.append(s));
     }
     let t = document.createElement("div");
     ((t.className = a.SINGLE_IMAGE_UPLOADER_CONTAINER),
@@ -68,16 +63,12 @@ var r = class r {
       t.append(n),
       i.hasAttribute(r.DEFAULT_DOM_ATTRIBUTE) &&
         (Object.assign(i.style, b$1.SINGLE_IMAGE_UPLOADER_INFORMATION_STYLE, l),
-        (i.textContent = a$1
-          .getInstance()
-          .get("core.singleImageUploader.title"))),
+        (i.textContent = a$1.getInstance().get("core.singleImageUploader.title"))),
       t.append(i));
     let o = document.createElement("input");
     ((o.type = "file"),
       (o.accept = "image/*"),
-      c$1 &&
-        ((o.capture = "environment"),
-        (o.dataset.onlyCaptureOnMobile = "environment")),
+      c$1 && ((o.capture = "environment"), (o.dataset.onlyCaptureOnMobile = "environment")),
       o.addEventListener("change", (s) => {
         this.onFileUpload(s);
       }),
@@ -93,14 +84,10 @@ var r = class r {
     (h.append(o),
       a$3.hasAttribute(r.DEFAULT_DOM_ATTRIBUTE) &&
         (Object.assign(a$3.style, b$1.SINGLE_IMAGE_UPLOADER_BUTTON_STYLE, p),
-        (a$3.textContent = a$1
-          .getInstance()
-          .get("core.singleImageUploader.button"))),
+        (a$3.textContent = a$1.getInstance().get("core.singleImageUploader.button"))),
       h.append(a$3),
       t.append(h));
-    let g = document
-      .createRange()
-      .createContextualFragment(atob(a$2)).firstElementChild;
+    let g = document.createRange().createContextualFragment(atob(a$2)).firstElementChild;
     (Object.assign(g.style, {
       position: "absolute",
       bottom: "1em",
@@ -118,20 +105,15 @@ var r = class r {
     var e, t;
     this._mounted &&
       ((e = this._htmlRoot) == null || e.remove(),
-      (t = document.head.querySelector(
-        `[data-component=${r.componentName}]`,
-      )) == null || t.remove(),
+      (t = document.head.querySelector(`[data-component=${r.componentName}]`)) == null ||
+        t.remove(),
       (this._mounted = false));
   }
   setButtonState(e) {
     this._inputElement && (this._inputElement.disabled = e === "disabled");
   }
   getButtonState() {
-    return this._inputElement
-      ? this._inputElement.disabled
-        ? "disabled"
-        : "enabled"
-      : "disabled";
+    return this._inputElement ? (this._inputElement.disabled ? "disabled" : "enabled") : "disabled";
   }
   onInputCheck(e) {
     this._onInputCheck = e;
@@ -172,10 +154,7 @@ var r = class r {
   }
   onImageLoad(e) {
     var i;
-    let { height: t, width: n } = this.getResizedImageDimensions(
-      e.naturalWidth,
-      e.naturalHeight,
-    );
+    let { height: t, width: n } = this.getResizedImageDimensions(e.naturalWidth, e.naturalHeight);
     ((this.canvasContext.canvas.width = n),
       (this.canvasContext.canvas.height = t),
       this.canvasContext.drawImage(e, 0, 0, n, t));
@@ -200,8 +179,7 @@ var r = class r {
           "error",
           (d) => {
             var i;
-            ((i = this._onImageLoadError) == null || i.call(this, d),
-              this.setLoading(false));
+            ((i = this._onImageLoadError) == null || i.call(this, d), this.setLoading(false));
           },
           { once: true },
         ),
@@ -230,13 +208,11 @@ var r = class r {
     }),
       l.addEventListener("error", (p) => {
         var c;
-        ((c = this._onFileReaderError) == null || c.call(this, p),
-          this.setLoading(false));
+        ((c = this._onFileReaderError) == null || c.call(this, p), this.setLoading(false));
       }),
       l.readAsDataURL(n[0]));
   }
 };
-((r.componentName = "SingleImageUploaderView"),
-  (r.DEFAULT_DOM_ATTRIBUTE = "data-scandit-default"));
+((r.componentName = "SingleImageUploaderView"), (r.DEFAULT_DOM_ATTRIBUTE = "data-scandit-default"));
 var b = r;
 export { b as a };

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface LocationSelectorDropdownProps {
   vendorId: string;
   selectedLocationIds: string[];
@@ -27,7 +28,7 @@ export function LocationSelectorDropdown({
         }
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to load locations:", error);
+          logger.error("Failed to load locations:", error);
         }
       } finally {
         setLoading(false);
@@ -36,9 +37,7 @@ export function LocationSelectorDropdown({
     loadLocations();
   }, [vendorId]);
 
-  const selectedLocations = locations.filter((l) =>
-    selectedLocationIds.includes(l.id),
-  );
+  const selectedLocations = locations.filter((l) => selectedLocationIds.includes(l.id));
 
   const toggleLocation = (locationId: string) => {
     if (selectedLocationIds.includes(locationId)) {
@@ -73,13 +72,9 @@ export function LocationSelectorDropdown({
       {/* Location List */}
       <div className="max-h-48 overflow-y-auto border border-neutral-800 rounded bg-neutral-950">
         {loading ? (
-          <div className="p-4 text-center text-neutral-500 text-xs">
-            Loading...
-          </div>
+          <div className="p-4 text-center text-neutral-500 text-xs">Loading...</div>
         ) : locations.length === 0 ? (
-          <div className="p-4 text-center text-neutral-500 text-xs">
-            No locations found
-          </div>
+          <div className="p-4 text-center text-neutral-500 text-xs">No locations found</div>
         ) : (
           <div className="divide-y divide-neutral-800">
             {locations.map((location) => (
@@ -94,9 +89,7 @@ export function LocationSelectorDropdown({
                   className="rounded"
                 />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-white truncate">
-                    {location.name}
-                  </div>
+                  <div className="text-sm text-white truncate">{location.name}</div>
                   {location.city && location.state && (
                     <div className="text-xs text-neutral-500">
                       {location.city}, {location.state}

@@ -10,14 +10,7 @@ interface POStatsProps {
   isLoading: boolean;
 }
 
-export function POStats({
-  total,
-  draft,
-  active,
-  completed,
-  totalValue,
-  isLoading,
-}: POStatsProps) {
+export function POStats({ total, draft, active, completed, totalValue, isLoading }: POStatsProps) {
   const stats = [
     { label: "Total", value: total, icon: Package },
     { label: "Draft", value: draft, icon: Clock },
@@ -59,12 +52,7 @@ export function POStats({
                 </span>
                 <Icon size={14} className="text-white/20" strokeWidth={1} />
               </div>
-              <div
-                className={cn(
-                  "text-2xl font-light text-white",
-                  isLoading && "animate-pulse",
-                )}
-              >
+              <div className={cn("text-2xl font-light text-white", isLoading && "animate-pulse")}>
                 {isLoading ? "—" : stat.value}
               </div>
             </div>

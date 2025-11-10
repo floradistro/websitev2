@@ -17,6 +17,7 @@ import axios from "axios";
 import { showNotification } from "@/components/NotificationToast";
 import AdminModal from "@/components/AdminModal";
 
+import { logger } from "@/lib/logger";
 interface PaymentProcessor {
   id: string;
   processor_type: string;
@@ -48,8 +49,7 @@ export default function PaymentProcessors() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingProcessor, setEditingProcessor] =
-    useState<PaymentProcessor | null>(null);
+  const [editingProcessor, setEditingProcessor] = useState<PaymentProcessor | null>(null);
   const [testing, setTesting] = useState<string | null>(null);
 
   // New processor form state
@@ -82,7 +82,7 @@ export default function PaymentProcessors() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading processors:", error);
+        logger.error("Error loading processors:", error);
       }
       showNotification({
         type: "error",
@@ -102,7 +102,7 @@ export default function PaymentProcessors() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error loading locations:", error);
+        logger.error("Error loading locations:", error);
       }
     }
   }
@@ -118,10 +118,7 @@ export default function PaymentProcessors() {
         return;
       }
 
-      if (
-        newProcessor.processor_type === "dejavoo" &&
-        !newProcessor.dejavoo_authkey
-      ) {
+      if (newProcessor.processor_type === "dejavoo" && !newProcessor.dejavoo_authkey) {
         showNotification({
           type: "error",
           title: "Error",
@@ -217,8 +214,7 @@ export default function PaymentProcessors() {
       showNotification({
         type: "error",
         title: "Error",
-        message:
-          error.response?.data?.error || "Failed to set default processor",
+        message: error.response?.data?.error || "Failed to set default processor",
       });
     }
   }
@@ -271,9 +267,7 @@ export default function PaymentProcessors() {
                 <CreditCard className="w-8 h-8 text-green-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Payment Processors
-                </h1>
+                <h1 className="text-3xl font-bold text-gray-900">Payment Processors</h1>
                 <p className="text-gray-600 mt-1">
                   Configure payment processing for your locations
                 </p>
@@ -349,9 +343,7 @@ export default function PaymentProcessors() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-1">
                       {processor.processor_name}
                     </h3>
-                    <p className="text-sm text-gray-600 capitalize">
-                      {processor.processor_type}
-                    </p>
+                    <p className="text-sm text-gray-600 capitalize">{processor.processor_type}</p>
                   </div>
 
                   {/* Location */}
@@ -374,35 +366,25 @@ export default function PaymentProcessors() {
                   </div>
 
                   {/* Dejavoo Info */}
-                  {processor.processor_type === "dejavoo" &&
-                    processor.dejavoo_merchant_id && (
-                      <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                        <p className="text-xs text-gray-500 font-semibold mb-1">
-                          Dejavoo Config
-                        </p>
+                  {processor.processor_type === "dejavoo" && processor.dejavoo_merchant_id && (
+                    <div className="mb-4 p-3 bg-gray-50 rounded-md">
+                      <p className="text-xs text-gray-500 font-semibold mb-1">Dejavoo Config</p>
+                      <p className="text-xs text-gray-600">MID: {processor.dejavoo_merchant_id}</p>
+                      {processor.dejavoo_store_number && (
                         <p className="text-xs text-gray-600">
-                          MID: {processor.dejavoo_merchant_id}
+                          Store: {processor.dejavoo_store_number}
                         </p>
-                        {processor.dejavoo_store_number && (
-                          <p className="text-xs text-gray-600">
-                            Store: {processor.dejavoo_store_number}
-                          </p>
-                        )}
-                        {processor.dejavoo_v_number && (
-                          <p className="text-xs text-gray-600">
-                            V#: {processor.dejavoo_v_number}
-                          </p>
-                        )}
-                      </div>
-                    )}
+                      )}
+                      {processor.dejavoo_v_number && (
+                        <p className="text-xs text-gray-600">V#: {processor.dejavoo_v_number}</p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Last Test */}
                   {processor.last_tested_at && (
                     <div className="mb-4 text-xs text-gray-500">
-                      <p>
-                        Last tested:{" "}
-                        {new Date(processor.last_tested_at).toLocaleString()}
-                      </p>
+                      <p>Last tested: {new Date(processor.last_tested_at).toLocaleString()}</p>
                       <p
                         className={
                           processor.last_test_status === "success"
@@ -423,16 +405,12 @@ export default function PaymentProcessors() {
                       className="w-full inline-flex items-center justify-center px-3 py-2 border border-blue-300 rounded-md text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 disabled:opacity-50"
                     >
                       <TestTube2 className="w-4 h-4 mr-1" />
-                      {testing === processor.id
-                        ? "Testing..."
-                        : "Test Connection"}
+                      {testing === processor.id ? "Testing..." : "Test Connection"}
                     </button>
 
                     {!processor.is_default && (
                       <button
-                        onClick={() =>
-                          setAsDefault(processor.id, processor.location.id)
-                        }
+                        onClick={() => setAsDefault(processor.id, processor.location.id)}
                         className="w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                       >
                         <Star className="w-4 h-4 mr-1" />
@@ -463,9 +441,7 @@ export default function PaymentProcessors() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Location *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
             <select
               value={newProcessor.location_id}
               onChange={(e) =>
@@ -486,9 +462,7 @@ export default function PaymentProcessors() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Processor Type *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Processor Type *</label>
             <select
               value={newProcessor.processor_type}
               onChange={(e) =>
@@ -507,9 +481,7 @@ export default function PaymentProcessors() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Processor Name *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Processor Name *</label>
             <input
               type="text"
               value={newProcessor.processor_name}
@@ -525,9 +497,7 @@ export default function PaymentProcessors() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Environment *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Environment *</label>
             <select
               value={newProcessor.environment}
               onChange={(e) =>
@@ -546,9 +516,7 @@ export default function PaymentProcessors() {
           {newProcessor.processor_type === "dejavoo" && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Authkey *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Authkey *</label>
                 <input
                   type="text"
                   value={newProcessor.dejavoo_authkey}
@@ -584,9 +552,7 @@ export default function PaymentProcessors() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Merchant ID
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Merchant ID</label>
                 <input
                   type="text"
                   value={newProcessor.dejavoo_merchant_id}

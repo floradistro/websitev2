@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 /**
  * Public API endpoint for TV displays to fetch products
  * Uses service role to bypass RLS
@@ -16,10 +17,7 @@ export async function GET(request: NextRequest) {
     const locationId = searchParams.get("location_id");
 
     if (!vendorId) {
-      return NextResponse.json(
-        { success: false, error: "vendor_id required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ success: false, error: "vendor_id required" }, { status: 400 });
     }
 
     const supabase = getServiceSupabase();
@@ -53,12 +51,9 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("❌ Error fetching TV display products:", error);
+        logger.error("❌ Error fetching TV display products:", error);
       }
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
     // Fetch parent categories for products that have a parent_id
@@ -75,17 +70,13 @@ export async function GET(request: NextRequest) {
         .select("id, name, slug")
         .in("id", Array.from(parentIds));
 
-      parentCategoriesMap = new Map(
-        (parentCategories || []).map((cat: any) => [cat.id, cat]),
-      );
+      parentCategoriesMap = new Map((parentCategories || []).map((cat: any) => [cat.id, cat]));
     }
 
     // Enrich products with parent category data
     const productsWithParents = (products || []).map((product: any) => {
       if (product.primary_category?.parent_id) {
-        const parentCategory = parentCategoriesMap.get(
-          product.primary_category.parent_id,
-        );
+        const parentCategory = parentCategoriesMap.get(product.primary_category.parent_id);
         return {
           ...product,
           primary_category: {
@@ -98,46 +89,44 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform products to add pricing_tiers field from embedded pricing_data
-    const productsWithPricing = (productsWithParents || []).map(
-      (product: any) => {
-        // Get pricing from embedded pricing_data (new simplified system)
-        const pricingData = product.pricing_data || {};
+    const productsWithPricing = (productsWithParents || []).map((product: any) => {
+      // Get pricing from embedded pricing_data (new simplified system)
+      const pricingData = product.pricing_data || {};
 
-        // Convert tiers to the format expected by TV display
-        const pricingTiers: any[] = (pricingData.tiers || [])
-          .filter((tier: any) => tier.enabled !== false && tier.price) // Only enabled tiers with prices
-          .map((tier: any) => ({
-            [tier.id]: {
-              price: parseFloat(tier.price),
-              label: tier.label,
-              quantity: tier.quantity || 1,
-              unit: tier.unit || "g",
-              enabled: tier.enabled !== false,
-            },
-          }))
-          .reduce((acc: any, tier: any) => ({ ...acc, ...tier }), {});
+      // Convert tiers to the format expected by TV display
+      const pricingTiers: any[] = (pricingData.tiers || [])
+        .filter((tier: any) => tier.enabled !== false && tier.price) // Only enabled tiers with prices
+        .map((tier: any) => ({
+          [tier.id]: {
+            price: parseFloat(tier.price),
+            label: tier.label,
+            quantity: tier.quantity || 1,
+            unit: tier.unit || "g",
+            enabled: tier.enabled !== false,
+          },
+        }))
+        .reduce((acc: any, tier: any) => ({ ...acc, ...tier }), {});
 
-        // If no tiers, fall back to single price
-        const pricing_tiers =
-          Object.keys(pricingTiers).length > 0
-            ? pricingTiers
-            : product.regular_price
-              ? {
-                  single: {
-                    price: parseFloat(product.regular_price),
-                    label: "Single Price",
-                    quantity: 1,
-                    enabled: true,
-                  },
-                }
-              : {};
+      // If no tiers, fall back to single price
+      const pricing_tiers =
+        Object.keys(pricingTiers).length > 0
+          ? pricingTiers
+          : product.regular_price
+            ? {
+                single: {
+                  price: parseFloat(product.regular_price),
+                  label: "Single Price",
+                  quantity: 1,
+                  enabled: true,
+                },
+              }
+            : {};
 
-        return {
-          ...product,
-          pricing_tiers,
-        };
-      },
-    );
+      return {
+        ...product,
+        pricing_tiers,
+      };
+    });
 
     // Filter products to only show those with inventory > 0 at this location
     let filteredProducts = productsWithPricing || [];
@@ -169,11 +158,8 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ TV Display products API error:", error);
+      logger.error("❌ TV Display products API error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

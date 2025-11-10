@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 export const revalidate = 30; // Cache for 30 seconds (inventory changes frequently)
@@ -86,9 +87,7 @@ export async function GET(request: NextRequest) {
         sku: product.sku || "",
         category: (product.primary_category as any)?.name || "Uncategorized",
         price: parseFloat(product.price) || 0,
-        cost_price: product.cost_price
-          ? parseFloat(product.cost_price)
-          : undefined,
+        cost_price: product.cost_price ? parseFloat(product.cost_price) : undefined,
         total_quantity,
         locations: locationInventory,
       };
@@ -114,7 +113,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Grouped inventory API error:", error);
+      logger.error("Grouped inventory API error:", error);
     }
     return NextResponse.json(
       { success: false, error: error.message || "Internal server error" },

@@ -53,8 +53,7 @@ var b = "core.camera.recovery",
       this.onBeforeShowToastsHandler = this.onBeforeShowToasts.bind(this);
       this.onWorkerMessageHandler = this.onWorkerMessage.bind(this);
       this.htmlElementDidChangeHandler = this.htmlElementDidChange.bind(this);
-      this.htmlElementDisconnectedHandler =
-        this.htmlElementDisconnected.bind(this);
+      this.htmlElementDisconnectedHandler = this.htmlElementDisconnected.bind(this);
       this.notificationPresenter = null;
       ((this.visibilityListener = this.onVisibilityChange.bind(this)),
         (this.cameraRecoveryListener = this.cameraRecovery.bind(this)),
@@ -68,16 +67,14 @@ var b = "core.camera.recovery",
     }
     set scanAreaMargins(e) {
       var t;
-      ((this._scanAreaMargins = e),
-        (t = this.privateContext) == null || t.update());
+      ((this._scanAreaMargins = e), (t = this.privateContext) == null || t.update());
     }
     get pointOfInterest() {
       return this._pointOfInterest;
     }
     set pointOfInterest(e) {
       var t;
-      ((this._pointOfInterest = e),
-        (t = this.privateContext) == null || t.update());
+      ((this._pointOfInterest = e), (t = this.privateContext) == null || t.update());
     }
     get logoStyle() {
       return this._logoStyle;
@@ -106,17 +103,13 @@ var b = "core.camera.recovery",
     get width() {
       var e, t;
       return Math.round(
-        (t = (e = this.htmlElementState) == null ? void 0 : e.width) != null
-          ? t
-          : 0,
+        (t = (e = this.htmlElementState) == null ? void 0 : e.width) != null ? t : 0,
       );
     }
     get height() {
       var e, t;
       return Math.round(
-        (t = (e = this.htmlElementState) == null ? void 0 : e.height) != null
-          ? t
-          : 0,
+        (t = (e = this.htmlElementState) == null ? void 0 : e.height) != null ? t : 0,
       );
     }
     get canvasDrawer() {
@@ -155,10 +148,7 @@ var b = "core.camera.recovery",
     async setContext(e) {
       var t, i, r;
       if (((this._context = e), e)) {
-        if (
-          this.overlays.size > 0 &&
-          !((t = this.privateContext) != null && t.hasModes())
-        )
+        if (this.overlays.size > 0 && !((t = this.privateContext) != null && t.hasModes()))
           throw new Error(
             [
               "Cannot assign this view to this context. This view has overlays but the context does not have any mode attached matching these overlays.",
@@ -181,22 +171,15 @@ var b = "core.camera.recovery",
         this.htmlElementDidChange(),
         a$2.add(this),
         (this.orientation = this.orientationObserver.orientation.value),
-        this.orientationObserver.addEventListener(
-          a$3,
-          this.onOrientationChangeListener,
-        ),
+        this.orientationObserver.addEventListener(a$3, this.onOrientationChangeListener),
         (r = this.hintPresenter) == null ||
-          r.addEventListener(
-            "hintpresenterupdate",
-            this.onHintPresenterUpdateHandler,
-          ),
+          r.addEventListener("hintpresenterupdate", this.onHintPresenterUpdateHandler),
         (a$1 = this.hintPresenter) == null ||
           a$1.addEventListener("willshow", this.onBeforeShowToastsHandler),
         (this.localizationSubscription = a.getInstance().subscribe((s) => {
           s[b] != null && (this.cameraRecoveryElement.textContent = s[b]);
         })),
-        (this._previewCamera =
-          (n = t == null ? void 0 : t.camera) != null ? n : null),
+        (this._previewCamera = (n = t == null ? void 0 : t.camera) != null ? n : null),
         this._previewCamera &&
           (this._previewCamera.addListener(this.frameSourceListener),
           this.onFrameSourceChange(this._previewCamera)));
@@ -206,15 +189,9 @@ var b = "core.camera.recovery",
       ((e = this.htmlElementState) == null || e.removeListeners(),
         this.removeStyles(),
         (t = this.canvasDrawer) == null || t.endObservingCanvasResize(),
-        document.removeEventListener(
-          "visibilitychange",
-          this.visibilityListener,
-        ));
+        document.removeEventListener("visibilitychange", this.visibilityListener));
       for (let m of ["touchend", "mousedown"])
-        this.cameraRecoveryElement.removeEventListener(
-          m,
-          this.cameraRecoveryListener,
-        );
+        this.cameraRecoveryElement.removeEventListener(m, this.cameraRecoveryListener);
       ((i = this.loadingOverlay) == null || i.remove(),
         (r = this.customLocationsView) == null || r.unmount(),
         (this.notificationPresenter = null),
@@ -223,15 +200,9 @@ var b = "core.camera.recovery",
         this.clearHtmlElementContent(),
         a$2.delete(this),
         this.orientationObserver.unregister(),
-        this.orientationObserver.removeEventListener(
-          a$3,
-          this.onOrientationChangeListener,
-        ),
+        this.orientationObserver.removeEventListener(a$3, this.onOrientationChangeListener),
         (n = this.hintPresenter) == null ||
-          n.removeEventListener(
-            "hintpresenterupdate",
-            this.onHintPresenterUpdateHandler,
-          ),
+          n.removeEventListener("hintpresenterupdate", this.onHintPresenterUpdateHandler),
         (s = this.hintPresenter) == null ||
           s.removeEventListener("willshow", this.onBeforeShowToastsHandler),
         (h = this.localizationSubscription) == null || h.cancel(),
@@ -260,33 +231,17 @@ var b = "core.camera.recovery",
       this.listeners.includes(e) || this.listeners.push(e);
     }
     removeListener(e) {
-      this.listeners.includes(e) &&
-        this.listeners.splice(this.listeners.indexOf(e), 1);
+      this.listeners.includes(e) && this.listeners.splice(this.listeners.indexOf(e), 1);
     }
     viewPointForFramePoint(e) {
       var p, O, P, L, V, D, F, R;
       let t = {
-          width:
-            (O = (p = this.htmlElementState) == null ? void 0 : p.width) != null
-              ? O
-              : 0,
-          height:
-            (L = (P = this.htmlElementState) == null ? void 0 : P.height) !=
-            null
-              ? L
-              : 0,
+          width: (O = (p = this.htmlElementState) == null ? void 0 : p.width) != null ? O : 0,
+          height: (L = (P = this.htmlElementState) == null ? void 0 : P.height) != null ? L : 0,
         },
         i = {
-          width:
-            (D = (V = this.videoElement) == null ? void 0 : V.videoWidth) !=
-            null
-              ? D
-              : 0,
-          height:
-            (R = (F = this.videoElement) == null ? void 0 : F.videoHeight) !=
-            null
-              ? R
-              : 0,
+          width: (D = (V = this.videoElement) == null ? void 0 : V.videoWidth) != null ? D : 0,
+          height: (R = (F = this.videoElement) == null ? void 0 : F.videoHeight) != null ? R : 0,
         },
         r = t.width / t.height,
         a = i.width / i.height,
@@ -309,8 +264,7 @@ var b = "core.camera.recovery",
         ((e.view = this),
         this.controls.push(e),
         this.controlsUpdated(),
-        (t = this.privateContext) == null ||
-          t.update([{ type: "addControl", newValue: e }]));
+        (t = this.privateContext) == null || t.update([{ type: "addControl", newValue: e }]));
     }
     removeControl(e) {
       var t;
@@ -319,8 +273,7 @@ var b = "core.camera.recovery",
         let i = this.controls.splice(this.controls.indexOf(e), 1);
         (this.getControlWidget(i[0]).remove(true),
           this.controlsUpdated(),
-          (t = this.privateContext) == null ||
-            t.update([{ type: "removeControl", newValue: e }]));
+          (t = this.privateContext) == null || t.update([{ type: "removeControl", newValue: e }]));
       }
     }
     toJSONObject() {
@@ -334,9 +287,7 @@ var b = "core.camera.recovery",
         logoStyle: this.logoStyle,
         overlays: [...this.overlays].map((t) => t.toJSONObject()),
         controls: this.controls.map((t) => t.toJSONObject()),
-        focusGesture: this.focusGesture
-          ? this.focusGesture.toJSONObject()
-          : null,
+        focusGesture: this.focusGesture ? this.focusGesture.toJSONObject() : null,
         zoomGesture: this.zoomGesture ? this.zoomGesture.toJSONObject() : null,
       };
     }
@@ -368,9 +319,7 @@ var b = "core.camera.recovery",
     }
     renderCustomLocationsView(e) {
       this.customLocationsView != null &&
-        (this.customLocationsView.setMirrored(
-          d$1.instance().isMirrorImageEnabled(),
-        ),
+        (this.customLocationsView.setMirrored(d$1.instance().isMirrorImageEnabled()),
         Object.keys(e).includes("removedIds")
           ? this.customLocationsView.render(e)
           : this.customLocationsView.renderDomView(e));
@@ -378,8 +327,7 @@ var b = "core.camera.recovery",
     getNotificationPresenter() {
       var e;
       if (!this.notificationPresenter) {
-        let t =
-          (e = this.htmlElement) == null ? void 0 : e.querySelector(b$4.tag);
+        let t = (e = this.htmlElement) == null ? void 0 : e.querySelector(b$4.tag);
         if (!t)
           throw new Error(
             "Notification presenter cannot be found. Please ensure the DataCaptureView is connected.",
@@ -393,8 +341,7 @@ var b = "core.camera.recovery",
     }
     onHintPresenterUpdate(e) {
       var t;
-      (t = this.privateContext) == null ||
-        t.workerCommand("hintPresenterV2update", {});
+      (t = this.privateContext) == null || t.workerCommand("hintPresenterV2update", {});
     }
     clearHtmlElementContent() {
       var e;
@@ -429,55 +376,38 @@ var b = "core.camera.recovery",
       ((this.htmlElement.innerHTML = t),
         d$1
           .instance()
-          .connectedCallback(
-            this.htmlElement.querySelector('[data-js-id="video-container"]'),
-          ),
+          .connectedCallback(this.htmlElement.querySelector('[data-js-id="video-container"]')),
         (this.hintPresenter = this.htmlElement.querySelector(b$4.tag)),
-        (this.notificationPresenter = this.hintPresenter
-          ? new a$6(this.hintPresenter)
-          : null),
+        (this.notificationPresenter = this.hintPresenter ? new a$6(this.hintPresenter) : null),
         this.loadingOverlay && this.loadingOverlay.remove(),
         (this.loadingOverlay = a$9.create()),
         this.loadingOverlay.hide(),
-        (a = this.htmlElement.querySelector(
-          '[data-js-id="loading-overlay"]',
-        )) == null || a.replaceWith(this.loadingOverlay),
+        (a = this.htmlElement.querySelector('[data-js-id="loading-overlay"]')) == null ||
+          a.replaceWith(this.loadingOverlay),
         this.customLocationsView && this.customLocationsView.unmount(),
         (this.customLocationsView = new a$a()),
         this.customLocationsView.mount(
-          this.htmlElement.querySelector(
-            `[data-js-id="${a$8.CUSTOM_VIEW_CONTAINER}"]`,
-          ),
+          this.htmlElement.querySelector(`[data-js-id="${a$8.CUSTOM_VIEW_CONTAINER}"]`),
         ),
         (this.customLocationsView.mapViewAnchorPositionsForFramePoint = (h) =>
           this.viewAnchorPositionsForFrameAnchorPositions(h)),
-        (this.containerElement = this.htmlElement.querySelector(
-          `.${a$7.CONTAINER_CLASS_NAME}`,
-        )),
+        (this.containerElement = this.htmlElement.querySelector(`.${a$7.CONTAINER_CLASS_NAME}`)),
         (this.cameraPaintboardElement = this.containerElement.querySelector(
           '[data-js-id="camera-paintboard"]',
         )),
-        (this.singleImageUploaderPaintboardElement =
-          this.containerElement.querySelector(
-            '[data-js-id="singleimage-paintboard"]',
-          )));
+        (this.singleImageUploaderPaintboardElement = this.containerElement.querySelector(
+          '[data-js-id="singleimage-paintboard"]',
+        )));
       let i = this.cameraPaintboardElement.querySelector("canvas");
-      this.canvasElement == null
-        ? (this.canvasElement = i)
-        : i.replaceWith(this.canvasElement);
-      let r = this.cameraPaintboardElement.querySelector(
-        '[data-js-id="frozen-frame"]',
-      );
-      (this.frozenFrame == null
-        ? (this.frozenFrame = r)
-        : r.replaceWith(this.frozenFrame),
+      this.canvasElement == null ? (this.canvasElement = i) : i.replaceWith(this.canvasElement);
+      let r = this.cameraPaintboardElement.querySelector('[data-js-id="frozen-frame"]');
+      (this.frozenFrame == null ? (this.frozenFrame = r) : r.replaceWith(this.frozenFrame),
         (this.controlsElement = this.cameraPaintboardElement.querySelector(
           `.${a$7.CONTROLS_CLASS_NAME}`,
         )),
-        (this.cameraRecoveryElement =
-          this.cameraPaintboardElement.querySelector(
-            `.${a$7.CAMERA_RECOVERY_CLASS_NAME}`,
-          )),
+        (this.cameraRecoveryElement = this.cameraPaintboardElement.querySelector(
+          `.${a$7.CAMERA_RECOVERY_CLASS_NAME}`,
+        )),
         (this.errorElement = this.cameraPaintboardElement.querySelector(
           `.${a$7.ERROR_CLASS_NAME}`,
         )),
@@ -486,16 +416,11 @@ var b = "core.camera.recovery",
             s.switchToDesiredState(this.lastFrameSourceState)),
         document.addEventListener("visibilitychange", this.visibilityListener));
       for (let h of ["touchend", "mousedown"])
-        this.cameraRecoveryElement.addEventListener(
-          h,
-          this.cameraRecoveryListener,
-        );
+        this.cameraRecoveryElement.addEventListener(h, this.cameraRecoveryListener);
       (this.htmlElementState && this.htmlElementState.removeListeners(),
         (this.htmlElementState = new a$b(this.htmlElement)),
         this.htmlElementState.onStateChanged(this.htmlElementDidChangeHandler),
-        this.htmlElementState.onDisconnected(
-          this.htmlElementDisconnectedHandler,
-        ),
+        this.htmlElementState.onDisconnected(this.htmlElementDisconnectedHandler),
         (this.gestureRecognizer = new a$c(this.htmlElement)),
         this.gestureRecognizer.addListener({
           onTap: async (h) => {
@@ -511,9 +436,7 @@ var b = "core.camera.recovery",
       (this.singleImageUploaderView && this.singleImageUploaderView.unmount(),
         (this.singleImageUploaderView = new a$d(e)),
         this.singleImageUploaderView.mount(
-          this.containerElement.querySelector(
-            '[data-js-id="singleimage-paintboard"]',
-          ),
+          this.containerElement.querySelector('[data-js-id="singleimage-paintboard"]'),
         ));
       let t = (i = this._context) == null ? void 0 : i.frameSource;
       (this.singleImageUploaderView.onInputCheck((r) => {
@@ -522,15 +445,11 @@ var b = "core.camera.recovery",
         this.singleImageUploaderView.onBeforeFileRead(() => {
           t._context &&
             this.singleImageUploaderView &&
-            (this.singleImageUploaderView.canUploadFile =
-              t._context.hasEnabledMode());
+            (this.singleImageUploaderView.canUploadFile = t._context.hasEnabledMode());
         }),
         this.singleImageUploaderView.onImageLoadError(() => {
           ((t.currentState = "starting"),
-            a$e.log(
-              a$e.Level.Error,
-              "Could not load image from selected file",
-            ));
+            a$e.log(a$e.Level.Error, "Could not load image from selected file"));
         }),
         this.singleImageUploaderView.onFileReaderError((r) => {
           var n, s;
@@ -553,15 +472,13 @@ var b = "core.camera.recovery",
       (this.cameraPaintboardElement != null &&
         (this.cameraPaintboardElement.hidden = e !== "camera"),
         this.singleImageUploaderPaintboardElement != null &&
-          (this.singleImageUploaderPaintboardElement.hidden =
-            e !== "singleImageUploader"));
+          (this.singleImageUploaderPaintboardElement.hidden = e !== "singleImageUploader"));
     }
     createStyles() {
       if (document.querySelector("style[scandit]") === null) {
         let e = a$f();
         for (let [t, i] of Object.entries(e))
-          (i.setAttribute("scandit", `data-capture-sdk-${t}`),
-            document.head.append(i));
+          (i.setAttribute("scandit", `data-capture-sdk-${t}`), document.head.append(i));
       }
     }
     async onOrientationChange(e) {
@@ -573,9 +490,7 @@ var b = "core.camera.recovery",
               {
                 type: "viewChange",
                 newValue: {
-                  ...((t = this.htmlElementState) == null
-                    ? void 0
-                    : t.toJSONObject()),
+                  ...((t = this.htmlElementState) == null ? void 0 : t.toJSONObject()),
                   orientation: this.orientation,
                 },
               },
@@ -599,16 +514,11 @@ var b = "core.camera.recovery",
               },
             ]),
           (this.lastHtmlElementState = t),
-          (r = this.canvasDrawer) == null ||
-            r.updateCanvasSizeAttributes(this.width, this.height),
+          (r = this.canvasDrawer) == null || r.updateCanvasSizeAttributes(this.width, this.height),
           this.handleVideoDisplay(t.visible));
         for (let a of this.listeners)
           typeof a.didChangeSize == "function" &&
-            a.didChangeSize(
-              this,
-              new i(t.size.width.value, t.size.height.value),
-              this.orientation,
-            );
+            a.didChangeSize(this, new i(t.size.width.value, t.size.height.value), this.orientation);
       }
     }
     async htmlElementDisconnected() {
@@ -619,8 +529,7 @@ var b = "core.camera.recovery",
           (t = (e = this._context) == null ? void 0 : e.frameSource) == null
             ? void 0
             : t.getCurrentState()),
-        await ((r = (i = this._context) == null ? void 0 : i.frameSource) ==
-        null
+        await ((r = (i = this._context) == null ? void 0 : i.frameSource) == null
           ? void 0
           : r.switchToDesiredState("off")),
         await ((n = this.privateContext) == null
@@ -629,9 +538,7 @@ var b = "core.camera.recovery",
               {
                 type: "viewChange",
                 newValue: {
-                  ...((a = this.htmlElementState) == null
-                    ? void 0
-                    : a.toJSONObject()),
+                  ...((a = this.htmlElementState) == null ? void 0 : a.toJSONObject()),
                   orientation: this.orientation,
                 },
               },
@@ -649,10 +556,7 @@ var b = "core.camera.recovery",
             (this.isVideoElementDetached = true))
           : e &&
             this.isVideoElementDetached &&
-            (this.cameraPaintboardElement.insertAdjacentElement(
-              "afterbegin",
-              this.videoElement,
-            ),
+            (this.cameraPaintboardElement.insertAdjacentElement("afterbegin", this.videoElement),
             (this.isVideoElementDetached = false),
             this.videoElement.style.removeProperty("visibility"),
             this.videoElement.removeAttribute("width"),
@@ -671,9 +575,7 @@ var b = "core.camera.recovery",
         }
         case "performanceMetricsReport": {
           let r = this._canvasDrawer;
-          r != null &&
-            this.isCanvasDrawerWithMetrics(r) &&
-            r.setPerformanceMetrics(e.payload);
+          r != null && this.isCanvasDrawerWithMetrics(r) && r.setPerformanceMetrics(e.payload);
           break;
         }
         case "contextDidChangeStatus": {
@@ -751,8 +653,7 @@ var b = "core.camera.recovery",
         r;
       switch (i) {
         case "torch": {
-          ((r = new b$5(e, this.controlsElement)),
-            this.controlWidgets.set(e, r));
+          ((r = new b$5(e, this.controlsElement)), this.controlWidgets.set(e, r));
           break;
         }
         case "camera": {
@@ -760,8 +661,7 @@ var b = "core.camera.recovery",
           break;
         }
         case "camera-fov": {
-          ((r = new d$2(e, this.controlsElement)),
-            this.controlWidgets.set(e, r));
+          ((r = new d$2(e, this.controlsElement)), this.controlWidgets.set(e, r));
           break;
         }
       }
@@ -772,9 +672,7 @@ var b = "core.camera.recovery",
       if ((this.setupHtmlElementVisibility(t), t === "camera")) {
         let i = e == null ? void 0 : e.getCurrentState();
         i != null && (await this.onCameraStateChanged(i));
-      } else
-        t === "singleImageUploader" &&
-          this.setupHtmlElementSingleImageUploader(e.settings);
+      } else t === "singleImageUploader" && this.setupHtmlElementSingleImageUploader(e.settings);
     }
     async onCameraStateChanged(e) {
       var t;
@@ -784,8 +682,7 @@ var b = "core.camera.recovery",
         e)
       ) {
         case "stopping": {
-          (this.hiddenProperties.freezeFrameWhenStoppingFrameSource &&
-            this.freezeFrame(),
+          (this.hiddenProperties.freezeFrameWhenStoppingFrameSource && this.freezeFrame(),
             this.setVideoElementOpacity("0"));
           return;
         }
@@ -793,14 +690,11 @@ var b = "core.camera.recovery",
         case "bootingUp":
         case "wakingUp": {
           if (!this.htmlElement) {
-            a$e.error(
-              "cannot set frame source stream before connecting view to an HTML element",
-            );
+            a$e.error("cannot set frame source stream before connecting view to an HTML element");
             return;
           }
           this.videoElement &&
-            ((d$1.instance().gui.isCameraRecoveryVisible =
-              this.isCameraRecoveryVisible.bind(this)),
+            ((d$1.instance().gui.isCameraRecoveryVisible = this.isCameraRecoveryVisible.bind(this)),
             (d$1.instance().gui.setCameraRecoveryVisible =
               this.setCameraRecoveryVisible.bind(this)),
             this.setVideoElementOpacity("0"));
@@ -838,11 +732,8 @@ var b = "core.camera.recovery",
       let e = (t = this.videoElement) == null ? void 0 : t.srcObject;
       if (
         this.hiddenProperties.stopVideoTracksOnVisibilityChange &&
-        (document.visibilityState === "hidden" &&
-          d$1.instance().stopVideoTracks(),
-        document.visibilityState === "visible" &&
-          d$1.instance().activeCamera != null &&
-          e != null)
+        (document.visibilityState === "hidden" && d$1.instance().stopVideoTracks(),
+        document.visibilityState === "visible" && d$1.instance().activeCamera != null && e != null)
       )
         if (!e.active || ((i = e.getVideoTracks()[0]) != null && i.muted))
           try {
@@ -872,12 +763,8 @@ var b = "core.camera.recovery",
         (this.frozenFrameCanvas.height = t.height),
         (this.frozenFrame.width = t.width),
         (this.frozenFrame.height = t.height),
-        (i = this.frozenFrameCanvas.getContext("2d")) == null ||
-          i.putImageData(t, 0, 0),
-        (this.frozenFrame.src = this.frozenFrameCanvas.toDataURL(
-          "image/jpeg",
-          0.4,
-        )),
+        (i = this.frozenFrameCanvas.getContext("2d")) == null || i.putImageData(t, 0, 0),
+        (this.frozenFrame.src = this.frozenFrameCanvas.toDataURL("image/jpeg", 0.4)),
         this.frozenFrame.classList.toggle(
           a$7.MIRRORED_CLASS_NAME,
           d$1.instance().isMirrorImageEnabled(),
@@ -885,8 +772,7 @@ var b = "core.camera.recovery",
         (this.frozenFrame.hidden = false));
     }
     unfreezeFrame() {
-      this.frozenFrame &&
-        ((this.frozenFrame.src = ""), (this.frozenFrame.hidden = true));
+      this.frozenFrame && ((this.frozenFrame.src = ""), (this.frozenFrame.hidden = true));
     }
   };
 export { B as a };

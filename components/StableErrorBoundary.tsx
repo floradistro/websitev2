@@ -3,6 +3,7 @@
 import { Component, ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -25,7 +26,7 @@ export class StableErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("ErrorBoundary caught:", error, errorInfo);
+      logger.error("ErrorBoundary caught:", error, errorInfo);
     }
   }
 
@@ -39,9 +40,7 @@ export class StableErrorBoundary extends Component<Props, State> {
         <div className="flex items-center justify-center min-h-[400px] bg-[#1a1a1a] border border-white/10 p-8">
           <div className="text-center max-w-md">
             <AlertTriangle size={48} className="text-yellow-500 mx-auto mb-4" />
-            <h2 className="text-white text-xl font-medium mb-2">
-              Something went wrong
-            </h2>
+            <h2 className="text-white text-xl font-medium mb-2">Something went wrong</h2>
             <p className="text-white/60 text-sm mb-4">
               {this.state.error?.message || "An unexpected error occurred"}
             </p>

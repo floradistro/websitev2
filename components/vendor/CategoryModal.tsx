@@ -94,8 +94,7 @@ export function CategoryModal({
         type: "error",
         title: "Save Failed",
         message:
-          error.response?.data?.error ||
-          `Failed to ${isEditing ? "update" : "create"} category`,
+          error.response?.data?.error || `Failed to ${isEditing ? "update" : "create"} category`,
       });
     } finally {
       setSaving(false);
@@ -119,13 +118,7 @@ export function CategoryModal({
     >
       <div className="space-y-4 mb-6">
         <div>
-          <label
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              "block mb-1.5",
-            )}
-          >
+          <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
             Category Name *
           </label>
           <Input
@@ -137,40 +130,24 @@ export function CategoryModal({
         </div>
 
         <div>
-          <label
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              "block mb-1.5",
-            )}
-          >
+          <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
             Description
           </label>
           <Textarea
             value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             placeholder="Optional description for this category"
             rows={3}
           />
         </div>
 
         <div>
-          <label
-            className={cn(
-              ds.typography.size.xs,
-              ds.colors.text.tertiary,
-              "block mb-1.5",
-            )}
-          >
+          <label className={cn(ds.typography.size.xs, ds.colors.text.tertiary, "block mb-1.5")}>
             Parent Category (Optional)
           </label>
           <select
             value={formData.parent_id}
-            onChange={(e) =>
-              setFormData({ ...formData, parent_id: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
             className={cn(
               "w-full px-3 py-2 rounded-lg",
               ds.typography.size.xs,
@@ -189,13 +166,7 @@ export function CategoryModal({
                 </option>
               ))}
           </select>
-          <p
-            className={cn(
-              ds.typography.size.micro,
-              ds.colors.text.quaternary,
-              "mt-1.5",
-            )}
-          >
+          <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-1.5")}>
             Create nested categories (e.g., Flower → Indica)
           </p>
         </div>
@@ -219,15 +190,8 @@ export function CategoryModal({
             <p className={cn(ds.typography.size.xs, "text-white/80")}>
               Categories help organize your products
             </p>
-            <p
-              className={cn(
-                ds.typography.size.micro,
-                ds.colors.text.quaternary,
-                "mt-0.5",
-              )}
-            >
-              You can assign custom fields and pricing rules to categories after
-              creation
+            <p className={cn(ds.typography.size.micro, ds.colors.text.quaternary, "mt-0.5")}>
+              You can assign custom fields and pricing rules to categories after creation
             </p>
           </div>
         </div>
@@ -253,16 +217,9 @@ export function CategoryModal({
           Cancel
         </button>
 
-        <Button
-          onClick={handleSubmit}
-          disabled={saving || !formData.name.trim()}
-        >
+        <Button onClick={handleSubmit} disabled={saving || !formData.name.trim()}>
           <Save className="w-3 h-3 mr-1.5" strokeWidth={1.5} />
-          {saving
-            ? "Saving..."
-            : isEditing
-              ? "Update Category"
-              : "Create Category"}
+          {saving ? "Saving..." : isEditing ? "Update Category" : "Create Category"}
         </Button>
       </div>
     </Modal>

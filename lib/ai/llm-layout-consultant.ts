@@ -5,6 +5,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
+import { logger } from "@/lib/logger";
 export interface StoreContext {
   storeName: string;
   storeType: "dispensary" | "retail" | "restaurant";
@@ -70,8 +71,7 @@ export class LLMLayoutConsultant {
     });
 
     // Parse Claude's response
-    const response =
-      message.content[0].type === "text" ? message.content[0].text : "";
+    const response = message.content[0].type === "text" ? message.content[0].text : "";
     return this.parseResponse(response, ruleBased);
   }
 
@@ -195,7 +195,7 @@ Respond in JSON format:
       };
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Failed to parse LLM response:", error);
+        logger.error("Failed to parse LLM response:", error);
       }
       // Fallback to rule-based
       return {
@@ -243,8 +243,7 @@ Provide actionable, specific tips as a JSON array of strings.`;
       messages: [{ role: "user", content: prompt }],
     });
 
-    const response =
-      message.content[0].type === "text" ? message.content[0].text : "";
+    const response = message.content[0].type === "text" ? message.content[0].text : "";
 
     try {
       const jsonMatch = response.match(/\[[\s\S]*\]/);

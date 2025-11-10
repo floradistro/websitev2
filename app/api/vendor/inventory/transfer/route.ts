@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     // SECURITY: Use requireVendor to get vendor_id from authenticated session
@@ -16,8 +17,7 @@ export async function POST(request: NextRequest) {
     if (!productId || !fromLocationId || !toLocationId || !quantity) {
       return NextResponse.json(
         {
-          error:
-            "Missing required fields: productId, fromLocationId, toLocationId, quantity",
+          error: "Missing required fields: productId, fromLocationId, toLocationId, quantity",
         },
         { status: 400 },
       );
@@ -73,12 +73,9 @@ export async function POST(request: NextRequest) {
 
     if (fromInvError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching from inventory:", fromInvError);
+        logger.error("Error fetching from inventory:", fromInvError);
       }
-      return NextResponse.json(
-        { error: fromInvError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: fromInvError.message }, { status: 500 });
     }
 
     if (!fromInventory) {
@@ -114,12 +111,9 @@ export async function POST(request: NextRequest) {
 
     if (fromUpdateError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error updating from inventory:", fromUpdateError);
+        logger.error("Error updating from inventory:", fromUpdateError);
       }
-      return NextResponse.json(
-        { error: fromUpdateError.message },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: fromUpdateError.message }, { status: 500 });
     }
 
     // Add to destination location (upsert)
@@ -130,9 +124,7 @@ export async function POST(request: NextRequest) {
       .eq("location_id", toLocationId)
       .maybeSingle();
 
-    const toCurrentQty = toInventory
-      ? parseFloat(toInventory.quantity || 0)
-      : 0;
+    const toCurrentQty = toInventory ? parseFloat(toInventory.quantity || 0) : 0;
     const newToQty = toCurrentQty + transferQty;
 
     if (toInventory) {
@@ -147,7 +139,7 @@ export async function POST(request: NextRequest) {
 
       if (toUpdateError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error updating to inventory:", toUpdateError);
+          logger.error("Error updating to inventory:", toUpdateError);
         }
         // Rollback from inventory
         await supabase
@@ -155,10 +147,7 @@ export async function POST(request: NextRequest) {
           .update({ quantity: currentQty })
           .eq("id", fromInventory.id);
 
-        return NextResponse.json(
-          { error: toUpdateError.message },
-          { status: 500 },
-        );
+        return NextResponse.json({ error: toUpdateError.message }, { status: 500 });
       }
     } else {
       // Create new inventory record
@@ -173,7 +162,7 @@ export async function POST(request: NextRequest) {
 
       if (toCreateError) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Error creating to inventory:", toCreateError);
+          logger.error("Error creating to inventory:", toCreateError);
         }
         // Rollback from inventory
         await supabase
@@ -181,10 +170,7 @@ export async function POST(request: NextRequest) {
           .update({ quantity: currentQty })
           .eq("id", fromInventory.id);
 
-        return NextResponse.json(
-          { error: toCreateError.message },
-          { status: 500 },
-        );
+        return NextResponse.json({ error: toCreateError.message }, { status: 500 });
       }
     }
 
@@ -195,8 +181,7 @@ export async function POST(request: NextRequest) {
       quantity: transferQty,
       from_location_id: fromLocationId,
       to_location_id: toLocationId,
-      reason:
-        reason || `Transfer from ${fromLocation?.name} to ${toLocation?.name}`,
+      reason: reason || `Transfer from ${fromLocation?.name} to ${toLocation?.name}`,
       metadata: {
         created_by: "vendor",
         vendor_id: vendorId,
@@ -214,10 +199,7 @@ export async function POST(request: NextRequest) {
       .eq("product_id", productId);
 
     const totalStock =
-      allInventory?.reduce(
-        (sum, inv) => sum + parseFloat(inv.quantity || 0),
-        0,
-      ) || 0;
+      allInventory?.reduce((sum, inv) => sum + parseFloat(inv.quantity || 0), 0) || 0;
 
     await supabase
       .from("products")
@@ -240,10 +222,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("❌ Transfer error:", error);
+      logger.error("❌ Transfer error:", error);
     }
     if (process.env.NODE_ENV === "development") {
-      console.error("Error stack:", error.stack);
+      logger.error("Error stack:", error.stack);
     }
     return NextResponse.json(
       {

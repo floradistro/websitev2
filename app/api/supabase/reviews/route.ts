@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireCustomer } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -41,15 +42,13 @@ export async function GET(request: NextRequest) {
       query = query.eq("rating", parseInt(rating));
     }
 
-    query = query
-      .order("created_at", { ascending: false })
-      .range(offset, offset + perPage - 1);
+    query = query.order("created_at", { ascending: false }).range(offset, offset + perPage - 1);
 
     const { data, error, count } = await query;
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching reviews:", error);
+        logger.error("Error fetching reviews:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -66,7 +65,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -123,7 +122,7 @@ export async function POST(request: NextRequest) {
 
     if (reviewError) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error creating review:", reviewError);
+        logger.error("Error creating review:", reviewError);
       }
       return NextResponse.json({ error: reviewError.message }, { status: 500 });
     }
@@ -134,7 +133,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

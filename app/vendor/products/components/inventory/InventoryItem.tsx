@@ -42,14 +42,9 @@ export function InventoryItem({
 }: InventoryItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const stockStatus =
-    totalQuantity === 0 ? "Empty" : totalQuantity <= 10 ? "Low" : "In Stock";
+  const stockStatus = totalQuantity === 0 ? "Empty" : totalQuantity <= 10 ? "Low" : "In Stock";
   const stockColor =
-    totalQuantity === 0
-      ? "text-white/30"
-      : totalQuantity <= 10
-        ? "text-white/60"
-        : "text-white/80";
+    totalQuantity === 0 ? "text-white/30" : totalQuantity <= 10 ? "text-white/60" : "text-white/80";
 
   const margin = costPrice ? ((price - costPrice) / price) * 100 : null;
   const stockValue = price * totalQuantity;
@@ -65,20 +60,13 @@ export function InventoryItem({
       {/* Main Row */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className={cn(
-          "w-full p-4 transition-colors text-left",
-          "hover:bg-white/[0.02]",
-        )}
+        className={cn("w-full p-4 transition-colors text-left", "hover:bg-white/[0.02]")}
       >
         <div className="flex items-center gap-4">
           {/* Product Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3
-                className={cn(ds.typography.size.sm, "text-white font-light")}
-              >
-                {productName}
-              </h3>
+              <h3 className={cn(ds.typography.size.sm, "text-white font-light")}>{productName}</h3>
               <span
                 className={cn(
                   "px-2 py-0.5 text-[8px] uppercase tracking-wider border rounded",
@@ -120,13 +108,9 @@ export function InventoryItem({
             >
               Total Stock
             </div>
-            <div className="text-2xl font-light text-white">
-              {totalQuantity.toFixed(2)}g
-            </div>
+            <div className="text-2xl font-light text-white">{totalQuantity.toFixed(2)}g</div>
             {margin !== null && (
-              <div
-                className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}
-              >
+              <div className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
                 {margin.toFixed(1)}% margin
               </div>
             )}
@@ -162,13 +146,7 @@ export function InventoryItem({
 
       {/* Expanded - Locations */}
       {isExpanded && (
-        <div
-          className={cn(
-            "border-t p-4",
-            ds.colors.border.default,
-            "bg-black/20",
-          )}
-        >
+        <div className={cn("border-t p-4", ds.colors.border.default, "bg-black/20")}>
           <div className="flex items-center gap-2 mb-4">
             <MapPin size={14} className={ds.colors.text.quaternary} />
             <h4
@@ -193,9 +171,7 @@ export function InventoryItem({
                 locationName={location.location_name}
                 quantity={location.quantity}
                 onAdjust={onAdjust}
-                isAdjusting={
-                  isAdjusting[`${productId}-${location.location_id}`] || false
-                }
+                isAdjusting={isAdjusting[`${productId}-${location.location_id}`] || false}
               />
             ))}
           </div>

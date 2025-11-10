@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X, AlertTriangle } from "lucide-react";
 
+import { logger } from "@/lib/logger";
 interface Transaction {
   id: string;
   transaction_number: string;
@@ -24,18 +25,11 @@ interface POSRefundVoidProps {
   onCancel: () => void;
 }
 
-export function POSRefundVoid({
-  transaction,
-  type,
-  onComplete,
-  onCancel,
-}: POSRefundVoidProps) {
+export function POSRefundVoid({ transaction, type, onComplete, onCancel }: POSRefundVoidProps) {
   const [reason, setReason] = useState("");
   const [processing, setProcessing] = useState(false);
 
-  const isToday =
-    new Date(transaction.created_at).toDateString() ===
-    new Date().toDateString();
+  const isToday = new Date(transaction.created_at).toDateString() === new Date().toDateString();
   const canVoid = type === "void" && isToday;
 
   const handleSubmit = async () => {
@@ -46,8 +40,7 @@ export function POSRefundVoid({
     setProcessing(true);
 
     try {
-      const endpoint =
-        type === "void" ? "/api/pos/sales/void" : "/api/pos/sales/refund";
+      const endpoint = type === "void" ? "/api/pos/sales/void" : "/api/pos/sales/refund";
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -67,7 +60,7 @@ export function POSRefundVoid({
       onComplete(); // Success - let parent handle UI
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Refund/void error:", error);
+        logger.error("Refund/void error:", error);
       }
       setProcessing(false);
     }
@@ -89,10 +82,7 @@ export function POSRefundVoid({
               {type === "void" ? "Void Transaction" : "Process Refund"}
             </h3>
           </div>
-          <button
-            onClick={onCancel}
-            className="text-white/40 hover:text-white transition-colors"
-          >
+          <button onClick={onCancel} className="text-white/40 hover:text-white transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -104,8 +94,7 @@ export function POSRefundVoid({
               Cannot Void
             </div>
             <div className="text-white/60 text-[10px]">
-              Transactions can only be voided on the same day. Use refund
-              instead.
+              Transactions can only be voided on the same day. Use refund instead.
             </div>
           </div>
         )}
@@ -113,13 +102,8 @@ export function POSRefundVoid({
         {/* Transaction Details */}
         <div className="bg-[#141414] border border-white/5 rounded-2xl p-4 mb-6">
           <div className="flex justify-between items-center mb-3 pb-3 border-b border-white/5">
-            <span className="text-[10px] uppercase tracking-[0.15em] text-white/40">
-              Order
-            </span>
-            <span
-              className="text-white font-black text-xs"
-              style={{ fontWeight: 900 }}
-            >
+            <span className="text-[10px] uppercase tracking-[0.15em] text-white/40">Order</span>
+            <span className="text-white font-black text-xs" style={{ fontWeight: 900 }}>
               {transaction.order_number}
             </span>
           </div>
@@ -130,10 +114,7 @@ export function POSRefundVoid({
                 <span className="text-white/60">
                   {item.quantity}× {item.productName}
                 </span>
-                <span
-                  className="text-white font-black"
-                  style={{ fontWeight: 900 }}
-                >
+                <span className="text-white font-black" style={{ fontWeight: 900 }}>
                   ${(item.quantity * item.unitPrice).toFixed(2)}
                 </span>
               </div>
@@ -141,13 +122,8 @@ export function POSRefundVoid({
           </div>
 
           <div className="flex justify-between items-center pt-3 border-t border-white/5">
-            <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
-              Total
-            </span>
-            <span
-              className="text-white font-black text-lg"
-              style={{ fontWeight: 900 }}
-            >
+            <span className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Total</span>
+            <span className="text-white font-black text-lg" style={{ fontWeight: 900 }}>
               ${transaction.total_amount.toFixed(2)}
             </span>
           </div>
@@ -179,9 +155,7 @@ export function POSRefundVoid({
           </button>
           <button
             onClick={handleSubmit}
-            disabled={
-              processing || !reason.trim() || (type === "void" && !canVoid)
-            }
+            disabled={processing || !reason.trim() || (type === "void" && !canVoid)}
             className="flex-1 px-4 py-3 bg-red-500/20 border-2 border-red-500/40 text-red-400 rounded-2xl hover:bg-red-500/30 text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             style={{ fontWeight: 900 }}
           >

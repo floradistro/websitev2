@@ -5,9 +5,7 @@ declare class SafeStorage implements Storage {
   isSupported: boolean;
   constructor(type: "localStorage" | "sessionStorage");
   get length(): number;
-  static isStorageTypeSupported(
-    type: "localStorage" | "sessionStorage",
-  ): boolean;
+  static isStorageTypeSupported(type: "localStorage" | "sessionStorage"): boolean;
   key(index: number): string | null;
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;

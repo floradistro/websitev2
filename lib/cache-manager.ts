@@ -81,10 +81,7 @@ export const inventoryCache = new QueryCache({
 });
 
 // Helper function to generate consistent cache keys
-export function generateCacheKey(
-  prefix: string,
-  params: Record<string, any>,
-): string {
+export function generateCacheKey(prefix: string, params: Record<string, any>): string {
   const sortedParams = Object.keys(params)
     .sort()
     .map((key) => `${key}:${params[key]}`)

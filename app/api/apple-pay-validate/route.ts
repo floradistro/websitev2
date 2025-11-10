@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -26,7 +27,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Apple Pay validation error:", error);
+      logger.error("Apple Pay validation error:", error);
     }
     return NextResponse.json(
       {

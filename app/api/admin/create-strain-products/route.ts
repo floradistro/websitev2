@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 // Common strain data (from industry knowledge)
 const STRAIN_DATA: Record<string, any> = {
   "peanut butter breath": {
@@ -37,8 +38,7 @@ const STRAIN_DATA: Record<string, any> = {
     type: "hybrid",
     effects: ["Euphoric", "Uplifted", "Creative"],
     flavors: ["Sweet", "Berry", "Candy"],
-    description:
-      "A candy-like strain with sweet, fruity flavors and uplifting effects.",
+    description: "A candy-like strain with sweet, fruity flavors and uplifting effects.",
   },
   "jet fuel": {
     type: "hybrid",
@@ -68,46 +68,40 @@ const STRAIN_DATA: Record<string, any> = {
     type: "hybrid",
     effects: ["Relaxed", "Happy", "Sleepy"],
     flavors: ["Sweet", "Berry", "Floral"],
-    description:
-      "A beautiful pink-hued strain with sweet berry flavors and relaxing effects.",
+    description: "A beautiful pink-hued strain with sweet berry flavors and relaxing effects.",
   },
   "lemon runtz": {
     type: "hybrid",
     effects: ["Uplifted", "Energetic", "Happy"],
     flavors: ["Lemon", "Citrus", "Sweet"],
-    description:
-      "Citrus-forward Runtz phenotype with bright lemon flavors and uplifting effects.",
+    description: "Citrus-forward Runtz phenotype with bright lemon flavors and uplifting effects.",
   },
   "pink souffle": {
     name: "Pink Soufflé",
     type: "hybrid",
     effects: ["Relaxed", "Happy", "Euphoric"],
     flavors: ["Sweet", "Vanilla", "Creamy"],
-    description:
-      "A dessert strain with sweet, creamy flavors and balanced relaxing effects.",
+    description: "A dessert strain with sweet, creamy flavors and balanced relaxing effects.",
   },
   "private reserve": {
     type: "hybrid",
     effects: ["Relaxed", "Euphoric", "Happy"],
     flavors: ["Earthy", "Sweet", "Pine"],
-    description:
-      "Premium reserve selection with complex terpene profile and potent effects.",
+    description: "Premium reserve selection with complex terpene profile and potent effects.",
   },
   "project z": {
     name: "Project Z",
     type: "hybrid",
     effects: ["Relaxed", "Sleepy", "Euphoric"],
     flavors: ["Earthy", "Herbal", "Sweet"],
-    description:
-      "An exotic cross delivering deeply relaxing effects with complex flavor.",
+    description: "An exotic cross delivering deeply relaxing effects with complex flavor.",
   },
   "snoop runtz": {
     name: "Snoop Runtz",
     type: "hybrid",
     effects: ["Relaxed", "Happy", "Euphoric"],
     flavors: ["Sweet", "Fruity", "Candy"],
-    description:
-      "A celebrity-endorsed Runtz phenotype with sweet fruity flavors.",
+    description: "A celebrity-endorsed Runtz phenotype with sweet fruity flavors.",
   },
   "super runtz": {
     type: "hybrid",
@@ -129,77 +123,67 @@ const STRAIN_DATA: Record<string, any> = {
     type: "hybrid",
     effects: ["Happy", "Relaxed", "Uplifted"],
     flavors: ["Fruity", "Sweet", "Tropical"],
-    description:
-      "Taste the rainbow with this colorful strain featuring mixed fruity flavors.",
+    description: "Taste the rainbow with this colorful strain featuring mixed fruity flavors.",
   },
   "unicorn cherry": {
     name: "Unicorn Cherry",
     type: "hybrid",
     effects: ["Euphoric", "Creative", "Uplifted"],
     flavors: ["Cherry", "Sweet", "Fruity"],
-    description:
-      "A magical strain with sweet cherry flavors and uplifting euphoric effects.",
+    description: "A magical strain with sweet cherry flavors and uplifting euphoric effects.",
   },
   "tiger runtz": {
     type: "hybrid",
     effects: ["Energetic", "Focused", "Uplifted"],
     flavors: ["Sweet", "Citrus", "Spicy"],
-    description:
-      "A fierce Runtz phenotype with spicy citrus notes and energizing effects.",
+    description: "A fierce Runtz phenotype with spicy citrus notes and energizing effects.",
   },
   "blue nerds": {
     type: "hybrid",
     effects: ["Happy", "Relaxed", "Euphoric"],
     flavors: ["Berry", "Sweet", "Grape"],
-    description:
-      "Candy-like strain with sweet berry flavors inspired by the popular candy.",
+    description: "Candy-like strain with sweet berry flavors inspired by the popular candy.",
   },
   "london jelly": {
     name: "London Jelly",
     type: "hybrid",
     effects: ["Relaxed", "Happy", "Sleepy"],
     flavors: ["Sweet", "Berry", "Floral"],
-    description:
-      "A UK-inspired strain with sweet jelly-like flavors and relaxing effects.",
+    description: "A UK-inspired strain with sweet jelly-like flavors and relaxing effects.",
   },
   "girl scout": {
     name: "Girl Scout Cookies",
     type: "hybrid",
     effects: ["Euphoric", "Relaxed", "Happy"],
     flavors: ["Sweet", "Earthy", "Mint"],
-    description:
-      "Classic GSC with sweet and earthy notes, delivering euphoric relaxation.",
+    description: "Classic GSC with sweet and earthy notes, delivering euphoric relaxation.",
   },
   gogurt: {
     type: "hybrid",
     effects: ["Uplifted", "Happy", "Relaxed"],
     flavors: ["Fruity", "Creamy", "Sweet"],
-    description:
-      "A creamy, fruity strain with yogurt-like smoothness and balanced effects.",
+    description: "A creamy, fruity strain with yogurt-like smoothness and balanced effects.",
   },
   "cheese puff": {
     name: "Cheese Puff",
     type: "hybrid",
     effects: ["Relaxed", "Happy", "Giggly"],
     flavors: ["Cheese", "Earthy", "Pungent"],
-    description:
-      "Unique cheese strain with savory notes and relaxing, giggly effects.",
+    description: "Unique cheese strain with savory notes and relaxing, giggly effects.",
   },
   "faygo cream": {
     name: "Faygo Cream",
     type: "hybrid",
     effects: ["Relaxed", "Happy", "Euphoric"],
     flavors: ["Creamy", "Sweet", "Vanilla"],
-    description:
-      "Cream soda inspired strain with smooth vanilla notes and mellow effects.",
+    description: "Cream soda inspired strain with smooth vanilla notes and mellow effects.",
   },
   "candy gruntz": {
     name: "Candy Gruntz",
     type: "hybrid",
     effects: ["Happy", "Uplifted", "Relaxed"],
     flavors: ["Candy", "Sweet", "Fruity"],
-    description:
-      "Super sweet candy strain with mixed fruit flavors and uplifting buzz.",
+    description: "Super sweet candy strain with mixed fruit flavors and uplifting buzz.",
   },
   "blue ritz": {
     type: "hybrid",
@@ -212,55 +196,48 @@ const STRAIN_DATA: Record<string, any> = {
     type: "hybrid",
     effects: ["Euphoric", "Happy", "Uplifted"],
     flavors: ["Candy", "Sweet", "Fruity"],
-    description:
-      "Candy-coated strain with intense sweet flavors and euphoric lift.",
+    description: "Candy-coated strain with intense sweet flavors and euphoric lift.",
   },
   "purple runtz": {
     type: "hybrid",
     effects: ["Relaxed", "Happy", "Sleepy"],
     flavors: ["Grape", "Sweet", "Candy"],
-    description:
-      "Purple phenotype of the famous Runtz with grape candy flavors.",
+    description: "Purple phenotype of the famous Runtz with grape candy flavors.",
   },
   "glitter bomb": {
     name: "Glitter Bomb",
     type: "hybrid",
     effects: ["Euphoric", "Creative", "Uplifted"],
     flavors: ["Sweet", "Fruity", "Tropical"],
-    description:
-      "Sparkly trichome-covered strain with tropical fruit flavors and creative buzz.",
+    description: "Sparkly trichome-covered strain with tropical fruit flavors and creative buzz.",
   },
   banana: {
     name: "Banana",
     type: "hybrid",
     effects: ["Happy", "Relaxed", "Uplifted"],
     flavors: ["Banana", "Tropical", "Sweet"],
-    description:
-      "Tropical strain with distinct banana aroma and balanced hybrid effects.",
+    description: "Tropical strain with distinct banana aroma and balanced hybrid effects.",
   },
   "ghost rider": {
     name: "Ghost Rider",
     type: "indica",
     effects: ["Relaxed", "Sleepy", "Euphoric"],
     flavors: ["Earthy", "Pine", "Spicy"],
-    description:
-      "Potent indica with earthy pine flavors and heavy sedative effects.",
+    description: "Potent indica with earthy pine flavors and heavy sedative effects.",
   },
   "golden gush": {
     name: "Golden Gush",
     type: "hybrid",
     effects: ["Euphoric", "Happy", "Relaxed"],
     flavors: ["Tropical", "Sweet", "Citrus"],
-    description:
-      "Golden-hued strain with tropical fruit flavors and euphoric effects.",
+    description: "Golden-hued strain with tropical fruit flavors and euphoric effects.",
   },
   "japanese peaches": {
     name: "Japanese Peaches",
     type: "hybrid",
     effects: ["Uplifted", "Creative", "Happy"],
     flavors: ["Peach", "Sweet", "Fruity"],
-    description:
-      "Exotic peach-flavored strain with sweet fruit notes and uplifting effects.",
+    description: "Exotic peach-flavored strain with sweet fruit notes and uplifting effects.",
   },
   "pop candy": {
     name: "Pop Candy",
@@ -274,72 +251,63 @@ const STRAIN_DATA: Record<string, any> = {
     type: "hybrid",
     effects: ["Focused", "Uplifted", "Energetic"],
     flavors: ["Earthy", "Sweet", "Herbal"],
-    description:
-      "Unique strain with tea-like earthy flavors and focusing effects.",
+    description: "Unique strain with tea-like earthy flavors and focusing effects.",
   },
   "pink pink runtz": {
     name: "Pink Pink Runtz",
     type: "hybrid",
     effects: ["Relaxed", "Happy", "Euphoric"],
     flavors: ["Berry", "Sweet", "Candy"],
-    description:
-      "Double pink Runtz selection with intensified berry candy flavors.",
+    description: "Double pink Runtz selection with intensified berry candy flavors.",
   },
   "blow pop": {
     name: "Blow Pop",
     type: "hybrid",
     effects: ["Happy", "Uplifted", "Relaxed"],
     flavors: ["Candy", "Sweet", "Fruity"],
-    description:
-      "Candy strain with bubblegum and fruit flavors like the classic lollipop.",
+    description: "Candy strain with bubblegum and fruit flavors like the classic lollipop.",
   },
   "blue zushi runtz": {
     name: "Blue Zushi Runtz",
     type: "indica",
     effects: ["Relaxed", "Sleepy", "Happy"],
     flavors: ["Berry", "Sweet", "Grape"],
-    description:
-      "Blue-hued Zushi cross with Runtz bringing grape berry sweetness.",
+    description: "Blue-hued Zushi cross with Runtz bringing grape berry sweetness.",
   },
   "glue latto": {
     name: "Glue Latto",
     type: "hybrid",
     effects: ["Relaxed", "Euphoric", "Sleepy"],
     flavors: ["Earthy", "Sweet", "Diesel"],
-    description:
-      "Gorilla Glue and Gelato cross delivering sticky sweet relaxation.",
+    description: "Gorilla Glue and Gelato cross delivering sticky sweet relaxation.",
   },
   atm: {
     name: "ATM",
     type: "hybrid",
     effects: ["Energetic", "Focused", "Creative"],
     flavors: ["Citrus", "Diesel", "Earthy"],
-    description:
-      "High-value strain with potent effects and complex citrus diesel profile.",
+    description: "High-value strain with potent effects and complex citrus diesel profile.",
   },
   "blue a": {
     name: "Blue Apples",
     type: "indica",
     effects: ["Relaxed", "Sleepy", "Happy"],
     flavors: ["Berry", "Apple", "Sweet"],
-    description:
-      "Blue-tinged strain with apple and berry notes and relaxing effects.",
+    description: "Blue-tinged strain with apple and berry notes and relaxing effects.",
   },
   lcg: {
     name: "Lemon Cherry Gelato",
     type: "hybrid",
     effects: ["Balanced", "Uplifted", "Relaxed"],
     flavors: ["Lemon", "Cherry", "Creamy"],
-    description:
-      "Popular Backpackboyz strain combining lemon, cherry, and gelato genetics.",
+    description: "Popular Backpackboyz strain combining lemon, cherry, and gelato genetics.",
   },
   "lol runtz": {
     name: "LOL Runtz",
     type: "hybrid",
     effects: ["Giggly", "Happy", "Euphoric"],
     flavors: ["Sweet", "Fruity", "Candy"],
-    description:
-      "A giggly, fun Runtz variety with intense sweet candy flavors.",
+    description: "A giggly, fun Runtz variety with intense sweet candy flavors.",
   },
   "bomb popz": {
     name: "Bomb Popz",
@@ -353,16 +321,14 @@ const STRAIN_DATA: Record<string, any> = {
     type: "hybrid",
     effects: ["Relaxed", "Happy", "Euphoric"],
     flavors: ["Sweet", "Creamy", "Fruity"],
-    description:
-      "Pure Sherbet genetics delivering creamy sweet flavors and mellow vibes.",
+    description: "Pure Sherbet genetics delivering creamy sweet flavors and mellow vibes.",
   },
   "gary runtz": {
     name: "Gary Runtz",
     type: "hybrid",
     effects: ["Uplifted", "Creative", "Energetic"],
     flavors: ["Sweet", "Fruity", "Diesel"],
-    description:
-      "Gary Payton and Runtz cross bringing together sweet and diesel notes.",
+    description: "Gary Payton and Runtz cross bringing together sweet and diesel notes.",
   },
 };
 
@@ -378,10 +344,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!vendor) {
-      return NextResponse.json(
-        { error: "Flora Distro not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Flora Distro not found" }, { status: 404 });
     }
 
     // Get flower category
@@ -392,10 +355,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (!flowerCategory) {
-      return NextResponse.json(
-        { error: "Flower category not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Flower category not found" }, { status: 404 });
     }
 
     // Get unmatched images from request
@@ -469,10 +429,7 @@ export async function POST(request: NextRequest) {
 
         if (createError) {
           if (process.env.NODE_ENV === "development") {
-            console.error(
-              `❌ Failed to create ${productName}:`,
-              createError.message,
-            );
+            logger.error(`❌ Failed to create ${productName}:`, createError.message);
           }
           failed.push({
             image: item.image,
@@ -489,7 +446,7 @@ export async function POST(request: NextRequest) {
         }
       } catch (error: any) {
         if (process.env.NODE_ENV === "development") {
-          console.error(`❌ Error processing ${item.image}:`, error.message);
+          logger.error(`❌ Error processing ${item.image}:`, error.message);
         }
         failed.push({
           image: item.image,
@@ -510,7 +467,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error:", error);
+      logger.error("Error:", error);
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

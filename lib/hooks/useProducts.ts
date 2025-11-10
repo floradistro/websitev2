@@ -1,12 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { vendorProductsAPI } from "@/lib/api/vendor-products";
 import { useAppAuth } from "@/context/AppAuthContext";
-import type {
-  CreateProductRequest,
-  UpdateProductRequest,
-} from "@/lib/validations/product";
+import type { CreateProductRequest, UpdateProductRequest } from "@/lib/validations/product";
 import type { Product } from "@/lib/api/vendor-products";
 
+import { logger } from "@/lib/logger";
 /**
  * Query keys for product-related queries
  */
@@ -39,10 +37,8 @@ export function useProducts(params?: {
   if (params?.page) queryParams.set("page", String(params.page));
   if (params?.limit) queryParams.set("limit", String(params.limit));
   if (params?.search) queryParams.set("search", params.search);
-  if (params?.status && params.status !== "all")
-    queryParams.set("status", params.status);
-  if (params?.category && params.category !== "all")
-    queryParams.set("category", params.category);
+  if (params?.status && params.status !== "all") queryParams.set("status", params.status);
+  if (params?.category && params.category !== "all") queryParams.set("category", params.category);
 
   const filterKey = queryParams.toString();
 
@@ -67,7 +63,7 @@ export function useProducts(params?: {
         // If 401 and we have retries left, wait and retry
         if (response.status === 401 && retries < maxRetries) {
           if (process.env.NODE_ENV === "development") {
-            console.warn(`⚠️  401 on attempt ${retries + 1}, retrying...`);
+            logger.warn(`⚠️  401 on attempt ${retries + 1}, retrying...`);
           }
           // Wait 300ms for cookie to propagate
           await new Promise((resolve) => setTimeout(resolve, 300));
@@ -78,11 +74,9 @@ export function useProducts(params?: {
         // Out of retries or different error
         const errorText = await response.text();
         if (process.env.NODE_ENV === "development") {
-          console.error(
-            "Failed to fetch products:",
-            response.status,
-            errorText,
-          );
+          logger.error("Failed to fetch products", new Error(errorText), {
+            status: response.status,
+          });
         }
         throw new Error(`Failed to fetch products: ${response.status}`);
       }
@@ -177,18 +171,12 @@ export function useUpdateProduct() {
       productId: string;
       productData: UpdateProductRequest;
     }) => {
-      const response = await vendorProductsAPI.updateProduct(
-        productId,
-        productData,
-      );
+      const response = await vendorProductsAPI.updateProduct(productId, productData);
       return response.product;
     },
     onSuccess: (updatedProduct) => {
       // Update the product in the cache
-      queryClient.setQueryData(
-        productKeys.detail(updatedProduct.id),
-        updatedProduct,
-      );
+      queryClient.setQueryData(productKeys.detail(updatedProduct.id), updatedProduct);
 
       // Invalidate product lists to refetch
       queryClient.invalidateQueries({ queryKey: productKeys.lists() });
@@ -212,9 +200,7 @@ export function useDeleteProduct() {
       await queryClient.cancelQueries({ queryKey: productKeys.lists() });
 
       // Snapshot the previous value
-      const previousProducts = queryClient.getQueryData<Product[]>(
-        productKeys.lists(),
-      );
+      const previousProducts = queryClient.getQueryData<Product[]>(productKeys.lists());
 
       // Optimistically update the cache
       if (previousProducts) {

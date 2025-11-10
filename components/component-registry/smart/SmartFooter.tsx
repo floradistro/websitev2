@@ -187,8 +187,7 @@ export function SmartFooter({
         >
           {showCopyright && (
             <p className="text-[10px] sm:text-xs text-white/40 uppercase tracking-[0.15em] font-black">
-              {copyrightText ||
-                `© ${currentYear} ${vendorName}. All rights reserved.`}
+              {copyrightText || `© ${currentYear} ${vendorName}. All rights reserved.`}
             </p>
           )}
 

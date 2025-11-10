@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { logger } from "@/lib/logger";
 /**
  * Logout endpoint - clears HTTP-only authentication cookie
  */
@@ -22,11 +23,8 @@ export async function POST(request: NextRequest) {
     return response;
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Logout error:", error);
+      logger.error("Logout error:", error);
     }
-    return NextResponse.json(
-      { success: false, error: "Logout failed" },
-      { status: 500 },
-    );
+    return NextResponse.json({ success: false, error: "Logout failed" }, { status: 500 });
   }
 }

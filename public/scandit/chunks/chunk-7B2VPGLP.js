@@ -41,9 +41,7 @@ void main() {
     constructor(t, e) {
       super(t, e);
       this.colorType = "GRAYSCALE";
-      this._positions = new Float32Array([
-        -1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1,
-      ]);
+      this._positions = new Float32Array([-1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 1]);
       this._canvas = document.createElement("canvas");
     }
     get _webglContext() {
@@ -51,9 +49,7 @@ void main() {
       if (!this._ctx) {
         if (
           ((this._ctx =
-            (t = this._canvas) == null
-              ? void 0
-              : t.getContext("webgl", { antialias: false })),
+            (t = this._canvas) == null ? void 0 : t.getContext("webgl", { antialias: false })),
           !this._ctx)
         )
           throw new Error("Cannot get WebGL context");
@@ -77,10 +73,7 @@ void main() {
           TRIANGLES: d,
         } = this._webglContext;
       this._webglContext.viewport(0, 0, r, i);
-      let p = this._webglContext.getUniformLocation(
-          this._shaderProgram,
-          "x_spacing",
-        ),
+      let p = this._webglContext.getUniformLocation(this._shaderProgram, "x_spacing"),
         u = 1 / e;
       (this._webglContext.uniform1f(p, u),
         this._webglContext.texImage2D(f, 0, o, o, s, t),
@@ -97,14 +90,10 @@ void main() {
     dispose() {
       var t;
       (this._shaderProgram &&
-        (this._webglContext.deleteProgram(this._shaderProgram),
-        (this._shaderProgram = null)),
+        (this._webglContext.deleteProgram(this._shaderProgram), (this._shaderProgram = null)),
         this._positionBuffer &&
-          (this._webglContext.deleteBuffer(this._positionBuffer),
-          (this._positionBuffer = null)),
-        this._texture &&
-          (this._webglContext.deleteTexture(this._texture),
-          (this._texture = null)),
+          (this._webglContext.deleteBuffer(this._positionBuffer), (this._positionBuffer = null)),
+        this._texture && (this._webglContext.deleteTexture(this._texture), (this._texture = null)),
         (this._ctx = null),
         (t = this._framePool) == null || t.empty(),
         (this._canvas = void 0));
@@ -118,8 +107,7 @@ void main() {
     }
     updateFrameSizeIfNeeded() {
       var i;
-      let { drawingBufferWidth: t, drawingBufferHeight: e } =
-          this._webglContext,
+      let { drawingBufferWidth: t, drawingBufferHeight: e } = this._webglContext,
         r = t * e * 4;
       this._frameSize !== r &&
         ((this._frameSize = t * e * 4),
@@ -139,39 +127,20 @@ void main() {
     }
     initBuffers() {
       ((this._positionBuffer = this._webglContext.createBuffer()),
-        this._webglContext.bindBuffer(
-          this._webglContext.ARRAY_BUFFER,
-          this._positionBuffer,
-        ),
+        this._webglContext.bindBuffer(this._webglContext.ARRAY_BUFFER, this._positionBuffer),
         this._webglContext.bufferData(
           this._webglContext.ARRAY_BUFFER,
           this._positions,
           this._webglContext.STATIC_DRAW,
         ));
-      let t = this._webglContext.getAttribLocation(
-        this._shaderProgram,
-        "a_position",
-      );
+      let t = this._webglContext.getAttribLocation(this._shaderProgram, "a_position");
       (this._webglContext.enableVertexAttribArray(t),
-        this._webglContext.bindBuffer(
-          this._webglContext.ARRAY_BUFFER,
-          this._positionBuffer,
-        ),
-        this._webglContext.vertexAttribPointer(
-          t,
-          2,
-          this._webglContext.FLOAT,
-          false,
-          0,
-          0,
-        ));
+        this._webglContext.bindBuffer(this._webglContext.ARRAY_BUFFER, this._positionBuffer),
+        this._webglContext.vertexAttribPointer(t, 2, this._webglContext.FLOAT, false, 0, 0));
     }
     initTexture() {
       ((this._texture = this._webglContext.createTexture()),
-        this._webglContext.bindTexture(
-          this._webglContext.TEXTURE_2D,
-          this._texture,
-        ),
+        this._webglContext.bindTexture(this._webglContext.TEXTURE_2D, this._texture),
         this._webglContext.texParameteri(
           this._webglContext.TEXTURE_2D,
           this._webglContext.TEXTURE_WRAP_S,
@@ -192,10 +161,7 @@ void main() {
           this._webglContext.TEXTURE_MAG_FILTER,
           this._webglContext.LINEAR,
         ));
-      let t = this._webglContext.getUniformLocation(
-        this._shaderProgram,
-        "u_texture",
-      );
+      let t = this._webglContext.getUniformLocation(this._shaderProgram, "u_texture");
       this._webglContext.uniform1i(t, 0);
     }
   };

@@ -29,12 +29,7 @@ interface DropdownProps {
  * - Design system fonts
  * - Smooth animations
  */
-export function Dropdown({
-  trigger,
-  items,
-  align = "right",
-  width = "w-48",
-}: DropdownProps) {
+export function Dropdown({ trigger, items, align = "right", width = "w-48" }: DropdownProps) {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <Menu.Button as="div" className="cursor-pointer">
@@ -72,9 +67,7 @@ export function Dropdown({
                       transition-colors duration-150
                     `}
                   >
-                    {item.icon && (
-                      <span className="flex-shrink-0">{item.icon}</span>
-                    )}
+                    {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
                     <span className="truncate">{item.label}</span>
                   </button>
                 )}
@@ -109,11 +102,7 @@ export function DropdownTrigger({
       `}
     >
       {children}
-      <ChevronDown
-        size={12}
-        className={ds.colors.text.quaternary}
-        strokeWidth={2}
-      />
+      <ChevronDown size={12} className={ds.colors.text.quaternary} strokeWidth={2} />
     </div>
   );
 }

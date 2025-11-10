@@ -39,14 +39,7 @@ export default function AIAutofillPanel({
 }: AIAutofillPanelProps) {
   const [customPrompt, setCustomPrompt] = useState("");
   const [selectedFields, setSelectedFields] = useState<Set<string>>(
-    new Set([
-      "description",
-      "strain_type",
-      "lineage",
-      "nose",
-      "effects",
-      "terpene_profile",
-    ]),
+    new Set(["description", "strain_type", "lineage", "nose", "effects", "terpene_profile"]),
   );
 
   // Available fields for autofill
@@ -156,9 +149,7 @@ export default function AIAutofillPanel({
                             ds.colors.bg.primary,
                             "border-white/10 text-white/40 hover:border-white/20",
                           ),
-                      !isAvailable
-                        ? "opacity-30 cursor-not-allowed"
-                        : "cursor-pointer",
+                      !isAvailable ? "opacity-30 cursor-not-allowed" : "cursor-pointer",
                     )}
                     style={{ fontWeight: 900 }}
                   >
@@ -180,9 +171,7 @@ export default function AIAutofillPanel({
           <button
             type="button"
             onClick={handleAutofill}
-            disabled={
-              loading || selectedFields.size === 0 || !productName.trim()
-            }
+            disabled={loading || selectedFields.size === 0 || !productName.trim()}
             className="w-full px-4 py-3 bg-white/10 border-2 border-white/20 rounded-xl text-white hover:bg-white/20 hover:border-white/30 transition-all flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.15em] font-black disabled:opacity-30 disabled:cursor-not-allowed"
             style={{ fontWeight: 900 }}
           >
@@ -208,38 +197,36 @@ export default function AIAutofillPanel({
               "border border-white/10 rounded-xl p-3 mb-3 space-y-3 max-h-64 overflow-y-auto",
             )}
           >
-            {selectedFields.has("description") &&
-              aiSuggestions?.description && (
-                <div>
-                  <div
-                    className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black"
-                    style={{ fontWeight: 900 }}
-                  >
-                    📝 Description
-                  </div>
-                  <p className="text-white/70 text-[10px] leading-relaxed">
-                    {aiSuggestions.description}
-                  </p>
+            {selectedFields.has("description") && aiSuggestions?.description && (
+              <div>
+                <div
+                  className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black"
+                  style={{ fontWeight: 900 }}
+                >
+                  📝 Description
                 </div>
-              )}
+                <p className="text-white/70 text-[10px] leading-relaxed">
+                  {aiSuggestions.description}
+                </p>
+              </div>
+            )}
 
-            {selectedFields.has("strain_type") &&
-              aiSuggestions?.strain_type && (
-                <div>
-                  <div
-                    className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black"
-                    style={{ fontWeight: 900 }}
-                  >
-                    🌿 Strain Type
-                  </div>
-                  <span
-                    className="bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-[9px] text-white font-black uppercase tracking-wider"
-                    style={{ fontWeight: 900 }}
-                  >
-                    {aiSuggestions.strain_type}
-                  </span>
+            {selectedFields.has("strain_type") && aiSuggestions?.strain_type && (
+              <div>
+                <div
+                  className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black"
+                  style={{ fontWeight: 900 }}
+                >
+                  🌿 Strain Type
                 </div>
-              )}
+                <span
+                  className="bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-[9px] text-white font-black uppercase tracking-wider"
+                  style={{ fontWeight: 900 }}
+                >
+                  {aiSuggestions.strain_type}
+                </span>
+              </div>
+            )}
 
             {selectedFields.has("lineage") && aiSuggestions?.lineage && (
               <div>
@@ -258,28 +245,26 @@ export default function AIAutofillPanel({
               </div>
             )}
 
-            {selectedFields.has("nose") &&
-              aiSuggestions?.nose &&
-              aiSuggestions.nose.length > 0 && (
-                <div>
-                  <div
-                    className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black"
-                    style={{ fontWeight: 900 }}
-                  >
-                    👃 Nose/Aroma
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {aiSuggestions.nose.map((aroma: string, idx: number) => (
-                      <span
-                        key={idx}
-                        className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider"
-                      >
-                        {aroma}
-                      </span>
-                    ))}
-                  </div>
+            {selectedFields.has("nose") && aiSuggestions?.nose && aiSuggestions.nose.length > 0 && (
+              <div>
+                <div
+                  className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1.5 font-black"
+                  style={{ fontWeight: 900 }}
+                >
+                  👃 Nose/Aroma
                 </div>
-              )}
+                <div className="flex flex-wrap gap-1">
+                  {aiSuggestions.nose.map((aroma: string, idx: number) => (
+                    <span
+                      key={idx}
+                      className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider"
+                    >
+                      {aroma}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {selectedFields.has("effects") &&
               aiSuggestions?.effects &&
@@ -292,16 +277,14 @@ export default function AIAutofillPanel({
                     ✨ Effects
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {aiSuggestions.effects.map(
-                      (effect: string, idx: number) => (
-                        <span
-                          key={idx}
-                          className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider"
-                        >
-                          {effect}
-                        </span>
-                      ),
-                    )}
+                    {aiSuggestions.effects.map((effect: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider"
+                      >
+                        {effect}
+                      </span>
+                    ))}
                   </div>
                 </div>
               )}
@@ -317,16 +300,14 @@ export default function AIAutofillPanel({
                     🧪 Terpenes
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {aiSuggestions.terpene_profile.map(
-                      (terpene: string, idx: number) => (
-                        <span
-                          key={idx}
-                          className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider"
-                        >
-                          {terpene}
-                        </span>
-                      ),
-                    )}
+                    {aiSuggestions.terpene_profile.map((terpene: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="bg-white/5 border border-white/10 rounded px-2 py-0.5 text-[9px] text-white/70 uppercase tracking-wider"
+                      >
+                        {terpene}
+                      </span>
+                    ))}
                   </div>
                 </div>
               )}

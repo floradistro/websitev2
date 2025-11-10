@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { walletPassGenerator } from "@/lib/wallet/pass-generator";
-import {
-  generatePassSerialNumber,
-  generateAuthToken,
-} from "@/lib/wallet/config";
+import { logger } from "@/lib/logger";
+import { generatePassSerialNumber, generateAuthToken } from "@/lib/wallet/config";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -39,10 +37,7 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (customerError || !customer) {
-      return NextResponse.json(
-        { success: false, error: "Customer not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ success: false, error: "Customer not found" }, { status: 404 });
     }
 
     // Get vendor data (use vendor_id if provided, otherwise get default)
@@ -66,10 +61,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (!vendor) {
-      return NextResponse.json(
-        { success: false, error: "Vendor not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ success: false, error: "Vendor not found" }, { status: 404 });
     }
 
     // Check if pass already exists for this customer
@@ -126,8 +118,7 @@ export async function GET(request: NextRequest) {
           pass_serial_number: serialNumber,
           serial_number: serialNumber,
           authentication_token: authToken,
-          pass_type_identifier:
-            process.env.APPLE_PASS_TYPE_ID || "pass.com.whaletools.wallet",
+          pass_type_identifier: process.env.APPLE_PASS_TYPE_ID || "pass.com.whaletools.wallet",
           status: "active",
           pass_data: passData,
           is_active: true,
@@ -137,7 +128,7 @@ export async function GET(request: NextRequest) {
 
       if (insertError || !newPass) {
         if (process.env.NODE_ENV === "development") {
-          console.error("Failed to create pass record:", insertError);
+          logger.error("Failed to create pass record:", insertError);
         }
         return NextResponse.json(
           { success: false, error: "Failed to create pass" },
@@ -149,11 +140,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate the .pkpass file
-    const buffer = await walletPassGenerator.generatePass(
-      customer,
-      vendor,
-      passRecord,
-    );
+    const buffer = await walletPassGenerator.generatePass(customer, vendor, passRecord);
 
     // Log event
     await supabase.from("wallet_pass_events").insert({
@@ -174,14 +161,13 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Wallet pass generation error:", error);
+      logger.error("Wallet pass generation error:", error);
     }
     return NextResponse.json(
       {
         success: false,
         error: error.message || "Failed to generate wallet pass",
-        details:
-          process.env.NODE_ENV === "development" ? error.stack : undefined,
+        details: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 500 },
     );

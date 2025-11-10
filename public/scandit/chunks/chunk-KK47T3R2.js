@@ -112,10 +112,7 @@ var h = class {
         {
           let { data: e } = a;
           this.respondWith(e.command, e.id, () =>
-            this.dataCaptureInstance.setFrameSource(
-              e.mirrorAxis,
-              e.isCameraFrameSource,
-            ),
+            this.dataCaptureInstance.setFrameSource(e.mirrorAxis, e.isCameraFrameSource),
           );
         }
         break;
@@ -155,16 +152,12 @@ var h = class {
       case "updateContext": {
         {
           let { data: e } = a;
-          this.respondWith(e.command, e.id, async () =>
-            this.dataCaptureInstance.updateContext(e),
-          );
+          this.respondWith(e.command, e.id, async () => this.dataCaptureInstance.updateContext(e));
         }
         break;
       }
       case "dispose": {
-        this.respondWith(a.data.command, a.data.id, () =>
-          this.dataCaptureInstance.dispose(),
-        );
+        this.respondWith(a.data.command, a.data.id, () => this.dataCaptureInstance.dispose());
         break;
       }
       case "flushAnalytics": {
@@ -221,9 +214,7 @@ var h = class {
       case "getViewfinderInfo": {
         {
           let { data: e } = a;
-          this.respondWith(e.command, e.id, () =>
-            this.dataCaptureInstance.getViewfinderInfo(),
-          );
+          this.respondWith(e.command, e.id, () => this.dataCaptureInstance.getViewfinderInfo());
         }
         break;
       }

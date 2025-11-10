@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
+import { logger } from "@/lib/logger";
 import type {
   Product,
   InventoryRecord,
@@ -24,13 +25,12 @@ export async function GET(request: NextRequest) {
     const supabase = getServiceSupabase();
 
     // Execute ALL queries in parallel - products, inventory, locations
-    const [productsResult, inventoryResult, locationsResult] =
-      await Promise.allSettled([
-        // Products with categories
-        supabase
-          .from("products")
-          .select(
-            `
+    const [productsResult, inventoryResult, locationsResult] = await Promise.allSettled([
+      // Products with categories
+      supabase
+        .from("products")
+        .select(
+          `
           id,
           name,
           sku,
@@ -42,15 +42,15 @@ export async function GET(request: NextRequest) {
           custom_fields,
           primary_category:categories!primary_category_id(id, name)
         `,
-          )
-          .eq("vendor_id", vendorId)
-          .order("name", { ascending: true }),
+        )
+        .eq("vendor_id", vendorId)
+        .order("name", { ascending: true }),
 
-        // Inventory with locations
-        supabase
-          .from("inventory")
-          .select(
-            `
+      // Inventory with locations
+      supabase
+        .from("inventory")
+        .select(
+          `
           id,
           product_id,
           quantity,
@@ -58,16 +58,16 @@ export async function GET(request: NextRequest) {
           location_id,
           location:locations(id, name, city, state)
         `,
-          )
-          .eq("vendor_id", vendorId),
+        )
+        .eq("vendor_id", vendorId),
 
-        // Vendor locations
-        supabase
-          .from("locations")
-          .select("*")
-          .eq("vendor_id", vendorId)
-          .order("is_primary", { ascending: false }),
-      ]);
+      // Vendor locations
+      supabase
+        .from("locations")
+        .select("*")
+        .eq("vendor_id", vendorId)
+        .order("is_primary", { ascending: false }),
+    ]);
 
     // Extract data (using unknown intermediate to handle Supabase response shape)
     const products = (productsResult.status === "fulfilled"
@@ -92,14 +92,10 @@ export async function GET(request: NextRequest) {
     // Map to inventory items format
     const inventory: InventoryItem[] = products.map((p) => {
       const productInventory = inventoryByProduct[p.id] || [];
-      const totalQuantity = productInventory.reduce(
-        (sum, inv) => sum + (inv.quantity || 0),
-        0,
-      );
+      const totalQuantity = productInventory.reduce((sum, inv) => sum + (inv.quantity || 0), 0);
 
       // Determine stock status
-      let stock_status: "in_stock" | "low_stock" | "out_of_stock" =
-        "out_of_stock";
+      let stock_status: "in_stock" | "low_stock" | "out_of_stock" = "out_of_stock";
       if (totalQuantity > 10) stock_status = "in_stock";
       else if (totalQuantity > 0) stock_status = "low_stock";
 
@@ -172,7 +168,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
-      console.error(
+      logger.error(
         "❌ Error in /api/page-data/vendor-inventory:",
         error instanceof Error ? error.message : "Unknown error",
       );
@@ -180,10 +176,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch vendor inventory",
+        error: error instanceof Error ? error.message : "Failed to fetch vendor inventory",
       },
       { status: 500 },
     );

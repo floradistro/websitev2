@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import { useAppAuth } from "@/context/AppAuthContext";
 
+import { logger } from "@/lib/logger";
 interface CacheEntry<T> {
   data: T;
   timestamp: number;
@@ -81,13 +82,7 @@ export function useVendorData<T>(
     onError?: (error: any) => void;
   } = {},
 ) {
-  const {
-    enabled = true,
-    refetchInterval,
-    cacheTime = CACHE_TTL,
-    onSuccess,
-    onError,
-  } = options;
+  const { enabled = true, refetchInterval, cacheTime = CACHE_TTL, onSuccess, onError } = options;
 
   const { vendor, isAuthenticated } = useAppAuth();
   const [data, setData] = useState<T | null>(null);
@@ -176,7 +171,7 @@ export function useVendorData<T>(
           }
         })
         .catch((err) => {
-          console.error(`API Error fetching ${endpoint}:`, err);
+          logger.error(`API Error fetching ${endpoint}:`, err);
           setError(err);
           onError?.(err);
           throw err;
@@ -316,6 +311,6 @@ export async function prefetchVendorData(endpoint: string) {
       });
     }
   } catch (err) {
-    console.error("Prefetch error:", err);
+    logger.error("Prefetch error:", err);
   }
 }

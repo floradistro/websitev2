@@ -1,10 +1,6 @@
 import { a } from "./chunk-O7TZTIHO.js";
 function c(t) {
-  return t.endsWith("ms")
-    ? Number.parseFloat(t)
-    : t.endsWith("s")
-      ? Number.parseFloat(t) * 1e3
-      : 0;
+  return t.endsWith("ms") ? Number.parseFloat(t) : t.endsWith("s") ? Number.parseFloat(t) * 1e3 : 0;
 }
 function p(t, r) {
   let o = getComputedStyle(t),
@@ -24,9 +20,7 @@ async function T(t, r) {
       s({ type: "timeout", propertyName: r, elapsedTime: a$1 + 50 });
     }, a$1 + 50),
     e = (i) => {
-      i.propertyName === r &&
-        i.type === "transitionend" &&
-        (clearTimeout(u), s(i));
+      i.propertyName === r && i.type === "transitionend" && (clearTimeout(u), s(i));
     };
   return (
     t.addEventListener("transitionend", e, { once: true }),

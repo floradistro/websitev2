@@ -42,24 +42,12 @@ var s = ((e) => ((e.RGBA = "RGBA"), (e.GRAYSCALE = "GRAYSCALE"), e))(s || {}),
     setup() {
       ((this._texture = this._contextWebGL.createTexture()),
         this._texture == null &&
-          a$1.log(
-            a$1.Level.Warn,
-            "Could not create texture from WebGLRenderingContext",
-          ),
-        this._contextWebGL.bindTexture(
-          this._contextWebGL.TEXTURE_2D,
-          this._texture,
-        ),
+          a$1.log(a$1.Level.Warn, "Could not create texture from WebGLRenderingContext"),
+        this._contextWebGL.bindTexture(this._contextWebGL.TEXTURE_2D, this._texture),
         (this._framebuffer = this._contextWebGL.createFramebuffer()),
         this._framebuffer == null &&
-          a$1.log(
-            a$1.Level.Warn,
-            "Could not create frameBuffer from WebGLRenderingContext",
-          ),
-        this._contextWebGL.bindFramebuffer(
-          this._contextWebGL.FRAMEBUFFER,
-          this._framebuffer,
-        ),
+          a$1.log(a$1.Level.Warn, "Could not create frameBuffer from WebGLRenderingContext"),
+        this._contextWebGL.bindFramebuffer(this._contextWebGL.FRAMEBUFFER, this._framebuffer),
         this._contextWebGL.framebufferTexture2D(
           this._contextWebGL.FRAMEBUFFER,
           this._contextWebGL.COLOR_ATTACHMENT0,
@@ -91,17 +79,14 @@ var s = ((e) => ((e.RGBA = "RGBA"), (e.GRAYSCALE = "GRAYSCALE"), e))(s || {}),
     dispose() {
       var e;
       (this._texture != null &&
-        (this._contextWebGL.deleteTexture(this._texture),
-        (this._texture = null)),
+        (this._contextWebGL.deleteTexture(this._texture), (this._texture = null)),
         this._framebuffer != null &&
-          (this._contextWebGL.deleteFramebuffer(this._framebuffer),
-          (this._framebuffer = null)),
+          (this._contextWebGL.deleteFramebuffer(this._framebuffer), (this._framebuffer = null)),
         (e = this._framePool) == null || e.empty());
     }
     updateFrameSizeIfNeeded() {
       var o;
-      let { drawingBufferWidth: e, drawingBufferHeight: i } =
-          this._contextWebGL,
+      let { drawingBufferWidth: e, drawingBufferHeight: i } = this._contextWebGL,
         r = e * i * 4;
       this._frameSize !== r &&
         ((this._frameSize = r),

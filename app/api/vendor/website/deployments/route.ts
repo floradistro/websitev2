@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
 
+import { logger } from "@/lib/logger";
 /**
  * GET /api/vendor/website/deployments
  * Get recent deployments for vendor
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching deployments:", error);
+        logger.error("Error fetching deployments:", error);
       }
       return NextResponse.json(
         { success: false, error: "Failed to fetch deployments" },
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in deployments endpoint:", error);
+      logger.error("Error in deployments endpoint:", error);
     }
     return NextResponse.json(
       {

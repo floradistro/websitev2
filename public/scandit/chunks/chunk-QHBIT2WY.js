@@ -2,9 +2,7 @@ var r = class {
   constructor(e) {
     this.items = [];
     if (e.lowWaterMark >= e.capacity)
-      throw new Error(
-        "Invalid Watermark options: lowWaterMark must be less than capacity",
-      );
+      throw new Error("Invalid Watermark options: lowWaterMark must be less than capacity");
     ((this.capacity = e.capacity),
       (this.lowWaterMark = e.lowWaterMark),
       (this.createItem = e.createItem));
@@ -14,8 +12,7 @@ var r = class {
     return this.items.length;
   }
   pop() {
-    for (; this.isBelowOrEqualWaterMark(); )
-      this.items.unshift(this.createItem());
+    for (; this.isBelowOrEqualWaterMark(); ) this.items.unshift(this.createItem());
     return this.items.pop();
   }
   push(e) {

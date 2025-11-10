@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
+import { logger } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       if (process.env.NODE_ENV === "development") {
-        console.error("Error fetching shipping orders:", error);
+        logger.error("Error fetching shipping orders:", error);
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ orders: data || [] });
   } catch (error: any) {
     if (process.env.NODE_ENV === "development") {
-      console.error("Error in shipping orders endpoint:", error);
+      logger.error("Error in shipping orders endpoint:", error);
     }
     return NextResponse.json(
       { error: "Internal server error", details: error.message },

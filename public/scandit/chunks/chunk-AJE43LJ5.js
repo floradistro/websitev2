@@ -66,15 +66,13 @@ var h = "scandit-progress-bar",
         t == null || t.setAttribute(w, r.toString()),
         i == null)
       ) {
-        (t == null || t.removeAttribute(n),
-          t == null || t.removeAttribute("style"));
+        (t == null || t.removeAttribute(n), t == null || t.removeAttribute("style"));
         return;
       }
       if (i >= e && i <= r) {
         let v = ((i - e) / (r - e)) * 100,
           l = String(v);
-        (t == null || t.setAttribute(n, l),
-          t == null || t.setAttribute("style", `--${n}: ${l}`));
+        (t == null || t.setAttribute(n, l), t == null || t.setAttribute("style", `--${n}: ${l}`));
       }
     }
   };

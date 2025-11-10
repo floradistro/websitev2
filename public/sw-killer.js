@@ -8,10 +8,7 @@ if ("serviceWorker" in navigator) {
 }
 
 // Disable browser cache in development
-if (
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1"
-) {
+if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
   // Clear all caches
   if ("caches" in window) {
     caches.keys().then((names) => {
