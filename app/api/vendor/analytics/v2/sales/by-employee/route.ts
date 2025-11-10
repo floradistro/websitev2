@@ -90,9 +90,40 @@ export async function GET(request: NextRequest) {
     const { data: posTransactions, error: posError } = await posQuery;
     if (posError) throw posError;
 
+    // Get orders WITHOUT employee tracking (legacy orders)
+    let legacyOrdersQuery = supabase
+      .from("orders")
+      .select(
+        `
+        id,
+        total_amount,
+        subtotal,
+        discount_amount,
+        cost_of_goods
+      `,
+      )
+      .eq("vendor_id", vendorId)
+      .gte("order_date", dateRange.start_date)
+      .lte("order_date", dateRange.end_date)
+      .in("status", ["completed", "processing"]);
+
+    if (filters.location_ids && filters.location_ids.length > 0) {
+      legacyOrdersQuery = legacyOrdersQuery.in("pickup_location_id", filters.location_ids);
+    }
+
+    const { data: legacyOrders, error: legacyError } = await legacyOrdersQuery;
+    if (legacyError) throw legacyError;
+
+    // Filter legacy orders to only those WITHOUT POS transaction link
+    const ordersWithPOS = new Set((orders || []).map((o: any) => o.id));
+    const trulyLegacyOrders = (legacyOrders || []).filter((o: any) => !ordersWithPOS.has(o.id));
+
+    // Special ID for system/legacy employee
+    const SYSTEM_EMPLOYEE_ID = "00000000-0000-0000-0000-000000000000";
+
     // Combine data from orders and standalone POS
     const allData: any[] = [
-      // Orders (get employee from linked POS transaction)
+      // Orders WITH employee (get from linked POS transaction)
       ...(orders || []).map((order: any) => ({
         user_id: order.pos_transactions?.[0]?.user_id,
         total_amount: order.total_amount,
@@ -104,6 +135,16 @@ export async function GET(request: NextRequest) {
       })),
       // Standalone POS transactions
       ...(posTransactions || []),
+      // Legacy orders WITHOUT employee tracking
+      ...trulyLegacyOrders.map((order: any) => ({
+        user_id: SYSTEM_EMPLOYEE_ID,
+        total_amount: order.total_amount,
+        subtotal: order.subtotal,
+        discount_amount: order.discount_amount,
+        tip_amount: 0,
+        cost_of_goods: order.cost_of_goods,
+        payment_method: "legacy",
+      })),
     ];
 
     const data = allData.filter((d) => d.user_id); // Remove any without user_id
@@ -123,12 +164,16 @@ export async function GET(request: NextRequest) {
     // Get unique user IDs to fetch user names
     const userIdsSet = new Set<string>();
     data.forEach((tx: any) => {
-      if (tx.user_id) userIdsSet.add(tx.user_id);
+      if (tx.user_id && tx.user_id !== SYSTEM_EMPLOYEE_ID) userIdsSet.add(tx.user_id);
     });
     const userIds = Array.from(userIdsSet);
 
     // Fetch user names
     let userMap = new Map();
+
+    // Add system employee
+    userMap.set(SYSTEM_EMPLOYEE_ID, "System / Online Orders");
+
     if (userIds.length > 0) {
       const { data: users } = await supabase
         .from("users")

@@ -3,7 +3,14 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireVendor } from "@/lib/auth/middleware";
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { deviceId } = await request.json();
 

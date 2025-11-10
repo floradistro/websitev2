@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireVendor } from "@/lib/auth/middleware";
 /**
  * Dynamically fetch available pricing tiers for categories based on actual pricing blueprints.
  * Uses price_breaks from pricing_tier_blueprints to extract available tier names (break_ids).
@@ -21,6 +22,12 @@ import { toError } from "@/lib/errors";
  * }
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get("vendor_id");

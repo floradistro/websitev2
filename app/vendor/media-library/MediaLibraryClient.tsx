@@ -749,7 +749,7 @@ export default function MediaLibraryClient() {
       }}
     >
       {/* ✨ Magical Toolbar - Effortless & Beautiful */}
-      <div className="h-12 bg-gradient-to-b from-white/[0.03] to-transparent border-b border-white/[0.08] flex items-center px-3 flex-shrink-0 backdrop-blur-sm">
+      <div className="h-14 bg-gradient-to-b from-white/[0.03] to-transparent border-b border-white/[0.08] flex items-center px-3 flex-shrink-0 backdrop-blur-sm">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {/* View Mode - Compact pill */}
           <div className="flex items-center gap-0.5 bg-black/40 rounded-full p-1 border border-white/[0.08] flex-shrink-0">

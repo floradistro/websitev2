@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireVendor } from "@/lib/auth/middleware";
 export const runtime = "edge";
 
 /**
@@ -10,6 +11,12 @@ export const runtime = "edge";
  * Fetch sub-categories for given parent categories
  */
 export async function GET(req: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(req);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const vendorId = searchParams.get("vendor_id");

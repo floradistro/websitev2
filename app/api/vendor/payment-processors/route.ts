@@ -3,11 +3,18 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { getPaymentProcessorById } from "@/lib/payment-processors";
 
 import { logger } from "@/lib/logger";
+import { requireVendor } from "@/lib/auth/middleware";
 /**
  * GET /api/vendor/payment-processors
  * List all payment processors for vendor's locations
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
 
@@ -75,6 +82,12 @@ export async function GET(request: NextRequest) {
  * Create or update payment processor configuration
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
 

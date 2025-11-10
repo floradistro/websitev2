@@ -3,10 +3,17 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireVendor } from "@/lib/auth/middleware";
 /**
  * GET - Get single TV menu by ID
  */
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getServiceSupabase();
 
   try {
@@ -44,6 +51,12 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
  * PUT - Update TV menu
  */
 export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getServiceSupabase();
 
   try {
@@ -107,6 +120,12 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
  * DELETE - Delete TV menu
  */
 export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getServiceSupabase();
 
   try {

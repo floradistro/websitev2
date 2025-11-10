@@ -2,11 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
+import { requireVendor } from "@/lib/auth/middleware";
 /**
  * GET /api/vendor/terminals
  * List all POS terminals/registers for vendor
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
 
@@ -69,6 +76,12 @@ export async function GET(request: NextRequest) {
  * Create or update terminal configuration
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
 

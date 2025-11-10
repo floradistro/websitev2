@@ -3,10 +3,17 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireVendor } from "@/lib/auth/middleware";
 /**
  * GET - List all TV menus for a vendor
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getServiceSupabase();
 
   try {
@@ -76,6 +83,12 @@ export async function GET(request: NextRequest) {
  * POST - Create new TV menu
  */
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   const supabase = getServiceSupabase();
 
   try {

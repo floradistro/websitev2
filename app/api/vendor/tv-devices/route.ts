@@ -3,11 +3,18 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireVendor } from "@/lib/auth/middleware";
 /**
  * GET /api/vendor/tv-devices?vendor_id=xxx
  * List all TV devices for a vendor
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get("vendor_id");

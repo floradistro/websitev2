@@ -3,8 +3,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireVendor } from "@/lib/auth/middleware";
 // GET /api/vendor/suppliers - List all suppliers for vendor
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
@@ -90,6 +97,12 @@ export async function GET(request: NextRequest) {
 
 // POST /api/vendor/suppliers - Create, update, or delete supplier
 export async function POST(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
     const body = await request.json();

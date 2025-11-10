@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+import { requireVendor } from "@/lib/auth/middleware";
 /**
  * GET /api/vendor/inventory/low-stock
  * Returns products with inventory below reorder threshold
@@ -13,6 +14,12 @@ import { toError } from "@/lib/errors";
  * - threshold (optional): Custom threshold (default: 10)
  */
 export async function GET(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
     const { searchParams } = new URL(request.url);
@@ -156,6 +163,12 @@ export async function GET(request: NextRequest) {
  * - reorder_point: number
  */
 export async function PATCH(request: NextRequest) {
+  // SECURITY: Require vendor authentication
+  const authResult = await requireVendor(request);
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+
   try {
     const supabase = getServiceSupabase();
     const body = await request.json();
