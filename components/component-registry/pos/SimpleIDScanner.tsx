@@ -24,12 +24,31 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
   const readerRef = useRef<BrowserPDF417Reader | null>(null);
   const scanningRef = useRef(false);
   const processingRef = useRef(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Play success beep sound using Web Audio API
+  const playSuccessBeep = () => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800; // 800 Hz beep
+      oscillator.type = "sine";
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.15);
+    } catch (err) {
+      // Ignore audio errors
+    }
+  };
 
   useEffect(() => {
-    // Initialize audio for scan success sound
-    audioRef.current = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA4PVKzn77BdGAg+ltzzxncsB";
-
     startScanning();
     return () => {
       stopScanning();
@@ -125,12 +144,7 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
         processingRef.current = true;
 
         // Play success sound
-        if (audioRef.current) {
-          audioRef.current.volume = 0.5;
-          audioRef.current.play().catch(() => {
-            // Ignore audio play errors (browser restrictions)
-          });
-        }
+        playSuccessBeep();
 
         handleBarcodeDetected(result.getText());
         return; // Stop scanning
