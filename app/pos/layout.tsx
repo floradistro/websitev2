@@ -80,10 +80,15 @@ function POSLayoutInner({ children }: { children: React.ReactNode }) {
         }}
       />
       <div
-        className="h-screen bg-black text-white antialiased overflow-hidden"
+        className="bg-black text-white antialiased"
         style={{
+          height: "100vh",
+          height: "100dvh", // Use dynamic viewport height for better mobile support
           paddingTop: "env(safe-area-inset-top, 0px)",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
         }}
       >
         {children}
