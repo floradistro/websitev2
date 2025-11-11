@@ -37,70 +37,7 @@ function POSLayoutInner({ children }: { children: React.ReactNode }) {
   // POS doesn't require authentication - allow access for register selection
   // Authentication is handled per-register via device assignment
 
-  return (
-    <>
-      <style jsx global>{`
-        html,
-        body {
-          overflow: hidden !important;
-          height: 100vh !important;
-          height: 100dvh !important;
-          position: fixed !important;
-          width: 100% !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          touch-action: pan-x pan-y;
-        }
-        /* iOS PWA - Full height viewport */
-        @supports (-webkit-touch-callout: none) {
-          html,
-          body {
-            height: -webkit-fill-available !important;
-          }
-        }
-        /* Smooth touch scrolling for mobile */
-        * {
-          -webkit-overflow-scrolling: touch;
-        }
-        /* Disable pull-to-refresh */
-        body {
-          overscroll-behavior: none;
-        }
-        /* Allow touches on buttons and interactive elements */
-        button,
-        a,
-        input,
-        select,
-        textarea {
-          touch-action: manipulation;
-        }
-      `}</style>
-      {/* PWA Safe Area Spacer for iOS status bar */}
-      <div
-        className="fixed top-0 left-0 right-0 z-50 pointer-events-none bg-black"
-        style={{
-          height: "env(safe-area-inset-top, 0px)",
-        }}
-      />
-      <div
-        className="bg-black text-white antialiased"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          paddingTop: "env(safe-area-inset-top, 0px)",
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
-        {children}
-      </div>
-    </>
-  );
+  return <div className="fixed inset-0 bg-black text-white overflow-hidden">{children}</div>;
 }
 
 export default function POSLayout({ children }: { children: React.ReactNode }) {

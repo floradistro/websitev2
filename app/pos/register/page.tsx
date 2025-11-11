@@ -700,11 +700,11 @@ export default function POSRegisterPage() {
   }
 
   return (
-    <div className="h-full w-full bg-black text-white flex flex-col overflow-hidden">
+    <div className="flex h-full w-full">
       {/* Main POS Interface */}
-      <div className="flex gap-0 flex-1 min-h-0 h-full w-full">
+      <div className="flex flex-1 h-full w-full">
         {/* Left: Product Selection */}
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <div className="flex-1 h-full overflow-hidden">
           <POSProductGrid
             locationId={selectedLocation.id}
             locationName={selectedLocation.name}
@@ -727,7 +727,7 @@ export default function POSRegisterPage() {
         </div>
 
         {/* Right: Cart - Fixed Width Sidebar */}
-        <div className="w-[400px] flex-shrink-0 border-l border-white/10 bg-[#0a0a0a] h-full flex flex-col">
+        <div className="w-[400px] h-full flex-shrink-0 border-l border-white/10 bg-[#0a0a0a]">
           <POSCart
             items={cart}
             vendorId={vendor?.id || ""}

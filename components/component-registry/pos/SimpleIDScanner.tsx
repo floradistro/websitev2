@@ -24,8 +24,12 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
   const readerRef = useRef<BrowserPDF417Reader | null>(null);
   const scanningRef = useRef(false);
   const processingRef = useRef(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    // Initialize audio for scan success sound
+    audioRef.current = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA4PVKzn77BdGAg+ltzzxncsB";
+
     startScanning();
     return () => {
       stopScanning();
@@ -119,6 +123,15 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
         setBarcodeDetected(true);
         setMessage("Barcode detected! Processing...");
         processingRef.current = true;
+
+        // Play success sound
+        if (audioRef.current) {
+          audioRef.current.volume = 0.5;
+          audioRef.current.play().catch(() => {
+            // Ignore audio play errors (browser restrictions)
+          });
+        }
+
         handleBarcodeDetected(result.getText());
         return; // Stop scanning
       }
@@ -200,25 +213,25 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
 
   return (
     <div className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="relative w-full h-full max-w-4xl max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/20">
-          <div className="flex items-center gap-3">
-            <Camera className="w-6 h-6 text-white" />
-            <h2 className="text-2xl font-black text-white uppercase tracking-tight">
-              Scan ID
+      <div className="relative w-full max-w-lg flex flex-col">
+        {/* Compact Header */}
+        <div className="flex items-center justify-between p-4 border-b border-white/20">
+          <div className="flex items-center gap-2">
+            <Camera className="w-5 h-5 text-white" />
+            <h2 className="text-lg font-black text-white uppercase tracking-tight">
+              Scan ID Barcode
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
           >
-            <X className="w-6 h-6 text-white" />
+            <X className="w-5 h-5 text-white" />
           </button>
         </div>
 
-        {/* Scanner Area */}
-        <div className="flex-1 relative overflow-hidden bg-black">
+        {/* Compact Scanner Area - Focused on barcode */}
+        <div className="relative h-64 overflow-hidden bg-black">
           {isScanning && (
             <>
               <video
@@ -229,59 +242,60 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
               />
               <canvas ref={canvasRef} className="hidden" />
 
-              {/* Scanning overlay */}
+              {/* Focused scanning overlay - just the barcode area */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div
-                  className={`relative w-[85%] h-[40%] border-4 rounded-xl transition-all duration-300 ${
-                    barcodeDetected ? "border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.6)]" : "border-blue-500"
+                  className={`relative w-[90%] h-[70%] border-4 rounded-lg transition-all duration-200 ${
+                    barcodeDetected ? "border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.8)]" : "border-blue-400"
                   }`}
                 >
-                  {/* Corner indicators */}
+                  {/* Animated corner indicators */}
                   <div
-                    className={`absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 rounded-tl-xl transition-colors ${
-                      barcodeDetected ? "border-green-400" : "border-white"
+                    className={`absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 rounded-tl-lg transition-all duration-200 ${
+                      barcodeDetected ? "border-green-400 animate-pulse" : "border-white"
                     }`}
                   />
                   <div
-                    className={`absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 rounded-tr-xl transition-colors ${
-                      barcodeDetected ? "border-green-400" : "border-white"
+                    className={`absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 rounded-tr-lg transition-all duration-200 ${
+                      barcodeDetected ? "border-green-400 animate-pulse" : "border-white"
                     }`}
                   />
                   <div
-                    className={`absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 rounded-bl-xl transition-colors ${
-                      barcodeDetected ? "border-green-400" : "border-white"
+                    className={`absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 rounded-bl-lg transition-all duration-200 ${
+                      barcodeDetected ? "border-green-400 animate-pulse" : "border-white"
                     }`}
                   />
                   <div
-                    className={`absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 rounded-br-xl transition-colors ${
-                      barcodeDetected ? "border-green-400" : "border-white"
+                    className={`absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 rounded-br-lg transition-all duration-200 ${
+                      barcodeDetected ? "border-green-400 animate-pulse" : "border-white"
                     }`}
                   />
 
-                  {/* Scanning line */}
+                  {/* Scanning line animation */}
                   {!barcodeDetected && (
                     <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-scan" />
+                      <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent animate-scan" />
                     </div>
                   )}
 
-                  {/* Lock-on indicator */}
+                  {/* Green capture ring - pulsing animation when locked on */}
                   {barcodeDetected && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-green-500/20 border-2 border-green-500 rounded-xl px-6 py-3">
-                        <p className="text-green-400 font-black uppercase tracking-wide flex items-center gap-2">
-                          <CheckCircle className="w-5 h-5" />
-                          Locked On
-                        </p>
+                    <>
+                      <div className="absolute inset-0 border-4 border-green-500 rounded-lg animate-ping opacity-75" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-green-500/30 border-2 border-green-400 rounded-lg px-4 py-2 backdrop-blur-sm">
+                          <p className="text-green-300 font-black uppercase tracking-wider flex items-center gap-2 text-sm">
+                            <CheckCircle className="w-4 h-4" />
+                            Capturing
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    </>
                   )}
 
-                  <div className="absolute -bottom-20 left-0 right-0 text-center">
-                    <p className="text-white text-base font-semibold drop-shadow-lg">
-                      {barcodeDetected
-                        ? "Processing barcode..."
-                        : "Position barcode from back of ID within frame"}
+                  <div className="absolute -bottom-12 left-0 right-0 text-center">
+                    <p className="text-white text-sm font-semibold drop-shadow-lg">
+                      {barcodeDetected ? "Capturing..." : "Position barcode within frame"}
                     </p>
                   </div>
                 </div>
@@ -289,27 +303,31 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
             </>
           )}
 
-          {/* Results */}
+          {/* Results Screen - Premium Design */}
           {scannedData && !isScanning && (
-            <div className="absolute inset-0 bg-black/90 flex items-center justify-center p-8">
-              <div className="bg-white/10 border-2 border-white/20 rounded-2xl p-8 max-w-md w-full">
-                <div className="flex items-center gap-3 mb-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-black via-black/95 to-black/90 flex items-center justify-center p-6">
+              <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/20 rounded-2xl p-6 max-w-md w-full backdrop-blur-xl shadow-2xl">
+                <div className="flex items-center gap-3 mb-5">
                   {error ? (
-                    <AlertCircle className="w-8 h-8 text-red-400" />
+                    <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                      <AlertCircle className="w-6 h-6 text-red-400" />
+                    </div>
                   ) : (
-                    <CheckCircle className="w-8 h-8 text-green-400" />
+                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-green-400" />
+                    </div>
                   )}
-                  <h3 className="text-2xl font-black text-white uppercase">
-                    {error ? "Age Verification Failed" : "ID Scanned"}
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight">
+                    {error ? "Verification Failed" : "Verified"}
                   </h3>
                 </div>
 
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-start gap-3">
-                    <User className="w-5 h-5 text-white/60 mt-1" />
-                    <div>
-                      <p className="text-sm text-white/60">Name</p>
-                      <p className="text-lg font-bold text-white">
+                <div className="space-y-3 mb-5">
+                  <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                    <User className="w-4 h-4 text-white/50 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-white/50 uppercase tracking-wider mb-0.5">Name</p>
+                      <p className="text-base font-bold text-white truncate">
                         {[scannedData.firstName, scannedData.middleName, scannedData.lastName]
                           .filter(Boolean)
                           .join(" ") || scannedData.fullName || "Unknown"}
@@ -318,37 +336,37 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
                   </div>
 
                   {scannedData.dateOfBirth && (
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 flex items-center justify-center text-white/60 mt-1">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                      <div className="w-4 h-4 flex items-center justify-center text-white/50 text-xs mt-0.5">
                         🎂
                       </div>
-                      <div>
-                        <p className="text-sm text-white/60">Date of Birth</p>
-                        <p className="text-lg font-bold text-white">{scannedData.dateOfBirth}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-white/50 uppercase tracking-wider mb-0.5">Date of Birth</p>
+                        <p className="text-base font-bold text-white">{scannedData.dateOfBirth}</p>
                       </div>
                     </div>
                   )}
 
                   {scannedData.licenseNumber && (
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 flex items-center justify-center text-white/60 mt-1">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                      <div className="w-4 h-4 flex items-center justify-center text-white/50 text-xs mt-0.5">
                         🪪
                       </div>
-                      <div>
-                        <p className="text-sm text-white/60">License Number</p>
-                        <p className="text-lg font-bold text-white">{scannedData.licenseNumber}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-white/50 uppercase tracking-wider mb-0.5">License</p>
+                        <p className="text-sm font-bold text-white font-mono">{scannedData.licenseNumber}</p>
                       </div>
                     </div>
                   )}
 
                   {(scannedData.streetAddress || scannedData.city) && (
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 flex items-center justify-center text-white/60 mt-1">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                      <div className="w-4 h-4 flex items-center justify-center text-white/50 text-xs mt-0.5">
                         📍
                       </div>
-                      <div>
-                        <p className="text-sm text-white/60">Address</p>
-                        <p className="text-lg font-bold text-white">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-white/50 uppercase tracking-wider mb-0.5">Address</p>
+                        <p className="text-sm font-semibold text-white/90">
                           {[scannedData.streetAddress, scannedData.city, scannedData.state, scannedData.zipCode]
                             .filter(Boolean)
                             .join(", ")}
@@ -359,22 +377,22 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
                 </div>
 
                 {error && (
-                  <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-                    <p className="text-sm text-red-400">{error}</p>
+                  <div className="mb-5 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                    <p className="text-sm text-red-300 font-medium">{error}</p>
                   </div>
                 )}
 
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <button
                     onClick={handleRetry}
-                    className="flex-1 px-6 py-4 bg-white/10 border border-white/20 rounded-xl text-white font-bold uppercase tracking-wide hover:bg-white/20 transition-all"
+                    className="flex-1 px-4 py-3 bg-white/[0.08] border border-white/20 rounded-xl text-white text-sm font-bold uppercase tracking-wide hover:bg-white/[0.12] transition-all duration-200"
                   >
                     Scan Again
                   </button>
                   {!error && (
                     <button
                       onClick={handleConfirm}
-                      className="flex-1 px-6 py-4 bg-green-600 text-white rounded-xl font-bold uppercase tracking-wide hover:bg-green-700 transition-all"
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-xl text-sm font-bold uppercase tracking-wide hover:from-green-500 hover:to-green-600 transition-all duration-200 shadow-lg shadow-green-900/30"
                     >
                       Confirm
                     </button>
@@ -384,23 +402,25 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
             </div>
           )}
 
-          {/* Error state */}
+          {/* Error State - Premium Design */}
           {error && !scannedData && (
-            <div className="absolute inset-0 bg-black/90 flex items-center justify-center p-8">
-              <div className="bg-red-500/10 border-2 border-red-500/20 rounded-2xl p-8 max-w-md w-full">
-                <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
-                <h3 className="text-2xl font-black text-white uppercase mb-4">Scanner Error</h3>
-                <p className="text-white/80 mb-6">{error}</p>
-                <div className="flex gap-3">
+            <div className="absolute inset-0 bg-gradient-to-br from-black via-black/95 to-black/90 flex items-center justify-center p-6">
+              <div className="bg-gradient-to-b from-red-500/[0.08] to-red-500/[0.04] border border-red-500/30 rounded-2xl p-6 max-w-md w-full backdrop-blur-xl shadow-2xl">
+                <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+                  <AlertCircle className="w-7 h-7 text-red-400" />
+                </div>
+                <h3 className="text-xl font-black text-white uppercase mb-3 tracking-tight">Scanner Error</h3>
+                <p className="text-white/70 text-sm mb-5 leading-relaxed">{error}</p>
+                <div className="flex gap-2">
                   <button
                     onClick={onClose}
-                    className="flex-1 px-6 py-4 bg-white/10 border border-white/20 rounded-xl text-white font-bold uppercase tracking-wide hover:bg-white/20 transition-all"
+                    className="flex-1 px-4 py-3 bg-white/[0.08] border border-white/20 rounded-xl text-white text-sm font-bold uppercase tracking-wide hover:bg-white/[0.12] transition-all duration-200"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleRetry}
-                    className="flex-1 px-6 py-4 bg-blue-600 text-white rounded-xl font-bold uppercase tracking-wide hover:bg-blue-700 transition-all"
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl text-sm font-bold uppercase tracking-wide hover:from-blue-500 hover:to-blue-600 transition-all duration-200 shadow-lg shadow-blue-900/30"
                   >
                     Try Again
                   </button>
@@ -410,21 +430,29 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
           )}
         </div>
 
-        {/* Status Bar */}
-        <div className="p-4 border-t border-white/20 bg-black/50">
+        {/* Sleek Status Bar */}
+        <div className="px-4 py-3 border-t border-white/10 bg-gradient-to-r from-black via-black/95 to-black">
           <div className="flex items-center justify-between">
-            <p className="text-white/60 text-sm">{message}</p>
-            {isScanning && (
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              {isScanning && (
                 <div
-                  className={`w-2 h-2 rounded-full animate-pulse ${
-                    barcodeDetected ? "bg-green-500" : "bg-blue-500"
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    barcodeDetected ? "bg-green-500 animate-pulse" : "bg-blue-400 animate-pulse"
                   }`}
                 />
-                <span className={`text-sm ${barcodeDetected ? "text-green-400" : "text-blue-400"}`}>
-                  {barcodeDetected ? "Processing..." : "Scanning..."}
-                </span>
-              </div>
+              )}
+              <p className={`text-xs font-medium ${barcodeDetected ? "text-green-400" : "text-white/70"}`}>
+                {message}
+              </p>
+            </div>
+            {isScanning && (
+              <span
+                className={`text-xs font-semibold uppercase tracking-wider ${
+                  barcodeDetected ? "text-green-400" : "text-blue-400"
+                }`}
+              >
+                {barcodeDetected ? "Locked" : "Active"}
+              </span>
             )}
           </div>
         </div>

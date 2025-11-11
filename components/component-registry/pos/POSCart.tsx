@@ -78,9 +78,9 @@ export function POSCart({
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="flex flex-col h-full max-h-full bg-[#0a0a0a] overflow-hidden">
+    <div className="h-full flex flex-col bg-[#0a0a0a]">
       {/* Header */}
-      <div className="flex-shrink-0 px-4 py-4 border-b border-white/5">
+      <div className="px-4 py-4 border-b border-white/5">
         <h3
           className="text-xs uppercase tracking-[0.15em] text-white font-black"
           style={{ fontWeight: 900 }}
@@ -93,7 +93,7 @@ export function POSCart({
       </div>
 
       {/* Customer Selector with Quick Scan */}
-      <div className="flex-shrink-0 px-4 py-3 border-b border-white/5">
+      <div className="px-4 py-3 border-b border-white/5">
         <div className="flex items-center justify-between mb-2">
           <label className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Customer</label>
           <button
@@ -138,15 +138,7 @@ export function POSCart({
       </div>
 
       {/* Cart Items - Scrollable */}
-      <div
-        className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3 space-y-2"
-        style={{
-          minHeight: 0,
-          maxHeight: "100%",
-          WebkitOverflowScrolling: "touch",
-          overscrollBehavior: "contain",
-        }}
-      >
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 min-h-0">
         {items.length === 0 ? (
           <div className="h-full flex items-center justify-center text-white/40">
             <div className="text-center">
@@ -264,7 +256,7 @@ export function POSCart({
 
       {/* Totals */}
       {items.length > 0 && (
-        <div className="flex-shrink-0 border-t border-white/5 px-4 py-3 space-y-2 bg-black overflow-hidden">
+        <div className="border-t border-white/5 px-4 py-3 space-y-2 bg-black">
           {taxError && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-3">
               <div className="text-red-400 text-[10px] uppercase tracking-wider font-bold mb-1">
@@ -318,7 +310,7 @@ export function POSCart({
       )}
 
       {/* Actions */}
-      <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-white/5 space-y-2 bg-black overflow-hidden">
+      <div className="px-4 pb-4 pt-3 border-t border-white/5 space-y-2 bg-black">
         {items.length > 0 && (
           <>
             <button

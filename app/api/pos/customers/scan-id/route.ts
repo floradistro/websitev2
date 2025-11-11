@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // If not found by DL#, try name + DOB
+    // If not found by DL#, try exact name + DOB match
     if (!customer && scannedData.firstName && scannedData.lastName && scannedData.dateOfBirth) {
       const { data: nameMatches } = await supabase
         .from("customers")
@@ -77,8 +77,68 @@ export async function POST(request: NextRequest) {
         .eq("date_of_birth", scannedData.dateOfBirth);
 
       if (nameMatches && nameMatches.length > 0) {
-        logger.info("[ID Scan] Found customer by name+DOB", { customerId: nameMatches[0].id });
+        logger.info("[ID Scan] Found customer by exact name+DOB", { customerId: nameMatches[0].id });
         customer = nameMatches[0];
+      }
+    }
+
+    // If still not found, try fuzzy matching on name variants
+    if (!customer && scannedData.firstName && scannedData.lastName && scannedData.dateOfBirth) {
+      const { data: allCustomers } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("vendor_id", vendorId)
+        .eq("date_of_birth", scannedData.dateOfBirth);
+
+      if (allCustomers && allCustomers.length > 0) {
+        const firstName = scannedData.firstName.toLowerCase().trim();
+        const lastName = scannedData.lastName.toLowerCase().trim();
+
+        // Find potential matches with name similarity
+        const potentialMatches = allCustomers
+          .map((c) => {
+            const cFirst = (c.first_name || "").toLowerCase().trim();
+            const cLast = (c.last_name || "").toLowerCase().trim();
+
+            // Calculate similarity score
+            let score = 0;
+
+            // Exact match on last name is critical (highest weight)
+            if (cLast === lastName) score += 50;
+            // Last name starts with same (typos, truncation)
+            else if (cLast.startsWith(lastName) || lastName.startsWith(cLast)) score += 30;
+            // Last name contains (hyphenated names)
+            else if (cLast.includes(lastName) || lastName.includes(cLast)) score += 20;
+
+            // First name exact match
+            if (cFirst === firstName) score += 30;
+            // First name starts with same (nicknames, abbreviations)
+            else if (cFirst.startsWith(firstName) || firstName.startsWith(cFirst)) score += 20;
+            // First name contains
+            else if (cFirst.includes(firstName) || firstName.includes(cFirst)) score += 10;
+
+            // Middle name matching (if present in scanned data)
+            if (scannedData.middleName && c.first_name) {
+              const middle = scannedData.middleName.toLowerCase().trim();
+              const fullName = c.first_name.toLowerCase().trim();
+              if (fullName.includes(middle)) score += 15;
+            }
+
+            return { customer: c, score };
+          })
+          .filter((m) => m.score >= 50) // Only consider strong matches
+          .sort((a, b) => b.score - a.score);
+
+        if (potentialMatches.length > 0) {
+          const bestMatch = potentialMatches[0];
+          logger.info("[ID Scan] Found fuzzy match", {
+            customerId: bestMatch.customer.id,
+            score: bestMatch.score,
+            matchName: `${bestMatch.customer.first_name} ${bestMatch.customer.last_name}`,
+            scannedName: `${scannedData.firstName} ${scannedData.lastName}`,
+          });
+          customer = bestMatch.customer;
+        }
       }
     }
 
