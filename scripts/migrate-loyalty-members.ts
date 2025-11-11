@@ -69,14 +69,36 @@ async function migrateCustomersToLoyalty() {
     console.log("📋 Sample loyalty record columns:", Object.keys(existingLoyalty[0]));
   }
 
-  // Get all existing customer IDs
-  const { data: allExisting } = await supabase
+  // Get count of all existing customer IDs (use count instead of fetching all)
+  const { count: existingCount } = await supabase
     .from("customer_loyalty")
-    .select("customer_id")
+    .select("*", { count: "exact", head: true })
     .eq("vendor_id", VENDOR_ID);
 
-  const existingCustomerIds = new Set(allExisting?.map((l) => l.customer_id) || []);
-  console.log(`✅ Found ${existingCustomerIds.size} existing loyalty members\n`);
+  console.log(`✅ Found ${existingCount || 0} existing loyalty members (total count)\n`);
+
+  // Get all existing customer IDs for deduplication (with pagination)
+  let existingCustomerIds = new Set<string>();
+  let existingPage = 0;
+  let hasMoreExisting = true;
+
+  while (hasMoreExisting) {
+    const { data } = await supabase
+      .from("customer_loyalty")
+      .select("customer_id")
+      .eq("vendor_id", VENDOR_ID)
+      .range(existingPage * pageSize, (existingPage + 1) * pageSize - 1);
+
+    if (data && data.length > 0) {
+      data.forEach((l) => existingCustomerIds.add(l.customer_id));
+      hasMoreExisting = data.length === pageSize;
+      existingPage++;
+    } else {
+      hasMoreExisting = false;
+    }
+  }
+
+  console.log(`✅ Loaded ${existingCustomerIds.size} existing customer IDs for deduplication\n`);
 
   // Step 3: Filter customers who need loyalty accounts
   const customersToMigrate = allCustomers.filter((c) => !existingCustomerIds.has(c.id));
@@ -108,17 +130,23 @@ async function migrateCustomersToLoyalty() {
       current_tier: "bronze",
     }));
 
-    const { error: insertError } = await supabase
+    // Use upsert to handle duplicates gracefully (onConflict: do nothing if exists)
+    const { data: insertedData, error: insertError } = await supabase
       .from("customer_loyalty")
-      .insert(loyaltyRecords);
+      .upsert(loyaltyRecords, {
+        onConflict: "customer_id,vendor_id,provider",
+        ignoreDuplicates: true
+      })
+      .select();
 
     if (insertError) {
       console.error(`❌ Error inserting batch ${i / batchSize + 1}:`, insertError);
       errors += batch.length;
     } else {
-      created += batch.length;
+      const actualCreated = insertedData?.length || 0;
+      created += actualCreated;
       console.log(
-        `✅ Batch ${i / batchSize + 1}: Created ${batch.length} loyalty accounts (${created}/${customersToMigrate.length})`,
+        `✅ Batch ${i / batchSize + 1}: Created ${actualCreated} new accounts (${created}/${customersToMigrate.length} total created)`,
       );
     }
   }

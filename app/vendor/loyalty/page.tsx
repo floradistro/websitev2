@@ -221,29 +221,6 @@ export default function LoyaltyPage() {
         </div>
       </div>
 
-      {/* Migration Notice - if needed */}
-      {stats.total_members < 100 && (
-        <div className="mt-6 bg-blue-500/[0.04] border border-blue-500/[0.08] rounded-2xl p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-              <Users size={20} className="text-blue-400/70" strokeWidth={1.5} />
-            </div>
-            <div className="flex-1">
-              <div className="text-white text-[15px] font-medium mb-1">
-                Migrating from Alpine IQ?
-              </div>
-              <div className="text-white/60 text-[13px] leading-relaxed tracking-wide mb-4">
-                You have {(10357 - stats.total_members).toLocaleString()} customers without loyalty
-                accounts. Import your existing Alpine IQ members to continue their points and tier
-                status seamlessly.
-              </div>
-              <button className="bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 hover:border-blue-500/30 rounded-lg px-4 py-2 text-blue-400 text-[12px] font-medium tracking-wide transition-all duration-200">
-                Import Alpine IQ Data
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
