@@ -33,7 +33,8 @@
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "db:analyze-queries": "npx tsx scripts/analyze-query-patterns.ts",
     "db:show-indexes": "echo 'Run this SQL in Supabase: SELECT tablename, indexname FROM pg_indexes WHERE indexname LIKE ''idx_%'' ORDER BY tablename;'",
-    "db:test-connections": "npx tsx scripts/test-db-connections.ts"
+    "db:test-connections": "npx tsx scripts/test-db-connections.ts",
+    "cache:test-performance": "npx tsx scripts/test-cache-performance.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.67.1",
