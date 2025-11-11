@@ -4,6 +4,7 @@ import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+
 export async function GET(request: NextRequest) {
   try {
     // Use secure middleware to get vendor_id from session
@@ -13,23 +14,37 @@ export async function GET(request: NextRequest) {
 
     const supabase = getServiceSupabase();
 
-    // PERFORMANCE FIX: Fetch ONLY vendor categories (active ones) in a single query
-    // No need to scan all products - categories table is the source of truth
-    const { data: allCategories, error: categoriesError } = await supabase
+    // Get categories with product counts for this vendor
+    const { data: categoriesData, error: categoriesError } = await supabase
       .from("categories")
-      .select("name")
-      .eq("vendor_id", vendorId)
-      .eq("is_active", true)
+      .select(`
+        id,
+        name,
+        slug,
+        products!products_primary_category_id_fkey(id)
+      `)
+      .eq("products.vendor_id", vendorId)
       .order("name");
 
     if (categoriesError) {
       if (process.env.NODE_ENV === "development") {
         logger.error("❌ Error fetching vendor categories:", categoriesError);
       }
-      return NextResponse.json({ success: false, error: categoriesError.message }, { status: 500 });
+      return NextResponse.json(
+        { success: false, error: categoriesError.message },
+        { status: 500 },
+      );
     }
 
-    const categories = (allCategories || []).map((c) => c.name).filter(Boolean);
+    // Transform to include product count
+    const categories = (categoriesData || [])
+      .map((cat: any) => ({
+        id: cat.id,
+        name: cat.name,
+        slug: cat.slug,
+        count: Array.isArray(cat.products) ? cat.products.length : 0,
+      }))
+      .filter((cat) => cat.count > 0); // Only show categories with products
 
     return NextResponse.json({
       success: true,

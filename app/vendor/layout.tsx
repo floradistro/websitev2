@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Menu, X, RefreshCw } from "lucide-react";
@@ -8,7 +8,6 @@ import VendorSupportChat from "@/components/VendorSupportChat";
 import AIActivityMonitor from "@/components/AIActivityMonitor";
 import { useAppAuth } from "@/context/AppAuthContext";
 import { showConfirm } from "@/components/NotificationToast";
-import { dashboardKeyframes } from "@/lib/dashboard-theme";
 import {
   allNavItems,
   mobileNavItems,
@@ -20,24 +19,32 @@ import { prefetchVendorData } from "@/hooks/useVendorData";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { UniversalSearch } from "@/components/UniversalSearch";
 import "../globals-dashboard.css";
+import "./vendor-globals.css";
 
 function VendorLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [vendorLogo, setVendorLogo] = useState<string>("/yacht-club-logo.png");
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(
-    navSections.reduce(
-      (acc, section) => ({
-        ...acc,
-        [section.label]: section.defaultOpen ?? false,
-      }),
-      {},
-    ),
-  );
-  const isVisible = useAutoHideHeader(); // ✅ Shared hook - no memory leak
   const pathname = usePathname();
   const router = useRouter();
   const { vendor, isAuthenticated, isLoading, logout, hasAppAccess } = useAppAuth();
+
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [vendorLogo, setVendorLogo] = useState<string>("/yacht-club-logo.png");
+
+  // Use useMemo to ensure stable initial state and avoid hydration mismatch
+  const initialExpandedState = useMemo(
+    () =>
+      navSections.reduce(
+        (acc, section) => ({
+          ...acc,
+          [section.label]: section.defaultOpen ?? false,
+        }),
+        {},
+      ),
+    [], // Empty dependency array - only compute once
+  );
+
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(initialExpandedState);
+  const isVisible = useAutoHideHeader(); // ✅ Shared hook - no memory leak
 
   // Protect vendor routes - redirect to login if not authenticated
   useEffect(() => {
@@ -74,7 +81,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
   const currentPage =
     allNavItems.find((item) => pathname?.startsWith(item.href))?.label || "Portal";
-  const isActive = (href: string) => pathname?.startsWith(href);
+  const isActive = (href: string) => pathname?.startsWith(href) ?? false;
   const toggleSection = (label: string) => {
     setExpandedSections((prev) => ({ ...prev, [label]: !prev[label] }));
   };
@@ -111,87 +118,6 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <style jsx global>{`
-        @supports (padding-bottom: env(safe-area-inset-bottom)) {
-          .safe-bottom {
-            padding-bottom: calc(env(safe-area-inset-bottom) + 4rem);
-          }
-        }
-        body {
-          overflow-x: hidden;
-          max-width: 100vw;
-          background: #000000;
-        }
-        * {
-          box-sizing: border-box;
-        }
-        input,
-        textarea,
-        select {
-          font-size: 16px !important;
-        }
-        input[type="url"],
-        input[type="text"],
-        input[type="email"] {
-          word-break: break-all;
-        }
-        @media (max-width: 1024px) {
-          table {
-            display: none !important;
-          }
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        ${dashboardKeyframes}
-        .luxury-glow {
-          animation: subtle-glow 4s ease-in-out infinite;
-        }
-        .luxury-border {
-          border-image: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03))
-            1;
-        }
-        /* Sidebar scrollbar */
-        aside::-webkit-scrollbar {
-          width: 6px;
-        }
-        aside::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        aside::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 3px;
-        }
-        aside::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-        aside {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-        }
-        main::-webkit-scrollbar {
-          width: 8px;
-        }
-        main::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        main::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 4px;
-        }
-        main::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.2);
-        }
-        main {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-        }
-      `}</style>
-
       {/* PWA Safe Area Spacer */}
       <div
         className="fixed top-0 left-0 right-0 z-[120] pointer-events-none bg-black"
@@ -512,7 +438,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
               bottom: "env(safe-area-inset-bottom)",
             }}
           >
-            <nav className="px-2 py-3 space-y-0.5 pb-8">
+            <nav className="px-2 py-3 space-y-0.5 pb-8" suppressHydrationWarning>
               {/* Top level items */}
               {topLevelNavItems
                 .filter((item) => !item.appKey || hasAppAccess(item.appKey))

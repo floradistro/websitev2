@@ -6,6 +6,7 @@ import { POSCart, CartItem } from "@/components/component-registry/pos/POSCart";
 import { POSPayment, PaymentData } from "@/components/component-registry/pos/POSPayment";
 import { POSRegisterSelector } from "@/components/component-registry/pos/POSRegisterSelector";
 import { POSLocationSelector } from "@/components/component-registry/pos/POSLocationSelector";
+import { OpenCashDrawerModal } from "./components/OpenCashDrawerModal";
 import { useAppAuth } from "@/context/AppAuthContext";
 import { supabase } from "@/lib/supabase/client";
 import { calculatePrice, type Promotion } from "@/lib/pricing";
@@ -44,6 +45,7 @@ export default function POSRegisterPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [productsCache, setProductsCache] = useState<Map<string, any>>(new Map());
   const [showSessionModal, setShowSessionModal] = useState(false);
+  const [showOpenDrawerModal, setShowOpenDrawerModal] = useState(false);
   const [existingSessionInfo, setExistingSessionInfo] = useState<any>(null);
   const [taxRate, setTaxRate] = useState<number | null>(null);
   const [taxBreakdown, setTaxBreakdown] = useState<
@@ -154,7 +156,7 @@ export default function POSRegisterPage() {
   };
 
   const handleStartNewSession = async () => {
-    // Close existing session and start new one
+    // Close existing session if present, then show drawer count modal
     if (existingSessionInfo) {
       try {
         await fetch("/api/pos/sessions/close", {
@@ -166,28 +168,46 @@ export default function POSRegisterPage() {
             closingNotes: "Closed to start new session",
           }),
         });
-
-        // Start new session
-        const response = await fetch("/api/pos/sessions/open", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            registerId,
-            locationId: selectedLocation?.id,
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setSessionId(data.session.id);
-          setShowSessionModal(false);
-        }
+        setShowSessionModal(false);
+        setShowOpenDrawerModal(true);
       } catch (error) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("Error starting new session:", error);
+          logger.error("Error closing session:", error);
         }
-        alert("Failed to start new session");
+        alert("Failed to close existing session");
       }
+    } else {
+      // No existing session, go straight to drawer count
+      setShowOpenDrawerModal(true);
+    }
+  };
+
+  const handleOpenDrawerSubmit = async (openingCash: number, notes: string) => {
+    try {
+      const response = await fetch("/api/pos/sessions/open", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          registerId,
+          locationId: selectedLocation?.id,
+          openingCash,
+          openingNotes: notes,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSessionId(data.session.id);
+        setShowOpenDrawerModal(false);
+      } else {
+        const error = await response.json();
+        alert(error.error || "Failed to start session");
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        logger.error("Error starting session:", error);
+      }
+      alert("Failed to start session");
     }
   };
 
@@ -526,6 +546,11 @@ export default function POSRegisterPage() {
           changeGiven: paymentData.changeGiven,
           customerId,
           customerName,
+          // Payment processor details (from Dejavoo)
+          authorizationCode: paymentData.authorizationCode,
+          paymentTransactionId: paymentData.transactionId,
+          cardType: paymentData.cardType,
+          cardLast4: paymentData.cardLast4,
         }),
       });
 
@@ -660,6 +685,9 @@ export default function POSRegisterPage() {
           setHasPaymentProcessor(hasProcessor || false);
           if (sessionId) {
             setSessionId(sessionId);
+          } else {
+            // No active session - show drawer count modal
+            setShowOpenDrawerModal(true);
           }
         }}
         onBackToLocationSelector={() => {
@@ -724,6 +752,14 @@ export default function POSRegisterPage() {
           locationId={selectedLocation?.id}
           registerId={registerId || undefined}
           hasPaymentProcessor={hasPaymentProcessor}
+        />
+      )}
+
+      {/* Open Cash Drawer Modal */}
+      {showOpenDrawerModal && (
+        <OpenCashDrawerModal
+          onSubmit={handleOpenDrawerSubmit}
+          onCancel={() => setShowOpenDrawerModal(false)}
         />
       )}
 

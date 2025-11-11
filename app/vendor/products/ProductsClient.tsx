@@ -46,6 +46,14 @@ export default function ProductsClient() {
   // Fetch categories for filter dropdown
   const { data: categoriesData } = useProductCategories();
 
+  // Transform category objects to strings for the filter
+  const categoryNames = useMemo(() => {
+    if (!Array.isArray(categoriesData)) return [];
+    return categoriesData
+      .filter((cat: any) => cat && cat.name)
+      .map((cat: any) => String(cat.name));
+  }, [categoriesData]);
+
   const products = productsData?.products || [];
   const total = productsData?.total || 0;
   const totalPages = productsData?.totalPages || 0;
@@ -184,7 +192,7 @@ export default function ProductsClient() {
             />
 
             {/* Filters */}
-            <ProductsFilters categories={categoriesData || []} />
+            <ProductsFilters categories={categoryNames} />
 
             {/* Products List */}
             <ProductsList

@@ -32,6 +32,11 @@ interface CreateSaleRequest {
   changeGiven?: number;
   customerId?: string;
   customerName?: string;
+  // Payment processor details (from Dejavoo)
+  authorizationCode?: string;
+  paymentTransactionId?: string;
+  cardType?: string;
+  cardLast4?: string;
 }
 
 /**
@@ -109,6 +114,10 @@ export async function POST(request: NextRequest) {
       changeGiven,
       customerId,
       customerName = "Walk-In",
+      authorizationCode,
+      paymentTransactionId,
+      cardType,
+      cardLast4,
     } = body;
 
     // Validate required fields
@@ -341,10 +350,14 @@ export async function POST(request: NextRequest) {
         total_amount: total,
         cash_tendered: cashTendered || null,
         change_given: changeGiven || null,
+        authorization_code: authorizationCode || null,
         metadata: {
           customer_id: customerId,
           customer_name: customerName,
           items_count: items.length,
+          payment_transaction_id: paymentTransactionId,
+          card_type: cardType,
+          card_last4: cardLast4,
         },
       })
       .select()
@@ -364,10 +377,11 @@ export async function POST(request: NextRequest) {
     if (sessionId) {
       const txnType = customerId ? "pickup_orders_fulfilled" : "walk_in_sales";
 
-      const { error: sessionError } = await supabase.rpc("increment_session_counter", {
+      const { error: sessionError } = await supabase.rpc("increment_session_payment", {
         p_session_id: sessionId,
-        p_counter_name: txnType,
+        p_payment_method: paymentMethod,
         p_amount: total,
+        p_transaction_type: txnType,
       });
 
       if (sessionError) {

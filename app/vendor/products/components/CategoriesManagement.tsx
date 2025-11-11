@@ -5,8 +5,10 @@ import { Plus, Edit2, Trash2, ChevronDown, ChevronRight, Layers, DollarSign } fr
 import { Card, Button, ds, cn } from "@/components/ds";
 import { showNotification, showConfirm } from "@/components/NotificationToast";
 import { FieldVisibilityModal } from "@/components/vendor/FieldVisibilityModal";
+import { FieldEditModal } from "@/components/vendor/FieldEditModal";
 import { CategoryModal } from "@/components/vendor/CategoryModal";
 import { CustomFieldModal } from "@/components/vendor/CustomFieldModal";
+import { PricingBlueprintModal } from "@/components/vendor/PricingTemplateModal";
 import type {
   Category,
   FieldGroup,
@@ -23,10 +25,11 @@ interface CategoriesManagementProps {
 export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [fieldGroups, setFieldGroups] = useState<FieldGroup[]>([]);
+  const [categoryPricingTiers, setCategoryPricingTiers] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [expandedSection, setExpandedSection] = useState<{
-    [key: string]: "fields" | null;
+    [key: string]: "fields" | "pricing" | null;
   }>({});
 
   // Field visibility modal state
@@ -38,6 +41,15 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
     currentConfig: FieldVisibilityConfig;
   } | null>(null);
 
+  // Field edit modal state
+  const [showFieldEditModal, setShowFieldEditModal] = useState(false);
+  const [editModalData, setEditModalData] = useState<{
+    fieldId: string;
+    fieldName: string;
+    fieldSlug: string;
+    fieldDescription?: string;
+  } | null>(null);
+
   // Category modal state
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -45,10 +57,17 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
   // Custom field modal state
   const [showCustomFieldModal, setShowCustomFieldModal] = useState(false);
 
+  // Pricing template modal state
+  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<any>(null);
+  const [pricingTemplates, setPricingTemplates] = useState<any[]>([]);
+
   useEffect(() => {
     if (vendorId) {
       loadCategories();
       loadFieldGroups();
+      loadCategoryPricingTiers();
+      loadPricingTemplates();
     }
   }, [vendorId]);
 
@@ -99,6 +118,42 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error loading field groups:", error);
+      }
+    }
+  };
+
+  const loadCategoryPricingTiers = async () => {
+    try {
+      const response = await axios.get(
+        `/api/vendor/category-pricing-tiers?vendor_id=${vendorId}`
+      );
+      if (response.data.success) {
+        if (process.env.NODE_ENV === "development") {
+          logger.info("[CategoriesManagement] Loaded pricing tiers:", response.data.tiers);
+          logger.info("[CategoriesManagement] Beverages tiers:", response.data.tiers?.Beverages);
+        }
+        setCategoryPricingTiers(response.data.tiers || {});
+        if (process.env.NODE_ENV === "development") {
+          // Log after state update (will show in next render)
+          logger.info("[CategoriesManagement] State set with keys:", Object.keys(response.data.tiers || {}));
+        }
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        logger.error("Error loading category pricing tiers:", error);
+      }
+    }
+  };
+
+  const loadPricingTemplates = async () => {
+    try {
+      const response = await axios.get(`/api/vendor/pricing-templates`);
+      if (response.data.success) {
+        setPricingTemplates(response.data.blueprints || []);
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        logger.error("Error loading pricing templates:", error);
       }
     }
   };
@@ -180,11 +235,47 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
     }
   };
 
+  const openFieldEditModal = (fieldGroup: FieldGroup) => {
+    setEditModalData({
+      fieldId: fieldGroup.id,
+      fieldName: fieldGroup.name,
+      fieldSlug: fieldGroup.slug,
+      fieldDescription: fieldGroup.description,
+    });
+    setShowFieldEditModal(true);
+  };
+
+  const handleFieldEditSave = async (data: { name: string; description: string }) => {
+    if (!editModalData) return;
+
+    try {
+      const response = await axios.put(`/api/vendor/product-fields/${editModalData.fieldId}`, data, {
+        headers: { "x-vendor-id": vendorId },
+      });
+
+      if (response.data.success) {
+        showNotification({
+          type: "success",
+          title: "Field Updated",
+          message: "Field details have been saved",
+        });
+        loadFieldGroups();
+      }
+    } catch (error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      showNotification({
+        type: "error",
+        title: "Save Failed",
+        message: err.response?.data?.error || "Failed to save field",
+      });
+    }
+  };
+
   const toggleCategoryExpansion = (categoryId: string) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
 
-  const toggleSection = (categoryId: string, section: "fields") => {
+  const toggleSection = (categoryId: string, section: "fields" | "pricing") => {
     setExpandedSection((prev) => ({
       ...prev,
       [categoryId]: prev[categoryId] === section ? null : section,
@@ -315,7 +406,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
             return (
               <Card key={category.id} className="overflow-hidden">
                 {/* Category Header */}
-                <div className="p-6">
+                <div className="p-4">
                   <div className="flex items-center justify-between">
                     <button
                       onClick={() => toggleCategoryExpansion(category.id)}
@@ -394,7 +485,7 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                 {isExpanded && (
                   <>
                     {/* Section Buttons */}
-                    <div className={cn("flex gap-2 px-6 pb-4 border-t", ds.colors.border.default)}>
+                    <div className={cn("flex gap-2 px-4 py-3 border-t", ds.colors.border.default)}>
                       <button
                         onClick={() => toggleSection(category.id, "fields")}
                         className={cn(
@@ -416,11 +507,35 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                         <Layers size={12} className="inline mr-1.5" strokeWidth={1.5} />
                         Fields ({categoryFields.length})
                       </button>
+                      <button
+                        onClick={() => toggleSection(category.id, "pricing")}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg transition-colors",
+                          ds.typography.size.xs,
+                          ds.typography.transform.uppercase,
+                          ds.typography.tracking.wide,
+                          ds.typography.weight.light,
+                          currentSection === "pricing"
+                            ? cn(ds.colors.bg.active, "text-white/80")
+                            : cn(
+                                ds.colors.bg.elevated,
+                                ds.colors.text.tertiary,
+                                `hover:${ds.colors.bg.hover}`,
+                                "hover:text-white/80",
+                              ),
+                        )}
+                      >
+                        <DollarSign size={12} className="inline mr-1.5" strokeWidth={1.5} />
+                        Pricing Tiers ({pricingTemplates.filter(t =>
+                          t.applicable_to_categories?.includes(category.id) ||
+                          t.category_id === category.id
+                        ).length})
+                      </button>
                     </div>
 
                     {/* Fields Section */}
                     {currentSection === "fields" && (
-                      <div className="px-6 py-4 bg-black/20">
+                      <div className="px-4 py-3 bg-black/20">
                         <div className="flex items-center justify-between mb-4">
                           <h4
                             className={cn(
@@ -484,26 +599,156 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
                                     </div>
                                   )}
                                 </div>
-                                <button
-                                  onClick={() =>
-                                    openFieldVisibilityModal(
-                                      category.id,
-                                      fieldGroup.slug,
-                                      fieldGroup.name,
-                                    )
-                                  }
-                                  className={cn(
-                                    "px-2 py-1 rounded text-[9px]",
-                                    ds.typography.transform.uppercase,
-                                    ds.typography.tracking.wide,
-                                    ds.colors.bg.hover,
-                                    "text-white/70 hover:text-white/90",
-                                  )}
-                                >
-                                  Configure
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => openFieldEditModal(fieldGroup)}
+                                    className={cn(
+                                      "px-2 py-1 rounded text-[9px]",
+                                      ds.typography.transform.uppercase,
+                                      ds.typography.tracking.wide,
+                                      ds.colors.bg.hover,
+                                      "text-white/70 hover:text-white/90",
+                                    )}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      openFieldVisibilityModal(
+                                        category.id,
+                                        fieldGroup.slug,
+                                        fieldGroup.name,
+                                      )
+                                    }
+                                    className={cn(
+                                      "px-2 py-1 rounded text-[9px]",
+                                      ds.typography.transform.uppercase,
+                                      ds.typography.tracking.wide,
+                                      ds.colors.bg.hover,
+                                      "text-white/70 hover:text-white/90",
+                                    )}
+                                  >
+                                    Configure
+                                  </button>
+                                </div>
                               </div>
                             ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Pricing Templates Section */}
+                    {currentSection === "pricing" && (
+                      <div className="px-4 py-3 bg-black/20">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4
+                            className={cn(
+                              "text-white/60",
+                              ds.typography.size.xs,
+                              ds.typography.transform.uppercase,
+                              ds.typography.tracking.wide,
+                              ds.typography.weight.light,
+                            )}
+                          >
+                            Pricing Templates for {category.name}
+                          </h4>
+                          <button
+                            onClick={() => {
+                              setEditingTemplate(null);
+                              setShowPricingModal(true);
+                            }}
+                            className={cn(
+                              "px-3 py-1.5 rounded-lg transition-colors",
+                              ds.colors.bg.elevated,
+                              "hover:bg-white/10",
+                              "border",
+                              ds.colors.border.default,
+                              "text-white",
+                              ds.typography.size.xs,
+                              ds.typography.transform.uppercase,
+                              ds.typography.tracking.wide,
+                              ds.typography.weight.light,
+                              "flex items-center gap-1.5",
+                            )}
+                          >
+                            <Plus size={12} strokeWidth={1.5} />
+                            Create Template
+                          </button>
+                        </div>
+                        {pricingTemplates.filter(t =>
+                          t.applicable_to_categories?.includes(category.id) ||
+                          t.category_id === category.id
+                        ).length === 0 ? (
+                          <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
+                            No pricing templates configured for this category
+                          </p>
+                        ) : (
+                          <div className="space-y-2">
+                            {pricingTemplates
+                              .filter(t =>
+                                t.applicable_to_categories?.includes(category.id) ||
+                                t.category_id === category.id
+                              )
+                              .map((template) => (
+                                <div
+                                  key={typeof template.id === 'object' ? JSON.stringify(template.id) : template.id}
+                                  className={cn(
+                                    "p-3 rounded-lg",
+                                    ds.colors.bg.elevated,
+                                    "flex flex-col gap-3",
+                                  )}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <div className={cn(ds.typography.size.xs, "text-white/80")}>
+                                        {template.name}
+                                      </div>
+                                      {template.description && (
+                                        <div
+                                          className={cn(
+                                            ds.typography.size.micro,
+                                            ds.colors.text.quaternary,
+                                            "mt-0.5",
+                                          )}
+                                        >
+                                          {template.description}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <button
+                                      onClick={() => {
+                                        setEditingTemplate(template);
+                                        setShowPricingModal(true);
+                                      }}
+                                      className={cn(
+                                        "px-2 py-1 rounded text-[9px]",
+                                        ds.typography.transform.uppercase,
+                                        ds.typography.tracking.wide,
+                                        ds.colors.bg.hover,
+                                        "text-white/70 hover:text-white/90",
+                                      )}
+                                    >
+                                      Edit
+                                    </button>
+                                  </div>
+                                  <div className="flex flex-wrap gap-2">
+                                    {template.price_breaks?.map((tier: any, idx: number) => (
+                                      <div
+                                        key={tier.break_id || `tier-${idx}`}
+                                        className={cn(
+                                          "px-2 py-1 rounded text-[10px]",
+                                          ds.colors.bg.hover,
+                                          "text-white/70",
+                                        )}
+                                      >
+                                        <span className="font-medium">{tier.label}:</span>{" "}
+                                        ${tier.price?.toFixed(2) || "—"}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
                           </div>
                         )}
                       </div>
@@ -528,6 +773,19 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
         categoryId={visibilityModalData?.categoryId || ""}
         currentConfig={visibilityModalData?.currentConfig}
         onSave={handleFieldVisibilitySave}
+      />
+
+      {/* Field Edit Modal */}
+      <FieldEditModal
+        isOpen={showFieldEditModal}
+        onClose={() => {
+          setShowFieldEditModal(false);
+          setEditModalData(null);
+        }}
+        fieldName={editModalData?.fieldName || ""}
+        fieldSlug={editModalData?.fieldSlug || ""}
+        fieldDescription={editModalData?.fieldDescription}
+        onSave={handleFieldEditSave}
       />
 
       {/* Category Modal */}
@@ -558,6 +816,24 @@ export function CategoriesManagement({ vendorId }: CategoriesManagementProps) {
         vendorId={vendorId}
         categories={categories}
       />
+
+      {/* Pricing Template Modal */}
+      {showPricingModal && (
+        <PricingBlueprintModal
+          isOpen={showPricingModal}
+          onClose={() => {
+            setShowPricingModal(false);
+            setEditingTemplate(null);
+          }}
+          onSave={() => {
+            loadPricingTemplates();
+            loadCategoryPricingTiers();
+          }}
+          vendorId={vendorId}
+          blueprint={editingTemplate}
+          categories={categories}
+        />
+      )}
     </div>
   );
 }

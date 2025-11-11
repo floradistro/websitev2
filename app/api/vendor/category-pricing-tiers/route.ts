@@ -4,9 +4,27 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 import { requireVendor } from "@/lib/auth/middleware";
+
+interface Product {
+  id: string;
+  primary_category_id?: string;
+  meta_data?: {
+    pricing_mode?: string;
+    pricing_tiers?: Array<{
+      weight?: string;  // e.g. "1 gram", "3.5g (Eighth)"
+      price: string | number;
+      qty: number;
+    }>;
+  };
+  categories?: Array<{
+    id: string;
+    name: string;
+  }>;
+}
+
 /**
- * Dynamically fetch available pricing tiers for categories based on actual pricing blueprints.
- * Uses price_breaks from pricing_tier_blueprints to extract available tier names (break_ids).
+ * Fetch available pricing tiers for categories based on actual product pricing tiers.
+ * Extracts tier names from products' meta_data.pricing_tiers.
  *
  * Query params:
  * - vendor_id: Required. The vendor ID to fetch pricing for.
@@ -16,18 +34,12 @@ import { requireVendor } from "@/lib/auth/middleware";
  * {
  *   success: boolean,
  *   tiers: {
- *     "Category Name": ["tier1", "tier2", ...],
+ *     "Category Name": ["1g", "3.5g", "7g", "14g", "28g", ...],
  *     ...
  *   }
  * }
  */
 export async function GET(request: NextRequest) {
-  // SECURITY: Require vendor authentication
-  const authResult = await requireVendor(request);
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
-
   try {
     const { searchParams } = new URL(request.url);
     const vendorId = searchParams.get("vendor_id");
@@ -42,21 +54,15 @@ export async function GET(request: NextRequest) {
       : [];
     const supabase = getServiceSupabase();
 
-    // Fetch products with their pricing blueprint assignments for this vendor
+    // Fetch products with their categories and pricing tiers
     const { data: products, error: productsError } = await supabase
       .from("products")
       .select(
         `
         id,
         primary_category_id,
-        categories!products_primary_category_id_fkey(id, name),
-        product_pricing_assignments(
-          pricing_tier_blueprints(
-            id,
-            name,
-            price_breaks
-          )
-        )
+        meta_data,
+        categories!products_primary_category_id_fkey(id, name)
       `,
       )
       .eq("vendor_id", vendorId);
@@ -69,17 +75,50 @@ export async function GET(request: NextRequest) {
     }
 
     if (!products || products.length === 0) {
+      if (process.env.NODE_ENV === "development") {
+        logger.info("[category-pricing-tiers] No products found with pricing tiers");
+      }
       return NextResponse.json({
         success: true,
         tiers: {},
       });
     }
 
-    // Build map: category name -> Set of tier names (break_ids)
+    if (process.env.NODE_ENV === "development") {
+      logger.info(`[category-pricing-tiers] Found ${products.length} products with pricing tiers`);
+    }
+
+    // ALSO fetch pricing tier templates for this vendor
+    const { data: templates, error: templatesError } = await supabase
+      .from("pricing_tier_templates")
+      .select(
+        `
+        id,
+        name,
+        default_tiers,
+        categories!pricing_tier_templates_category_id_fkey(id, name)
+      `,
+      )
+      .eq("vendor_id", vendorId)
+      .eq("is_active", true);
+
+    if (templatesError) {
+      if (process.env.NODE_ENV === "development") {
+        logger.error("[category-pricing-tiers] Error fetching templates:", templatesError);
+      }
+    }
+
+    if (process.env.NODE_ENV === "development") {
+      logger.info(`[category-pricing-tiers] Found ${templates?.length || 0} pricing tier templates`);
+    }
+
+    // Build map: category name -> Set of tier names
     const categoryToTiers = new Map<string, Set<string>>();
 
-    for (const product of products) {
-      const category = product.categories?.[0];
+    for (const product of products as Product[]) {
+      const category = Array.isArray(product.categories)
+        ? product.categories[0]
+        : product.categories;
       const categoryName = category?.name;
       if (!categoryName) continue;
 
@@ -90,19 +129,42 @@ export async function GET(request: NextRequest) {
 
       const tiersSet = categoryToTiers.get(categoryName)!;
 
-      // Extract tier names (break_ids) from pricing blueprints
-      const assignments = product.product_pricing_assignments || [];
-      for (const assignment of assignments) {
-        const blueprint = assignment.pricing_tier_blueprints?.[0];
-        if (!blueprint?.price_breaks || !Array.isArray(blueprint.price_breaks)) {
-          continue;
+      // Extract tier names from product's pricing_tiers
+      const pricingTiers = product.meta_data?.pricing_tiers;
+      if (pricingTiers && Array.isArray(pricingTiers)) {
+        for (const tier of pricingTiers) {
+          // Use 'weight' field as the tier name (e.g. "1 gram", "3.5g (Eighth)")
+          if (tier.weight) {
+            tiersSet.add(tier.weight);
+          }
+        }
+      }
+    }
+
+    // Process pricing tier templates
+    if (templates && templates.length > 0) {
+      for (const template of templates as any[]) {
+        const category = Array.isArray(template.categories)
+          ? template.categories[0]
+          : template.categories;
+        const categoryName = category?.name;
+        if (!categoryName) continue;
+
+        // Initialize set for this category if it doesn't exist
+        if (!categoryToTiers.has(categoryName)) {
+          categoryToTiers.set(categoryName, new Set<string>());
         }
 
-        // price_breaks is an array like:
-        // [{"break_id": "1", "label": "1", "qty": 1, "unit": "unit", "sort_order": 1}, ...]
-        for (const priceBreak of blueprint.price_breaks) {
-          if (priceBreak.break_id) {
-            tiersSet.add(priceBreak.break_id);
+        const tiersSet = categoryToTiers.get(categoryName)!;
+
+        // Extract tier labels from template's default_tiers
+        const defaultTiers = template.default_tiers;
+        if (defaultTiers && Array.isArray(defaultTiers)) {
+          for (const tier of defaultTiers) {
+            // Use 'label' field as the tier name (e.g. "1 gram", "3.5g (Eighth)", "1")
+            if (tier.label) {
+              tiersSet.add(tier.label);
+            }
           }
         }
       }
@@ -113,6 +175,10 @@ export async function GET(request: NextRequest) {
     categoryToTiers.forEach((tiersSet, categoryName) => {
       result[categoryName] = Array.from(tiersSet).sort();
     });
+
+    if (process.env.NODE_ENV === "development") {
+      logger.info(`[category-pricing-tiers] Result:`, result);
+    }
 
     // Filter by requested categories if provided
     if (requestedCategories.length > 0) {

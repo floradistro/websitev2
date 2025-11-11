@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { POSModal } from "./POSModal";
 import { POSCashDrawer } from "./POSCashDrawer";
+import { CloseCashDrawerModal } from "@/app/pos/register/components/CloseCashDrawerModal";
 
 import { logger } from "@/lib/logger";
 interface POSSession {
@@ -26,6 +27,7 @@ interface POSSession {
   status: string;
   opening_cash: number;
   total_sales: number;
+  total_cash: number;
   total_transactions: number;
   walk_in_sales: number;
   pickup_orders_fulfilled: number;
@@ -66,6 +68,7 @@ export function POSVendorDropdown({
   const [session, setSession] = useState<POSSession | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [showCashDrawer, setShowCashDrawer] = useState(false);
+  const [showCloseDrawerModal, setShowCloseDrawerModal] = useState(false);
   const [cashSummary, setCashSummary] = useState<CashMovementSummary | null>(null);
   const [modal, setModal] = useState<{
     isOpen: boolean;
@@ -194,57 +197,51 @@ export function POSVendorDropdown({
   };
 
   const closeSession = async () => {
-    setModal({
-      isOpen: true,
-      title: "End Session?",
-      message: `Are you sure you want to end session ${session?.session_number}?\n\nTotal Sales: $${session?.total_sales.toFixed(2)}\nTransactions: ${session?.total_transactions}`,
-      type: "info",
-      confirmText: "End Session",
-      cancelText: "Cancel",
-      onConfirm: async () => {
-        try {
-          const response = await fetch("/api/pos/sessions/close", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sessionId: session?.id,
-              closingCash: cashSummary?.current_balance || session?.opening_cash || 0,
-            }),
-          });
-
-          if (response.ok) {
-            setModal({
-              isOpen: false,
-              title: "",
-              message: "",
-              type: "success",
-            });
-            loadActiveSession();
-            setIsOpen(false);
-            // Notify parent that session was closed
-            if (onSessionClosed) {
-              onSessionClosed();
-            }
-          } else {
-            const error = await response.json();
-            setModal({
-              isOpen: true,
-              title: "Error",
-              message: error.error || "Failed to close session",
-              type: "error",
-            });
-          }
-        } catch (error: any) {
-          setModal({
-            isOpen: true,
-            title: "Error",
-            message: error.message || "Network error",
-            type: "error",
-          });
-        }
-      },
-    });
+    // Show the closing cash drawer modal
+    setShowCloseDrawerModal(true);
+    setIsOpen(false); // Close dropdown
   };
+
+  const handleCloseDrawerSubmit = async (closingCash: number, notes: string) => {
+    if (!session) return;
+
+    try {
+      const response = await fetch("/api/pos/sessions/close", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: session.id,
+          closingCash,
+          closingNotes: notes,
+        }),
+      });
+
+      if (response.ok) {
+        setShowCloseDrawerModal(false);
+        loadActiveSession();
+        // Notify parent that session was closed
+        if (onSessionClosed) {
+          onSessionClosed();
+        }
+      } else {
+        const error = await response.json();
+        setModal({
+          isOpen: true,
+          title: "Error",
+          message: error.error || "Failed to close session",
+          type: "error",
+        });
+      }
+    } catch (error: any) {
+      setModal({
+        isOpen: true,
+        title: "Error",
+        message: error.message || "Network error",
+        type: "error",
+      });
+    }
+  };
+
 
   const openSession = async () => {
     try {
@@ -519,6 +516,19 @@ export function POSVendorDropdown({
           </div>
         )}
       </div>
+
+      {/* Close Cash Drawer Modal */}
+      {showCloseDrawerModal && session && (
+        <CloseCashDrawerModal
+          sessionId={session.id}
+          sessionNumber={session.session_number}
+          totalSales={session.total_sales}
+          totalCash={session.total_cash || 0}
+          openingCash={session.opening_cash || 0}
+          onSubmit={handleCloseDrawerSubmit}
+          onCancel={() => setShowCloseDrawerModal(false)}
+        />
+      )}
     </>
   );
 }

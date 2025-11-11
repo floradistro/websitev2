@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": ".next/cache/tsconfig.tsbuildinfo"
+  },
+  "exclude": [
+    "node_modules",
+    "tests",
+    "scripts",
+    "docs",
+    "ai-agent",
+    "mcp-agent",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ]
+}

@@ -25,6 +25,9 @@ import {
   Brain,
   Columns2,
   Zap,
+  Folder,
+  FolderOpen,
+  FolderPlus,
 } from "lucide-react";
 import ProductBrowser from "./ProductBrowser";
 import GenerationInterface from "./GenerationInterface";
@@ -59,7 +62,12 @@ type MediaCategory = "product_photos" | "marketing" | "menus" | "brand" | null;
 interface ContextMenu {
   x: number;
   y: number;
-  file: MediaFile;
+  file?: MediaFile;
+  folder?: {
+    id: string;
+    name: string;
+    parent_folder_id: string | null;
+  };
 }
 
 // Memoized grid item for better performance
@@ -94,6 +102,8 @@ const GridItem = memo(
           if (onDragStart) {
             e.dataTransfer.setData("mediaFilePath", file.file_path);
             e.dataTransfer.setData("mediaFileName", file.file_name);
+            e.dataTransfer.setData("mediaFileId", file.id);
+            e.dataTransfer.setData("mediaFileUrl", file.file_url);
             onDragStart(file);
           }
         }}
@@ -140,13 +150,37 @@ export default function MediaLibraryClient() {
   const { vendor } = useAppAuth();
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // DEBUG: Log vendor info on mount
+  useEffect(() => {
+    logger.debug("🏢 MediaLibraryClient: Vendor info", {
+      hasVendor: !!vendor,
+      vendorId: vendor?.id || "NO VENDOR ID",
+      vendorName: vendor?.store_name || "NO VENDOR NAME",
+    });
+  }, [vendor]);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<MediaCategory>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null); // null = root, uuid = inside a folder
+  const [folders, setFolders] = useState<MediaFolder[]>([]);
+  const [creatingFolder, setCreatingFolder] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+
+  interface MediaFolder {
+    id: string;
+    vendor_id: string;
+    name: string;
+    parent_folder_id: string | null;
+    color: string;
+    icon: string;
+    created_at: string;
+  }
   const [quickViewFile, setQuickViewFile] = useState<MediaFile | null>(null);
   const [dragOverCategory, setDragOverCategory] = useState<MediaCategory>(null);
   const [draggingFile, setDraggingFile] = useState<MediaFile | null>(null);
+  const [dragOverFolder, setDragOverFolder] = useState<string | null>(null);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [autoMatching, setAutoMatching] = useState(false);
@@ -265,6 +299,122 @@ export default function MediaLibraryClient() {
   useEffect(() => {
     loadMedia();
   }, [loadMedia]);
+
+  // MISSION CRITICAL: Load folders on mount AND whenever vendor changes
+  useEffect(() => {
+    if (vendor?.id) {
+      console.log("🔴 LOADING FOLDERS FOR VENDOR:", vendor.id);
+      loadFolders();
+    }
+  }, [vendor?.id]);
+
+  // EXTRA SAFETY: Reload folders if they disappear
+  useEffect(() => {
+    if (vendor?.id && folders.length === 0) {
+      console.log("🔴 NO FOLDERS DETECTED - EMERGENCY RELOAD");
+      const timer = setTimeout(() => loadFolders(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [vendor?.id, folders.length]);
+
+  const loadFolders = async () => {
+    if (!vendor) return;
+    try {
+      const response = await fetch("/api/vendor/media/folders", {
+        headers: { "x-vendor-id": vendor.id },
+      });
+      const data = await response.json();
+      logger.debug("📁 Folders loaded:", { success: data.success, count: data.folders?.length, folders: data.folders });
+      if (data.success && data.folders) {
+        setFolders(data.folders);
+      }
+    } catch (error) {
+      logger.error("Error loading folders:", error);
+    }
+  };
+
+  const createFolder = async () => {
+    if (!vendor || !newFolderName.trim()) return;
+
+    try {
+      const response = await fetch("/api/vendor/media/folders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-vendor-id": vendor.id,
+        },
+        body: JSON.stringify({
+          name: newFolderName.trim(),
+          parent_folder_id: currentFolderId,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        await loadFolders();
+        setNewFolderName("");
+        setCreatingFolder(false);
+      }
+    } catch (error) {
+      logger.error("Error creating folder:", error);
+      alert("Failed to create folder");
+    }
+  };
+
+  const moveFileToFolder = async (fileId: string, folderId: string | null) => {
+    if (!vendor) return;
+
+    try {
+      const response = await fetch("/api/vendor/media", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-vendor-id": vendor.id,
+        },
+        body: JSON.stringify({
+          id: fileId,
+          folder_id: folderId,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        await loadMedia();
+      }
+    } catch (error) {
+      logger.error("Error moving file:", error);
+      alert("Failed to move file");
+    }
+  };
+
+  const moveMultipleFilesToFolder = async (fileIds: string[], folderId: string | null) => {
+    if (!vendor) return;
+
+    try {
+      // Move all files in parallel
+      await Promise.all(
+        fileIds.map((fileId) =>
+          fetch("/api/vendor/media", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "x-vendor-id": vendor.id,
+            },
+            body: JSON.stringify({
+              id: fileId,
+              folder_id: folderId,
+            }),
+          })
+        )
+      );
+
+      await loadMedia();
+      setSelectedFiles(new Set()); // Clear selection after move
+    } catch (error) {
+      logger.error("Error moving files:", error);
+      alert("Failed to move files");
+    }
+  };
 
   // Close context menu on click
   useEffect(() => {
@@ -714,6 +864,60 @@ export default function MediaLibraryClient() {
     { value: "brand" as MediaCategory, label: "Brand" },
   ];
 
+  // Get folders in current directory
+  // MISSION CRITICAL: Ensure null comparison works correctly
+  // ROOT FOLDERS: parent_folder_id is null/undefined AND we're at root (currentFolderId is null/undefined)
+  const currentFolders = folders.filter((f) => {
+    // Both null/undefined should match
+    if (!currentFolderId) { // More forgiving: any falsy value means root
+      return !f.parent_folder_id; // Any falsy value means root folder
+    }
+    return f.parent_folder_id === currentFolderId;
+  });
+
+  // BULLETPROOF: Always have root folders available
+  const rootFolders = folders.filter((f) => !f.parent_folder_id);
+
+  // SUPER AGGRESSIVE Debug logging
+  useEffect(() => {
+    console.log("🔴 FOLDER RENDER CHECK:", {
+      totalFolders: folders.length,
+      rootFoldersCount: rootFolders.length,
+      rootFolderNames: rootFolders.map(f => f.name),
+      currentFolderId,
+      currentFolderIdType: typeof currentFolderId,
+      currentFolderIdIsFalsy: !currentFolderId,
+      selectedCategory,
+      generationMode,
+      willRenderFolders: !currentFolderId && rootFolders.length > 0,
+    });
+  }, [folders.length, rootFolders.length, currentFolderId, selectedCategory, generationMode]);
+
+  // Get files in current directory (filter by folder_id or null for root)
+  const currentFiles = files.filter((f: any) => {
+    const fileFolderId = f.folder_id || null;
+    return fileFolderId === currentFolderId;
+  });
+
+  // Build breadcrumb trail
+  const getBreadcrumbs = (): MediaFolder[] => {
+    if (!currentFolderId) return [];
+
+    const breadcrumbs: MediaFolder[] = [];
+    let folderId: string | null = currentFolderId;
+
+    while (folderId) {
+      const folder = folders.find((f) => f.id === folderId);
+      if (!folder) break;
+      breadcrumbs.unshift(folder);
+      folderId = folder.parent_folder_id;
+    }
+
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = getBreadcrumbs();
+
   if (loading) {
     return (
       <div className="absolute inset-0 bg-black flex items-center justify-center">
@@ -948,25 +1152,27 @@ export default function MediaLibraryClient() {
               <ProductBrowser
                 vendorId={vendor.id}
                 onDragStart={(product) => setDropTargetProduct(product.id)}
-                onProductSelect={(product) => {
-                  logger.debug("🎬 ProductBrowser CLICK ->setGalleryProduct", {
-                    productName: product.name,
-                    productId: product.id,
-                    timestamp: new Date().toISOString()
-                  });
-                  setGalleryProduct(product);
-                  logger.debug("✅ setGalleryProduct called successfully");
-                }}
-                onLinkMedia={handleLinkProductToMedia}
-                selectionMode={false}
-                selectedProducts={selectedProductsForGeneration}
-                onSelectionChange={setSelectedProductsForGeneration}
-              />
+              onProductSelect={(product) => {
+                logger.debug("🎬 ProductBrowser CLICK ->setGalleryProduct", {
+                  productName: product.name,
+                  productId: product.id,
+                  timestamp: new Date().toISOString()
+                });
+                setGalleryProduct(product);
+                logger.debug("✅ setGalleryProduct called successfully");
+              }}
+              onLinkMedia={handleLinkProductToMedia}
+              selectionMode={generationMode}
+              selectedProducts={selectedProductsForGeneration}
+              onSelectionChange={setSelectedProductsForGeneration}
+            />
             )}
           </div>
 
-          {/* Media Grid */}
+
+          {/* Center/Main Panel - Media Grid OR Generation Interface */}
           <div className="flex-1 flex flex-col">
+
             {/* Category Toolbar */}
             <div className="h-12 bg-white/[0.02] border-b border-white/[0.06] flex items-center px-4 gap-2 flex-shrink-0">
               {categories.map((cat) => (
@@ -996,6 +1202,33 @@ export default function MediaLibraryClient() {
                 {filteredFiles.length} items
               </span>
             </div>
+
+            {/* Breadcrumb Navigation - Show when inside a folder, regardless of category */}
+            {(currentFolderId !== null || breadcrumbs.length > 0) && (
+              <div className="px-4 py-2 bg-white/[0.02] border-b border-white/[0.06] flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentFolderId(null)}
+                  className="text-xs text-white/60 hover:text-white transition-colors"
+                >
+                  Root
+                </button>
+                {breadcrumbs.map((folder, index) => (
+                  <div key={folder.id} className="flex items-center gap-2">
+                    <span className="text-white/30">/</span>
+                    <button
+                      onClick={() => setCurrentFolderId(folder.id)}
+                      className={`text-xs transition-colors ${
+                        index === breadcrumbs.length - 1
+                          ? "text-white font-medium"
+                          : "text-white/60 hover:text-white"
+                      }`}
+                    >
+                      {folder.name}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Grid with Drop Zone OR Generation Interface OR Gallery */}
             <div className="flex-1 overflow-hidden">
@@ -1094,21 +1327,108 @@ export default function MediaLibraryClient() {
               ) : (
                 <div className="p-6 overflow-y-auto h-full">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                    {filteredFiles.map((file) => (
-                      <GridItem
-                        key={file.id}
-                        file={file}
-                        isSelected={selectedFiles.has(file.file_name)}
-                        onSelect={() => toggleFileSelection(file.file_name)}
-                        onDoubleClick={() => setEditingImage(file)}
+                    {/* New Folder Tile - Always show at root level, regardless of category */}
+                    {currentFolderId === null && (
+                      <button
+                        onClick={() => setCreatingFolder(true)}
+                        className="aspect-square rounded-2xl bg-white/[0.02] hover:bg-white/[0.06] border-2 border-dashed border-white/[0.12] hover:border-white/[0.24] transition-all p-4 flex flex-col items-center justify-center gap-2 group"
+                      >
+                        <div className="w-12 h-12 rounded-xl bg-white/[0.06] group-hover:bg-white/[0.12] flex items-center justify-center transition-colors">
+                          <FolderPlus className="w-6 h-6 text-white/60 group-hover:text-white/80 transition-colors" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs font-medium text-white/80">New Folder</p>
+                        </div>
+                      </button>
+                    )}
+
+                    {/* Existing Folders - BULLETPROOF: Always show root folders when not in a subfolder */}
+                    {!currentFolderId && rootFolders.map((folder) => (
+                      <button
+                        key={folder.id}
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData("folderId", folder.id);
+                          e.dataTransfer.setData("folderName", folder.name);
+                        }}
+                        onClick={() => setCurrentFolderId(folder.id)}
                         onContextMenu={(e) => {
                           e.preventDefault();
-                          setContextMenu({ x: e.clientX, y: e.clientY, file });
+                          setContextMenu({
+                            x: e.clientX,
+                            y: e.clientY,
+                            folder
+                          });
                         }}
-                        onQuickView={() => setQuickViewFile(file)}
-                        onDragStart={(file) => setDraggedMedia(file)}
-                      />
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setDragOverFolder(folder.id);
+                        }}
+                        onDragLeave={() => setDragOverFolder(null)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+
+                          // Check if we have selected files to move
+                          if (selectedFiles.size > 0) {
+                            // Move all selected files
+                            const fileIds = files
+                              .filter(f => selectedFiles.has(f.file_name))
+                              .map(f => f.id);
+                            moveMultipleFilesToFolder(fileIds, folder.id);
+                          } else if (draggingFile) {
+                            // Move single dragged file
+                            moveFileToFolder(draggingFile.id, folder.id);
+                          }
+
+                          setDraggingFile(null);
+                          setDragOverFolder(null);
+                        }}
+                        className={`aspect-square rounded-2xl border transition-all p-4 flex flex-col items-center justify-center gap-2 group ${
+                          dragOverFolder === folder.id
+                            ? "bg-purple-500/20 border-purple-500/50 scale-105"
+                            : "bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.08] hover:border-white/[0.12]"
+                        }`}
+                      >
+                        <Folder className="w-12 h-12 text-white/40 group-hover:text-white/60 transition-colors" />
+                        <div className="text-center">
+                          <p className="text-xs font-medium text-white truncate w-full">{folder.name}</p>
+                          {selectedFiles.size > 0 && dragOverFolder === folder.id && (
+                            <p className="text-[10px] text-purple-400 mt-1">Move {selectedFiles.size} files</p>
+                          )}
+                        </div>
+                      </button>
                     ))}
+
+                    {/* Files - Apply folder filtering when in "All Media" view */}
+                    {(selectedCategory === null ? currentFiles : filteredFiles)
+                      .filter((file) => {
+                        // Apply search filter
+                        if (!searchQuery) return true;
+                        const query = searchQuery.toLowerCase();
+                        return (
+                          file.file_name.toLowerCase().includes(query) ||
+                          file.ai_description?.toLowerCase().includes(query) ||
+                          file.ai_tags?.some((tag) => tag.toLowerCase().includes(query))
+                        );
+                      })
+                      .map((file) => (
+                        <GridItem
+                          key={file.id}
+                          file={file}
+                          isSelected={selectedFiles.has(file.file_name)}
+                          onSelect={() => toggleFileSelection(file.file_name)}
+                          onDoubleClick={() => setEditingImage(file)}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            setContextMenu({ x: e.clientX, y: e.clientY, file });
+                          }}
+                          onQuickView={() => setQuickViewFile(file)}
+                          onDragStart={(file) => {
+                            setDraggedMedia(file);
+                            setDraggingFile(file);
+                          }}
+                        />
+                      ))}
                   </div>
                 </div>
               )}
@@ -1179,8 +1499,69 @@ export default function MediaLibraryClient() {
               />
             </div>
           ) : (
-            <div className="flex-1 overflow-y-auto p-6">
-              {filteredFiles.length === 0 ? (
+            <div className="flex-1 overflow-y-auto">
+              {/* Breadcrumb Navigation & Toolbar */}
+              <div className="sticky top-0 bg-black/80 backdrop-blur-sm border-b border-white/[0.06] px-6 py-3 z-20">
+                <div className="flex items-center justify-between">
+                  {/* Breadcrumbs */}
+                  <div className="flex items-center gap-2 text-sm">
+                    <button
+                      onClick={() => setCurrentFolderId(null)}
+                      onDragOver={(e) => {
+                        if (currentFolderId !== null) {
+                          e.preventDefault();
+                          setDragOverFolder("root");
+                        }
+                      }}
+                      onDragLeave={() => setDragOverFolder(null)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        if (draggingFile && currentFolderId !== null) {
+                          moveFileToFolder(draggingFile.id, null);
+                          setDraggingFile(null);
+                        }
+                        setDragOverFolder(null);
+                      }}
+                      className={`transition-colors px-2 py-1 rounded ${
+                        dragOverFolder === "root"
+                          ? "bg-purple-500/20 text-white font-medium"
+                          : currentFolderId === null
+                            ? "text-white font-medium"
+                            : "text-white/60 hover:text-white"
+                      }`}
+                    >
+                      All Media
+                    </button>
+                    {breadcrumbs.map((folder, index) => (
+                      <div key={folder.id} className="flex items-center gap-2">
+                        <span className="text-white/40">/</span>
+                        <button
+                          onClick={() => setCurrentFolderId(folder.id)}
+                          className={
+                            index === breadcrumbs.length - 1
+                              ? "text-white font-medium"
+                              : "text-white/60 hover:text-white transition-colors"
+                          }
+                        >
+                          {folder.name}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* New Folder Button */}
+                  <button
+                    onClick={() => setCreatingFolder(true)}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.12] rounded-lg text-xs text-white transition-colors"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5" />
+                    New Folder
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {currentFolders.length === 0 && currentFiles.length === 0 ? (
                 <div className="h-full flex items-center justify-center">
                   <div className="text-center">
                     <div className="w-20 h-20 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mx-auto mb-6">
@@ -1198,8 +1579,57 @@ export default function MediaLibraryClient() {
                   </div>
                 </div>
               ) : (
+                // Folder and File Grid View
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-                  {filteredFiles.map((file) => (
+                  {/* New Folder Tile */}
+                  <button
+                    onClick={() => setCreatingFolder(true)}
+                    className="aspect-square rounded-2xl bg-white/[0.02] hover:bg-white/[0.06] border-2 border-dashed border-white/[0.12] hover:border-white/[0.24] transition-all p-4 flex flex-col items-center justify-center gap-2 group"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-white/[0.06] group-hover:bg-white/[0.12] flex items-center justify-center transition-colors">
+                      <FolderPlus className="w-6 h-6 text-white/60 group-hover:text-white/80 transition-colors" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-medium text-white/80">New Folder</p>
+                    </div>
+                  </button>
+
+                  {/* Render Folders */}
+                  {currentFolders.map((folder) => (
+                    <button
+                      key={folder.id}
+                      onClick={() => setCurrentFolderId(folder.id)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragOverFolder(folder.id);
+                      }}
+                      onDragLeave={() => setDragOverFolder(null)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        if (draggingFile) {
+                          moveFileToFolder(draggingFile.id, folder.id);
+                          setDraggingFile(null);
+                        }
+                        setDragOverFolder(null);
+                      }}
+                      className={`aspect-square rounded-2xl border transition-all p-4 flex flex-col items-center justify-center gap-2 group ${
+                        dragOverFolder === folder.id
+                          ? "bg-purple-500/20 border-purple-500/50 scale-105"
+                          : "bg-white/[0.03] hover:bg-white/[0.06] border-white/[0.08] hover:border-white/[0.12]"
+                      }`}
+                    >
+                      <Folder className="w-12 h-12 text-white/40 group-hover:text-white/60 transition-colors" />
+                      <div className="text-center">
+                        <p className="text-xs font-medium text-white truncate w-full">{folder.name}</p>
+                        {(folder as any).count !== undefined && (
+                          <p className="text-[10px] text-white/40 mt-1">{(folder as any).count} items</p>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+
+                  {/* Render Files */}
+                  {currentFiles.map((file) => (
                     <GridItem
                       key={file.id}
                       file={file}
@@ -1211,10 +1641,12 @@ export default function MediaLibraryClient() {
                         setContextMenu({ x: e.clientX, y: e.clientY, file });
                       }}
                       onQuickView={() => setQuickViewFile(file)}
+                      onDragStart={(file) => setDraggingFile(file)}
                     />
                   ))}
                 </div>
               )}
+              </div>
             </div>
           )}
         </>
@@ -1227,20 +1659,100 @@ export default function MediaLibraryClient() {
           className="fixed bg-black/90 backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl z-[200] py-2 min-w-[200px]"
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            onClick={() => {
-              setQuickViewFile(contextMenu.file);
-              setContextMenu(null);
-            }}
-            className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
-          >
-            <Eye className="w-4 h-4" />
-            Quick View
-          </button>
+          {/* FOLDER MENU */}
+          {contextMenu.folder && (
+            <>
+              <button
+                onClick={() => {
+                  setCurrentFolderId(contextMenu.folder!.id);
+                  setContextMenu(null);
+                }}
+                className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
+              >
+                <FolderOpen className="w-4 h-4" />
+                Open Folder
+              </button>
+
+              <button
+                onClick={async () => {
+                  const newName = prompt("Rename folder:", contextMenu.folder!.name);
+                  setContextMenu(null);
+                  if (newName && newName.trim() && newName.trim() !== contextMenu.folder!.name) {
+                    setLoading(true);
+                    try {
+                      const response = await fetch(`/api/vendor/media/folders/${contextMenu.folder!.id}`, {
+                        method: "PATCH",
+                        headers: {
+                          "Content-Type": "application/json",
+                          "x-vendor-id": vendor!.id,
+                        },
+                        body: JSON.stringify({ name: newName.trim() }),
+                      });
+                      if (response.ok) {
+                        await loadFolders();
+                      } else {
+                        const data = await response.json();
+                        alert(`Failed to rename folder: ${data.error}`);
+                      }
+                    } catch (error) {
+                      logger.error("Error renaming folder:", error);
+                      alert("Failed to rename folder");
+                    } finally {
+                      setLoading(false);
+                    }
+                  }
+                }}
+                className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
+              >
+                <Edit3 className="w-4 h-4" />
+                Rename
+              </button>
+
+              <div className="h-px bg-white/[0.06] my-2" />
+
+              <button
+                onClick={async () => {
+                  if (confirm(`Delete folder "${contextMenu.folder!.name}"? Files inside will be moved to root.`)) {
+                    try {
+                      const response = await fetch(`/api/vendor/media/folders/${contextMenu.folder!.id}`, {
+                        method: "DELETE",
+                        headers: { "x-vendor-id": vendor!.id },
+                      });
+                      if (response.ok) {
+                        await loadFolders();
+                        await loadMedia();
+                      }
+                    } catch (error) {
+                      logger.error("Error deleting folder:", error);
+                    }
+                  }
+                  setContextMenu(null);
+                }}
+                className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors flex items-center gap-3 text-sm font-medium"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Folder
+              </button>
+            </>
+          )}
+
+          {/* FILE MENU */}
+          {contextMenu.file && (
+            <>
+              <button
+                onClick={() => {
+                  setQuickViewFile(contextMenu.file!);
+                  setContextMenu(null);
+                }}
+                className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
+              >
+                <Eye className="w-4 h-4" />
+                Quick View
+              </button>
 
           <button
             onClick={() => {
-              setEditingFile(contextMenu.file);
+              setEditingFile(contextMenu.file || null);
               setContextMenu(null);
             }}
             className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
@@ -1261,16 +1773,16 @@ export default function MediaLibraryClient() {
                 <button
                   key={cat.value}
                   onClick={() => {
-                    if (cat.value) handleChangeCategory(contextMenu.file, cat.value);
+                    if (cat.value && contextMenu.file) handleChangeCategory(contextMenu.file, cat.value);
                     setContextMenu(null);
                   }}
                   className={`w-full px-2 py-1.5 text-left rounded-lg transition-colors flex items-center gap-2 text-xs ${
-                    contextMenu.file.category === cat.value
+                    contextMenu.file?.category === cat.value
                       ? "bg-white/[0.08] text-white"
                       : "text-white/60 hover:bg-white/[0.04] hover:text-white"
                   }`}
                 >
-                  {contextMenu.file.category === cat.value && <Check className="w-3 h-3" />}
+                  {contextMenu.file?.category === cat.value && <Check className="w-3 h-3" />}
                   {cat.label}
                 </button>
               ))}
@@ -1280,7 +1792,7 @@ export default function MediaLibraryClient() {
 
           <button
             onClick={() => {
-              handleCopyUrl(contextMenu.file);
+              if (contextMenu.file) handleCopyUrl(contextMenu.file);
               setContextMenu(null);
             }}
             className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
@@ -1291,7 +1803,7 @@ export default function MediaLibraryClient() {
 
           <button
             onClick={() => {
-              handleDownload(contextMenu.file);
+              if (contextMenu.file) handleDownload(contextMenu.file);
               setContextMenu(null);
             }}
             className="w-full px-4 py-2.5 text-left text-white/80 hover:bg-white/[0.08] hover:text-white transition-colors flex items-center gap-3 text-sm font-medium"
@@ -1303,18 +1815,38 @@ export default function MediaLibraryClient() {
           <div className="h-px bg-white/[0.06] my-2" />
 
           <button
-            onClick={() => {
-              if (confirm(`Delete ${contextMenu.file.file_name}?`)) {
-                setSelectedFiles(new Set([contextMenu.file.file_name]));
-                handleDelete();
+            onClick={async () => {
+              if (contextMenu.file && confirm(`Delete ${contextMenu.file.file_name}?`)) {
+                const file = contextMenu.file;
+                setContextMenu(null);
+                setLoading(true);
+                try {
+                  const response = await fetch(`/api/vendor/media?file=${encodeURIComponent(file.file_name)}`, {
+                    method: "DELETE",
+                    headers: { "x-vendor-id": vendor!.id },
+                  });
+                  if (response.ok) {
+                    await loadMedia();
+                  } else {
+                    const data = await response.json();
+                    alert(`Failed to delete: ${data.error}`);
+                  }
+                } catch (error) {
+                  alert("Failed to delete file");
+                } finally {
+                  setLoading(false);
+                }
+              } else {
+                setContextMenu(null);
               }
-              setContextMenu(null);
             }}
             className="w-full px-4 py-2.5 text-left text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-3 text-sm font-medium"
           >
             <Trash2 className="w-4 h-4" />
             Delete
           </button>
+            </>
+          )}
         </div>
       )}
 
@@ -1429,6 +1961,75 @@ export default function MediaLibraryClient() {
               <Upload className="w-12 h-12 text-white/60" />
             </div>
             <p className="text-white text-lg font-medium">Drop files to upload</p>
+          </div>
+        </div>
+      )}
+
+      {/* New Folder Modal */}
+      {creatingFolder && (
+        <div
+          onClick={() => {
+            setCreatingFolder(false);
+            setNewFolderName("");
+          }}
+          className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-8"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-md bg-white/[0.06] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6"
+          >
+            <button
+              onClick={() => {
+                setCreatingFolder(false);
+                setNewFolderName("");
+              }}
+              className="absolute -top-3 -right-3 p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors backdrop-blur-sm"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+
+            <h3 className="text-white text-lg font-semibold mb-4">Create New Folder</h3>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-white/80 mb-2">
+                Folder Name
+              </label>
+              <input
+                type="text"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newFolderName.trim()) {
+                    createFolder();
+                  } else if (e.key === "Escape") {
+                    setCreatingFolder(false);
+                    setNewFolderName("");
+                  }
+                }}
+                placeholder="Enter folder name..."
+                autoFocus
+                className="w-full px-4 py-2.5 bg-white/[0.06] border border-white/[0.12] rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-white/30 transition-colors"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setCreatingFolder(false);
+                  setNewFolderName("");
+                }}
+                className="flex-1 px-4 py-2.5 bg-white/[0.06] hover:bg-white/[0.08] border border-white/[0.12] rounded-xl text-white text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createFolder}
+                disabled={!newFolderName.trim()}
+                className="flex-1 px-4 py-2.5 bg-white hover:bg-white/90 text-black rounded-xl text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Create Folder
+              </button>
+            </div>
           </div>
         </div>
       )}

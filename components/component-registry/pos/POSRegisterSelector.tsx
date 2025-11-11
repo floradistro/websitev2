@@ -13,6 +13,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
+import { CloseCashDrawerModal } from "@/app/pos/register/components/CloseCashDrawerModal";
 
 import { logger } from "@/lib/logger";
 interface Register {
@@ -34,6 +35,8 @@ interface Register {
     id: string;
     session_number: string;
     total_sales: number;
+    total_cash: number;
+    opening_cash: number;
     started_at: string;
     user_name?: string;
   };
@@ -59,6 +62,14 @@ export function POSRegisterSelector({
   const [registers, setRegisters] = useState<Register[]>([]);
   const [loading, setLoading] = useState(true);
   const [closingAll, setClosingAll] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [sessionToClose, setSessionToClose] = useState<{
+    id: string;
+    sessionNumber: string;
+    totalSales: number;
+    totalCash: number;
+    openingCash: number;
+  } | null>(null);
 
   useEffect(() => {
     // Initial load
@@ -98,43 +109,24 @@ export function POSRegisterSelector({
 
   const handleSelectRegister = async (register: Register) => {
     try {
-      // ENTERPRISE-GRADE: Use atomic database function
-      // This is IMPOSSIBLE to race condition - same as Walmart/Best Buy/Apple POS
-      const response = await fetch("/api/pos/sessions/get-or-create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          registerId: register.id,
-          locationId,
-          vendorId: "cd2e1122-d511-4edb-be5d-98ef274b4baf", // Default vendor
-          userId: null,
-          openingCash: 200.0,
-        }),
-      });
+      // Check if register has active payment processor
+      const hasPaymentProcessor = !!(
+        register.payment_processor_id && register.payment_processor?.is_active === true
+      );
 
-      if (response.ok) {
-        const data = await response.json();
-
-        // Check if register has active payment processor
-        const hasPaymentProcessor = !!(
-          register.payment_processor_id && register.payment_processor?.is_active === true
-        );
-
-        // Either joined existing or created new - database guarantees no duplicates
-        onRegisterSelected(register.id, data.session?.id, hasPaymentProcessor);
-        loadRegisters(); // Refresh UI
-      } else {
-        const error = await response.json();
-        if (process.env.NODE_ENV === "development") {
-          logger.error("❌ Atomic session failed:", error);
-        }
-        alert(`Failed to get/create session: ${error.error || "Unknown error"}`);
-      }
+      // Pass register selection to parent - let parent handle session creation
+      // If there's an existing session, pass its ID
+      // If no session, parent will show opening cash modal
+      onRegisterSelected(
+        register.id,
+        register.current_session?.id,
+        hasPaymentProcessor
+      );
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error with atomic session:", error);
+        logger.error("Error selecting register:", error);
       }
-      alert("Failed to access session");
+      alert("Failed to select register");
     }
   };
 
@@ -143,28 +135,35 @@ export function POSRegisterSelector({
 
     if (!register.current_session) return;
 
-    const confirmed = confirm(
-      `Close session ${register.current_session.session_number}?\n\n` +
-        `Sales: $${register.current_session.total_sales.toFixed(2)}\n` +
-        `Duration: ${formatDuration(register.current_session.started_at)}`,
-    );
+    // Show the closing cash count modal
+    setSessionToClose({
+      id: register.current_session.id,
+      sessionNumber: register.current_session.session_number,
+      totalSales: register.current_session.total_sales,
+      totalCash: register.current_session.total_cash,
+      openingCash: register.current_session.opening_cash,
+    });
+    setShowCloseModal(true);
+  };
 
-    if (!confirmed) return;
+  const handleCloseModalSubmit = async (closingCash: number, notes: string) => {
+    if (!sessionToClose) return;
 
     try {
       const response = await fetch("/api/pos/sessions/close", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId: register.current_session.id,
-          closingCash: 0, // Quick close, no cash count
-          closingNotes: "Closed from register selector",
+          sessionId: sessionToClose.id,
+          closingCash,
+          closingNotes: notes,
         }),
       });
 
       if (response.ok) {
-        // Reload to show updated status
-        loadRegisters();
+        setShowCloseModal(false);
+        setSessionToClose(null);
+        loadRegisters(); // Reload to show updated status
       } else {
         const error = await response.json();
         alert(`Failed to close session: ${error.error || "Unknown error"}`);
@@ -388,6 +387,22 @@ export function POSRegisterSelector({
           </div>
         )}
       </div>
+
+      {/* Close Cash Drawer Modal */}
+      {showCloseModal && sessionToClose && (
+        <CloseCashDrawerModal
+          sessionId={sessionToClose.id}
+          sessionNumber={sessionToClose.sessionNumber}
+          totalSales={sessionToClose.totalSales}
+          totalCash={sessionToClose.totalCash}
+          openingCash={sessionToClose.openingCash}
+          onSubmit={handleCloseModalSubmit}
+          onCancel={() => {
+            setShowCloseModal(false);
+            setSessionToClose(null);
+          }}
+        />
+      )}
     </div>
   );
 }

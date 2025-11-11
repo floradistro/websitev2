@@ -63,6 +63,8 @@ export async function GET(request: NextRequest) {
         register_id,
         session_number,
         total_sales,
+        total_cash,
+        opening_cash,
         opened_at,
         user_id,
         users(first_name, last_name)
@@ -88,6 +90,8 @@ export async function GET(request: NextRequest) {
               id: session.id,
               session_number: session.session_number,
               total_sales: session.total_sales || 0,
+              total_cash: session.total_cash || 0,
+              opening_cash: session.opening_cash || 0,
               started_at: session.opened_at,
               user_name: session.users
                 ? `${session.users.first_name} ${session.users.last_name}`

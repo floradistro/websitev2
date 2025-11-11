@@ -1,0 +1,19 @@
+{
+  "ignore_dirs": [
+    "node_modules",
+    ".next",
+    "out",
+    "build",
+    "dist",
+    "coverage",
+    "tests",
+    "scripts",
+    "docs",
+    "ai-agent",
+    "mcp-agent",
+    "playwright-report",
+    "test-results",
+    "__tests__",
+    "backups"
+  ]
+}

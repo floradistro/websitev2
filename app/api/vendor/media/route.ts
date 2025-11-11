@@ -100,6 +100,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     const tag = searchParams.get("tag");
     const search = searchParams.get("search");
     const productId = searchParams.get("productId");
+    const folderId = searchParams.get("folder_id");
 
     const supabase = getServiceSupabase();
 
@@ -114,6 +115,10 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     // Apply filters
     if (category) {
       query = query.eq("category", category);
+    }
+
+    if (folderId) {
+      query = query.eq("folder_id", folderId);
     }
 
     if (tag) {
@@ -321,7 +326,7 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
     const { vendorId } = authResult;
 
     const body = await request.json();
-    const { id, category, custom_tags, title, alt_text, notes, linked_product_ids } = body;
+    const { id, category, custom_tags, title, alt_text, notes, linked_product_ids, folder_id } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Media ID required" }, { status: 400 });
@@ -336,6 +341,7 @@ export const PATCH = withErrorHandler(async (request: NextRequest) => {
     if (alt_text !== undefined) updateData.alt_text = alt_text;
     if (notes !== undefined) updateData.notes = notes;
     if (linked_product_ids) updateData.linked_product_ids = linked_product_ids;
+    if (folder_id !== undefined) updateData.folder_id = folder_id; // null to remove from folder, string to move to folder
 
     const { data, error } = await supabase
       .from("vendor_media")

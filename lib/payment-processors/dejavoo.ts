@@ -118,7 +118,7 @@ export class DejavooClient {
     // Set base URL based on environment
     this.baseUrl =
       config.environment === "production"
-        ? "https://api.spinpos.net"
+        ? "https://spin.spinpos.net"
         : "https://test.spinpos.net/spin";
   }
 
@@ -262,27 +262,91 @@ export class DejavooClient {
   }
 
   /**
-   * Test connection to Dejavoo API
+   * Test connection to Dejavoo API AND physical terminal
+   * Sends a $0.01 sale transaction to verify end-to-end connectivity
+   *
+   * This tests:
+   * 1. API endpoint is reachable
+   * 2. Credentials (authkey + TPN) are valid
+   * 3. Physical terminal is connected and responsive
+   * 4. Terminal can process transactions
+   *
+   * Note: This will display on the physical terminal and require user to cancel/swipe
+   *
+   * @throws DejavooApiError with specific error details
    */
   async testConnection(): Promise<boolean> {
     try {
-      // Try a small auth transaction to test connectivity
-      // Note: This won't actually charge anything
+      // Send a $0.01 test transaction to the terminal
+      // This will show up on the physical device
       const testRef = `TEST-${Date.now()}`;
 
-      await this.auth({
-        amount: 1.0,
+      logger.info("🔍 Sending test transaction to terminal", {
+        amount: 0.01,
+        referenceId: testRef,
+        tpn: this.tpn,
+        baseUrl: this.baseUrl,
+      });
+
+      const result = await this.sale({
+        amount: 0.01,
         paymentType: "Credit",
         referenceId: testRef,
+        printReceipt: "No",
+        getReceipt: "No",
         getExtendedData: false,
+      });
+
+      // If we got a response (even declined), the terminal is working
+      logger.info("✅ Terminal test successful", {
+        referenceId: testRef,
+        statusCode: result.GeneralResponse?.StatusCode,
+        message: result.GeneralResponse?.Message,
       });
 
       return true;
     } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        logger.error("Dejavoo connection test failed:", error);
+      // Check if it's a terminal error vs network error
+      if (error instanceof DejavooApiError) {
+        // Terminal errors (timeout, unavailable, etc.) mean we reached the API
+        // but the terminal isn't responding
+        if (error.isTimeout()) {
+          logger.warn("⚠️ Terminal timeout", { error: error.message, statusCode: error.statusCode });
+          throw new DejavooApiError(
+            "Terminal did not respond in time. Check that the terminal is:\n• Powered on\n• Connected to network\n• Not processing another transaction",
+            error.statusCode,
+            error.resultCode,
+          );
+        }
+
+        if (error.isTerminalUnavailable()) {
+          logger.warn("⚠️ Terminal unavailable", { error: error.message, statusCode: error.statusCode });
+          throw new DejavooApiError(
+            "Terminal is not available. Check that the terminal is:\n• Powered on\n• Connected to network\n• Registered with correct TPN",
+            error.statusCode,
+            error.resultCode,
+          );
+        }
+
+        // Other API errors might mean credentials are wrong
+        logger.error("❌ Terminal test failed - API error", {
+          error: error.message,
+          statusCode: error.statusCode,
+          resultCode: error.resultCode,
+        });
+        throw new DejavooApiError(
+          `API Error: ${error.message}\n\nCheck that:\n• Auth key is correct\n• TPN (Terminal Profile Number) is correct\n• Terminal is assigned to this merchant account`,
+          error.statusCode,
+          error.resultCode,
+        );
       }
-      return false;
+
+      // Network errors mean we can't reach the API at all
+      logger.error("❌ Terminal test failed - Network error", error);
+      const errorMsg = error instanceof Error ? error.message : "Unknown network error";
+      throw new Error(
+        `Unable to reach Dejavoo API: ${errorMsg}\n\nCheck your internet connection and firewall settings.`,
+      );
     }
   }
 }
@@ -333,7 +397,7 @@ export class DejavooApiError extends Error {
    * Check if terminal is unavailable
    */
   isTerminalUnavailable(): boolean {
-    return this.statusCode === "2011";
+    return this.statusCode === "2011" || this.statusCode === "2001";
   }
 }
 

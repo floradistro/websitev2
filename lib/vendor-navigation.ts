@@ -21,6 +21,7 @@ import {
   Globe,
   Store,
   Boxes,
+  Activity,
 } from "lucide-react";
 
 export interface NavItem {
@@ -47,6 +48,13 @@ export const topLevelNavItems: NavItem[] = [
     icon: Home,
     label: "Dashboard",
     description: "Overview & metrics",
+    isCore: true,
+  },
+  {
+    href: "/vendor/operations",
+    icon: Activity,
+    label: "Store Operations",
+    description: "Terminals, sessions & payment processing",
     isCore: true,
   },
 ];

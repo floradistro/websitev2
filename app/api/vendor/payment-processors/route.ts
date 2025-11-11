@@ -15,29 +15,10 @@ export async function GET(request: NextRequest) {
     return authResult;
   }
 
+  const { vendorId } = authResult;
+
   try {
     const supabase = getServiceSupabase();
-
-    // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Get user's vendor_id
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("vendor_id, role")
-      .eq("id", user.id)
-      .single();
-
-    if (userError || !userData?.vendor_id) {
-      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
-    }
 
     // Get location filter from query
     const { searchParams } = new URL(request.url);
@@ -52,7 +33,7 @@ export async function GET(request: NextRequest) {
         location:locations(id, name, slug)
       `,
       )
-      .eq("vendor_id", userData.vendor_id)
+      .eq("vendor_id", vendorId)
       .order("created_at", { ascending: false });
 
     if (locationId) {
@@ -88,29 +69,10 @@ export async function POST(request: NextRequest) {
     return authResult;
   }
 
+  const { vendorId, user } = authResult;
+
   try {
     const supabase = getServiceSupabase();
-
-    // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Get user's vendor_id
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("vendor_id, role")
-      .eq("id", user.id)
-      .single();
-
-    if (userError || !userData?.vendor_id) {
-      return NextResponse.json({ error: "Vendor not found" }, { status: 404 });
-    }
 
     const body = await request.json();
     const { action, id, ...processorData } = body;
@@ -118,13 +80,13 @@ export async function POST(request: NextRequest) {
     // Handle different actions
     switch (action) {
       case "create":
-        return await createProcessor(supabase, userData.vendor_id, user.id, processorData);
+        return await createProcessor(supabase, vendorId, user.id, processorData);
 
       case "update":
-        return await updateProcessor(supabase, userData.vendor_id, id, processorData);
+        return await updateProcessor(supabase, vendorId, id, processorData);
 
       case "delete":
-        return await deleteProcessor(supabase, userData.vendor_id, id);
+        return await deleteProcessor(supabase, vendorId, id);
 
       case "test":
         return await testProcessor(id);
@@ -132,7 +94,7 @@ export async function POST(request: NextRequest) {
       case "set_default":
         return await setDefaultProcessor(
           supabase,
-          userData.vendor_id,
+          vendorId,
           id,
           processorData.location_id,
         );
@@ -337,9 +299,16 @@ async function testProcessor(id: string) {
     return NextResponse.json({ error: "Processor ID required" }, { status: 400 });
   }
 
+  let errorDetails = "";
+
   try {
+    logger.info("🔍 Testing payment processor", { id });
+
     const processor = await getPaymentProcessorById(id);
+    logger.info("✅ Retrieved processor instance", { type: processor.constructor.name });
+
     const success = await processor.testConnection();
+    logger.info("📊 Test result", { success });
 
     // Update test status
     const supabase = getServiceSupabase();
@@ -348,29 +317,37 @@ async function testProcessor(id: string) {
       .update({
         last_tested_at: new Date().toISOString(),
         last_test_status: success ? "success" : "failed",
-        last_test_error: success ? null : "Connection test failed",
+        last_test_error: success ? null : errorDetails || "Connection test failed",
       })
       .eq("id", id);
+
+    if (!success) {
+      logger.warn("⚠️ Connection test failed", { errorDetails });
+    }
 
     return NextResponse.json({
       success,
       message: success ? "Connection test successful" : "Connection test failed",
+      error: success ? undefined : errorDetails || "Terminal not responding or credentials invalid",
     });
   } catch (error) {
+    errorDetails = error instanceof Error ? error.message : "Unknown error";
+    logger.error("❌ Payment processor test error", { error: errorDetails, stack: error instanceof Error ? error.stack : undefined });
+
     const supabase = getServiceSupabase();
     await supabase
       .from("payment_processors")
       .update({
         last_tested_at: new Date().toISOString(),
         last_test_status: "failed",
-        last_test_error: error instanceof Error ? error.message : "Unknown error",
+        last_test_error: errorDetails,
       })
       .eq("id", id);
 
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Test failed",
+        error: errorDetails,
       },
       { status: 500 },
     );
