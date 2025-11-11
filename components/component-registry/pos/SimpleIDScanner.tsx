@@ -180,10 +180,11 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
           {/* Scanner container */}
           <div id={scannerId} className="w-full h-full" />
 
-          {/* Force video to NOT mirror */}
+          {/* Force video to show NATURAL - no mirroring */}
           <style jsx global>{`
             #${scannerId} video {
-              transform: scaleX(-1) !important;
+              transform: none !important;
+              -webkit-transform: none !important;
             }
           `}</style>
 
