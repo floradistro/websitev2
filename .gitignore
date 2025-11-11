@@ -41,6 +41,7 @@ yarn-error.log*
 next-env.d.ts
 .env*.local
 ai-agent/node_modules/
+mcp-agent/node_modules/
 # Backup files should NOT be in git
 backups/*.csv
 backups/*.json
