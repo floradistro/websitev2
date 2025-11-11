@@ -319,9 +319,9 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
 
           {/* Results Screen - Premium Design */}
           {scannedData && !isScanning && (
-            <div className="absolute inset-0 bg-gradient-to-br from-black via-black/95 to-black/90 flex items-center justify-center p-6">
-              <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/20 rounded-2xl p-6 max-w-md w-full backdrop-blur-xl shadow-2xl">
-                <div className="flex items-center gap-3 mb-5">
+            <div className="absolute inset-0 bg-gradient-to-br from-black via-black/95 to-black/90 flex items-center justify-center p-4 overflow-y-auto">
+              <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/20 rounded-2xl p-5 max-w-md w-full backdrop-blur-xl shadow-2xl my-4">
+                <div className="flex items-center gap-3 mb-4">
                   {error ? (
                     <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
                       <AlertCircle className="w-6 h-6 text-red-400" />
@@ -336,12 +336,12 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
                   </h3>
                 </div>
 
-                <div className="space-y-3 mb-5">
-                  <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]">
-                    <User className="w-4 h-4 text-white/50 mt-0.5" />
+                <div className="space-y-2.5 mb-4">
+                  <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                    <User className="w-4 h-4 text-white/50 mt-0.5 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-white/50 uppercase tracking-wider mb-0.5">Name</p>
-                      <p className="text-base font-bold text-white truncate">
+                      <p className="text-sm font-bold text-white break-words">
                         {[scannedData.firstName, scannedData.middleName, scannedData.lastName]
                           .filter(Boolean)
                           .join(" ") || scannedData.fullName || "Unknown"}
@@ -350,37 +350,37 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
                   </div>
 
                   {scannedData.dateOfBirth && (
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]">
-                      <div className="w-4 h-4 flex items-center justify-center text-white/50 text-xs mt-0.5">
+                    <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                      <div className="w-4 h-4 flex items-center justify-center text-white/50 text-xs mt-0.5 flex-shrink-0">
                         🎂
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-white/50 uppercase tracking-wider mb-0.5">Date of Birth</p>
-                        <p className="text-base font-bold text-white">{scannedData.dateOfBirth}</p>
+                        <p className="text-sm font-bold text-white">{scannedData.dateOfBirth}</p>
                       </div>
                     </div>
                   )}
 
                   {scannedData.licenseNumber && (
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]">
-                      <div className="w-4 h-4 flex items-center justify-center text-white/50 text-xs mt-0.5">
+                    <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                      <div className="w-4 h-4 flex items-center justify-center text-white/50 text-xs mt-0.5 flex-shrink-0">
                         🪪
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-white/50 uppercase tracking-wider mb-0.5">License</p>
-                        <p className="text-sm font-bold text-white font-mono">{scannedData.licenseNumber}</p>
+                        <p className="text-xs font-bold text-white font-mono break-all">{scannedData.licenseNumber}</p>
                       </div>
                     </div>
                   )}
 
                   {(scannedData.streetAddress || scannedData.city) && (
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.08]">
-                      <div className="w-4 h-4 flex items-center justify-center text-white/50 text-xs mt-0.5">
+                    <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                      <div className="w-4 h-4 flex items-center justify-center text-white/50 text-xs mt-0.5 flex-shrink-0">
                         📍
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-white/50 uppercase tracking-wider mb-0.5">Address</p>
-                        <p className="text-sm font-semibold text-white/90">
+                        <p className="text-xs font-semibold text-white/90 break-words">
                           {[scannedData.streetAddress, scannedData.city, scannedData.state, scannedData.zipCode]
                             .filter(Boolean)
                             .join(", ")}

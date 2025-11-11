@@ -142,62 +142,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 2: If customer exists, return it
+    // Step 2: If customer exists, return for confirmation
     if (customer) {
+      // Check if it's an exact match (DL#) or fuzzy match (name/DOB)
+      const isExactMatch =
+        scannedData.licenseNumber && customer.drivers_license_number === scannedData.licenseNumber;
+
       return NextResponse.json({
         success: true,
         customer,
         isNew: false,
-        message: "Customer found",
+        requiresConfirmation: !isExactMatch, // Fuzzy matches require user confirmation
+        matchType: isExactMatch ? "license" : "name_dob",
+        message: isExactMatch ? "Exact match by license number" : "Potential match found - please confirm",
       });
     }
 
-    // Step 3: Create new customer
-    logger.info("[ID Scan] Creating new customer", {
+    // Step 3: No match found - return null (don't auto-create)
+    logger.info("[ID Scan] No customer match found", {
       name: `${scannedData.firstName} ${scannedData.lastName}`,
     });
 
-    const fullAddress = [
-      scannedData.streetAddress,
-      scannedData.city,
-      scannedData.state,
-      scannedData.zipCode,
-    ]
-      .filter(Boolean)
-      .join(", ");
-
-    const { data: newCustomer, error: createError } = await supabase
-      .from("customers")
-      .insert({
-        vendor_id: vendorId,
-        first_name: scannedData.firstName || "",
-        last_name: scannedData.lastName || "",
-        email: null, // Will be added later if needed
-        phone: null, // Will be added later if needed
-        date_of_birth: scannedData.dateOfBirth,
-        drivers_license_number: scannedData.licenseNumber,
-        address: fullAddress || null,
-        city: scannedData.city,
-        state: scannedData.state,
-        zip_code: scannedData.zipCode,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (createError) {
-      logger.error("[ID Scan] Failed to create customer", createError);
-      throw createError;
-    }
-
-    logger.info("[ID Scan] New customer created", { customerId: newCustomer.id });
-
     return NextResponse.json({
       success: true,
-      customer: newCustomer,
-      isNew: true,
-      message: "New customer created",
+      customer: null,
+      isNew: false,
+      requiresConfirmation: false,
+      message: "No matching customer found",
     });
   } catch (error) {
     const err = toError(error);
