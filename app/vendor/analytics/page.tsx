@@ -7,6 +7,8 @@ import { DateRangePicker } from "@/components/ui/DateRangePicker";
 import { SkeletonKPIGrid, SkeletonTable } from "@/components/ui/Skeleton";
 import { InlineFiltersBar, FilterState } from "@/components/analytics/InlineFiltersBar";
 import { ActiveFilterChips } from "@/components/analytics/ActiveFilterChips";
+import { Sparkline } from "@/components/ui/Sparkline";
+import { ComparisonSelector, ComparisonBadge, ComparisonType } from "@/components/analytics/ComparisonSelector";
 import {
   DollarSign,
   ShoppingCart,
@@ -92,6 +94,11 @@ function StatCard({
   icon: Icon,
   trend,
   onClick,
+  sparklineData,
+  showSparkline = true,
+  comparisonType,
+  changeValue,
+  valueFormatter,
 }: {
   label: string;
   value: string;
@@ -100,6 +107,11 @@ function StatCard({
   icon: any;
   trend?: "up" | "down" | "neutral";
   onClick?: () => void;
+  sparklineData?: number[];
+  showSparkline?: boolean;
+  comparisonType?: ComparisonType;
+  changeValue?: number;
+  valueFormatter?: (value: number) => string;
 }) {
   return (
     <div
@@ -107,18 +119,41 @@ function StatCard({
       onClick={onClick}
     >
       <div className="flex items-start justify-between mb-4">
-        <div>
+        <div className="flex-1">
           <div className="text-white/40 text-[10px] font-light tracking-[0.2em] uppercase mb-2">
             {label}
           </div>
           <div className="text-white text-2xl font-light mb-1">{value}</div>
           {sublabel && <div className="text-white/30 text-[10px]">{sublabel}</div>}
         </div>
-        <div className="w-10 h-10 bg-white/5 flex items-center justify-center border border-white/10">
+        <div className="w-10 h-10 bg-white/5 flex items-center justify-center border border-white/10 flex-shrink-0">
           <Icon className="w-5 h-5 text-white/40" strokeWidth={1.5} />
         </div>
       </div>
-      {change !== undefined && (
+
+      {/* Apple-style Sparkline */}
+      {showSparkline && sparklineData && sparklineData.length > 0 && (
+        <div className="mb-3">
+          <Sparkline
+            data={sparklineData}
+            width={180}
+            height={32}
+            showGradient={true}
+            animate={true}
+          />
+        </div>
+      )}
+
+      {/* Comparison Badge (when comparison mode is active) */}
+      {comparisonType && comparisonType !== 'none' && change !== undefined && changeValue !== undefined ? (
+        <ComparisonBadge
+          comparisonType={comparisonType}
+          changePercent={change}
+          changeValue={changeValue}
+          valueFormatter={valueFormatter}
+        />
+      ) : change !== undefined ? (
+        // Legacy change display (when no comparison mode)
         <div className="flex items-center gap-2">
           {trend === "up" && (
             <div className="flex items-center gap-1 text-green-400 text-xs">
@@ -137,7 +172,7 @@ function StatCard({
           )}
           <span className="text-white/30 text-xs">vs previous period</span>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -1030,6 +1065,9 @@ export default function AnalyticsPage() {
 
   const [dateRange, setDateRange] = useState(getInitialDateRange());
 
+  // Comparison mode state
+  const [comparisonType, setComparisonType] = useState<ComparisonType>('none');
+
   // Initialize filters state
   const [filters, setFilters] = useState<FilterState>({
     dateRange: getInitialDateRange(),
@@ -1157,6 +1195,38 @@ export default function AnalyticsPage() {
   const { data: itemizedSales } = useSWR(`/api/vendor/analytics/v2/sales/itemized${queryParams}`, fetcher);
   const { data: sessions } = useSWR(`/api/vendor/analytics/v2/sessions/summary${queryParams}`, fetcher);
 
+  // Fetch trend data for sparklines (7-day trends)
+  const { data: trends } = useSWR(
+    user?.vendor_id ? `/api/vendor/analytics/v2/trends?vendor_id=${user.vendor_id}&days=7` : null,
+    fetcher,
+    {
+      refreshInterval: 300000, // Refresh every 5 minutes
+    }
+  );
+
+  // Fetch comparison data (vs previous period or year-over-year)
+  const comparisonParams =
+    user?.vendor_id && comparisonType !== 'none' && dateRange.start && dateRange.end
+      ? `vendor_id=${user.vendor_id}&current_start=${dateRange.start.toISOString()}&current_end=${dateRange.end.toISOString()}&comparison_type=${comparisonType}`
+      : null;
+
+  const { data: comparisonData } = useSWR(
+    comparisonParams ? `/api/vendor/analytics/v2/comparison?${comparisonParams}` : null,
+    fetcher,
+    {
+      refreshInterval: 300000, // Refresh every 5 minutes
+      revalidateOnFocus: false,
+    }
+  );
+
+  // Debug logging
+  console.log('Comparison state:', {
+    comparisonType,
+    dateRange: { start: dateRange.start.toISOString(), end: dateRange.end.toISOString() },
+    params: comparisonParams,
+    hasData: !!comparisonData,
+  });
+
   // Map tab keys to export report types
   const getExportReportType = (tabKey: string): string => {
     const mapping: Record<string, string> = {
@@ -1215,6 +1285,11 @@ export default function AnalyticsPage() {
                   // Filters are already applied via state change
                 }}
               />
+              {/* Comparison Mode Selector */}
+              <ComparisonSelector
+                value={comparisonType}
+                onChange={setComparisonType}
+              />
               {/* Date Range Picker */}
               <DateRangePicker
                 value={dateRange}
@@ -1258,46 +1333,58 @@ export default function AnalyticsPage() {
               label="Total Revenue"
               value={`$${(overview.data.gross_sales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
               sublabel={`From ${overview.data.transaction_count || 0} transactions`}
-              change={overview.data.comparison?.gross_sales_change}
+              change={comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_sales_change}
               trend={
-                overview.data.comparison?.gross_sales_change > 0
+                (comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_sales_change || 0) > 0
                   ? "up"
-                  : overview.data.comparison?.gross_sales_change < 0
+                  : (comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_sales_change || 0) < 0
                   ? "down"
                   : "neutral"
               }
               icon={DollarSign}
               onClick={() => setActiveTab("sales")}
+              sparklineData={trends?.revenue}
+              comparisonType={comparisonType}
+              changeValue={comparisonData?.changes?.revenue?.value}
+              valueFormatter={(v) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
             />
             <StatCard
               label="Gross Profit"
               value={`$${(overview.data.gross_profit || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
               sublabel={`${(overview.data.margin || 0).toFixed(1)}% margin`}
-              change={overview.data.comparison?.gross_profit_change}
+              change={comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_profit_change}
               trend={
-                overview.data.comparison?.gross_profit_change > 0
+                (comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_profit_change || 0) > 0
                   ? "up"
-                  : overview.data.comparison?.gross_profit_change < 0
+                  : (comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_profit_change || 0) < 0
                   ? "down"
                   : "neutral"
               }
               icon={TrendingUp}
               onClick={() => setActiveTab("profitloss")}
+              sparklineData={trends?.revenue} // Using revenue as proxy for profit trend
+              comparisonType={comparisonType}
+              changeValue={comparisonData?.changes?.revenue?.value}
+              valueFormatter={(v) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
             />
             <StatCard
               label="Average Order"
               value={`$${(overview.data.avg_transaction || 0).toFixed(2)}`}
               sublabel={`${(overview.data.avg_items_per_transaction || 0).toFixed(1)} items per order`}
-              change={overview.data.comparison?.avg_transaction_change}
+              change={comparisonData?.changes?.avgOrderValue?.percent || overview.data.comparison?.avg_transaction_change}
               trend={
-                overview.data.comparison?.avg_transaction_change > 0
+                (comparisonData?.changes?.avgOrderValue?.percent || overview.data.comparison?.avg_transaction_change || 0) > 0
                   ? "up"
-                  : overview.data.comparison?.avg_transaction_change < 0
+                  : (comparisonData?.changes?.avgOrderValue?.percent || overview.data.comparison?.avg_transaction_change || 0) < 0
                   ? "down"
                   : "neutral"
               }
               icon={ShoppingCart}
               onClick={() => setActiveTab("itemized")}
+              sparklineData={trends?.avgOrderValue}
+              comparisonType={comparisonType}
+              changeValue={comparisonData?.changes?.avgOrderValue?.value}
+              valueFormatter={(v) => `$${v.toFixed(2)}`}
             />
             <StatCard
               label="Top Product"
@@ -1309,6 +1396,18 @@ export default function AnalyticsPage() {
               }
               icon={Target}
               onClick={() => setActiveTab("products")}
+              sparklineData={trends?.orders} // Product sales correlate with order count
+              change={comparisonData?.changes?.orders?.percent}
+              trend={
+                (comparisonData?.changes?.orders?.percent || 0) > 0
+                  ? "up"
+                  : (comparisonData?.changes?.orders?.percent || 0) < 0
+                  ? "down"
+                  : "neutral"
+              }
+              comparisonType={comparisonType}
+              changeValue={comparisonData?.changes?.orders?.value}
+              valueFormatter={(v) => `${Math.round(v)} orders`}
             />
             </div>
           )}

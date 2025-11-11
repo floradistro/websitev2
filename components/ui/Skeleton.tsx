@@ -99,25 +99,54 @@ export function SkeletonChart({
   );
 }
 
-// KPI Grid Skeleton
+// KPI Grid Skeleton (with sparkline)
 export function SkeletonKPIGrid({
   count = 4,
   className = '',
+  showSparkline = true,
 }: {
   count?: number;
   className?: string;
+  showSparkline?: boolean;
 }) {
   return (
     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ${className}`}>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="bg-white/5 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-          <div className="flex items-start justify-between mb-3">
-            <Skeleton width={40} height={40} borderRadius={8} />
-            <Skeleton width={60} height={24} borderRadius={6} />
+        <div key={i} className="minimal-glass subtle-glow p-6 border-l-2 border-white/10">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <Skeleton width={80} height={10} className="mb-2" borderRadius={4} />
+              <Skeleton width={120} height={28} className="mb-1" borderRadius={6} />
+              <Skeleton width={140} height={10} borderRadius={4} />
+            </div>
+            <div className="w-10 h-10 bg-white/5 flex items-center justify-center border border-white/10">
+              <Skeleton width={20} height={20} borderRadius={4} />
+            </div>
           </div>
-          <Skeleton width={120} height={36} className="mb-2" />
-          <Skeleton width={80} height={16} className="mb-3" />
-          <Skeleton width="100%" height={48} borderRadius={8} />
+
+          {/* Sparkline skeleton */}
+          {showSparkline && (
+            <div className="mb-3">
+              <div className="flex items-end gap-1 h-8">
+                {Array.from({ length: 7 }).map((_, barIndex) => {
+                  const heights = [16, 20, 18, 24, 22, 28, 26];
+                  return (
+                    <div
+                      key={barIndex}
+                      className="skeleton flex-1 rounded-sm"
+                      style={{ height: `${heights[barIndex]}px` }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Trend indicator skeleton */}
+          <div className="flex items-center gap-2">
+            <Skeleton width={60} height={12} borderRadius={6} />
+            <Skeleton width={100} height={12} borderRadius={6} />
+          </div>
         </div>
       ))}
     </div>

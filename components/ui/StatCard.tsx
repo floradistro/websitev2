@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { Sparkline, SparklineBars } from "./Sparkline";
+import { ComparisonBadge, ComparisonType } from "@/components/analytics/ComparisonSelector";
 
 interface StatCardProps {
   label: string;
@@ -8,13 +9,16 @@ interface StatCardProps {
   icon: LucideIcon;
   delay?: string;
   loading?: boolean;
-  trend?: {
-    value: string;
-    direction: "up" | "down";
-  };
+  trend?: "up" | "down" | "neutral";
+  change?: number;
   sparklineData?: number[];
   sparklineType?: "line" | "bars";
   showSparkline?: boolean;
+  onClick?: () => void;
+  // Comparison mode props
+  comparisonType?: ComparisonType;
+  changeValue?: number;
+  valueFormatter?: (value: number) => string;
 }
 
 export function StatCard({
@@ -25,9 +29,14 @@ export function StatCard({
   delay = "0s",
   loading = false,
   trend,
+  change,
   sparklineData,
   sparklineType = "line",
   showSparkline = true,
+  onClick,
+  comparisonType = 'none',
+  changeValue,
+  valueFormatter,
 }: StatCardProps) {
   if (loading) {
     return (
@@ -40,7 +49,10 @@ export function StatCard({
   }
 
   return (
-    <div className="minimal-glass subtle-glow p-3 md:p-6 rounded-xl md:rounded-2xl hover:bg-white/[0.03] transition-all duration-300 group">
+    <div
+      className="minimal-glass subtle-glow p-3 md:p-6 rounded-xl md:rounded-2xl hover:bg-white/[0.03] transition-all duration-300 group cursor-pointer"
+      onClick={onClick}
+    >
       <div className="flex items-center justify-between mb-2 md:mb-4">
         <span className="text-label text-[8px] md:text-[9px]">{label}</span>
         <Icon
@@ -99,16 +111,17 @@ export function StatCard({
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <div className="text-sublabel text-[8px] md:text-[9px]">{sublabel}</div>
-        {trend && (
-          <div
-            className={`text-[9px] md:text-[10px] font-light ${trend.direction === "up" ? "text-green-400" : "text-red-400"}`}
-          >
-            {trend.direction === "up" ? "↑" : "↓"} {trend.value}
-          </div>
-        )}
-      </div>
+      <div className="text-sublabel text-[8px] md:text-[9px] mb-2">{sublabel}</div>
+
+      {/* Comparison Badge - Shows when comparison mode is active */}
+      {comparisonType && comparisonType !== 'none' && change !== undefined && changeValue !== undefined && (
+        <ComparisonBadge
+          comparisonType={comparisonType}
+          changePercent={change}
+          changeValue={changeValue}
+          valueFormatter={valueFormatter}
+        />
+      )}
     </div>
   );
 }
