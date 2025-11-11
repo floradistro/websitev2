@@ -37,7 +37,7 @@ function POSLayoutInner({ children }: { children: React.ReactNode }) {
   // POS doesn't require authentication - allow access for register selection
   // Authentication is handled per-register via device assignment
 
-  return <div className="fixed inset-0 bg-black text-white overflow-hidden">{children}</div>;
+  return <div className="fixed inset-0 bg-[#0a0a0a] text-white overflow-hidden">{children}</div>;
 }
 
 export default function POSLayout({ children }: { children: React.ReactNode }) {

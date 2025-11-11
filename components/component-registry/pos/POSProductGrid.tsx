@@ -491,7 +491,7 @@ export function POSProductGrid({
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-black">
       {/* Search & Filters - Fixed at top */}
       <div className="flex-shrink-0 p-4 border-b border-white/5 relative z-20">
         <div className="flex gap-2">
