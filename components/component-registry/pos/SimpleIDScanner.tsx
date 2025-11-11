@@ -180,6 +180,13 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
           {/* Scanner container */}
           <div id={scannerId} className="w-full h-full" />
 
+          {/* Force video to NOT mirror */}
+          <style jsx global>{`
+            #${scannerId} video {
+              transform: scaleX(-1) !important;
+            }
+          `}</style>
+
           {/* Lock-on indicator overlay */}
           {barcodeDetected && isScanning && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
