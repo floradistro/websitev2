@@ -226,28 +226,29 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
   };
 
   return (
-    <div className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="relative w-full max-w-lg flex flex-col">
-        {/* Compact Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/20">
-          <div className="flex items-center gap-2">
-            <Camera className="w-5 h-5 text-white" />
-            <h2 className="text-lg font-black text-white uppercase tracking-tight">
-              Scan ID Barcode
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-white" />
-          </button>
-        </div>
+    <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50">
+      {/* Scanner Interface - Only show when actively scanning */}
+      {isScanning && (
+        <div className="fixed inset-0 flex items-center justify-center">
+          <div className="relative w-full max-w-lg flex flex-col">
+            {/* Compact Header */}
+            <div className="flex items-center justify-between p-4 border-b border-white/20">
+              <div className="flex items-center gap-2">
+                <Camera className="w-5 h-5 text-white" />
+                <h2 className="text-lg font-black text-white uppercase tracking-tight">
+                  Scan ID Barcode
+                </h2>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
 
-        {/* Compact Scanner Area - Focused on barcode */}
-        <div className="relative h-64 overflow-hidden bg-black">
-          {isScanning && (
-            <>
+            {/* Compact Scanner Area - Focused on barcode */}
+            <div className="relative h-64 overflow-hidden bg-black">
               <video
                 ref={videoRef}
                 className="w-full h-full object-cover"
@@ -314,13 +315,38 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
                   </div>
                 </div>
               </div>
-            </>
-          )}
 
-          {/* Results Screen - Premium Design */}
-          {scannedData && !isScanning && (
-            <div className="absolute inset-0 bg-gradient-to-br from-black via-black/95 to-black/90 flex items-center justify-center p-4 overflow-y-auto">
-              <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/20 rounded-2xl p-5 max-w-md w-full backdrop-blur-xl shadow-2xl my-4">
+              {/* Sleek Status Bar */}
+              <div className="px-4 py-3 border-t border-white/10 bg-gradient-to-r from-black via-black/95 to-black">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        barcodeDetected ? "bg-green-500 animate-pulse" : "bg-blue-400 animate-pulse"
+                      }`}
+                    />
+                    <p className={`text-xs font-medium ${barcodeDetected ? "text-green-400" : "text-white/70"}`}>
+                      {message}
+                    </p>
+                  </div>
+                  <span
+                    className={`text-xs font-semibold uppercase tracking-wider ${
+                      barcodeDetected ? "text-green-400" : "text-blue-400"
+                    }`}
+                  >
+                    {barcodeDetected ? "Locked" : "Active"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Results Screen - Full Screen Overlay */}
+      {scannedData && !isScanning && (
+        <div className="fixed inset-0 bg-gradient-to-br from-black via-black/95 to-black/90 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/20 rounded-2xl p-5 max-w-md w-full backdrop-blur-xl shadow-2xl">
                 <div className="flex items-center gap-3 mb-4">
                   {error ? (
                     <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
@@ -413,64 +439,35 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
                   )}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Error State - Premium Design */}
-          {error && !scannedData && (
-            <div className="absolute inset-0 bg-gradient-to-br from-black via-black/95 to-black/90 flex items-center justify-center p-6">
-              <div className="bg-gradient-to-b from-red-500/[0.08] to-red-500/[0.04] border border-red-500/30 rounded-2xl p-6 max-w-md w-full backdrop-blur-xl shadow-2xl">
-                <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
-                  <AlertCircle className="w-7 h-7 text-red-400" />
-                </div>
-                <h3 className="text-xl font-black text-white uppercase mb-3 tracking-tight">Scanner Error</h3>
-                <p className="text-white/70 text-sm mb-5 leading-relaxed">{error}</p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={onClose}
-                    className="flex-1 px-4 py-3 bg-white/[0.08] border border-white/20 rounded-xl text-white text-sm font-bold uppercase tracking-wide hover:bg-white/[0.12] transition-all duration-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleRetry}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl text-sm font-bold uppercase tracking-wide hover:from-blue-500 hover:to-blue-600 transition-all duration-200 shadow-lg shadow-blue-900/30"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
+      )}
 
-        {/* Sleek Status Bar */}
-        <div className="px-4 py-3 border-t border-white/10 bg-gradient-to-r from-black via-black/95 to-black">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {isScanning && (
-                <div
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    barcodeDetected ? "bg-green-500 animate-pulse" : "bg-blue-400 animate-pulse"
-                  }`}
-                />
-              )}
-              <p className={`text-xs font-medium ${barcodeDetected ? "text-green-400" : "text-white/70"}`}>
-                {message}
-              </p>
+      {/* Error State - Full Screen Overlay */}
+      {error && !scannedData && (
+        <div className="fixed inset-0 bg-gradient-to-br from-black via-black/95 to-black/90 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-b from-red-500/[0.08] to-red-500/[0.04] border border-red-500/30 rounded-2xl p-6 max-w-md w-full backdrop-blur-xl shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+              <AlertCircle className="w-7 h-7 text-red-400" />
             </div>
-            {isScanning && (
-              <span
-                className={`text-xs font-semibold uppercase tracking-wider ${
-                  barcodeDetected ? "text-green-400" : "text-blue-400"
-                }`}
+            <h3 className="text-xl font-black text-white uppercase mb-3 tracking-tight">Scanner Error</h3>
+            <p className="text-white/70 text-sm mb-5 leading-relaxed">{error}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={onClose}
+                className="flex-1 px-4 py-3 bg-white/[0.08] border border-white/20 rounded-xl text-white text-sm font-bold uppercase tracking-wide hover:bg-white/[0.12] transition-all duration-200"
               >
-                {barcodeDetected ? "Locked" : "Active"}
-              </span>
-            )}
+                Cancel
+              </button>
+              <button
+                onClick={handleRetry}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl text-sm font-bold uppercase tracking-wide hover:from-blue-500 hover:to-blue-600 transition-all duration-200 shadow-lg shadow-blue-900/30"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <style jsx>{`
         @keyframes scan {
