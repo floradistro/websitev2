@@ -45,6 +45,7 @@ function POSLayoutInner({ children }: { children: React.ReactNode }) {
           overflow: hidden !important;
           height: 100vh !important;
           height: 100dvh !important;
+          position: fixed !important;
           width: 100% !important;
           margin: 0 !important;
           padding: 0 !important;
@@ -84,13 +85,16 @@ function POSLayoutInner({ children }: { children: React.ReactNode }) {
       <div
         className="bg-black text-white antialiased"
         style={{
-          height: "100%",
-          width: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           paddingTop: "env(safe-area-inset-top, 0px)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          boxSizing: "border-box",
         }}
       >
         {children}

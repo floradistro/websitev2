@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { BrowserPDF417Reader } from "@zxing/browser";
+import { DecodeHintType } from "@zxing/library";
 import { parseAAMVABarcode, isLegalAge, type AAMVAData } from "@/lib/id-scanner/aamva-parser";
 import { Camera, X, CheckCircle, AlertCircle, User } from "@/lib/icons";
 
@@ -17,9 +18,12 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
   const [message, setMessage] = useState("Position barcode in frame");
   const [barcodeDetected, setBarcodeDetected] = useState(false);
 
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const readerRef = useRef<BrowserPDF417Reader | null>(null);
+  const scanningRef = useRef(false);
   const processingRef = useRef(false);
-  const scannerId = "id-scanner-reader";
 
   useEffect(() => {
     startScanning();
@@ -35,36 +39,31 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
       setIsScanning(true);
       processingRef.current = false;
 
-      // Initialize scanner
-      const scanner = new Html5Qrcode(scannerId);
-      scannerRef.current = scanner;
+      // Request rear camera
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { exact: "environment" },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+      });
 
-      // ALWAYS use rear camera (environment)
-      await scanner.start(
-        { facingMode: { exact: "environment" } },
-        {
-          fps: 10,
-          qrbox: { width: 400, height: 150 }, // Wide box for barcode
-          aspectRatio: 1.777778, // 16:9
-          formatsToSupport: [13], // PDF417 format code
-        },
-        (decodedText, decodedResult) => {
-          // Success callback - auto-capture on detection
-          if (!processingRef.current) {
-            console.log("[Scanner] Barcode detected!", decodedText);
-            setBarcodeDetected(true);
-            setMessage("Barcode detected! Processing...");
-            processingRef.current = true;
-            handleBarcodeDetected(decodedText);
-          }
-        },
-        (errorMessage) => {
-          // Error callback - most are just "no barcode found" which is normal
-          // Don't log these to avoid console spam
-        }
-      );
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
 
       setMessage("Position barcode on back of ID in frame");
+
+      // Initialize PDF417 reader
+      const reader = new BrowserPDF417Reader();
+      readerRef.current = reader;
+
+      // Start continuous scanning loop
+      scanningRef.current = true;
+      scanLoop();
     } catch (err: any) {
       console.error("Failed to start camera:", err);
 
@@ -84,20 +83,66 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
     }
   };
 
-  const stopScanning = async () => {
-    if (scannerRef.current) {
-      try {
-        const isScanning = scannerRef.current.getState() === 2; // SCANNING state
-        if (isScanning) {
-          await scannerRef.current.stop();
-        }
-        scannerRef.current.clear();
-      } catch (err) {
-        console.warn("Error stopping scanner:", err);
-      }
-      scannerRef.current = null;
+  const scanLoop = async () => {
+    if (!scanningRef.current || !readerRef.current || !videoRef.current || !canvasRef.current) {
+      return;
     }
 
+    if (processingRef.current) {
+      // Wait before next scan
+      setTimeout(() => scanLoop(), 100);
+      return;
+    }
+
+    try {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx || video.readyState !== video.HAVE_ENOUGH_DATA) {
+        setTimeout(() => scanLoop(), 100);
+        return;
+      }
+
+      // Set canvas size to video size
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw video frame to canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Try to decode from canvas
+      const result = await readerRef.current.decodeFromCanvas(canvas);
+
+      if (result && !processingRef.current) {
+        console.log("[Scanner] Barcode detected!", result.getText());
+        setBarcodeDetected(true);
+        setMessage("Barcode detected! Processing...");
+        processingRef.current = true;
+        handleBarcodeDetected(result.getText());
+        return; // Stop scanning
+      }
+    } catch (err) {
+      // No barcode found - continue scanning
+    }
+
+    // Continue scanning loop
+    setTimeout(() => scanLoop(), 100); // Scan every 100ms (10fps)
+  };
+
+  const stopScanning = () => {
+    scanningRef.current = false;
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+
+    readerRef.current = null;
     setIsScanning(false);
     setBarcodeDetected(false);
   };
@@ -136,6 +181,8 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
       processingRef.current = false;
       setBarcodeDetected(false);
       setMessage("Scan failed. Position barcode in frame and try again.");
+      // Restart scanning
+      setTimeout(() => scanLoop(), 500);
     }
   };
 
@@ -172,27 +219,74 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
 
         {/* Scanner Area */}
         <div className="flex-1 relative overflow-hidden bg-black">
-          {/* Scanner container */}
-          <div id={scannerId} className="w-full h-full" />
+          {isScanning && (
+            <>
+              <video
+                ref={videoRef}
+                className="w-full h-full object-cover"
+                playsInline
+                muted
+              />
+              <canvas ref={canvasRef} className="hidden" />
 
-          {/* Force video to show NATURAL - no mirroring */}
-          <style jsx global>{`
-            #${scannerId} video {
-              transform: none !important;
-              -webkit-transform: none !important;
-            }
-          `}</style>
+              {/* Scanning overlay */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div
+                  className={`relative w-[85%] h-[40%] border-4 rounded-xl transition-all duration-300 ${
+                    barcodeDetected ? "border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.6)]" : "border-blue-500"
+                  }`}
+                >
+                  {/* Corner indicators */}
+                  <div
+                    className={`absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 rounded-tl-xl transition-colors ${
+                      barcodeDetected ? "border-green-400" : "border-white"
+                    }`}
+                  />
+                  <div
+                    className={`absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 rounded-tr-xl transition-colors ${
+                      barcodeDetected ? "border-green-400" : "border-white"
+                    }`}
+                  />
+                  <div
+                    className={`absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 rounded-bl-xl transition-colors ${
+                      barcodeDetected ? "border-green-400" : "border-white"
+                    }`}
+                  />
+                  <div
+                    className={`absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 rounded-br-xl transition-colors ${
+                      barcodeDetected ? "border-green-400" : "border-white"
+                    }`}
+                  />
 
-          {/* Lock-on indicator overlay */}
-          {barcodeDetected && isScanning && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="bg-green-500/20 border-4 border-green-500 rounded-xl px-8 py-4 shadow-[0_0_40px_rgba(34,197,94,0.8)]">
-                <p className="text-green-400 font-black uppercase tracking-wide flex items-center gap-3 text-xl">
-                  <CheckCircle className="w-6 h-6" />
-                  Locked On - Processing...
-                </p>
+                  {/* Scanning line */}
+                  {!barcodeDetected && (
+                    <div className="absolute inset-0 overflow-hidden">
+                      <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-scan" />
+                    </div>
+                  )}
+
+                  {/* Lock-on indicator */}
+                  {barcodeDetected && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="bg-green-500/20 border-2 border-green-500 rounded-xl px-6 py-3">
+                        <p className="text-green-400 font-black uppercase tracking-wide flex items-center gap-2">
+                          <CheckCircle className="w-5 h-5" />
+                          Locked On
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="absolute -bottom-20 left-0 right-0 text-center">
+                    <p className="text-white text-base font-semibold drop-shadow-lg">
+                      {barcodeDetected
+                        ? "Processing barcode..."
+                        : "Position barcode from back of ID within frame"}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           {/* Results */}
@@ -335,6 +429,23 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes scan {
+          0% {
+            top: 0;
+          }
+          50% {
+            top: 100%;
+          }
+          100% {
+            top: 0;
+          }
+        }
+        .animate-scan {
+          animation: scan 2s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }
