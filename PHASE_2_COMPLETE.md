@@ -188,8 +188,14 @@ npm run test:coverage         # Coverage report
 
 **Dashboard URL:**
 ```
-http://localhost:3000/vendor/monitoring
+http://localhost:3000/admin/monitoring
 ```
+
+**IMPORTANT - Access Control:**
+- This dashboard is for **PLATFORM ADMINS ONLY** (not vendors/customers)
+- Requires admin authentication via `/admin/login`
+- Shows platform-wide metrics (all vendors, all operations, global cache)
+- Not intended for individual vendor visibility
 
 **Impact:**
 - Real-time visibility into application performance
@@ -515,8 +521,8 @@ npm run test:coverage
 # Performance monitoring
 curl 'http://localhost:3000/api/monitoring/performance?type=summary'
 
-# Dashboard
-http://localhost:3000/vendor/monitoring
+# Dashboard (requires admin authentication)
+http://localhost:3000/admin/monitoring
 ```
 
 ---

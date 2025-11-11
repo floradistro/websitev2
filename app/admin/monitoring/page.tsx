@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 
 interface PerformanceData {
@@ -30,11 +31,32 @@ interface CacheStats {
 }
 
 export default function MonitoringDashboard() {
+  const router = useRouter();
   const [data, setData] = useState<PerformanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const auth = localStorage.getItem("admin-auth");
+    if (!auth) {
+      router.push("/admin/login");
+      return;
+    }
+
+    try {
+      JSON.parse(auth); // Validate auth data
+      setIsAuthenticated(true);
+    } catch (e) {
+      // Invalid auth data
+      router.push("/admin/login");
+    }
+  }, [router]);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const fetchMetrics = async () => {
       try {
         const res = await fetch("/api/monitoring/performance?type=summary");
@@ -55,12 +77,20 @@ export default function MonitoringDashboard() {
       const interval = setInterval(fetchMetrics, 5000); // Refresh every 5 seconds
       return () => clearInterval(interval);
     }
-  }, [autoRefresh]);
+  }, [autoRefresh, isAuthenticated]);
 
-  if (loading) {
+  if (!isAuthenticated || loading) {
     return (
-      <div className="p-8">
-        <div className="text-white">Loading performance metrics...</div>
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-white/20 border-r-white mb-4"></div>
+          <p className="text-lg font-semibold text-white">
+            Loading Dashboard...
+          </p>
+          <p className="text-sm text-gray-400">
+            Verifying authentication
+          </p>
+        </div>
       </div>
     );
   }
@@ -93,11 +123,22 @@ export default function MonitoringDashboard() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
+            <div className="flex items-center gap-4 mb-2">
+              <button
+                onClick={() => router.push("/admin")}
+                className="px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+              >
+                ← Back to Admin
+              </button>
+              <div className="px-3 py-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 rounded text-xs font-medium">
+                PLATFORM ADMIN ONLY
+              </div>
+            </div>
             <h1 className="text-3xl font-bold text-white">
-              Performance Monitoring
+              System Performance Monitoring
             </h1>
             <p className="text-gray-400 mt-1">
-              Real-time application performance metrics
+              Real-time infrastructure and platform-wide metrics
             </p>
           </div>
           <button
