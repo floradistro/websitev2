@@ -42,6 +42,7 @@ interface TaxBreakdown {
 interface POSCartProps {
   items: CartItem[];
   vendorId: string;
+  locationId: string;
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onRemoveItem: (productId: string) => void;
   onClearCart: () => void;
@@ -55,6 +56,7 @@ interface POSCartProps {
 export function POSCart({
   items,
   vendorId,
+  locationId,
   onUpdateQuantity,
   onRemoveItem,
   onClearCart,
@@ -107,6 +109,7 @@ export function POSCart({
         </div>
         <POSCustomerSelector
           vendorId={vendorId}
+          locationId={locationId}
           selectedCustomer={selectedCustomer}
           onCustomerSelect={setSelectedCustomer}
         />
@@ -353,6 +356,7 @@ export function POSCart({
       {showIDScanner && (
         <POSIDScanner
           vendorId={vendorId}
+          locationId={locationId}
           onCustomerFound={(customer) => {
             setSelectedCustomer(customer);
             setShowIDScanner(false);

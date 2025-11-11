@@ -731,6 +731,7 @@ export default function POSRegisterPage() {
           <POSCart
             items={cart}
             vendorId={vendor?.id || ""}
+            locationId={selectedLocation?.id || ""}
             onUpdateQuantity={handleUpdateQuantity}
             onRemoveItem={handleRemoveItem}
             onClearCart={handleClearCart}

@@ -20,12 +20,14 @@ interface Customer {
 
 interface POSCustomerSelectorProps {
   vendorId: string;
+  locationId: string;
   selectedCustomer: Customer | null;
   onCustomerSelect: (customer: Customer | null) => void;
 }
 
 export function POSCustomerSelector({
   vendorId,
+  locationId,
   selectedCustomer,
   onCustomerSelect,
 }: POSCustomerSelectorProps) {
@@ -274,6 +276,7 @@ export function POSCustomerSelector({
       {showIDScanner && (
         <POSIDScanner
           vendorId={vendorId}
+          locationId={locationId}
           onCustomerFound={(customer) => {
             handleSelectCustomer(customer);
             setShowIDScanner(false);

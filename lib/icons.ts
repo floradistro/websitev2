@@ -104,6 +104,7 @@ export {
   Star,
   Heart,
   Share2,
+  Camera,
 
   // Misc
   Calendar,

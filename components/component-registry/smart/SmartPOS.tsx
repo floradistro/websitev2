@@ -218,6 +218,7 @@ export function SmartPOS({
             <POSCart
               items={cart}
               vendorId={vendorId}
+              locationId={locationId}
               onUpdateQuantity={handleUpdateQuantity}
               onRemoveItem={handleRemoveItem}
               onClearCart={handleClearCart}

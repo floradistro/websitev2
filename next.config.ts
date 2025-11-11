@@ -159,6 +159,10 @@ const nextConfig: NextConfig = {
           headers: [
             { key: "X-DNS-Prefetch-Control", value: "on" },
             { key: "X-Frame-Options", value: "SAMEORIGIN" },
+            {
+              key: "Permissions-Policy",
+              value: "camera=(self), microphone=(), geolocation=(self)",
+            },
           ],
         },
         {
@@ -188,7 +192,7 @@ const nextConfig: NextConfig = {
       default-src 'self';
       script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com;
       style-src 'self' 'unsafe-inline';
-      img-src 'self' data: blob: https:;
+      img-src 'self' data: blob: https: mediastream:;
       font-src 'self' data:;
       object-src 'none';
       base-uri 'self';
@@ -196,7 +200,7 @@ const nextConfig: NextConfig = {
       frame-ancestors 'self';
       connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.openai.com wss://*.supabase.co;
       worker-src 'self' blob:;
-      media-src 'self' blob: data:;
+      media-src 'self' blob: data: mediastream:;
     `
       .replace(/\s{2,}/g, " ")
       .trim();
@@ -219,7 +223,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(self), payment=(self)",
+            value: "camera=(self), microphone=(), geolocation=(self), payment=(self)",
           },
           { key: "Content-Security-Policy", value: ContentSecurityPolicy },
         ],
