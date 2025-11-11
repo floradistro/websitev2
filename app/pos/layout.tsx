@@ -43,9 +43,11 @@ function POSLayoutInner({ children }: { children: React.ReactNode }) {
         html,
         body {
           overflow: hidden !important;
-          height: 100% !important;
-          position: fixed !important;
+          height: 100vh !important;
+          height: 100dvh !important;
           width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
           touch-action: pan-x pan-y;
         }
         /* iOS PWA - Full height viewport */
@@ -82,10 +84,9 @@ function POSLayoutInner({ children }: { children: React.ReactNode }) {
       <div
         className="bg-black text-white antialiased"
         style={{
-          height: "100vh",
-          height: "100dvh",
+          height: "100%",
+          width: "100%",
           paddingTop: "env(safe-area-inset-top, 0px)",
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",

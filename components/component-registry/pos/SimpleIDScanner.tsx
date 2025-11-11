@@ -39,14 +39,9 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
       const scanner = new Html5Qrcode(scannerId);
       scannerRef.current = scanner;
 
-      // Detect device type
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      );
-
-      // Start scanning with PDF417 support
+      // ALWAYS use rear camera (environment)
       await scanner.start(
-        { facingMode: isMobile ? "environment" : "user" },
+        { facingMode: { exact: "environment" } },
         {
           fps: 10,
           qrbox: { width: 400, height: 150 }, // Wide box for barcode

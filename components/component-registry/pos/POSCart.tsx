@@ -148,12 +148,14 @@ export function POSCart({
         }}
       >
         {items.length === 0 ? (
-          <div className="text-center py-20 text-white/40">
-            <div className="text-5xl mb-4">🛒</div>
-            <div className="text-[10px] uppercase tracking-[0.15em] text-white/60">
-              Cart is empty
+          <div className="h-full flex items-center justify-center text-white/40">
+            <div className="text-center">
+              <div className="text-5xl mb-4">🛒</div>
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/60">
+                Cart is empty
+              </div>
+              <div className="text-[10px] text-white/40 mt-1">Add products to start</div>
             </div>
-            <div className="text-[10px] text-white/40 mt-1">Add products to start</div>
           </div>
         ) : (
           items.map((item) => (
