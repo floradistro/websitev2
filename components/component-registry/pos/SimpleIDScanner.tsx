@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { BrowserMultiFormatReader } from "@zxing/browser";
-import { DecodeHintType, BarcodeFormat } from "@zxing/library";
-import type { IScannerControls } from "@zxing/browser";
-import { parseAAMVABarcode, formatAAMVAData, isLegalAge, type AAMVAData } from "@/lib/id-scanner/aamva-parser";
+import { Html5Qrcode } from "html5-qrcode";
+import { parseAAMVABarcode, isLegalAge, type AAMVAData } from "@/lib/id-scanner/aamva-parser";
 import { Camera, X, CheckCircle, AlertCircle, User } from "@/lib/icons";
 
 interface SimpleIDScannerProps {
@@ -17,14 +15,11 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
   const [error, setError] = useState<string | null>(null);
   const [scannedData, setScannedData] = useState<AAMVAData | null>(null);
   const [message, setMessage] = useState("Position barcode in frame");
-  const [isProcessing, setIsProcessing] = useState(false);
   const [barcodeDetected, setBarcodeDetected] = useState(false);
 
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const readerRef = useRef<BrowserMultiFormatReader | null>(null);
-  const scannerControlsRef = useRef<IScannerControls | null>(null);
-  const processingRef = useRef(false); // Prevent double processing
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const processingRef = useRef(false);
+  const scannerId = "id-scanner-reader";
 
   useEffect(() => {
     startScanning();
@@ -40,108 +35,52 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
       setIsScanning(true);
       processingRef.current = false;
 
+      // Initialize scanner
+      const scanner = new Html5Qrcode(scannerId);
+      scannerRef.current = scanner;
+
       // Detect device type
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
         navigator.userAgent
       );
-      const isTablet = /iPad|Android/i.test(navigator.userAgent) && window.innerWidth >= 768;
 
-      // Lock screen orientation on mobile/tablet
-      if ((isMobile || isTablet) && screen.orientation) {
-        try {
-          // @ts-ignore - ScreenOrientation.lock() is not in all TypeScript definitions
-          if (typeof screen.orientation.lock === "function") {
-            // @ts-ignore
-            await screen.orientation.lock("landscape").catch((err: Error) => {
-              console.warn("Could not lock orientation:", err);
-            });
-          }
-        } catch (err) {
-          console.warn("Orientation lock not supported:", err);
-        }
-      }
-
-      // Request camera access with device-specific settings
-      const videoConstraints: MediaTrackConstraints = isMobile || isTablet
-        ? {
-            facingMode: "environment", // Use back camera on mobile/tablet
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-          }
-        : {
-            // Desktop/laptop - no facingMode constraint
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-          };
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: videoConstraints,
-      });
-
-      streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-
-      setMessage("Position barcode on back of ID in frame");
-
-      // Initialize barcode reader with PDF417 hints
-      const hints = new Map();
-      hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.PDF_417]);
-      hints.set(DecodeHintType.TRY_HARDER, true);
-
-      const reader = new BrowserMultiFormatReader(hints);
-      readerRef.current = reader;
-
-      // Start continuous scanning with auto-capture
-      const controls = await reader.decodeFromVideoDevice(
-        undefined, // Use default camera
-        videoRef.current!,
-        (result, error) => {
-          if (result && !processingRef.current) {
-            console.log("[Scanner] Barcode detected! Auto-capturing...");
+      // Start scanning with PDF417 support
+      await scanner.start(
+        { facingMode: isMobile ? "environment" : "user" },
+        {
+          fps: 10,
+          qrbox: { width: 400, height: 150 }, // Wide box for barcode
+          aspectRatio: 1.777778, // 16:9
+          formatsToSupport: [13], // PDF417 format code
+        },
+        (decodedText, decodedResult) => {
+          // Success callback - auto-capture on detection
+          if (!processingRef.current) {
+            console.log("[Scanner] Barcode detected!", decodedText);
             setBarcodeDetected(true);
             setMessage("Barcode detected! Processing...");
-
-            // Auto-capture when barcode is detected
             processingRef.current = true;
-            handleBarcodeDetected(result.getText());
+            handleBarcodeDetected(decodedText);
           }
-          // Don't log NotFoundException errors (expected when no barcode in frame)
-          if (error && error.name !== "NotFoundException") {
-            console.error("Scan error:", error);
-          }
+        },
+        (errorMessage) => {
+          // Error callback - most are just "no barcode found" which is normal
+          // Don't log these to avoid console spam
         }
       );
-      scannerControlsRef.current = controls;
-    } catch (err) {
+
+      setMessage("Position barcode on back of ID in frame");
+    } catch (err: any) {
       console.error("Failed to start camera:", err);
 
-      // Handle different error types
       let errorMessage = "Failed to access camera";
-      if (err instanceof DOMException) {
-        switch (err.name) {
-          case "NotAllowedError":
-            errorMessage = "Camera permission denied. Please allow camera access.";
-            break;
-          case "NotFoundError":
-            errorMessage = "No camera found on this device.";
-            break;
-          case "NotReadableError":
-            errorMessage = "Camera is already in use by another application.";
-            break;
-          case "OverconstrainedError":
-            errorMessage = "Camera doesn't support the requested settings.";
-            break;
-          case "SecurityError":
-            errorMessage = "Camera access blocked. Make sure you're using HTTPS or localhost.";
-            break;
-          default:
-            errorMessage = `Camera error: ${err.message}`;
-        }
-      } else if (err instanceof Error) {
+      if (err.name === "NotAllowedError") {
+        errorMessage = "Camera permission denied. Please allow camera access.";
+      } else if (err.name === "NotFoundError") {
+        errorMessage = "No camera found on this device.";
+      } else if (err.name === "NotReadableError") {
+        errorMessage = "Camera is already in use by another application.";
+      } else if (err.message) {
         errorMessage = `Camera error: ${err.message}`;
       }
 
@@ -150,40 +89,18 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
     }
   };
 
-  const stopScanning = () => {
-    // Stop barcode scanner using controls
-    if (scannerControlsRef.current) {
+  const stopScanning = async () => {
+    if (scannerRef.current) {
       try {
-        scannerControlsRef.current.stop();
+        const isScanning = scannerRef.current.getState() === 2; // SCANNING state
+        if (isScanning) {
+          await scannerRef.current.stop();
+        }
+        scannerRef.current.clear();
       } catch (err) {
-        console.warn("Error stopping barcode scanner:", err);
+        console.warn("Error stopping scanner:", err);
       }
-      scannerControlsRef.current = null;
-    }
-
-    // Clear reader reference
-    if (readerRef.current) {
-      readerRef.current = null;
-    }
-
-    // Stop video stream
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-
-    // Clear video element
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-
-    // Unlock screen orientation
-    if (screen.orientation && screen.orientation.unlock) {
-      try {
-        screen.orientation.unlock();
-      } catch (err) {
-        console.warn("Could not unlock orientation:", err);
-      }
+      scannerRef.current = null;
     }
 
     setIsScanning(false);
@@ -221,7 +138,7 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
     } catch (err) {
       console.error("[ID Scanner] Parse error:", err);
       setError(err instanceof Error ? err.message : "Failed to parse barcode data");
-      processingRef.current = false; // Allow retry
+      processingRef.current = false;
       setBarcodeDetected(false);
       setMessage("Scan failed. Position barcode in frame and try again.");
     }
@@ -260,78 +177,19 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
 
         {/* Scanner Area */}
         <div className="flex-1 relative overflow-hidden bg-black">
-          {isScanning && (
-            <>
-              <video
-                ref={videoRef}
-                className="w-full h-full object-cover"
-                style={{ transform: "scaleX(-1)" }}
-                playsInline
-                muted
-              />
+          {/* Scanner container */}
+          <div id={scannerId} className="w-full h-full" />
 
-              {/* Scanning overlay with lock-on effect */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div
-                  className={`relative w-[85%] h-[40%] border-4 rounded-xl transition-all duration-300 ${
-                    barcodeDetected ? "border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.6)]" : "border-blue-500"
-                  }`}
-                >
-                  {/* Corner indicators */}
-                  <div
-                    className={`absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 rounded-tl-xl transition-colors ${
-                      barcodeDetected ? "border-green-400" : "border-white"
-                    }`}
-                  />
-                  <div
-                    className={`absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 rounded-tr-xl transition-colors ${
-                      barcodeDetected ? "border-green-400" : "border-white"
-                    }`}
-                  />
-                  <div
-                    className={`absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 rounded-bl-xl transition-colors ${
-                      barcodeDetected ? "border-green-400" : "border-white"
-                    }`}
-                  />
-                  <div
-                    className={`absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 rounded-br-xl transition-colors ${
-                      barcodeDetected ? "border-green-400" : "border-white"
-                    }`}
-                  />
-
-                  {/* Scanning line animation - stops when detected */}
-                  {!barcodeDetected && (
-                    <div className="absolute inset-0 overflow-hidden">
-                      <div className="absolute w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-scan" />
-                    </div>
-                  )}
-
-                  {/* Lock-on indicator */}
-                  {barcodeDetected && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-green-500/20 border-2 border-green-500 rounded-xl px-6 py-3">
-                        <p className="text-green-400 font-black uppercase tracking-wide flex items-center gap-2">
-                          <CheckCircle className="w-5 h-5" />
-                          Locked On
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Helper text */}
-                  <div className="absolute -bottom-20 left-0 right-0 text-center">
-                    <p className="text-white text-base font-semibold drop-shadow-lg">
-                      {barcodeDetected
-                        ? "Processing barcode..."
-                        : "Position barcode from back of ID within frame"}
-                    </p>
-                    <p className="text-white/60 text-sm mt-1">
-                      Scanner will automatically lock on when detected
-                    </p>
-                  </div>
-                </div>
+          {/* Lock-on indicator overlay */}
+          {barcodeDetected && isScanning && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="bg-green-500/20 border-4 border-green-500 rounded-xl px-8 py-4 shadow-[0_0_40px_rgba(34,197,94,0.8)]">
+                <p className="text-green-400 font-black uppercase tracking-wide flex items-center gap-3 text-xl">
+                  <CheckCircle className="w-6 h-6" />
+                  Locked On - Processing...
+                </p>
               </div>
-            </>
+            </div>
           )}
 
           {/* Results */}
@@ -474,23 +332,6 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes scan {
-          0% {
-            top: 0;
-          }
-          50% {
-            top: 100%;
-          }
-          100% {
-            top: 0;
-          }
-        }
-        .animate-scan {
-          animation: scan 2s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }
