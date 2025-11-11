@@ -476,20 +476,48 @@ async function processLoyaltyPoints(
     total: number;
   },
 ) {
-  const POINTS_PER_DOLLAR = 1;
+  // Get loyalty program settings (or use defaults)
+  const { data: program } = await supabase
+    .from("loyalty_programs")
+    .select("*")
+    .eq("vendor_id", data.vendorId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  const POINTS_PER_DOLLAR = program?.points_per_dollar || 1;
   const pointsEarned = Math.floor(data.total * POINTS_PER_DOLLAR);
 
-  // Get or create loyalty record
-  const { data: loyalty } = await supabase
+  // Get or create loyalty record (support both builtin and alpineiq)
+  let { data: loyalty } = await supabase
     .from("customer_loyalty")
     .select("*")
     .eq("customer_id", data.customerId)
     .eq("vendor_id", data.vendorId)
-    .eq("provider", "builtin")
-    .single();
+    .maybeSingle();
 
-  if (loyalty) {
-    // Update points
+  if (!loyalty) {
+    // Create new loyalty record if it doesn't exist
+    const { data: newLoyalty, error: createError } = await supabase
+      .from("customer_loyalty")
+      .insert({
+        customer_id: data.customerId,
+        vendor_id: data.vendorId,
+        provider: "builtin",
+        points_balance: pointsEarned,
+        lifetime_points: pointsEarned,
+        loyalty_tier: "bronze",
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      logger.error("Failed to create loyalty record:", createError);
+      return;
+    }
+
+    loyalty = newLoyalty;
+  } else {
+    // Update existing points
     await supabase
       .from("customer_loyalty")
       .update({
@@ -497,17 +525,19 @@ async function processLoyaltyPoints(
         lifetime_points: loyalty.lifetime_points + pointsEarned,
       })
       .eq("id", loyalty.id);
-
-    // Log transaction
-    await supabase.from("loyalty_transactions").insert({
-      customer_id: data.customerId,
-      vendor_id: data.vendorId,
-      type: "earned",
-      points: pointsEarned,
-      order_id: data.orderId,
-      description: `Purchase - ${data.orderNumber}`,
-    });
   }
+
+  // Log transaction
+  await supabase.from("loyalty_transactions").insert({
+    customer_id: data.customerId,
+    transaction_type: "earned",
+    points: pointsEarned,
+    reference_type: "order",
+    reference_id: data.orderId,
+    description: `Purchase - ${data.orderNumber}`,
+    balance_before: loyalty.points_balance,
+    balance_after: loyalty.points_balance + pointsEarned,
+  });
 }
 
 /**
