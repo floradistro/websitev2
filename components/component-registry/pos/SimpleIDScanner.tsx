@@ -29,22 +29,33 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
   const playSuccessBeep = () => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
 
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+      // Resume audio context (required for iOS)
+      audioContext.resume().then(() => {
+        // Double beep pattern for satisfaction
+        const playBeep = (startTime: number, frequency: number) => {
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
 
-      oscillator.frequency.value = 800; // 800 Hz beep
-      oscillator.type = "sine";
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
 
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+          oscillator.frequency.value = frequency;
+          oscillator.type = "sine";
 
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.15);
+          gainNode.gain.setValueAtTime(0.4, startTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.08);
+
+          oscillator.start(startTime);
+          oscillator.stop(startTime + 0.08);
+        };
+
+        const now = audioContext.currentTime;
+        playBeep(now, 800); // First beep at 800Hz
+        playBeep(now + 0.1, 1000); // Second beep at 1000Hz (higher pitch)
+      });
     } catch (err) {
-      // Ignore audio errors
+      console.log("Audio playback failed:", err);
     }
   };
 
