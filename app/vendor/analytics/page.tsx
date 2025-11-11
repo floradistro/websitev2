@@ -9,6 +9,7 @@ import { InlineFiltersBar, FilterState } from "@/components/analytics/InlineFilt
 import { ActiveFilterChips } from "@/components/analytics/ActiveFilterChips";
 import { Sparkline } from "@/components/ui/Sparkline";
 import { ComparisonSelector, ComparisonBadge, ComparisonType } from "@/components/analytics/ComparisonSelector";
+import AIInsightsPanel from "@/components/vendor/AIInsightsPanel";
 import {
   DollarSign,
   ShoppingCart,
@@ -1195,6 +1196,9 @@ export default function AnalyticsPage() {
   const { data: itemizedSales } = useSWR(`/api/vendor/analytics/v2/sales/itemized${queryParams}`, fetcher);
   const { data: sessions } = useSWR(`/api/vendor/analytics/v2/sessions/summary${queryParams}`, fetcher);
 
+  // Fetch profit metrics
+  const { data: profitMetrics } = useSWR(`/api/vendor/analytics/v2/profit${queryParams}`, fetcher);
+
   // Fetch trend data for sparklines (7-day trends)
   const { data: trends } = useSWR(
     user?.vendor_id ? `/api/vendor/analytics/v2/trends?vendor_id=${user.vendor_id}&days=7` : null,
@@ -1216,6 +1220,21 @@ export default function AnalyticsPage() {
     {
       refreshInterval: 300000, // Refresh every 5 minutes
       revalidateOnFocus: false,
+    }
+  );
+
+  // Fetch AI insights
+  const insightsParams = user?.vendor_id && dateRange.start && dateRange.end
+    ? `vendor_id=${user.vendor_id}&start_date=${dateRange.start.toISOString()}&end_date=${dateRange.end.toISOString()}&comparison_type=${comparisonType}`
+    : null;
+
+  const { data: insightsData, mutate: refreshInsights, isLoading: insightsLoading } = useSWR(
+    insightsParams ? `/api/vendor/analytics/v2/insights?${insightsParams}` : null,
+    fetcher,
+    {
+      refreshInterval: 3600000, // Refresh every hour
+      revalidateOnFocus: false,
+      dedupingInterval: 3600000, // Dedupe for 1 hour
     }
   );
 
@@ -1263,51 +1282,45 @@ export default function AnalyticsPage() {
 
   return (
     <div className="analytics-page dashboard-container">
-      <div className="max-w-[1600px] mx-auto h-full flex flex-col">
-        {/* Header - Sticky */}
+      <div className="w-full">
+        {/* Compact Header - Minimal */}
         <div className="analytics-header">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="heading-1 mb-1">Analytics</h1>
-              <p className="body-text text-sm">
-                Comprehensive business insights and reporting
-              </p>
-            </div>
-            <div className="flex gap-3 items-center">
-              {/* Inline Filters Bar */}
+          <div className="flex items-center justify-between w-full">
+            <h1 className="text-2xl font-light text-white/90">Analytics</h1>
+            <div className="flex items-center gap-4">
+              {/* Compact Date Range */}
+              <DateRangePicker
+                value={dateRange}
+                onChange={handleDateRangeChange}
+              />
+              {/* Comparison Toggle */}
+              <ComparisonSelector
+                value={comparisonType}
+                onChange={setComparisonType}
+              />
+              {/* Filters Menu */}
               <InlineFiltersBar
                 filters={filters}
                 onChange={setFilters}
                 locations={locations}
                 categories={categories}
                 employees={employees}
-                onApply={() => {
-                  // Filters are already applied via state change
-                }}
+                onApply={() => {}}
               />
-              {/* Comparison Mode Selector */}
-              <ComparisonSelector
-                value={comparisonType}
-                onChange={setComparisonType}
-              />
-              {/* Date Range Picker */}
-              <DateRangePicker
-                value={dateRange}
-                onChange={handleDateRangeChange}
-              />
+              {/* Export */}
               <button
                 onClick={() => handleExportClick(getExportReportType(activeTab))}
-                className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all"
+                className="p-2 text-white/60 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+                title="Export"
               >
                 <Download className="w-4 h-4" />
-                Export
               </button>
             </div>
           </div>
 
-          {/* Active Filter Chips */}
+          {/* Active Filter Chips - Compact */}
           {getActiveFilterCount() > 0 && (
-            <div className="mt-4">
+            <div className="mt-2">
               <ActiveFilterChips
                 filters={filters}
                 locations={locations}
@@ -1323,108 +1336,69 @@ export default function AnalyticsPage() {
           )}
         </div>
 
-        {/* KPI Section - Sticky */}
+        {/* Compact KPI Bar */}
         <div className="analytics-kpi-section">
           {!overview?.data ? (
-            <SkeletonKPIGrid count={4} />
+            <div className="flex gap-6 animate-pulse">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="flex-1">
+                  <div className="h-3 bg-white/5 rounded w-20 mb-1"></div>
+                  <div className="h-4 bg-white/5 rounded w-24"></div>
+                </div>
+              ))}
+            </div>
           ) : (
-            <div className="grid grid-cols-4 gap-4">
-            <StatCard
-              label="Total Revenue"
-              value={`$${(overview.data.gross_sales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-              sublabel={`From ${overview.data.transaction_count || 0} transactions`}
-              change={comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_sales_change}
-              trend={
-                (comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_sales_change || 0) > 0
-                  ? "up"
-                  : (comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_sales_change || 0) < 0
-                  ? "down"
-                  : "neutral"
-              }
-              icon={DollarSign}
-              onClick={() => setActiveTab("sales")}
-              sparklineData={trends?.revenue}
-              comparisonType={comparisonType}
-              changeValue={comparisonData?.changes?.revenue?.value}
-              valueFormatter={(v) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-            />
-            <StatCard
-              label="Gross Profit"
-              value={`$${(overview.data.gross_profit || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-              sublabel={`${(overview.data.margin || 0).toFixed(1)}% margin`}
-              change={comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_profit_change}
-              trend={
-                (comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_profit_change || 0) > 0
-                  ? "up"
-                  : (comparisonData?.changes?.revenue?.percent || overview.data.comparison?.gross_profit_change || 0) < 0
-                  ? "down"
-                  : "neutral"
-              }
-              icon={TrendingUp}
-              onClick={() => setActiveTab("profitloss")}
-              sparklineData={trends?.revenue} // Using revenue as proxy for profit trend
-              comparisonType={comparisonType}
-              changeValue={comparisonData?.changes?.revenue?.value}
-              valueFormatter={(v) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2 })}`}
-            />
-            <StatCard
-              label="Average Order"
-              value={`$${(overview.data.avg_transaction || 0).toFixed(2)}`}
-              sublabel={`${(overview.data.avg_items_per_transaction || 0).toFixed(1)} items per order`}
-              change={comparisonData?.changes?.avgOrderValue?.percent || overview.data.comparison?.avg_transaction_change}
-              trend={
-                (comparisonData?.changes?.avgOrderValue?.percent || overview.data.comparison?.avg_transaction_change || 0) > 0
-                  ? "up"
-                  : (comparisonData?.changes?.avgOrderValue?.percent || overview.data.comparison?.avg_transaction_change || 0) < 0
-                  ? "down"
-                  : "neutral"
-              }
-              icon={ShoppingCart}
-              onClick={() => setActiveTab("itemized")}
-              sparklineData={trends?.avgOrderValue}
-              comparisonType={comparisonType}
-              changeValue={comparisonData?.changes?.avgOrderValue?.value}
-              valueFormatter={(v) => `$${v.toFixed(2)}`}
-            />
-            <StatCard
-              label="Top Product"
-              value={overview.data.top_product?.name || "N/A"}
-              sublabel={
-                overview.data.top_product
-                  ? `${overview.data.top_product.units_sold} units • $${overview.data.top_product.revenue?.toLocaleString(undefined, { minimumFractionDigits: 2 })}`
-                  : undefined
-              }
-              icon={Target}
-              onClick={() => setActiveTab("products")}
-              sparklineData={trends?.orders} // Product sales correlate with order count
-              change={comparisonData?.changes?.orders?.percent}
-              trend={
-                (comparisonData?.changes?.orders?.percent || 0) > 0
-                  ? "up"
-                  : (comparisonData?.changes?.orders?.percent || 0) < 0
-                  ? "down"
-                  : "neutral"
-              }
-              comparisonType={comparisonType}
-              changeValue={comparisonData?.changes?.orders?.value}
-              valueFormatter={(v) => `${Math.round(v)} orders`}
-            />
+            <div className="flex items-center gap-8 overflow-x-auto w-full">
+              <div className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveTab("sales")}>
+                <div className="text-xs text-white/50 mb-1">Revenue</div>
+                <div className="text-xl font-medium text-white/90">
+                  ${(overview.data.gross_sales || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+              <div className="w-px h-10 bg-white/10"></div>
+              <div className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveTab("profitloss")}>
+                <div className="text-xs text-white/50 mb-1">Profit</div>
+                <div className="text-xl font-medium text-white/90">
+                  {profitMetrics?.metrics ? `$${profitMetrics.metrics.grossProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : "$0.00"}
+                </div>
+              </div>
+              <div className="w-px h-10 bg-white/10"></div>
+              <div className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveTab("itemized")}>
+                <div className="text-xs text-white/50 mb-1">Avg Order</div>
+                <div className="text-xl font-medium text-white/90">
+                  ${(overview.data.avg_transaction || 0).toFixed(2)}
+                </div>
+              </div>
+              <div className="w-px h-10 bg-white/10"></div>
+              <div className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setActiveTab("products")}>
+                <div className="text-xs text-white/50 mb-1">Top Product</div>
+                <div className="text-base font-medium text-white/90 truncate max-w-[180px]">
+                  {overview.data.top_product?.name || "N/A"}
+                </div>
+              </div>
+              {/* AI Insights Inline */}
+              {insightsData?.insights && insightsData.insights.length > 0 && (
+                <>
+                  <div className="w-px h-10 bg-white/10"></div>
+                  <AIInsightsPanel insights={insightsData.insights} isLoading={insightsLoading} />
+                </>
+              )}
             </div>
           )}
         </div>
 
-        {/* Tab Navigation - Sticky */}
+        {/* Compact Tab Navigation */}
         <div className="analytics-tabs">
-          <div className="flex gap-1 py-3 overflow-x-auto">
+          <div className="flex gap-2 items-center h-full">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as ReportTab)}
-                  className={`flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-wider whitespace-nowrap transition-all duration-300 rounded-lg ${
+                  className={`flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap transition-all rounded-lg ${
                     activeTab === tab.key
-                      ? "bg-white/10 text-white"
+                      ? "bg-white/10 text-white font-medium"
                       : "text-white/50 hover:text-white/80 hover:bg-white/5"
                   }`}
                 >
@@ -1436,9 +1410,9 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* Report Content - Independent Scroll */}
+        {/* Report Content */}
         <div className="analytics-content">
-          <div className="minimal-glass p-8">
+          <div className="minimal-glass">
           {activeTab === "sales" && (
             <div>
               <div className="flex items-center justify-between mb-6">

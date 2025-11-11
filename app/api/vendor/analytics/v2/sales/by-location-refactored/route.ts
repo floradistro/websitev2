@@ -150,8 +150,14 @@ export const GET = withVendorAuth(
     );
 
     const result: SalesByLocation[] = Object.values(locationData).map((loc: any) => ({
-      ...loc,
+      location_id: loc.location_id,
+      location_name: loc.location_name,
+      gross_sales: loc.gross_sales,
       net_sales: loc.gross_sales - loc.discount_amount,
+      orders: loc.order_count,
+      avg_order_value: loc.order_count > 0 ? loc.gross_sales / loc.order_count : 0,
+      gross_profit: 0, // Need cost data to calculate
+      gross_margin: 0, // Need cost data to calculate
       percent_of_total: totalSales > 0 ? (loc.gross_sales / totalSales) * 100 : 0,
     }));
 
@@ -166,7 +172,7 @@ export const GET = withVendorAuth(
       .addSummary("total_sales", totalSales)
       .addSummary(
         "total_orders",
-        result.reduce((sum, loc) => sum + loc.order_count, 0),
+        result.reduce((sum, loc) => sum + loc.orders, 0),
       )
       .addSummary(
         "avg_per_location",
@@ -178,7 +184,7 @@ export const GET = withVendorAuth(
     // Route options (DRY!)
     rateLimit: {
       enabled: true,
-      config: "analyticsApi",
+      config: "authenticatedApi",
     },
     cache: {
       enabled: true,

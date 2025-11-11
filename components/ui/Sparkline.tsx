@@ -10,6 +10,7 @@ interface SparklineProps {
   fillColor?: string;
   showGradient?: boolean;
   animate?: boolean;
+  gap?: number;
   className?: string;
 }
 

@@ -39,6 +39,7 @@ type Tool =
   | "erase"
   | "restore"
   | "magic-remove"
+  | "ai-reimagine"
   | "refine-edges"
   | "enhance";
 
@@ -78,6 +79,12 @@ export default function ImageEditor({
   const imageRef = useRef<HTMLImageElement>(null);
   const [isUsingBrush, setIsUsingBrush] = useState(false);
   const [hasUnsavedBrushChanges, setHasUnsavedBrushChanges] = useState(false);
+
+  // AI Reimagine
+  const maskCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [reimaginePrompt, setReimaginePrompt] = useState("");
+  const [isMaskDrawing, setIsMaskDrawing] = useState(false);
+  const isMaskDrawingRef = useRef(false);
 
   // Brush history
   const [brushHistory, setBrushHistory] = useState<string[]>([]);
@@ -277,6 +284,19 @@ export default function ImageEditor({
     } else if (activeTool !== "erase" && activeTool !== "restore" && isUsingBrush) {
       setIsUsingBrush(false);
     }
+
+    // Initialize mask canvas for AI reimagine
+    if (activeTool === "ai-reimagine" && maskCanvasRef.current && imageRef.current) {
+      const canvas = maskCanvasRef.current;
+      const img = imageRef.current;
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+    }
   }, [activeTool]);
 
   useEffect(() => {
@@ -459,6 +479,97 @@ export default function ImageEditor({
     onClose();
   };
 
+  // Mask drawing for AI reimagine
+  const startMaskDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (activeTool !== "ai-reimagine") return;
+    e.preventDefault();
+    setIsMaskDrawing(true);
+    isMaskDrawingRef.current = true;
+    drawMask(e);
+  };
+
+  const stopMaskDrawing = () => {
+    setIsMaskDrawing(false);
+    isMaskDrawingRef.current = false;
+  };
+
+  const drawMask = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isMaskDrawingRef.current && e.type !== "mousedown") return;
+    if (!maskCanvasRef.current) return;
+
+    e.preventDefault();
+    const canvas = maskCanvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const canvasX = x * scaleX;
+    const canvasY = y * scaleY;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Draw white (mask area) where user brushes
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(canvasX, canvasY, brushSize * scaleX, 0, Math.PI * 2);
+    ctx.fill();
+  };
+
+  const handleAIReimagine = async () => {
+    if (!maskCanvasRef.current || !reimaginePrompt.trim()) {
+      alert("Please brush an area and enter a prompt");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const maskDataUrl = maskCanvasRef.current.toDataURL();
+
+      const response = await fetch("/api/vendor/media/ai-reimagine", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-vendor-id": vendorId,
+        },
+        body: JSON.stringify({
+          imageUrl: currentImage,
+          maskDataUrl,
+          prompt: reimaginePrompt,
+          fileName: image.file_name,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || "Failed to reimagine";
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      if (data.success && data.url) {
+        setCurrentImage(data.url);
+        addToHistory(data.url, `AI: ${reimaginePrompt.substring(0, 30)}...`);
+        setReimaginePrompt("");
+        setActiveTool(null);
+      }
+    } catch (error) {
+      console.error("Error reimagining:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to reimagine image";
+
+      if (errorMessage.includes("not configured")) {
+        alert("AI reimagine service is not configured. Please set REPLICATE_API_TOKEN in your environment variables.");
+      } else {
+        alert(errorMessage);
+      }
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleMagicRemoveClick = async (e: React.MouseEvent) => {
     if (activeTool !== "magic-remove") return;
     if (!imageRef.current) return;
@@ -629,6 +740,12 @@ export default function ImageEditor({
               onClick={() => setActiveTool(activeTool === "magic-remove" ? null : "magic-remove")}
             />
             <ToolButton
+              icon={<Palette className="w-5 h-5" />}
+              label="AI Reimagine"
+              active={activeTool === "ai-reimagine"}
+              onClick={() => setActiveTool(activeTool === "ai-reimagine" ? null : "ai-reimagine")}
+            />
+            <ToolButton
               icon={<Eraser className="w-5 h-5" />}
               label="Erase"
               active={activeTool === "erase"}
@@ -739,6 +856,53 @@ export default function ImageEditor({
           </div>
         )}
 
+        {activeTool === "ai-reimagine" && (
+          <div className="absolute left-32 top-1/2 -translate-y-1/2 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-2xl p-5 shadow-2xl w-72 transition-all duration-300">
+            <div className="space-y-5">
+              <div>
+                <div className="text-white text-sm font-medium tracking-tight mb-4">
+                  Brush Size
+                </div>
+                <input
+                  type="range"
+                  min="5"
+                  max="100"
+                  value={brushSize}
+                  onChange={(e) => setBrushSize(Number(e.target.value))}
+                  className="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer accent-purple-500"
+                />
+                <div className="text-white/50 text-xs mt-3 text-center font-medium tabular-nums">
+                  {brushSize}px
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/10">
+                <div className="text-white text-sm font-medium tracking-tight mb-3">
+                  Describe Changes
+                </div>
+                <textarea
+                  value={reimaginePrompt}
+                  onChange={(e) => setReimaginePrompt(e.target.value)}
+                  placeholder="e.g., change the color to blue, add text saying..."
+                  className="w-full h-24 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white text-sm placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
+                />
+              </div>
+
+              <button
+                onClick={handleAIReimagine}
+                disabled={isProcessing || !reimaginePrompt.trim()}
+                className="w-full py-2.5 bg-purple-500 hover:bg-purple-600 disabled:bg-purple-500/50 rounded-lg text-white text-sm font-medium tracking-tight transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/25 disabled:hover:scale-100"
+              >
+                {isProcessing ? "Reimagining..." : "Apply AI Reimagine"}
+              </button>
+
+              <div className="text-white/40 text-xs text-center">
+                Brush over the area you want to change, then describe what you want
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Image Display */}
         <div
           className="relative"
@@ -766,18 +930,36 @@ export default function ImageEditor({
               }}
             />
           ) : (
-            <img
-              ref={imageRef}
-              src={currentImage}
-              alt="Editing"
-              draggable={false}
-              className="max-w-full max-h-[calc(100vh-200px)] object-contain rounded-lg shadow-2xl select-none transition-all duration-300"
-              style={{
-                filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
-                userSelect: "none",
-                WebkitUserDrag: "none",
-              }}
-            />
+            <>
+              <img
+                ref={imageRef}
+                src={currentImage}
+                alt="Editing"
+                draggable={false}
+                className="max-w-full max-h-[calc(100vh-200px)] object-contain rounded-lg shadow-2xl select-none transition-all duration-300"
+                style={{
+                  filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`,
+                  userSelect: "none",
+                  WebkitUserDrag: "none",
+                } as React.CSSProperties & { WebkitUserDrag?: string }}
+              />
+
+              {/* AI Reimagine Mask Canvas Overlay */}
+              {activeTool === "ai-reimagine" && (
+                <canvas
+                  ref={maskCanvasRef}
+                  onMouseDown={startMaskDrawing}
+                  onMouseMove={drawMask}
+                  onMouseUp={stopMaskDrawing}
+                  onMouseLeave={stopMaskDrawing}
+                  className="absolute top-0 left-0 max-w-full max-h-[calc(100vh-200px)] object-contain rounded-lg cursor-crosshair"
+                  style={{
+                    mixBlendMode: "screen",
+                    opacity: 0.5,
+                  }}
+                />
+              )}
+            </>
           )}
         </div>
 

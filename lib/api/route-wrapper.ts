@@ -203,14 +203,14 @@ export function withVendorAuth<T = any>(
       };
 
       // 3. Caching (if enabled)
-      let result: T;
+      let result: T | NextResponse;
       if (opts.cache?.enabled) {
         const cacheKey =
           opts.cache.keyGenerator?.(request, context) ||
           `route:${request.url}:${vendorId}`;
         result = await applyCache(cacheKey, opts.cache.ttl, () =>
           handler(request, context),
-        );
+        ) as T | NextResponse;
       } else {
         result = await handler(request, context);
       }
@@ -271,13 +271,13 @@ export function withPublicAccess<T = any>(
       };
 
       // 2. Caching (if enabled)
-      let result: T;
+      let result: T | NextResponse;
       if (opts.cache?.enabled) {
         const cacheKey =
           opts.cache.keyGenerator?.(request, context) || `route:${request.url}`;
         result = await applyCache(cacheKey, opts.cache.ttl, () =>
           handler(request, context),
-        );
+        ) as T | NextResponse;
       } else {
         result = await handler(request, context);
       }

@@ -129,18 +129,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Upload processed image to Supabase Storage
-    const fileName = `edited_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+    const fileName = `edited_${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
     const filePath = `${vendorId}/media/${fileName}`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("vendor_media")
+      .from("vendor-product-images")
       .upload(filePath, processedImage, {
-        contentType: "image/jpeg",
+        contentType: "image/png",
         upsert: false,
       });
 
     if (uploadError) {
-      console.error("Upload error:", uploadError);
+      logger.error("Upload error:", uploadError);
       return NextResponse.json(
         { error: "Failed to upload processed image" },
         { status: 500 },
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
     // Get public URL
     const {
       data: { publicUrl },
-    } = supabase.storage.from("vendor_media").getPublicUrl(filePath);
+    } = supabase.storage.from("vendor-product-images").getPublicUrl(filePath);
 
     return NextResponse.json({
       success: true,

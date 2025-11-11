@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { generateRequestId } from "@/lib/api-logger";
+import {
+  getCachedDomain,
+  setCachedDomain,
+  getCachedSubdomain,
+  setCachedSubdomain,
+} from "@/lib/middleware-cache";
 
 /**
  * Apply request ID and timing headers to response
@@ -145,22 +151,38 @@ export async function middleware(request: NextRequest) {
   try {
     const supabase = getServiceSupabase();
 
-    // Look up vendor by custom domain
-    const { data: domainRecord, error: domainError } = await supabase
-      .from("vendor_domains")
-      .select("vendor_id, is_active, verified")
-      .eq("domain", domain)
-      .eq("verified", true)
-      .eq("is_active", true)
-      .single();
+    // OPTIMIZATION: Check cache first
+    let domainRecord = getCachedDomain(domain);
 
-    if (domainRecord && !domainError) {
-      // Get vendor to check if coming soon mode is active
-      const { data: vendor } = await supabase
-        .from("vendors")
-        .select("coming_soon")
-        .eq("id", domainRecord.vendor_id)
+    if (!domainRecord) {
+      // Cache miss - query database
+      // OPTIMIZATION: Join vendor table to get coming_soon in ONE query
+      const { data, error: domainError } = await supabase
+        .from("vendor_domains")
+        .select("vendor_id, is_active, verified, vendors!inner(coming_soon)")
+        .eq("domain", domain)
+        .eq("verified", true)
+        .eq("is_active", true)
         .single();
+
+      if (data && !domainError) {
+        // Extract coming_soon from joined vendor data
+        const vendorData = data.vendors as any;
+        domainRecord = {
+          vendor_id: data.vendor_id,
+          is_active: data.is_active,
+          verified: data.verified,
+          coming_soon: vendorData?.coming_soon || false,
+          timestamp: Date.now(),
+        };
+
+        // Cache for future requests
+        setCachedDomain(domain, domainRecord);
+      }
+    }
+
+    if (domainRecord) {
+      const vendor = { coming_soon: domainRecord.coming_soon };
 
       // Check if coming soon mode is active - rewrite to storefront to show coming soon page
       if (vendor?.coming_soon) {
@@ -201,14 +223,29 @@ export async function middleware(request: NextRequest) {
     // Check if this is a subdomain storefront (vendor-slug.yachtclub.com)
     const subdomain = domain.split(".")[0];
     if (domain.includes(".") && !domain.startsWith("www") && !isYachtClubDomain) {
-      const { data: vendor, error: vendorError } = await supabase
-        .from("vendors")
-        .select("id, status, coming_soon")
-        .eq("slug", subdomain)
-        .eq("status", "active")
-        .single();
+      // OPTIMIZATION: Check cache first
+      let vendor = getCachedSubdomain(subdomain);
 
-      if (vendor && !vendorError) {
+      if (!vendor) {
+        // Cache miss - query database
+        const { data, error: vendorError } = await supabase
+          .from("vendors")
+          .select("id, status, coming_soon")
+          .eq("slug", subdomain)
+          .eq("status", "active")
+          .single();
+
+        if (data && !vendorError) {
+          vendor = {
+            ...data,
+            timestamp: Date.now(),
+          };
+          // Cache for future requests
+          setCachedSubdomain(subdomain, vendor);
+        }
+      }
+
+      if (vendor) {
         // Check if coming soon mode is active - block entire site
         if (vendor.coming_soon) {
           const isPreview = request.nextUrl.searchParams.get("preview") === "true";

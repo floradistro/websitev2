@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
     checks.status = "unhealthy";
     return NextResponse.json(
       {
+        success: false,
         ...checks,
         error: "Missing required environment variables",
         missing: {
@@ -66,16 +67,23 @@ export async function GET(request: NextRequest) {
     const allHealthy = Object.values(checks.checks).every((check) => check.status === "healthy");
     checks.status = allHealthy ? "healthy" : "degraded";
 
-    return NextResponse.json(checks, {
-      headers: {
-        "Cache-Control": "no-store, max-age=0",
+    return NextResponse.json(
+      {
+        success: true,
+        ...checks,
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      },
+    );
   } catch (error) {
     const err = toError(error);
     checks.status = "unhealthy";
     return NextResponse.json(
       {
+        success: false,
         ...checks,
         error: err.message,
       },

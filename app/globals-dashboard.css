@@ -199,69 +199,142 @@ input[type="radio"]:checked::after {
 
 /* === APPLE-STYLE ANALYTICS DASHBOARD === */
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
+/* Box sizing for consistent layout */
+.analytics-page *,
+.analytics-page *::before,
+.analytics-page *::after {
+  box-sizing: border-box;
 }
 
-/* Analytics Page Layout */
+/* Minimal glass container */
+.minimal-glass {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+}
+
+/* Smooth scrolling */
+html, body {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Analytics Page - Fixed Layout */
 .analytics-page {
-  display: flex;
-  flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-width: 100vw;
+  width: 100%;
 }
 
-/* Fixed Header - Always visible */
+/* Fixed Header - 80px */
 .analytics-header {
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
   z-index: 100;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 1rem 1.5rem;
+  padding: 0 2rem;
+  height: 80px;
+  display: flex;
+  align-items: center;
 }
 
-/* KPI Section - Sticky below header */
+/* Fixed KPI Bar - 80px */
 .analytics-kpi-section {
-  position: sticky;
-  top: 64px; /* Height of header */
+  flex-shrink: 0;
   z-index: 90;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  padding: 1.5rem;
+  padding: 0 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  height: 80px;
+  display: flex;
+  align-items: center;
 }
 
-/* Tab Bar - Sticky below KPIs */
+.analytics-kpi-section .flex {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.analytics-kpi-section .flex::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fixed Tab Bar - 64px */
 .analytics-tabs {
-  position: sticky;
-  top: 180px; /* Header + KPI height */
+  flex-shrink: 0;
   z-index: 80;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 0 1.5rem;
+  padding: 0 2rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
 }
 
-/* Content Area - Independent scroll */
-.analytics-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-  /* Smooth momentum scrolling on iOS */
+.analytics-tabs .flex {
+  overflow-x: auto;
+  scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Table Headers - Sticky within content */
+.analytics-tabs .flex::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scrollable Content Area Only */
+.analytics-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.analytics-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.analytics-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.analytics-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.analytics-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Table container for responsive scroll */
+.analytics-content .minimal-glass {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Table Headers - No sticky to avoid scroll conflicts */
+.analytics-content table {
+  min-width: 100%;
+  width: max-content;
+}
+
 .analytics-content table thead {
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  position: relative;
+  z-index: 1;
   background: rgba(0, 0, 0, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);

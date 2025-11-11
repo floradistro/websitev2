@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/client';
+import { requireVendor } from '@/lib/auth/middleware';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+);
 
 /**
  * Comparison Mode API
@@ -44,22 +50,24 @@ interface ComparisonResponse {
 
 export async function GET(request: NextRequest) {
   try {
+    // Authentication
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
     const { searchParams } = new URL(request.url);
-    const vendorId = searchParams.get('vendor_id');
     const currentStart = searchParams.get('current_start');
     const currentEnd = searchParams.get('current_end');
     const comparisonType = searchParams.get('comparison_type') || 'previous_period';
     const comparisonStart = searchParams.get('comparison_start'); // For custom
     const comparisonEnd = searchParams.get('comparison_end'); // For custom
 
-    if (!vendorId || !currentStart || !currentEnd) {
+    if (!currentStart || !currentEnd) {
       return NextResponse.json(
-        { error: 'vendor_id, current_start, and current_end are required' },
+        { error: 'current_start and current_end are required' },
         { status: 400 }
       );
     }
-
-    const supabase = createClient();
 
     // Parse current period
     const currentStartDate = new Date(currentStart);
@@ -219,9 +227,17 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Unexpected error in comparison API:', error);
+    console.error('[ERROR] Comparison API error:', error);
+    console.error('[ERROR] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      type: typeof error,
+    });
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
