@@ -1,43 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
-import { AlpineIQClient } from "@/lib/marketing/alpineiq-client";
 import { requireVendor } from "@/lib/auth/middleware";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-/**
- * Get or create Alpine IQ client for vendor
- */
-async function getAlpineIQClient(supabase: any, vendorId: string): Promise<AlpineIQClient | null> {
-  try {
-    const { data: vendor } = await supabase
-      .from("vendors")
-      .select("marketing_provider, marketing_config")
-      .eq("id", vendorId)
-      .single();
-
-    if (vendor?.marketing_provider === "alpineiq" && vendor?.marketing_config) {
-      const config = vendor.marketing_config;
-      if (config.api_key && config.user_id) {
-        return new AlpineIQClient({
-          apiKey: config.api_key,
-          userId: config.user_id,
-          agencyId: config.agency_id,
-        });
-      }
-    }
-    return null;
-  } catch (error) {
-    const err = toError(error);
-    if (process.env.NODE_ENV === "development") {
-      logger.error("Failed to get AlpineIQ client:", err);
-    }
-    return null;
-  }
-}
 
 export async function POST(request: NextRequest) {
   // SECURITY: Require vendor authentication (Phase 4)
@@ -290,66 +258,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================================
-    // STEP 8: SYNC VOID TO ALPINE IQ
-    // ============================================================================
-    let alpineIQSynced = false;
-
-    if (customer && order) {
-      try {
-        const alpineClient = await getAlpineIQClient(supabase, transaction.vendor_id);
-
-        if (alpineClient) {
-          // Get loyalty record for Alpine IQ contact ID
-          const { data: loyalty } = await supabase
-            .from("customer_loyalty")
-            .select("alpineiq_customer_id")
-            .eq("customer_id", customer.id)
-            .eq("vendor_id", transaction.vendor_id)
-            .single();
-
-          if (loyalty?.alpineiq_customer_id && pointsToReverse > 0) {
-            // Reverse points in Alpine IQ
-            await alpineClient.adjustLoyaltyPoints({
-              contactId: loyalty.alpineiq_customer_id,
-              points: -pointsToReverse,
-              note: `Points reversed - Order ${order.order_number} voided: ${reason}`,
-              orderId: order.order_number,
-            });
-
-            alpineIQSynced = true;
-          }
-        }
-      } catch (error) {
-        const err = toError(error);
-        logger.error("⚠️  Alpine IQ sync failed (continuing anyway):", err);
-
-        // Queue for retry
-        try {
-          await supabase.from("alpine_iq_sync_queue").insert({
-            vendor_id: transaction.vendor_id,
-            type: "void",
-            data: {
-              order_id: transaction.order_id,
-              order_number: order?.order_number,
-              customer_id: customer.id,
-              points_to_reverse: pointsToReverse,
-              reason,
-            },
-            status: "pending",
-            retry_count: 0,
-            error_message: err.message,
-          });
-        } catch (queueError) {
-          // Ignore queue errors - don't fail the void
-          if (process.env.NODE_ENV === "development") {
-            logger.error("Failed to queue void for retry:", queueError);
-          }
-        }
-      }
-    }
-
-    // ============================================================================
-    // STEP 9: UPDATE SESSION TOTALS
+    // STEP 8: UPDATE SESSION TOTALS
     // ============================================================================
     if (transaction.session_id) {
       // Decrement session total using atomic RPC function
@@ -377,7 +286,6 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Transaction voided successfully",
       pointsReversed: pointsToReverse,
-      alpineIQSynced,
     });
   } catch (error) {
     const err = toError(error);

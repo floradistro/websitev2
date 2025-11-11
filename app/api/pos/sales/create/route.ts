@@ -409,16 +409,7 @@ export async function POST(request: NextRequest) {
         total,
       }).catch((err) => logger.error("Background loyalty failed:", err));
 
-      syncToMarketing(supabase, {
-        vendorId,
-        customerId,
-        orderId: order.id,
-        orderNumber,
-        locationId,
-        userId,
-        items,
-        total,
-      }).catch((err) => logger.error("Background marketing failed:", err));
+      // Marketing sync removed - no longer using Alpine IQ
     }
 
     // ============================================================================
@@ -487,7 +478,7 @@ async function processLoyaltyPoints(
   const POINTS_PER_DOLLAR = program?.points_per_dollar || 1;
   const pointsEarned = Math.floor(data.total * POINTS_PER_DOLLAR);
 
-  // Get or create loyalty record (support both builtin and alpineiq)
+  // Get or create loyalty record
   let { data: loyalty } = await supabase
     .from("customer_loyalty")
     .select("*")
@@ -569,34 +560,3 @@ async function updateWalletPass(customerId: string, newBalance: number) {
   }
 }
 
-/**
- * Sync to marketing platform in background
- * Failures are queued for retry
- */
-async function syncToMarketing(
-  supabase: any,
-  data: {
-    vendorId: string;
-    customerId: string;
-    orderId: string;
-    orderNumber: string;
-    locationId: string;
-    userId?: string;
-    items: CartItem[];
-    total: number;
-  },
-) {
-  // Queue for background processing
-  // In production, this would use a job queue
-  await supabase.from("alpine_iq_sync_queue").insert({
-    vendor_id: data.vendorId,
-    type: "sale",
-    data: {
-      order_id: data.orderId,
-      order_number: data.orderNumber,
-      customer_id: data.customerId,
-    },
-    status: "pending",
-    retry_count: 0,
-  });
-}
