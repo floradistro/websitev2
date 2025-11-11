@@ -67,8 +67,7 @@ export function POSIDScanner({
 
       // Configure Scandit with license key and library location
       await SDCCore.configure({
-        licenseKey:
-          "AhNG9i8cCE7bEFujVv0n894sXhF6A9okxQTlJB8Kry9BOauGTEHRou5NfrB2V32ivHEddTppB8m6Mh6mFlXVi8lhAuFOMiRTdw/xsqozSKIIMaiLSCbIulsm2jRtQO/ux0/VgkhoFHi9U/QCZFlD6Sx+jPo6bY8ICWOWUj12PykDTWVXIHk2YUxN1/uaUBps7XoIRm1HVDyAQbo5ZkgfojZOJwnZY7rOP2yWxJp6+CoYY0K8BUd8W49zVYcwWWuocXuj/9VgHe33YfwP93TAaMxw01HkS+yn6UlzutRj2lCwJQOEj1uG9p5nBZj1fprQh13Wvr5zaOLpdek9x3Vmid5InhETdrd3E3hsZvhR+H20R1SMQ3qpbT9xveSCd0yehxb8f49viMhUUGQReUvelJNq7SeBaAfDyXUo7rILcgxCW2hbWknBf/NaToQhWp6CL1RqtI12/g8WBPl8NT53yls0A/1fSwBfFx5uiHRI4/6FWnGH1UvaIskF8FpHRtp/G0gB41d/DXTnHwMADQ9w++AQ9wWoWw+CVSpc5AwxaybBjvMdgf3LeHqmyL26JNTjym7wKUqrix/d9DYcOMP+PJZupbOzbs+aP/9kC1OGIJqm9UoI2WEczwdVw3hhDypA+/+a+IAYSkvexy5EJI+ggbQ2SgigLQmKW/XF79VOrYkjgSv7YvN/rKZkSrsVUitGRjyO4GwQBQi4QY9/E4SOMsNgTQobah0rTLw0sXwdDLc62H1YrKk2ZHeem2FXu9w3J50TcM8DJgph7ULq3975feVVrAJ3XGK+paJ8KbF6Hqgh6JOW5oxarNVx7slfy3P9oMgiTwqpKura9rJI3R4USbUQAgjN7kx6xCK2HQTlV5HMLcn9JQv6/eDSMXncymNZngda13+b6Sq5FfoyxQsbqpvKofD+Ybq1S9YEFydM58O62J9XKJEMYohNqOiLBoHYPq1E5vxpbuIxigzQPqq7CjQWvMYvN1uqTMfoLFbbnmFm5d6DgnEkheT0Ku1qNION844bYrlPfshNwQcKTkVvbJjbScc2ql//tebmLNg2B+iNYmslgWaIkpaoANzPQ7F3qvtWP+cGpni9WiWIm4EiC8XE8apUOTSfXKDaO4Y0DgRKfTBCfA1lOfewxOCPtTdlUmodacFS5HBULSkqfzSgDafrdcyXrM5xyRDbBkJMxr/iDGLrV48iEda8YGEL7sfi2qI=",
+        licenseKey: process.env.NEXT_PUBLIC_SCANDIT_LICENSE_KEY || "",
         libraryLocation: new URL("/scandit/", window.location.origin).href,
         moduleLoaders: [SDCId.idCaptureLoader()],
       });
