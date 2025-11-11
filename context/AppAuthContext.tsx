@@ -96,7 +96,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
 
   // Helper: Get accessible apps for user (DRY - Don't Repeat Yourself)
   const getAccessibleApps = (role: UserRole, serverApps?: string[]) => {
-    const defaultApps = ["pos", "customers", "tv_menus"];
+    const defaultApps = ["pos", "customers", "tv_menus", "loyalty", "marketing"];
     return isAdminRole(role) ? [] : serverApps || defaultApps;
   };
 
@@ -151,7 +151,7 @@ export function AppAuthProvider({ children }: { children: React.ReactNode }) {
           if (savedApps) {
             const parsedApps = JSON.parse(savedApps);
             // If empty array and not admin, use default apps
-            const defaultApps = ["pos", "customers", "tv_menus"];
+            const defaultApps = ["pos", "customers", "tv_menus", "loyalty", "marketing"];
             setAccessibleApps(
               parsedApps.length === 0 && !isAdminRole(userData.role) ? defaultApps : parsedApps,
             );

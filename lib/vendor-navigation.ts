@@ -164,7 +164,7 @@ export const navSections: NavSection[] = [
         icon: Award,
         label: "Loyalty Rewards",
         description: "Points & tiers",
-        appKey: "marketing",
+        appKey: "loyalty",
       },
     ],
   },
