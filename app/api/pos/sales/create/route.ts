@@ -538,6 +538,35 @@ async function processLoyaltyPoints(
     balance_before: loyalty.points_balance,
     balance_after: loyalty.points_balance + pointsEarned,
   });
+
+  // Update Apple Wallet pass (non-blocking)
+  updateWalletPass(data.customerId, loyalty.points_balance + pointsEarned).catch((err) =>
+    logger.error("Wallet pass update failed:", err),
+  );
+}
+
+/**
+ * Update Apple Wallet pass with new points balance
+ */
+async function updateWalletPass(customerId: string, newBalance: number) {
+  try {
+    // This would trigger Apple Push Notification service
+    // to update the pass on the customer's device
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/wallet/update-pass`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customerId,
+        points: newBalance,
+      }),
+    });
+
+    if (!response.ok) {
+      logger.error("Wallet pass update request failed");
+    }
+  } catch (error) {
+    logger.error("Wallet pass update error:", error);
+  }
 }
 
 /**

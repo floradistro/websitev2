@@ -22,6 +22,7 @@ import {
   Store,
   Boxes,
   Activity,
+  Award,
 } from "lucide-react";
 
 export interface NavItem {
@@ -156,6 +157,13 @@ export const navSections: NavSection[] = [
         icon: Smartphone,
         label: "Marketing",
         description: "Loyalty & campaigns",
+        appKey: "marketing",
+      },
+      {
+        href: "/vendor/loyalty",
+        icon: Award,
+        label: "Loyalty Rewards",
+        description: "Points & tiers",
         appKey: "marketing",
       },
     ],
