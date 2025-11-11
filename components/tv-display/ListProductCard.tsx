@@ -33,11 +33,31 @@ export function ListProductCard({
     visiblePriceBreaks.length > 0
       ? Object.keys(pricing_tiers)
           .filter((key) => visiblePriceBreaks.includes(key))
-          .map((key) => ({
-            id: key,
-            price: parseFloat(pricing_tiers[key].price || pricing_tiers[key]),
-            label: PRICE_BREAK_LABELS[key] || key,
-          }))
+          .map((key) => {
+            const tier = pricing_tiers[key];
+            const tierObj = typeof tier === "object" ? tier : { price: tier };
+
+            // Use the actual tier label and unit from pricing_tiers
+            const quantity = tierObj.quantity || 1;
+            const unit = tierObj.unit || "g";
+            const tierLabel = tierObj.label || PRICE_BREAK_LABELS[key] || key;
+
+            // Smart label formatting:
+            // If label already includes unit info (like "1 gram" or "3.5g (Eighth)"), use as-is
+            // Otherwise, format as "{quantity} {unit(s)}"
+            let displayLabel = tierLabel;
+            if (!tierLabel.toLowerCase().includes(unit.toLowerCase())) {
+              // Label doesn't include unit, so format it
+              const pluralUnit = quantity > 1 ? `${unit}s` : unit;
+              displayLabel = `${quantity} ${pluralUnit}`;
+            }
+
+            return {
+              id: key,
+              price: parseFloat(tierObj.price),
+              label: displayLabel,
+            };
+          })
           .sort((a, b) => {
             const indexA = visiblePriceBreaks.indexOf(a.id);
             const indexB = visiblePriceBreaks.indexOf(b.id);

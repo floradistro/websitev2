@@ -68,16 +68,39 @@ export function MinimalProductCard({
   const availablePrices =
     !visiblePriceBreaks || visiblePriceBreaks.length === 0
       ? [] // Show nothing by default
-      : priceBreaks
-          .filter((pb: any) => {
-            // Must have a price AND be in the visible list
-            return pricing_tiers[pb.break_id]?.price && visiblePriceBreaks.includes(pb.break_id);
+      : Object.keys(pricing_tiers)
+          .filter((tierId) => {
+            // Must be in the visible list and have a price
+            const tier = pricing_tiers[tierId];
+            const tierPrice = typeof tier === "object" ? tier.price : tier;
+            return visiblePriceBreaks.includes(tierId) && tierPrice;
           })
-          .map((pb: any) => ({
-            label: pb.display || pb.break_id,
-            price: parseFloat(pricing_tiers[pb.break_id].price),
-            id: pb.break_id,
-          }))
+          .map((tierId) => {
+            const tier = pricing_tiers[tierId];
+            const tierObj = typeof tier === "object" ? tier : { price: tier };
+
+            // Use the actual tier label and unit from pricing_tiers
+            // Format: "1 unit", "4 units" for beverages or "1 gram", "3.5g (Eighth)" for flower
+            const quantity = tierObj.quantity || 1;
+            const unit = tierObj.unit || "g";
+            const tierLabel = tierObj.label || tierId;
+
+            // Smart label formatting:
+            // If label already includes unit info (like "1 gram" or "3.5g (Eighth)"), use as-is
+            // Otherwise, format as "{quantity} {unit(s)}"
+            let displayLabel = tierLabel;
+            if (!tierLabel.toLowerCase().includes(unit.toLowerCase())) {
+              // Label doesn't include unit, so format it
+              const pluralUnit = quantity > 1 ? `${unit}s` : unit;
+              displayLabel = `${quantity} ${pluralUnit}`;
+            }
+
+            return {
+              label: displayLabel,
+              price: parseFloat(tierObj.price),
+              id: tierId,
+            };
+          })
           // Sort by the order specified in visiblePriceBreaks
           .sort((a: any, b: any) => {
             const indexA = visiblePriceBreaks.indexOf(a.id);

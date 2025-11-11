@@ -64,13 +64,16 @@ export function SubcategoryGroup({
     })
     .map(([breakId, breakData]: [string, any]) => {
       const priceBreak = priceBreakMap.get(breakId);
+      const tierData = typeof breakData === "object" ? breakData : { price: breakData };
+
+      // Use tier data first (from pricing_data), then fall back to blueprint
       return {
         breakId,
-        label: priceBreak?.label || breakId,
-        qty: priceBreak?.qty || 1,
-        unit: priceBreak?.unit || "",
-        price: breakData.price,
-        sortOrder: priceBreak?.sort_order || 999,
+        label: tierData.label || priceBreak?.label || breakId,
+        qty: tierData.quantity || priceBreak?.qty || 1,
+        unit: tierData.unit || priceBreak?.unit || "",
+        price: tierData.price || breakData.price,
+        sortOrder: tierData.sort_order || priceBreak?.sort_order || 999,
       };
     })
     .sort((a, b) => {
@@ -104,11 +107,16 @@ export function SubcategoryGroup({
           {enabledPrices.length > 0 && (
             <div className="flex items-baseline gap-3 flex-wrap">
               {enabledPrices.map((priceInfo) => {
-                // Format the display label
-                const displayLabel =
-                  priceInfo.unit === "unit"
-                    ? `${priceInfo.label}`
-                    : `${priceInfo.label}${priceInfo.unit}`;
+                // Smart label formatting
+                // If label already includes unit info (like "1 gram" or "3.5g (Eighth)"), use as-is
+                // Otherwise, format as "{label} {unit(s)}" (e.g., "1 unit", "4 units")
+                let displayLabel = priceInfo.label;
+
+                if (priceInfo.unit && !priceInfo.label.toLowerCase().includes(priceInfo.unit.toLowerCase())) {
+                  // Label doesn't include unit, so append it
+                  const pluralUnit = priceInfo.qty > 1 ? `${priceInfo.unit}s` : priceInfo.unit;
+                  displayLabel = `${priceInfo.label} ${pluralUnit}`;
+                }
 
                 return (
                   <div key={priceInfo.breakId} className="flex items-baseline gap-1.5">
