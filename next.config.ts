@@ -52,6 +52,16 @@ const nextConfig: NextConfig = {
   // Production optimizations
   productionBrowserSourceMaps: false,
 
+  // Skip ESLint during builds (run separately in CI)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
+  // Skip TypeScript checking during builds (run separately in CI)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   // FIX #1: Disable React Strict Mode in dev (causes double renders)
   reactStrictMode: !isDev,
 
