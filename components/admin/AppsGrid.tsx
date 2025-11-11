@@ -14,6 +14,7 @@ import {
   Code2,
   LucideIcon,
   ArrowUpRight,
+  Award,
 } from "lucide-react";
 import { useAppAuth } from "@/context/AppAuthContext";
 
@@ -112,6 +113,16 @@ const APPS: App[] = [
     category: "Growth",
     gradient: "from-fuchsia-600 to-pink-500",
     glowColor: "fuchsia",
+  },
+  {
+    key: "loyalty",
+    name: "Loyalty Rewards",
+    description: "Configure points, tiers, and customer loyalty programs",
+    icon: Award,
+    route: "/vendor/loyalty",
+    category: "Growth",
+    gradient: "from-amber-600 to-orange-500",
+    glowColor: "amber",
   },
   {
     key: "code",
