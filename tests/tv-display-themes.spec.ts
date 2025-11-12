@@ -70,7 +70,15 @@ test.describe("TV Display Theme System", () => {
 
       // For static themes, verify solid background color
       if (!theme.hasAnimation && theme.background) {
-        expect(styles.backgroundColor).toBe(theme.background);
+        // Convert hex to RGB for comparison
+        const hexToRgb = (hex: string) => {
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+          return result
+            ? `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})`
+            : null;
+        };
+        const expectedRgb = hexToRgb(theme.background);
+        expect(styles.backgroundColor).toBe(expectedRgb);
       }
 
       // For animated themes, verify gradient and animation properties
@@ -147,7 +155,7 @@ test.describe("TV Display Theme System", () => {
     });
 
     console.log(`  Fallback background: ${bgColor}`);
-    // Should be apple-light background (#F5F5F7)
+    // Should be apple-light background (#F5F5F7 = rgb(245, 245, 247))
     expect(bgColor).toBe("rgb(245, 245, 247)");
   });
 
@@ -169,7 +177,7 @@ test.describe("TV Display Theme System", () => {
     let bgColor = await rootDiv.evaluate((el) => {
       return window.getComputedStyle(el).backgroundColor;
     });
-    expect(bgColor).toBe("rgb(245, 245, 247)"); // apple-light
+    expect(bgColor).toBe("rgb(245, 245, 247)"); // apple-light (#F5F5F7)
 
     // Switch to apple-dark
     await page.goto(
@@ -182,7 +190,7 @@ test.describe("TV Display Theme System", () => {
     bgColor = await rootDiv.evaluate((el) => {
       return window.getComputedStyle(el).backgroundColor;
     });
-    expect(bgColor).toBe("rgb(0, 0, 0)"); // apple-dark
+    expect(bgColor).toBe("rgb(0, 0, 0)"); // apple-dark (#000000)
 
     console.log("  ✓ Theme switched from light to dark successfully");
 
