@@ -91,15 +91,14 @@ export async function middleware(request: NextRequest) {
   // Extract domain (remove port for localhost)
   const domain = hostname.split(":")[0];
 
-  // Determine if this is the main Yacht Club/WhaleTools domain
-  const isYachtClubDomain =
-    domain.includes("yachtclub.vip") ||
+  // Determine if this is the main WhaleTools domain
+  const isWhaletoolsDomain =
     domain.includes("whaletools.dev") ||
     domain === "localhost" ||
     domain.startsWith("localhost:");
 
   // OPTIMIZATION: Early exit for main domain homepage - no DB lookup needed
-  if (isYachtClubDomain && pathname === "/") {
+  if (isWhaletoolsDomain && pathname === "/") {
     const response = NextResponse.next();
     response.headers.set("x-tenant-type", "whaletools");
     applyRequestHeaders(response, requestId, startTime);
@@ -128,7 +127,7 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/test-storefront") ||
     pathname.includes(".") ||
     // These routes are ONLY excluded for main Yacht Club domain
-    (isYachtClubDomain &&
+    (isWhaletoolsDomain &&
       (pathname.startsWith("/products") ||
         pathname.startsWith("/shop") ||
         pathname.startsWith("/cart") ||
@@ -222,7 +221,7 @@ export async function middleware(request: NextRequest) {
 
     // Check if this is a subdomain storefront (vendor-slug.yachtclub.com)
     const subdomain = domain.split(".")[0];
-    if (domain.includes(".") && !domain.startsWith("www") && !isYachtClubDomain) {
+    if (domain.includes(".") && !domain.startsWith("www") && !isWhaletoolsDomain) {
       // OPTIMIZATION: Check cache first
       let vendor = getCachedSubdomain(subdomain);
 
@@ -328,7 +327,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // WhaleTools platform landing page (root domain only)
-  if (isYachtClubDomain && pathname === "/") {
+  if (isWhaletoolsDomain && pathname === "/") {
     const response = NextResponse.next();
     response.headers.set("x-tenant-type", "whaletools");
     applyRequestHeaders(response, requestId, startTime);

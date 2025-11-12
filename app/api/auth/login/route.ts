@@ -12,8 +12,8 @@ import { toError } from "@/lib/errors";
 
 // Allowed origins for CORS (explicit whitelist for security)
 const ALLOWED_ORIGINS = [
-  'https://yachtclub.vip',
-  'https://www.yachtclub.vip',
+  'https://whaletools.dev',
+  'https://www.whaletools.dev',
   'http://localhost:3000',
   'https://localhost:3443',
 ];

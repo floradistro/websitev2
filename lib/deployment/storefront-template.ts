@@ -236,7 +236,7 @@ Visit [WhaleTools Documentation](https://docs.whaletools.vip) or contact support
     content: `/** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['uaednwpxursknmwdeejn.supabase.co', 'yachtclub.vip'],
+    domains: ['uaednwpxursknmwdeejn.supabase.co', 'whaletools.dev'],
   },
 };
 
