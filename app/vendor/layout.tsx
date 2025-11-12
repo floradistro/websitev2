@@ -1,5 +1,7 @@
 "use client";
 
+// CRITICAL: Force dynamic rendering to prevent stale cached layouts on mobile/tablet
+// This prevents the notorious "navbar not updating" bug on production
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -28,15 +30,33 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [vendorLogo, setVendorLogo] = useState<string>("/yacht-club-logo.png");
 
+  // Detect if we're on a touch device
+  // CRITICAL: Initialize based on window object to avoid hydration mismatch
+  // and force proper detection on tablets/mobile
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    // Force immediate detection on mount
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchDevice(hasTouch);
+
+    // Add data attribute to body for CSS debugging
+    if (hasTouch) {
+      document.body.setAttribute('data-touch-device', 'true');
+    }
+  }, []);
+
   // Use useMemo to ensure stable initial state and avoid hydration mismatch
+  // On touch devices, collapse all sections by default
   const initialExpandedState = useMemo(
     () =>
       navSections.reduce(
         (acc, section) => ({
           ...acc,
-          [section.label]: section.defaultOpen ?? false,
+          [section.label]: false, // Always start collapsed
         }),
         {},
       ),
@@ -118,8 +138,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-
-      {/* Mobile/Tablet Menu Overlay - Shows below md breakpoint */}
+      {/* Mobile Menu Overlay - Shows below md breakpoint */}
       {mobileMenuOpen && (
         <div
           className="md:hidden fixed inset-0 z-[150] bg-black/90 backdrop-blur-lg"
@@ -324,11 +343,23 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
       )}
 
       <div className="fixed inset-0 bg-black">
-        {/* Icon-Only Sidebar - Expands on hover (Steve Jobs style) */}
+        {/* Backdrop overlay - only on touch devices when sidebar is expanded */}
+        {isTouchDevice && sidebarExpanded && !pathname?.includes("/tv-menus") && (
+          <div
+            className="fixed inset-0 bg-black/50 z-[90] transition-opacity duration-300"
+            onClick={() => setSidebarExpanded(false)}
+          />
+        )}
+
+        {/* Icon-Only Sidebar - Expands on hover (desktop) or tap (tablet/mobile) */}
         {!pathname?.includes("/tv-menus") && (
           <aside
             suppressHydrationWarning
-            className="hidden md:flex flex-col w-[60px] hover:w-[240px] border-r border-white/[0.06] fixed left-0 top-0 bottom-0 bg-[#0a0a0a] transition-all duration-300 ease-out group overflow-hidden z-[100]"
+            className={`flex flex-col border-r border-white/[0.06] fixed left-0 top-0 bottom-0 bg-[#0a0a0a] transition-all duration-300 ease-out group overflow-hidden z-[100] ${
+              isTouchDevice
+                ? (sidebarExpanded ? 'w-[240px]' : 'w-[60px]')
+                : 'w-[60px] hover:w-[240px]'
+            }`}
           >
             {/* Logo/Brand at top */}
             <Link
@@ -342,13 +373,38 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                   className="w-full h-full object-contain p-0.5"
                 />
               </div>
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap overflow-hidden">
+              <div className={`transition-opacity duration-300 whitespace-nowrap overflow-hidden ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'}`}>
                 <div className="text-white/90 text-[11px] tracking-wide font-medium">
                   {vendorName}
                 </div>
                 <div className="text-white/40 text-[9px] tracking-[0.15em] uppercase">Portal</div>
               </div>
             </Link>
+
+            {/* Toggle button for touch devices - Only shown on tablets/mobile */}
+            {isTouchDevice && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSidebarExpanded(!sidebarExpanded);
+                }}
+                className="mx-2 my-2 p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] transition-colors"
+                aria-label="Toggle menu"
+              >
+                <svg
+                  className="w-5 h-5 text-white/70"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  {sidebarExpanded ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            )}
 
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-0.5" suppressHydrationWarning>
@@ -363,6 +419,12 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                       key={item.href}
                       href={item.href}
                       onMouseEnter={() => handleNavHover(item.href)}
+                      onClick={() => {
+                        // On touch devices, expand sidebar to show label before navigating
+                        if (isTouchDevice && !sidebarExpanded) {
+                          setSidebarExpanded(true);
+                        }
+                      }}
                       title={item.label}
                       className={`flex items-center gap-3 px-3 py-2.5 transition-all duration-200 border rounded-lg overflow-hidden ${
                         active
@@ -371,7 +433,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                       }`}
                     >
                       <Icon size={18} strokeWidth={active ? 2 : 1.5} className="flex-shrink-0" />
-                      <span className="text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <span className={`text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}>
                         {item.label}
                       </span>
                     </Link>
@@ -387,7 +449,28 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                 return (
                   <div key={section.label}>
                     <button
-                      onClick={() => toggleSection(section.label)}
+                      onClick={() => {
+                        // On touch devices: expand sidebar + open THIS section + close others
+                        if (isTouchDevice) {
+                          setSidebarExpanded(true);
+                          // Close all sections first
+                          const allClosed = navSections.reduce(
+                            (acc, s) => ({
+                              ...acc,
+                              [s.label]: false,
+                            }),
+                            {}
+                          );
+                          // Then open only this section
+                          setExpandedSections({
+                            ...allClosed,
+                            [section.label]: true,
+                          });
+                        } else {
+                          // Desktop: just toggle section
+                          toggleSection(section.label);
+                        }
+                      }}
                       title={section.label}
                       className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 border overflow-hidden ${
                         hasActiveItem
@@ -397,12 +480,12 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                     >
                       <div className="flex items-center gap-3">
                         <SectionIcon size={18} strokeWidth={hasActiveItem ? 2 : 1.5} className="flex-shrink-0" />
-                        <span className="text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <span className={`text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}>
                           {section.label}
                         </span>
                       </div>
                       <svg
-                        className={`w-3 h-3 transition-all duration-200 opacity-0 group-hover:opacity-100 flex-shrink-0 ${isExpanded ? "rotate-180" : ""}`}
+                        className={`w-3 h-3 transition-all duration-200 flex-shrink-0 ${isExpanded ? "rotate-180" : ""} ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -416,8 +499,8 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                       </svg>
                     </button>
 
-                    {isExpanded && (
-                      <div className="mt-0.5 space-y-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {isExpanded && (!isTouchDevice || sidebarExpanded) && (
+                      <div className={`mt-0.5 space-y-0.5 ${isTouchDevice ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}>
                         {section.items
                           .filter((item) => !item.appKey || hasAppAccess(item.appKey))
                           .map((item) => {
@@ -464,7 +547,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                     strokeWidth={isActive(settingsNavItem.href) ? 2 : 1.5}
                     className="flex-shrink-0"
                   />
-                  <span className="text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className={`text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}>
                     {settingsNavItem.label}
                   </span>
                 </Link>
@@ -479,7 +562,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                 className="w-full flex items-center gap-3 px-3 py-2.5 text-white/40 hover:text-white/70 text-[10px] uppercase tracking-[0.15em] transition-all duration-200 hover:bg-white/[0.04] rounded-lg overflow-hidden"
               >
                 <LogOut size={18} strokeWidth={1.5} className="flex-shrink-0" />
-                <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className={`whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}>
                   Sign Out
                 </span>
               </button>
@@ -487,16 +570,16 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
           </aside>
         )}
 
-        {/* Main Content - FULL WIDTH on mobile/tablet and tv-menus, with sidebar on desktop */}
+        {/* Main Content - Always offset by sidebar (60px) */}
         <main
           suppressHydrationWarning
-          className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes("/tv-menus") ? "md:left-[60px]" : ""}`}
+          className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes("/tv-menus") ? "left-[60px]" : ""}`}
         >
           <div
             className={
               pathname?.includes("/tv-menus")
                 ? ""
-                : "px-4 md:px-6 lg:px-8 md:py-6 md:px-10 lg:px-12 xl:px-16 pt-4 pb-10"
+                : "px-4 md:px-6 lg:px-8 lg:py-6 lg:px-10 xl:px-12 2xl:px-16 pt-4 pb-10"
             }
           >
             {/* Page Title - Prominent and always visible */}
@@ -512,18 +595,6 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* Floating Mobile Menu Button - Bottom right */}
-      <button
-        onClick={() => setMobileMenuOpen(true)}
-        suppressHydrationWarning
-        className="md:hidden fixed bottom-6 right-6 z-[90] w-14 h-14 bg-white text-black rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
-        style={{
-          bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
-        }}
-      >
-        <Menu size={24} strokeWidth={2} />
-      </button>
-
       <VendorSupportChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <AIActivityMonitor />
     </>
@@ -532,5 +603,14 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
   // AppAuthProvider moved to root Providers - no longer duplicated here
-  return <VendorLayoutContent>{children}</VendorLayoutContent>;
+  // Layout version tag for debugging cache issues
+  const LAYOUT_VERSION = "2.1.0-tablet-sidebar";
+
+  return (
+    <>
+      {/* Hidden version tag for debugging */}
+      <meta name="vendor-layout-version" content={LAYOUT_VERSION} />
+      <VendorLayoutContent>{children}</VendorLayoutContent>
+    </>
+  );
 }

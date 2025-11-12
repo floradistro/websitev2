@@ -245,6 +245,11 @@ const nextConfig: NextConfig = {
             value: "camera=(self), microphone=(), geolocation=(self), payment=(self)",
           },
           { key: "Content-Security-Policy", value: ContentSecurityPolicy },
+          // CRITICAL: Prevent aggressive caching of HTML pages (fixes navbar caching bug)
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
         ],
       },
       {
