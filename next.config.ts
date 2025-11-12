@@ -277,15 +277,18 @@ const nextConfig: NextConfig = {
   },
 };
 
-// FIX #4: Only wrap with Sentry in production
+// FIX #4: Only wrap with Sentry in production AND if auth token is available
 const configWithAnalyzer = withBundleAnalyzer(nextConfig);
 
-export default isDev
+// Skip Sentry entirely if no auth token (prevents build retries)
+const hasSentryAuth = process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT;
+
+export default isDev || !hasSentryAuth
   ? configWithAnalyzer
   : withSentryConfig(configWithAnalyzer, {
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
-      silent: !process.env.SENTRY_AUTH_TOKEN,
+      silent: true,
       widenClientFileUpload: true,
       disableLogger: true,
     });
