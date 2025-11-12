@@ -16,7 +16,7 @@ export const WALLET_CONFIG = {
     // Path to Apple WWDR certificate
     wwdr:
       process.env.APPLE_WALLET_WWDR_PATH ||
-      "/Users/whale/Desktop/APPLE WALLET SHIT/AppleWWDRCAG4.cer",
+      "/Users/whale/Desktop/APPLE WALLET SHIT/AppleWWDRCAG4-correct.pem",
 
     // Password for the .p12 certificate
     signerKeyPassphrase: process.env.APPLE_WALLET_CERT_PASSWORD || "",
