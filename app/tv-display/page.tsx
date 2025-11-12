@@ -550,14 +550,19 @@ function TVDisplayContent() {
       let filteredProducts = enrichedProducts;
 
       // Priority 1: Use menu's configured categories
-      let selectedCategories = activeMenu?.config_data?.categories;
+      // CRITICAL FIX: Use the 'menu' parameter passed to this function, NOT activeMenu state!
+      let selectedCategories = menu?.config_data?.categories;
       let filterSource = "menu";
+
+      console.log("🔍 [FILTER DEBUG] menu (param):", menu?.name, menu?.id);
+      console.log("🔍 [FILTER DEBUG] menu.config_data:", menu?.config_data);
+      console.log("🔍 [FILTER DEBUG] selectedCategories from menu:", selectedCategories);
 
       // Priority 2: Fall back to display group categories if menu doesn't specify
       if (!selectedCategories || selectedCategories.length === 0) {
         selectedCategories = groupMember?.assigned_categories;
         filterSource = "group";
-      } else {
+        console.log("🔍 [FILTER DEBUG] Falling back to group categories:", selectedCategories);
       }
 
       if (selectedCategories && selectedCategories.length > 0) {
