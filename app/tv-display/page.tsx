@@ -987,7 +987,7 @@ function TVDisplayContent() {
       {/* Menu Content */}
       <div className="absolute inset-0 overflow-hidden p-4">
         <div className="h-full w-full flex flex-col">
-          {/* Category Header - Compact and always on top (hidden in split view) */}
+          {/* Category Header - Compact and always on top (hidden in split view and when subcategories exist) */}
           {(() => {
             // Use same category priority logic as product filtering
             // Priority 1: Menu categories, Priority 2: Group member categories
@@ -998,8 +998,13 @@ function TVDisplayContent() {
               new Set(categoriesRaw.map((cat: string) => cat.toLowerCase()))
             ).map((cat) => categoriesRaw.find((c: string) => c.toLowerCase() === cat) || cat);
 
+            // Check if products have subcategories - if so, hide main header
+            const { grouped } = groupProductsBySubcategory(products);
+            const hasSubcategories = grouped.size > 0;
+
             return (
               !isSplitView &&
+              !hasSubcategories &&
               displayCategories.length > 0 && (
                 <div className="text-center flex-shrink-0 mb-3">
                   <h1

@@ -69,12 +69,6 @@ export function MinimalProductCard({
     !visiblePriceBreaks || visiblePriceBreaks.length === 0
       ? [] // Show nothing by default
       : Object.keys(pricing_tiers)
-          .filter((tierId) => {
-            // Must be in the visible list and have a price
-            const tier = pricing_tiers[tierId];
-            const tierPrice = typeof tier === "object" ? tier.price : tier;
-            return visiblePriceBreaks.includes(tierId) && tierPrice;
-          })
           .map((tierId) => {
             const tier = pricing_tiers[tierId];
             const tierObj = typeof tier === "object" ? tier : { price: tier };
@@ -99,12 +93,29 @@ export function MinimalProductCard({
               label: displayLabel,
               price: parseFloat(tierObj.price),
               id: tierId,
+              tierLabel, // Keep original label for matching
             };
+          })
+          .filter((priceInfo) => {
+            // Check if either the ID or the label matches visiblePriceBreaks
+            const tierPrice = priceInfo.price;
+            return (
+              tierPrice &&
+              (visiblePriceBreaks.includes(priceInfo.id) ||
+                visiblePriceBreaks.includes(priceInfo.tierLabel))
+            );
           })
           // Sort by the order specified in visiblePriceBreaks
           .sort((a: any, b: any) => {
-            const indexA = visiblePriceBreaks.indexOf(a.id);
-            const indexB = visiblePriceBreaks.indexOf(b.id);
+            // Check both ID and label for sorting
+            const indexA = Math.max(
+              visiblePriceBreaks.indexOf(a.id),
+              visiblePriceBreaks.indexOf(a.tierLabel),
+            );
+            const indexB = Math.max(
+              visiblePriceBreaks.indexOf(b.id),
+              visiblePriceBreaks.indexOf(b.tierLabel),
+            );
             return indexA - indexB;
           });
 

@@ -32,7 +32,6 @@ export function ListProductCard({
   const availablePrices =
     visiblePriceBreaks.length > 0
       ? Object.keys(pricing_tiers)
-          .filter((key) => visiblePriceBreaks.includes(key))
           .map((key) => {
             const tier = pricing_tiers[key];
             const tierObj = typeof tier === "object" ? tier : { price: tier };
@@ -56,11 +55,26 @@ export function ListProductCard({
               id: key,
               price: parseFloat(tierObj.price),
               label: displayLabel,
+              tierLabel, // Keep original label for matching
             };
           })
+          .filter((priceInfo) => {
+            // Check if either the ID or the label matches visiblePriceBreaks
+            return (
+              visiblePriceBreaks.includes(priceInfo.id) ||
+              visiblePriceBreaks.includes(priceInfo.tierLabel)
+            );
+          })
           .sort((a, b) => {
-            const indexA = visiblePriceBreaks.indexOf(a.id);
-            const indexB = visiblePriceBreaks.indexOf(b.id);
+            // Check both ID and label for sorting
+            const indexA = Math.max(
+              visiblePriceBreaks.indexOf(a.id),
+              visiblePriceBreaks.indexOf(a.tierLabel),
+            );
+            const indexB = Math.max(
+              visiblePriceBreaks.indexOf(b.id),
+              visiblePriceBreaks.indexOf(b.tierLabel),
+            );
             return indexA - indexB;
           })
       : [];

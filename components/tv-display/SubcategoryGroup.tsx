@@ -44,6 +44,17 @@ export function SubcategoryGroup({
   const firstProduct = products[0];
   const pricingTiers = firstProduct?.pricing_tiers || {};
   const pricingBlueprint = firstProduct?.pricing_blueprint;
+
+  // Debug logging
+  console.log(`[SubcategoryGroup] ${subcategoryName}:`, {
+    productCount: products.length,
+    firstProduct: firstProduct?.name,
+    hasPricingTiers: Object.keys(pricingTiers).length > 0,
+    hasPricingBlueprint: !!pricingBlueprint,
+    visiblePriceBreaks,
+    pricingTiers,
+    priceBreaks: pricingBlueprint?.price_breaks,
+  });
   const priceBreaks = (pricingBlueprint?.price_breaks || []) as Array<{
     break_id: string;
     label: string;
@@ -57,24 +68,32 @@ export function SubcategoryGroup({
 
   // Filter to only show enabled pricing breaks that are in visiblePriceBreaks
   const enabledPrices = Object.entries(pricingTiers)
-    .filter(([breakId, breakData]: [string, any]) => {
-      const isEnabled = breakData?.enabled !== false;
-      const isVisible = visiblePriceBreaks.length === 0 || visiblePriceBreaks.includes(breakId);
-      return isEnabled && isVisible;
-    })
     .map(([breakId, breakData]: [string, any]) => {
       const priceBreak = priceBreakMap.get(breakId);
       const tierData = typeof breakData === "object" ? breakData : { price: breakData };
 
       // Use tier data first (from pricing_data), then fall back to blueprint
+      const label = tierData.label || priceBreak?.label || breakId;
+
       return {
         breakId,
-        label: tierData.label || priceBreak?.label || breakId,
+        label,
         qty: tierData.quantity || priceBreak?.qty || 1,
         unit: tierData.unit || priceBreak?.unit || "",
         price: tierData.price || breakData.price,
         sortOrder: tierData.sort_order || priceBreak?.sort_order || 999,
+        enabled: breakData?.enabled !== false,
       };
+    })
+    .filter((priceInfo) => {
+      const isEnabled = priceInfo.enabled;
+      // Check if either the ID or the label matches visiblePriceBreaks
+      // Empty array means show all
+      const isVisible =
+        visiblePriceBreaks.length === 0 ||
+        visiblePriceBreaks.includes(priceInfo.breakId) ||
+        visiblePriceBreaks.includes(priceInfo.label);
+      return isEnabled && isVisible;
     })
     .sort((a, b) => {
       // Sort by sort_order from price breaks
