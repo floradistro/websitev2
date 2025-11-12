@@ -1,0 +1,153 @@
+/**
+ * Android PWA Fullscreen Mode CSS
+ * CRITICAL: These styles ensure true fullscreen mode on Android tablets
+ *
+ * Problem: Android tablets show navigation bar or have viewport issues in PWA mode
+ * Solution: Force proper viewport handling and hide system UI
+ */
+
+/* Android PWA Detection - Apply styles only when running as installed PWA */
+@media (display-mode: fullscreen), (display-mode: standalone) {
+  /* Android-specific fullscreen fixes */
+  html {
+    /* Force viewport to use full screen height including navigation bar area */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height - includes/excludes nav bar as user scrolls */
+    width: 100vw;
+    width: 100dvw;
+    position: fixed;
+    overflow: hidden;
+  }
+
+  body {
+    /* Ensure body takes full viewport */
+    height: 100vh;
+    height: 100dvh;
+    width: 100vw;
+    width: 100dvw;
+    position: fixed;
+    overflow: hidden;
+    /* Android Chrome - prevent overscroll */
+    overscroll-behavior: none;
+  }
+
+  /* Root app container - ensure proper fullscreen layout */
+  #__next,
+  #root {
+    height: 100vh;
+    height: 100dvh;
+    width: 100vw;
+    width: 100dvw;
+    overflow: auto;
+    /* Hide Android's pull-to-refresh in PWA mode */
+    overscroll-behavior-y: contain;
+  }
+
+  /* Android - Hide address bar on scroll */
+  @supports (-webkit-touch-callout: none) {
+    /* This is not iOS, so apply Android-specific fixes */
+    html {
+      /* Use large viewport height to ensure content extends under nav bar */
+      min-height: 100lvh; /* Large viewport height */
+    }
+  }
+
+  /* Force immersive mode on Android */
+  @supports not (-webkit-touch-callout: none) {
+    /* Android-specific: Force content to fill screen */
+    :root {
+      /* Android Safe Area Insets (if supported) */
+      --android-safe-inset-top: env(safe-area-inset-top, 0px);
+      --android-safe-inset-bottom: env(safe-area-inset-bottom, 0px);
+      --android-safe-inset-left: env(safe-area-inset-left, 0px);
+      --android-safe-inset-right: env(safe-area-inset-right, 0px);
+    }
+
+    /* Utility classes for Android safe areas */
+    .android-safe-top {
+      padding-top: var(--android-safe-inset-top);
+    }
+
+    .android-safe-bottom {
+      padding-bottom: var(--android-safe-inset-bottom);
+    }
+
+    /* Prevent Android navigation bar from obscuring content */
+    .android-fullscreen-container {
+      height: 100dvh;
+      padding-bottom: var(--android-safe-inset-bottom);
+    }
+  }
+}
+
+/* Android Chrome PWA - Hide system UI in fullscreen */
+@media (display-mode: fullscreen) {
+  html,
+  body {
+    /* Force hide navigation bar and status bar */
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Prevent bouncing/elastic scrolling on Android */
+  body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Android tablet landscape mode optimization */
+@media (orientation: landscape) and (min-width: 768px) {
+  html,
+  body {
+    /* Ensure proper fullscreen in landscape */
+    height: 100vh;
+    height: 100dvh;
+  }
+}
+
+/* Android - Prevent zoom on input focus */
+@media (max-width: 1024px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; /* Prevents zoom on Android */
+  }
+}
+
+/* Debug helper - shows green border when Android PWA mode is active */
+@media (display-mode: fullscreen), (display-mode: standalone) {
+  body::before {
+    content: "PWA Fullscreen Active";
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 255, 0, 0.8);
+    color: black;
+    padding: 4px 12px;
+    font-size: 10px;
+    z-index: 999999;
+    border-radius: 0 0 8px 8px;
+    pointer-events: none;
+    opacity: 0;
+    animation: debug-flash 3s ease-in-out;
+  }
+}
+
+@keyframes debug-flash {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

@@ -3,12 +3,12 @@
   "short_name": "WhaleTools",
   "description": "Multi-Tenant Commerce Platform - Vendor Dashboard, POS & TV Display",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "any",
   "scope": "/",
-  "display_override": ["standalone", "fullscreen"],
+  "display_override": ["fullscreen", "standalone"],
   "icons": [
     {
       "src": "/yacht-club-logo.png",

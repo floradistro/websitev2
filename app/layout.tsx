@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
+import "./pwa-android-fullscreen.css"; // CRITICAL: Android tablet fullscreen mode
 import NotificationToast from "@/components/NotificationToast";
 import LoadingBar from "@/components/LoadingBar";
 import InstallPWAPrompt from "@/components/InstallPWAPrompt";
@@ -26,8 +27,11 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover",
-  themeColor: "#000000",
+  viewportFit: "cover", // Critical for fullscreen on notched devices
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#000000" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -84,12 +88,22 @@ export default function RootLayout({
     >
       <head>
         {process.env.NODE_ENV === "development" && <script src="/sw-killer.js" />}
-        <meta name="mobile-web-app-capable" content="yes" />
+
+        {/* PWA Meta Tags - iOS */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="WhaleTools" />
         <link rel="apple-touch-icon" href="/yacht-club-logo.png" />
         <link rel="apple-touch-startup-image" href="/yacht-club-logo.png" />
+
+        {/* PWA Meta Tags - Android - CRITICAL FOR FULLSCREEN */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="WhaleTools" />
+        <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#000000" media="(prefers-color-scheme: light)" />
+
+        {/* Android Chrome - Force fullscreen immersive mode */}
+        <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}
