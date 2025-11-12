@@ -999,7 +999,9 @@ function WalletTab({
                         </div>
                         <div className="flex justify-between text-xs">
                           <span className="text-white/40">Tier</span>
-                          <span className="text-yellow-400">Gold</span>
+                          <span className="text-yellow-400">
+                            {testCustomers.find(c => c.id === selectedCustomer)?.loyalty_tier || "Bronze"}
+                          </span>
                         </div>
                       </div>
 
@@ -1028,7 +1030,7 @@ function WalletTab({
                   </div>
                   <div className="p-4 bg-white rounded-lg">
                     <QRCodeSVG
-                      value={`${process.env.NEXT_PUBLIC_APP_URL || ""}/api/customer/wallet-pass?customer_id=${selectedCustomer}&vendor_id=${vendor.id}`}
+                      value={`${typeof window !== 'undefined' ? window.location.origin : 'https://whaletools.dev'}/api/customer/wallet-pass?customer_id=${selectedCustomer}&vendor_id=${vendor.id}`}
                       size={200}
                       level="M"
                       includeMargin={false}
