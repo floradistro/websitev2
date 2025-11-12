@@ -1003,7 +1003,8 @@ export default function SimpleTVMenusPage() {
             {devices.map((device) => {
               const assignedMenu = menus.find((m) => m.id === device.active_menu_id);
 
-              // Determine actual orientation from device
+              // Determine actual orientation from device (fallback to landscape for now)
+              // TODO: Add screen_orientation column to database
               const isPortrait = device.screen_orientation === "portrait";
               const aspectRatio = isPortrait ? "9/16" : "16/9";
               const iframeWidth = isPortrait ? 1080 : 1920;

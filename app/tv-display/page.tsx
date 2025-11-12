@@ -221,10 +221,6 @@ function TVDisplayContent() {
           // Device exists, just update its status
           const existing = existingDevices[0];
 
-          // Detect orientation
-          const orientation =
-            window.screen.height > window.screen.width ? "portrait" : "landscape";
-
           const { data: device, error } = await supabase
             .from("tv_devices")
             .update({
@@ -234,7 +230,6 @@ function TVDisplayContent() {
               last_heartbeat_at: new Date().toISOString(),
               user_agent: navigator.userAgent,
               screen_resolution: `${window.screen.width}x${window.screen.height}`,
-              screen_orientation: orientation,
               browser_info: {
                 platform: navigator.platform,
                 language: navigator.language,
@@ -250,10 +245,6 @@ function TVDisplayContent() {
           setConnectionStatus("online");
         } else {
           // New device, create it
-          // Detect orientation
-          const orientation =
-            window.screen.height > window.screen.width ? "portrait" : "landscape";
-
           const deviceData: any = {
             device_identifier: crypto.randomUUID(),
             vendor_id: vendorId,
@@ -265,7 +256,6 @@ function TVDisplayContent() {
             last_heartbeat_at: new Date().toISOString(),
             user_agent: navigator.userAgent,
             screen_resolution: `${window.screen.width}x${window.screen.height}`,
-            screen_orientation: orientation,
             browser_info: {
               platform: navigator.platform,
               language: navigator.language,
