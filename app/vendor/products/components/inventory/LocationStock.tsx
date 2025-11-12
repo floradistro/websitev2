@@ -50,7 +50,10 @@ export function LocationStock({
 
   const handleClearStock = async () => {
     if (confirm(`Set ${locationName} stock to 0g?`)) {
-      await onAdjust(productId, locationId, inventoryId, -quantity);
+      // Use precise calculation to avoid floating point issues
+      // Always set to exactly 0 by subtracting the exact current quantity
+      const preciseAdjustment = -parseFloat(quantity.toString());
+      await onAdjust(productId, locationId, inventoryId, preciseAdjustment);
     }
   };
 

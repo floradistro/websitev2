@@ -216,6 +216,7 @@ const nextConfig: NextConfig = {
       base-uri 'self';
       form-action 'self';
       frame-ancestors 'self';
+      frame-src 'self' https://accept.authorize.net https://test.authorize.net https://vercel.live;
       connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.openai.com wss://*.supabase.co;
       worker-src 'self' blob:;
       media-src 'self' blob: data: mediastream:;

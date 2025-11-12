@@ -144,9 +144,11 @@ export async function POST(request: NextRequest) {
     const adjustmentAmount = parseFloat(adjustment);
     const newQty = currentQty + adjustmentAmount;
 
-    // Use a small epsilon to handle floating point precision issues
-    // e.g., 0.8 - 0.8 might be -0.0000000001 instead of exactly 0
-    if (newQty < -0.001) {
+    // Use a larger epsilon to handle floating point precision issues and rounding
+    // e.g., display shows 2.00g (rounded) but DB has 1.995g
+    // User tries to zero out: 1.995 + (-2.00) = -0.005g
+    // We allow up to -0.1g tolerance to handle these cases
+    if (newQty < -0.1) {
       return NextResponse.json(
         {
           error: "Cannot reduce inventory below 0",
@@ -155,7 +157,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Clamp to 0 if we're within epsilon of 0 (handles floating point errors)
+    // Clamp to 0 if we're within epsilon of 0 (handles floating point errors and small negatives)
     const finalQty = newQty < 0 ? 0 : newQty;
 
     // ATOMIC TRANSACTION: Update inventory + create transaction record in one go
