@@ -550,7 +550,7 @@ function TVDisplayContent() {
       let filteredProducts = enrichedProducts;
 
       // Priority 1: Use menu's configured categories
-      let selectedCategories = menu?.config_data?.categories;
+      let selectedCategories = activeMenu?.config_data?.categories;
       let filterSource = "menu";
 
       // Priority 2: Fall back to display group categories if menu doesn't specify
