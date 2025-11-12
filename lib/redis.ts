@@ -8,11 +8,31 @@
 import { Redis } from "@upstash/redis";
 import { logger } from "./logger";
 
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+// Lazy-initialize Redis client (don't connect during build)
+let redisInstance: Redis | null = null;
+
+function getRedis(): Redis {
+  if (!redisInstance) {
+    const url = process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+    if (!url || !token) {
+      logger.warn("Redis credentials not configured - caching disabled");
+      // Return a mock Redis client that does nothing
+      redisInstance = {
+        get: async () => null,
+        set: async () => "OK",
+        del: async () => 0,
+        keys: async () => [],
+        ping: async () => "PONG",
+      } as any;
+      return redisInstance;
+    }
+
+    redisInstance = new Redis({ url, token });
+  }
+  return redisInstance;
+}
 
 // Cache TTL presets (in seconds)
 export const CacheTTL = {
@@ -40,7 +60,7 @@ export const CachePrefix = {
  */
 export async function cacheGet<T>(key: string): Promise<T | null> {
   try {
-    const data = await redis.get<T>(key);
+    const data = await getRedis().get<T>(key);
 
     if (data) {
       logger.debug(`Cache hit: ${key}`);
@@ -64,7 +84,7 @@ export async function cacheSet<T>(
   ttl: number = CacheTTL.MEDIUM,
 ): Promise<void> {
   try {
-    await redis.set(key, value, { ex: ttl });
+    await getRedis().set(key, value, { ex: ttl });
     logger.debug(`Cache set: ${key} (TTL: ${ttl}s)`);
   } catch (error) {
     logger.error(`Redis SET error for key ${key}`, error as Error);
@@ -77,7 +97,7 @@ export async function cacheSet<T>(
  */
 export async function cacheDel(key: string): Promise<void> {
   try {
-    await redis.del(key);
+    await getRedis().del(key);
     logger.debug(`Cache deleted: ${key}`);
   } catch (error) {
     logger.error(`Redis DEL error for key ${key}`, error as Error);
@@ -89,14 +109,14 @@ export async function cacheDel(key: string): Promise<void> {
  */
 export async function cacheDelPattern(pattern: string): Promise<number> {
   try {
-    const keys = await redis.keys(pattern);
+    const keys = await getRedis().keys(pattern);
 
     if (keys.length === 0) {
       logger.debug(`No keys found matching pattern: ${pattern}`);
       return 0;
     }
 
-    await redis.del(...keys);
+    await getRedis().del(...keys);
     logger.info(`Invalidated ${keys.length} cache keys matching: ${pattern}`);
     return keys.length;
   } catch (error) {
@@ -195,9 +215,9 @@ export const CacheInvalidation = {
    */
   async all(): Promise<void> {
     logger.warn("Clearing ALL cache - this should be rare!");
-    const keys = await redis.keys("*");
+    const keys = await getRedis().keys("*");
     if (keys.length > 0) {
-      await redis.del(...keys);
+      await getRedis().del(...keys);
       logger.info(`Cleared ${keys.length} cache keys`);
     }
   },
@@ -208,7 +228,7 @@ export const CacheInvalidation = {
  */
 export async function redisHealthCheck(): Promise<boolean> {
   try {
-    await redis.ping();
+    await getRedis().ping();
     return true;
   } catch (error) {
     logger.error("Redis health check failed", error as Error);
@@ -216,5 +236,5 @@ export async function redisHealthCheck(): Promise<boolean> {
   }
 }
 
-// Export Redis client for advanced use cases
-export { redis };
+// Export Redis getter for advanced use cases
+export { getRedis as getRedisClient };
