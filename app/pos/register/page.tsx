@@ -183,7 +183,47 @@ export default function POSRegisterPage() {
   };
 
   const handleOpenDrawerSubmit = async (openingCash: number, notes: string) => {
+    // Prevent concurrent requests
+    if (processing) return;
+
     try {
+      setProcessing(true);
+
+      // DIAGNOSTIC: Double-check for any existing open sessions before creating
+      const { data: existingCheck } = await supabase
+        .from("pos_sessions")
+        .select("id, session_number, status")
+        .eq("register_id", registerId)
+        .eq("status", "open")
+        .maybeSingle();
+
+      if (existingCheck) {
+        const shouldClose = confirm(
+          `⚠️ Detected Open Session\n\nSession: ${existingCheck.session_number}\n\n` +
+            `An open session exists for this register. This should have been detected earlier.\n\n` +
+            `Click OK to force-close it and create a new session, or Cancel to join the existing session.`,
+        );
+
+        if (!shouldClose) {
+          // Join the existing session
+          setSessionId(existingCheck.id);
+          setShowOpenDrawerModal(false);
+          setProcessing(false);
+          return;
+        }
+
+        // Force-close the existing session
+        await fetch("/api/pos/sessions/close", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId: existingCheck.id,
+            closingCash: 0,
+            closingNotes: "Force-closed due to stuck session",
+          }),
+        });
+      }
+
       const response = await fetch("/api/pos/sessions/open", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -201,13 +241,29 @@ export default function POSRegisterPage() {
         setShowOpenDrawerModal(false);
       } else {
         const error = await response.json();
-        alert(error.error || "Failed to start session");
+        // Show detailed error message to help diagnose issues
+        const errorMsg = error.details
+          ? `${error.error}\n\n${error.details}`
+          : error.error || "Failed to start session";
+        alert(`❌ Failed to Create Session\n\n${errorMsg}\n\n[Status: ${response.status}]`);
+
+        // Log full error for debugging
+        if (process.env.NODE_ENV === "development") {
+          logger.error("Session creation failed:", {
+            status: response.status,
+            error,
+            registerId,
+            locationId: selectedLocation?.id,
+          });
+        }
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error starting session:", error);
       }
-      alert("Failed to start session");
+      alert(`❌ Failed to Start Session\n\nNetwork or system error occurred.\n\nDetails: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setProcessing(false);
     }
   };
 
