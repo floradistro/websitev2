@@ -890,7 +890,7 @@ function TVDisplayContent() {
       <div
         className="w-screen h-screen flex items-center justify-center"
         style={{
-          background: loadingTheme.styles.background,
+          backgroundColor: loadingTheme.styles.background,
           backgroundImage: loadingTheme.styles.backgroundImage,
           backgroundSize: loadingTheme.styles.backgroundSize,
           animation: loadingTheme.styles.animation,
@@ -958,7 +958,7 @@ function TVDisplayContent() {
       transition={{ duration: 0.8 }}
       className="w-screen h-screen overflow-hidden relative"
       style={{
-        background: theme.styles.background,
+        backgroundColor: theme.styles.background,
         backgroundImage: theme.styles.backgroundImage,
         backgroundSize: theme.styles.backgroundSize,
         animation: theme.styles.animation,
