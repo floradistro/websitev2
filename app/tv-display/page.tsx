@@ -561,12 +561,17 @@ function TVDisplayContent() {
       }
 
       if (selectedCategories && selectedCategories.length > 0) {
-        // Debug: show what categories each product has
+        console.log("🔍 [PRODUCT FILTER] Filtering by categories:", selectedCategories);
+        console.log("🔍 [PRODUCT FILTER] Total products before filter:", enrichedProducts.length);
+
+        // Debug: show what categories products have
         if (enrichedProducts.length > 0) {
-          enrichedProducts.slice(0, 5).forEach((p: any) => {
-            const categoryName = p.primary_category?.name || null;
-            const parentCategoryName = p.primary_category?.parent_category?.name || null;
+          const categoryCounts = new Map<string, number>();
+          enrichedProducts.forEach((p: any) => {
+            const catName = p.primary_category?.name || "NO_CATEGORY";
+            categoryCounts.set(catName, (categoryCounts.get(catName) || 0) + 1);
           });
+          console.log("🔍 [PRODUCT FILTER] Available categories:", Object.fromEntries(categoryCounts));
         }
 
         filteredProducts = enrichedProducts.filter((p: any) => {
@@ -578,12 +583,12 @@ function TVDisplayContent() {
           const parentMatch = parentCategoryName && selectedCategories.includes(parentCategoryName);
           const matches = directMatch || parentMatch;
 
-          if (!matches && (categoryName || parentCategoryName)) {
-          }
-
           return matches;
         });
+
+        console.log("🔍 [PRODUCT FILTER] Products after filter:", filteredProducts.length);
       } else {
+        console.log("🔍 [PRODUCT FILTER] No category filter - showing all products");
       }
 
       // Filter by pricing tier if configured
@@ -929,10 +934,17 @@ function TVDisplayContent() {
   const themeId = themeOverride || activeMenu.theme || displayGroup?.shared_theme;
   const theme = getTheme(themeId);
 
-  // Log theme selection for debugging
-  if (themeOverride) {
-    console.log("🎨 [TV-DISPLAY] Using theme override from URL:", themeOverride);
-  }
+  // Comprehensive theme debugging
+  console.log("🎨 [TV-DISPLAY] Theme Resolution:", {
+    themeOverride,
+    menuTheme: activeMenu?.theme,
+    groupTheme: displayGroup?.shared_theme,
+    finalThemeId: themeId,
+    themeFound: !!theme,
+    themeName: theme?.name,
+    hasAnimation: !!theme?.styles?.animation,
+    hasBackgroundSize: !!theme?.styles?.backgroundSize,
+  });
 
   // Check if split view mode
   const layoutStyle = activeMenu?.config_data?.layoutStyle || "single";
@@ -949,6 +961,8 @@ function TVDisplayContent() {
       style={{
         background: theme.styles.background,
         backgroundImage: theme.styles.backgroundImage,
+        backgroundSize: theme.styles.backgroundSize,
+        animation: theme.styles.animation,
         padding:
           "env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)",
         // Zoom-independent rendering: Use CSS transform scale based on viewport size
