@@ -591,21 +591,8 @@ function TVDisplayContent() {
         console.log("🔍 [PRODUCT FILTER] No category filter - showing all products");
       }
 
-      // Filter by pricing tier if configured
-      if (displayGroup?.pricing_tier_id) {
-        const beforeFilterCount = filteredProducts.length;
-
-        // Filter to only show products with this pricing tier
-        filteredProducts = filteredProducts.filter(
-          (p: any) => p.pricing_blueprint?.id === displayGroup.pricing_tier_id,
-        );
-
-        if (filteredProducts.length === 0) {
-          if (process.env.NODE_ENV === "development") {
-            logger.warn(`⚠️ No products match pricing tier "${displayGroup.pricing_tier_id}"`);
-          }
-        }
-      }
+      // NOTE: Blueprint pricing removed - we now only use tiered pricing via meta_data->pricing_tiers
+      // Old pricing_blueprint_id filtering has been removed
 
       setProducts(filteredProducts);
 

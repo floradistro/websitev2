@@ -10,7 +10,7 @@
 export type { TVTheme } from "./types";
 
 // Export theme collections
-export { themes, appleThemes, luxuryThemes, premiumThemes } from "./collections";
+export { themes, appleThemes, ios18Themes } from "./collections";
 
 // Export utility functions
 export { getTheme, getDefaultTheme } from "./utils";
