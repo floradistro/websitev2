@@ -73,14 +73,39 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
       setIsScanning(true);
       processingRef.current = false;
 
-      // Request rear camera
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { exact: "environment" },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-      });
+      let stream: MediaStream | null = null;
+
+      // ANDROID FIX: Try rear camera first with "ideal" (not "exact") to allow fallback
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" }, // CHANGED: ideal allows fallback
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+        });
+      } catch (rearCamError) {
+        console.warn("Rear camera failed, trying any camera:", rearCamError);
+
+        // ANDROID FIX: Fallback to ANY camera without facingMode constraint
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+            },
+          });
+        } catch (anyCamError) {
+          // ANDROID FIX: Last resort - minimal constraints
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+          });
+        }
+      }
+
+      if (!stream) {
+        throw new Error("Could not access camera");
+      }
 
       streamRef.current = stream;
 
@@ -103,11 +128,16 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
 
       let errorMessage = "Failed to access camera";
       if (err.name === "NotAllowedError") {
-        errorMessage = "Camera permission denied. Please allow camera access.";
+        errorMessage = "Camera permission denied. Please allow camera access in Settings.";
       } else if (err.name === "NotFoundError") {
         errorMessage = "No camera found on this device.";
       } else if (err.name === "NotReadableError") {
         errorMessage = "Camera is already in use by another application.";
+      } else if (err.name === "OverconstrainedError") {
+        errorMessage = "Camera constraints not supported. Trying fallback...";
+        // Auto-retry with minimal constraints
+        setTimeout(() => startScanning(), 500);
+        return;
       } else if (err.message) {
         errorMessage = `Camera error: ${err.message}`;
       }
