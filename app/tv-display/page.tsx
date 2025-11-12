@@ -886,12 +886,17 @@ function TVDisplayContent() {
     const loadingThemeId = themeOverride || null;
     const loadingTheme = getTheme(loadingThemeId);
 
+    // Determine if background is gradient or solid color
+    const isGradient = loadingTheme.styles.background?.includes('gradient');
+
     return (
       <div
         className="w-screen h-screen flex items-center justify-center"
         style={{
-          backgroundColor: loadingTheme.styles.background,
-          backgroundImage: loadingTheme.styles.backgroundImage,
+          // Use backgroundImage for gradients, backgroundColor for solid colors
+          ...(isGradient
+            ? { backgroundImage: loadingTheme.styles.background }
+            : { backgroundColor: loadingTheme.styles.background }),
           backgroundSize: loadingTheme.styles.backgroundSize,
           animation: loadingTheme.styles.animation,
           padding:
@@ -949,6 +954,9 @@ function TVDisplayContent() {
   const layoutStyle = activeMenu?.config_data?.layoutStyle || "single";
   const isSplitView = layoutStyle === "split";
 
+  // Determine if background is gradient or solid color
+  const isGradient = theme.styles.background?.includes('gradient');
+
   // Render Menu
   return (
     <motion.div
@@ -958,8 +966,10 @@ function TVDisplayContent() {
       transition={{ duration: 0.8 }}
       className="w-screen h-screen overflow-hidden relative"
       style={{
-        backgroundColor: theme.styles.background,
-        backgroundImage: theme.styles.backgroundImage,
+        // Use backgroundImage for gradients, backgroundColor for solid colors
+        ...(isGradient
+          ? { backgroundImage: theme.styles.background }
+          : { backgroundColor: theme.styles.background }),
         backgroundSize: theme.styles.backgroundSize,
         animation: theme.styles.animation,
         padding:
