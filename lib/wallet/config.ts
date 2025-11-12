@@ -8,18 +8,23 @@ export const WALLET_CONFIG = {
 
   // Certificate Paths (relative to project root)
   certificates: {
-    // Path to your Certificates.p12 file
+    // Path to extracted certificate PEM file
     signerCert:
       process.env.APPLE_WALLET_CERT_PATH ||
-      "/Users/whale/Desktop/APPLE WALLET SHIT/Certificates.p12",
+      "/Users/whale/Desktop/APPLE WALLET SHIT/cert-final.pem",
+
+    // Path to extracted private key PEM file
+    signerKey:
+      process.env.APPLE_WALLET_KEY_PATH ||
+      "/Users/whale/Desktop/APPLE WALLET SHIT/key-final.pem",
 
     // Path to Apple WWDR certificate
     wwdr:
       process.env.APPLE_WALLET_WWDR_PATH ||
       "/Users/whale/Desktop/APPLE WALLET SHIT/AppleWWDRCAG4-correct.pem",
 
-    // Password for the .p12 certificate
-    signerKeyPassphrase: process.env.APPLE_WALLET_CERT_PASSWORD || "",
+    // Password for the key (library requires non-empty value even for unencrypted PEM)
+    signerKeyPassphrase: process.env.APPLE_WALLET_CERT_PASSWORD || "whaletools",
   },
 
   // Default Pass Styling

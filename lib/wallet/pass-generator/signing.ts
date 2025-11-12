@@ -20,48 +20,16 @@ export interface PassCertificates {
 export function loadCertificates(): PassCertificates {
   const certPassword = WALLET_CONFIG.certificates.signerKeyPassphrase;
 
-  // PRODUCTION MODE: Check for base64-encoded env variables first
-  const wwdrBase64 = process.env.APPLE_WALLET_WWDR_BASE64;
-  const certBase64 = process.env.APPLE_WALLET_CERT_BASE64;
-
-  if (wwdrBase64 && certBase64) {
-    // Decode from base64
-    const wwdr = Buffer.from(wwdrBase64, "base64");
-    const signerCert = Buffer.from(certBase64, "base64");
-    const signerKey = signerCert; // P12 contains both cert and key
-
-    return {
-      wwdr,
-      signerCert,
-      signerKey,
-      signerKeyPassphrase: certPassword,
-    };
-  }
-
-  // DEVELOPMENT MODE: Fall back to file paths
+  // ALWAYS use file paths for now (BASE64 versions are corrupted)
+  // TODO: Fix BASE64 encoded certificates for production deployment
   const certPath = WALLET_CONFIG.certificates.signerCert;
+  const keyPath = WALLET_CONFIG.certificates.signerKey;
   const wwdrPath = WALLET_CONFIG.certificates.wwdr;
 
-  // Read WWDR certificate
+  // Read certificates as PEM files
   const wwdr = fs.readFileSync(wwdrPath);
-
-  // Check for separate PEM files or P12
-  const certDir = path.dirname(certPath);
-  const certPemPath = path.join(certDir, "cert.pem");
-  const keyPemPath = path.join(certDir, "key.pem");
-
-  let signerCert: Buffer;
-  let signerKey: Buffer;
-
-  if (fs.existsSync(certPemPath) && fs.existsSync(keyPemPath)) {
-    // Use separate PEM files (more secure)
-    signerCert = fs.readFileSync(certPemPath);
-    signerKey = fs.readFileSync(keyPemPath);
-  } else {
-    // Use P12 file (cert and key combined)
-    signerCert = fs.readFileSync(certPath);
-    signerKey = signerCert;
-  }
+  const signerCert = fs.readFileSync(certPath);
+  const signerKey = fs.readFileSync(keyPath);
 
   return {
     wwdr,
