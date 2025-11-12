@@ -26,7 +26,6 @@
 
 - **[AI_GENERATION_STUDIO_ROADMAP.md](./AI_GENERATION_STUDIO_ROADMAP.md)** - AI image generation features
 - **[POSITIONING_BEST_PRACTICES.md](./POSITIONING_BEST_PRACTICES.md)** - UI positioning guidelines
-- **[ALPINE_PHASE_OUT_PLAN.md](./ALPINE_PHASE_OUT_PLAN.md)** - Alpine.js migration plan
 
 ## 📚 Historical Context
 

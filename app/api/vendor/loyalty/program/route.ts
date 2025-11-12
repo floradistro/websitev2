@@ -29,11 +29,33 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch program" }, { status: 500 });
     }
 
-    return NextResponse.json({ program: program || null });
+    // If no program exists, return defaults
+    if (!program) {
+      return NextResponse.json({
+        program: {
+          name: "Loyalty Rewards",
+          points_per_dollar: 1,
+          point_value: 0.01,
+          min_redemption_points: 100,
+          points_expiry_days: 365,
+          is_active: true,
+        },
+      });
+    }
+
+    return NextResponse.json({ program });
   } catch (error) {
     logger.error("Loyalty program fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+}
+
+/**
+ * POST /api/vendor/loyalty/program
+ * Create or update loyalty program settings
+ */
+export async function POST(request: NextRequest) {
+  return PUT(request);
 }
 
 /**

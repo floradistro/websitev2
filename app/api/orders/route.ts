@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/middleware";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { isStockAvailable } from "@/lib/unit-conversion";
-import { AlpineIQClient } from "@/lib/marketing/alpineiq-client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -16,113 +15,6 @@ const getBaseUrl = () => {
   }
   return "http://localhost:3000";
 };
-
-// ============================================================================
-// ALPINE IQ SYNC HELPER
-// ============================================================================
-/**
- * Sync order to Alpine IQ for loyalty points (async, non-blocking)
- */
-async function syncOrderToAlpineIQ(orderId: string, customerId: string) {
-  const supabase = getServiceSupabase();
-
-  // Get customer info
-  const { data: customer } = await supabase
-    .from("customers")
-    .select("*")
-    .eq("id", customerId)
-    .single();
-
-  if (!customer) {
-    throw new Error("Customer not found");
-  }
-
-  // Get order with items and product details
-  const { data: order } = await supabase
-    .from("orders")
-    .select(
-      `
-      *,
-      order_items (
-        *,
-        products (
-          name,
-          sku,
-          category,
-          brand,
-          cannabis_type,
-          thc_percentage
-        )
-      )
-    `,
-    )
-    .eq("id", orderId)
-    .single();
-
-  if (!order) {
-    throw new Error("Order not found");
-  }
-
-  // Format items for Alpine IQ
-  const items = (order.order_items || []).map((item: any) => ({
-    sku: item.products?.sku || item.product_id || "UNKNOWN",
-    size: item.quantity_display || `${item.quantity}`,
-    category: item.products?.category || "MISC",
-    brand: item.products?.brand || "",
-    name: item.products?.name || item.product_name || "Product",
-    species: item.products?.cannabis_type || "",
-    price: parseFloat(item.unit_price || 0),
-    discount: 0,
-    quantity: parseInt(item.quantity || 1),
-    customAttributes: item.products?.thc_percentage
-      ? [
-          {
-            key: "THC",
-            value: `${item.products.thc_percentage}%`,
-          },
-        ]
-      : [],
-  }));
-
-  // Get location
-  const { data: location } = await supabase
-    .from("locations")
-    .select("name")
-    .eq("id", order.location_id)
-    .single();
-
-  // Format transaction date for Alpine IQ
-  const transactionDate =
-    new Date(order.created_at || order.order_date).toISOString().replace("T", " ").split(".")[0] +
-    " +0000";
-
-  // Initialize Alpine IQ client
-  const alpine = new AlpineIQClient({
-    apiKey:
-      process.env.ALPINE_API_KEY || "U_SKZShKgmfH1U5CyIBsH0OcNQnWkOcx4oUNMZcq8BFtOiWFEMRPmB6Iqw",
-    userId: process.env.ALPINE_USER_ID || "3999",
-  });
-
-  // Push to Alpine IQ
-  await alpine.createSale({
-    member: {
-      email: customer.email,
-      mobilePhone: customer.phone || undefined,
-      firstName: customer.first_name || undefined,
-      lastName: customer.last_name || undefined,
-    },
-    visit: {
-      pos_id: order.id,
-      pos_user: customer.email,
-      pos_type: order.order_type === "delivery" ? "online" : "in-store",
-      transaction_date: transactionDate,
-      location: location?.name || "Main Store",
-      visit_details_attributes: items,
-      transaction_total: parseFloat(order.total_amount),
-      send_notification: false,
-    },
-  });
-}
 
 export async function GET(request: NextRequest) {
   // SECURITY: Require authentication
@@ -452,16 +344,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================================
-    // STEP 5: Sync to Alpine IQ (async, non-blocking)
-    // ============================================================================
-    // Push order to Alpine IQ for loyalty points (don't await - let it run in background)
-    syncOrderToAlpineIQ(order.id, customer_id).catch((error) => {
-      const err = toError(error);
-      logger.error("⚠️ Alpine IQ sync failed (order still created):", err.message);
-    });
-
-    // ============================================================================
-    // STEP 6: Return complete order
+    // STEP 5: Return complete order
     // ============================================================================
 
     return NextResponse.json({

@@ -231,7 +231,6 @@ export default function PricingPage() {
               <div className="space-y-4 mb-6">
                 {[
                   { name: "Cova POS", cost: 1200 },
-                  { name: "Alpine IQ", cost: 1800 },
                   { name: "Shopify", cost: 600 },
                   { name: "Dutchie", cost: 500 },
                 ].map((item) => (

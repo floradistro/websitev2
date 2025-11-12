@@ -17,15 +17,11 @@ const supabase = createClient(
 /**
  * GET /api/customer/wallet-pass?customer_id=xxx&vendor_id=xxx
  * Generate and download Apple Wallet pass for customer
+ *
+ * PUBLIC ENDPOINT - No auth required (for QR code scanning)
  */
 export async function GET(request: NextRequest) {
-  
-  // SECURITY: Require customer authentication
-  const authResult = await requireCustomer(request);
-  if (authResult instanceof NextResponse) {
-    return authResult;
-  }
-try {
+  try {
     const searchParams = request.nextUrl.searchParams;
     const customerId = searchParams.get("customer_id");
     const vendorId = searchParams.get("vendor_id");
@@ -33,6 +29,13 @@ try {
     if (!customerId) {
       return NextResponse.json(
         { success: false, error: "Customer ID is required" },
+        { status: 400 },
+      );
+    }
+
+    if (!vendorId) {
+      return NextResponse.json(
+        { success: false, error: "Vendor ID is required" },
         { status: 400 },
       );
     }

@@ -129,8 +129,7 @@ export async function POST(request: NextRequest) {
     // Step 2.5: If customer doesn't have email, we need to ask for one
     if (
       !customer.email ||
-      customer.email.includes("@phone.local") ||
-      customer.email.includes("@alpine.local")
+      customer.email.includes("@phone.local")
     ) {
       // Customer only has phone number, need to collect email
       if (!email) {

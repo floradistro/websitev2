@@ -648,14 +648,7 @@ test.describe("Phase 2 Routes - P1 High Security", () => {
     logger.debug("✅ Media upscale-stream - Auth enforced");
   });
 
-  // Marketing (11 routes)
-  test("P2-35: POST /api/vendor/marketing/alpineiq/sync-loyalty", async ({ request }) => {
-    const noAuth = await request.post(`${BASE_URL}/api/vendor/marketing/alpineiq/sync-loyalty`, {
-      data: {},
-    });
-    expect(noAuth.status()).toBe(401);
-    logger.debug("✅ AlpineIQ sync - Auth enforced");
-  });
+  // Marketing (10 routes)
 
   test("P2-36: GET /api/vendor/marketing/analytics", async ({ request }) => {
     const noAuth = await request.get(`${BASE_URL}/api/vendor/marketing/analytics`);

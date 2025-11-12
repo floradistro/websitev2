@@ -314,8 +314,7 @@ export default function CustomersPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1.5">
                           {customer.email &&
-                            !customer.email.includes("@phone.local") &&
-                            !customer.email.includes("@alpine.local") && (
+                            !customer.email.includes("@phone.local") && (
                               <div className="flex items-center text-[10px] text-white/40 gap-2">
                                 <Mail className="w-3 h-3" strokeWidth={1.5} />
                                 <span className="truncate max-w-[200px]">{customer.email}</span>
@@ -405,8 +404,7 @@ export default function CustomersPage() {
                     </p>
                     <div className="flex flex-col gap-2">
                       {customer.email &&
-                        !customer.email.includes("@phone.local") &&
-                        !customer.email.includes("@alpine.local") && (
+                        !customer.email.includes("@phone.local") && (
                           <div className="flex items-center text-[10px] text-white/40 gap-2">
                             <Mail className="w-3 h-3 flex-shrink-0" strokeWidth={1.5} />
                             <span className="truncate">{customer.email}</span>

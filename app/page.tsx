@@ -47,11 +47,6 @@ export default function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               {[
                 { name: "Cova POS", cost: "$1,200/mo", for: "Point of Sale" },
-                {
-                  name: "Alpine IQ",
-                  cost: "$1,800/mo",
-                  for: "Marketing & Loyalty",
-                },
                 { name: "Shopify", cost: "$600/mo", for: "Online Store" },
                 { name: "Dutchie", cost: "$500/mo", for: "Menus & Ordering" },
               ].map((tool) => (

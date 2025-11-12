@@ -10,13 +10,31 @@ import {
   X,
   RefreshCw,
   TrendingUp,
+  Image as ImageIcon,
 } from "lucide-react";
 import type { PromptTemplate } from "@/lib/types/prompt-template";
+import ReferenceImageSelector from "./ReferenceImageSelector";
+import ReferencePreview from "./ReferencePreview";
 
 import { logger } from "@/lib/logger";
 interface Product {
   id: string;
   name: string;
+}
+
+interface MediaFile {
+  id: string;
+  file_name: string;
+  file_url: string;
+  file_path: string;
+  folder_id?: string | null;
+  created_at: string;
+  updated_at?: string;
+}
+
+interface ReferenceWeight {
+  fileId: string;
+  weight: number;
 }
 
 interface GenerationInterfaceProps {
@@ -51,6 +69,13 @@ export default function GenerationInterface({
   const [format, setFormat] = useState<string>("digital");
   const [includeText, setIncludeText] = useState<string>("none");
 
+  // Reference images state
+  const [showReferenceSelector, setShowReferenceSelector] = useState(false);
+  const [referenceImages, setReferenceImages] = useState<MediaFile[]>([]);
+  const [referenceWeights, setReferenceWeights] = useState<ReferenceWeight[]>([]);
+  const [styleDescription, setStyleDescription] = useState<string>("");
+  const [analyzingReferences, setAnalyzingReferences] = useState(false);
+
   const selectedProductsList = Array.from(selectedProducts)
     .map((id) => products.find((p) => p.id === id))
     .filter(Boolean) as Product[];
@@ -84,6 +109,79 @@ export default function GenerationInterface({
     } finally {
       setLoadingTemplates(false);
     }
+  };
+
+  // Handle reference image selection
+  const handleReferenceSelection = (imageIds: Set<string>, images: MediaFile[]) => {
+    setReferenceImages(images);
+
+    // Initialize weights evenly distributed
+    const totalImages = images.length;
+    const evenWeight = Math.floor(100 / totalImages);
+    const remainder = 100 - (evenWeight * totalImages);
+
+    const weights = images.map((img, index) => ({
+      fileId: img.id,
+      weight: index === 0 ? evenWeight + remainder : evenWeight,
+    }));
+
+    setReferenceWeights(weights);
+  };
+
+  // Analyze references when weights change
+  useEffect(() => {
+    const analyzeReferences = async () => {
+      if (referenceImages.length === 0) {
+        setStyleDescription("");
+        return;
+      }
+
+      // Only analyze if we have non-zero weights
+      const hasNonZeroWeights = referenceWeights.some((w) => w.weight > 0);
+      if (!hasNonZeroWeights) {
+        setStyleDescription("");
+        return;
+      }
+
+      setAnalyzingReferences(true);
+      try {
+        const imageUrls = referenceImages.map((img) => img.file_url);
+        const weights = referenceWeights.map((w) => w.weight);
+
+        const response = await fetch("/api/vendor/media/analyze-references", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-vendor-id": vendorId,
+          },
+          body: JSON.stringify({ imageUrls, weights }),
+        });
+
+        const data = await response.json();
+        if (data.success && data.styleDescription) {
+          setStyleDescription(data.styleDescription);
+        }
+      } catch (error) {
+        logger.error("Error analyzing references:", error);
+      } finally {
+        setAnalyzingReferences(false);
+      }
+    };
+
+    // Debounce the analysis
+    const timeoutId = setTimeout(analyzeReferences, 500);
+    return () => clearTimeout(timeoutId);
+  }, [referenceImages, referenceWeights, vendorId]);
+
+  const handleWeightChange = (fileId: string, weight: number) => {
+    setReferenceWeights((prev) =>
+      prev.map((w) => (w.fileId === fileId ? { ...w, weight } : w))
+    );
+  };
+
+  const handleRemoveReference = (fileId: string) => {
+    setReferenceImages((prev) => prev.filter((img) => img.id !== fileId));
+    setReferenceWeights((prev) => prev.filter((w) => w.fileId !== fileId));
   };
 
   const handleApprove = async (index: number) => {
@@ -207,6 +305,11 @@ export default function GenerationInterface({
         if (textModifier) individualPrompt += ` ${textModifier}`;
         if (styleModifier) individualPrompt += ` ${styleModifier}`;
         if (formatModifier) individualPrompt += ` ${formatModifier}`;
+
+        // Inject reference style description if available
+        if (styleDescription) {
+          individualPrompt += ` ${styleDescription}`;
+        }
 
         try {
           const response = await fetch("/api/vendor/media/ai-generate", {
@@ -500,6 +603,34 @@ export default function GenerationInterface({
           </p>
         </div>
 
+        {/* Reference Images Section */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm text-white/70 font-light">
+              Reference Images <span className="text-white/40">(Optional)</span>
+            </label>
+            <button
+              onClick={() => setShowReferenceSelector(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/[0.08] border border-white/10 hover:border-white/20 rounded-lg text-sm text-white transition-all"
+            >
+              <ImageIcon className="w-4 h-4" strokeWidth={1.5} />
+              {referenceImages.length > 0 ? "Change References" : "Add References"}
+            </button>
+          </div>
+
+          {referenceImages.length > 0 && (
+            <ReferencePreview
+              vendorId={vendorId}
+              references={referenceImages}
+              weights={referenceWeights}
+              onWeightChange={handleWeightChange}
+              onRemove={handleRemoveReference}
+              styleDescription={styleDescription}
+              analyzing={analyzingReferences}
+            />
+          )}
+        </div>
+
         {/* Options */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div>
@@ -593,6 +724,16 @@ export default function GenerationInterface({
           )}
         </button>
       </div>
+
+      {/* Reference Image Selector Modal */}
+      {showReferenceSelector && (
+        <ReferenceImageSelector
+          vendorId={vendorId}
+          selectedImageIds={new Set(referenceImages.map((img) => img.id))}
+          onSelectionChange={handleReferenceSelection}
+          onClose={() => setShowReferenceSelector(false)}
+        />
+      )}
     </div>
   );
 }

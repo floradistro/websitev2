@@ -20,7 +20,7 @@ interface Vendor {
   vendor_type?: "standard" | "distributor" | "both";
   wholesale_enabled?: boolean;
   pos_enabled?: boolean;
-  marketing_provider?: "builtin" | "alpineiq";
+  marketing_provider?: "builtin";
   marketing_config?: any;
 }
 

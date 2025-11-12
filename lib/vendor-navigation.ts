@@ -153,13 +153,6 @@ export const navSections: NavSection[] = [
         appKey: "analytics",
       },
       {
-        href: "/vendor/marketing",
-        icon: Smartphone,
-        label: "Marketing",
-        description: "Loyalty & campaigns",
-        appKey: "marketing",
-      },
-      {
         href: "/vendor/loyalty",
         icon: Award,
         label: "Loyalty Rewards",

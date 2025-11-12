@@ -408,8 +408,6 @@ export async function POST(request: NextRequest) {
         orderNumber,
         total,
       }).catch((err) => logger.error("Background loyalty failed:", err));
-
-      // Marketing sync removed - no longer using Alpine IQ
     }
 
     // ============================================================================
