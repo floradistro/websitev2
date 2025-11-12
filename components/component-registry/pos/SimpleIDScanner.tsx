@@ -75,33 +75,15 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
 
       let stream: MediaStream | null = null;
 
-      // ANDROID FIX: Try rear camera first with "ideal" (not "exact") to allow fallback
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: "environment" }, // CHANGED: ideal allows fallback
-            width: { ideal: 1920 },
-            height: { ideal: 1080 },
-          },
-        });
-      } catch (rearCamError) {
-        console.warn("Rear camera failed, trying any camera:", rearCamError);
-
-        // ANDROID FIX: Fallback to ANY camera without facingMode constraint
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              width: { ideal: 1920 },
-              height: { ideal: 1080 },
-            },
-          });
-        } catch (anyCamError) {
-          // ANDROID FIX: Last resort - minimal constraints
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-          });
-        }
-      }
+      // ANDROID FIX: Use "environment" camera with simple constraints - NO FALLBACKS
+      // This prevents camera from flipping/switching during scanning
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "environment", // Rear camera - no exact/ideal (simpler is better)
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      });
 
       if (!stream) {
         throw new Error("Could not access camera");
@@ -293,8 +275,13 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
               <video
                 ref={videoRef}
                 className="w-full h-full object-cover"
+                style={{
+                  transform: "scaleX(1)", // Prevent mirroring on Android
+                  WebkitTransform: "scaleX(1)",
+                }}
                 playsInline
                 muted
+                autoPlay
               />
               <canvas ref={canvasRef} className="hidden" />
 
