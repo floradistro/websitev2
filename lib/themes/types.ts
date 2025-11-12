@@ -17,12 +17,15 @@ export type TVTheme = {
   styles: {
     background: string;
     backgroundImage?: string;
+    backgroundSize?: string; // For animated gradients (iOS 18)
+    animation?: string; // For animated gradients (iOS 18)
     productCard: {
       background: string;
       borderColor: string;
       borderWidth: string;
       shadow: string;
       backdropBlur?: string;
+      backdropFilter?: string; // For glassmorphism effects (iOS 18)
     };
     productName: {
       color: string;

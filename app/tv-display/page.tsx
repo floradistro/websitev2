@@ -880,17 +880,25 @@ function TVDisplayContent() {
     );
   }
 
-  // No Content State
+  // No Content State - Apply theme even while loading
   if (!activeMenu) {
+    // Get theme even when no menu - URL override or default
+    const loadingThemeId = themeOverride || null;
+    const loadingTheme = getTheme(loadingThemeId);
+
     return (
       <div
-        className="w-screen h-screen flex items-center justify-center bg-black"
+        className="w-screen h-screen flex items-center justify-center"
         style={{
+          background: loadingTheme.styles.background,
+          backgroundImage: loadingTheme.styles.backgroundImage,
+          backgroundSize: loadingTheme.styles.backgroundSize,
+          animation: loadingTheme.styles.animation,
           padding:
             "env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)",
         }}
       >
-        <div className="text-center text-white">
+        <div className="text-center" style={{ color: loadingTheme.styles.productName.color }}>
           {/* Show vendor logo if available */}
           {vendor?.logo_url ? (
             <div className="mb-8">
@@ -899,7 +907,7 @@ function TVDisplayContent() {
                 alt={vendor.store_name}
                 className="mx-auto max-w-md max-h-64 object-contain"
                 style={{
-                  filter: "drop-shadow(0 0 40px rgba(255, 255, 255, 0.1))",
+                  filter: "drop-shadow(0 0 40px rgba(0, 0, 0, 0.3))",
                 }}
               />
             </div>
@@ -907,10 +915,14 @@ function TVDisplayContent() {
             <div className="text-6xl mb-4">📺</div>
           )}
           <h1 className="text-3xl font-bold mb-2">{vendor?.store_name || "Display Ready"}</h1>
-          <p className="text-xl text-white/60">No menu assigned</p>
-          <p className="text-sm text-white/40 mt-2">Please assign a menu from the dashboard</p>
+          <p className="text-xl opacity-60">
+            {loading ? "Loading menu..." : "No menu assigned"}
+          </p>
+          <p className="text-sm opacity-40 mt-2">
+            {loading ? "Please wait" : "Please assign a menu from the dashboard"}
+          </p>
           {deviceId && (
-            <p className="text-xs text-white/30 mt-6">Device ID: {deviceId.substring(0, 8)}...</p>
+            <p className="text-xs opacity-30 mt-6">Device ID: {deviceId.substring(0, 8)}...</p>
           )}
         </div>
       </div>
