@@ -18,7 +18,8 @@ import {
 import { useAppAuth } from "@/context/AppAuthContext";
 import { StatCard } from "@/components/ui/StatCard";
 import { Badge } from "@/components/ui/Badge";
-
+import { PageLoader } from "@/components/vendor/VendorSkeleton";
+import { pageLayouts } from "@/lib/design-system";
 import { logger } from "@/lib/logger";
 interface OrderItem {
   id: string;
@@ -214,21 +215,9 @@ export default function VendorOrders() {
   const locations = stats ? Object.keys(stats.by_location) : [];
 
   return (
-    <div className="w-full px-4 lg:px-0">
-      {/* Header */}
-      <div className="mb-8 pb-6 border-b border-white/5">
-        <h1
-          className="text-xs uppercase tracking-[0.15em] text-white font-black mb-1"
-          style={{ fontWeight: 900 }}
-        >
-          Orders Hub
-        </h1>
-        <p className="text-[10px] uppercase tracking-[0.15em] text-white/40">
-          All Locations · Real-Time Updates
-        </p>
-      </div>
-
-      {/* Summary Stats */}
+    <div className={pageLayouts.page}>
+      <div className={pageLayouts.content}>
+        {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 spacing-grid mb-8">
         <StatCard
           label="Total Orders"
@@ -577,6 +566,7 @@ export default function VendorOrders() {
           />,
           document.body,
         )}
+      </div>
     </div>
   );
 }

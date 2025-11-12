@@ -15,6 +15,7 @@ import {
 import type { PromptTemplate } from "@/lib/types/prompt-template";
 import ReferenceImageSelector from "./ReferenceImageSelector";
 import ReferencePreview from "./ReferencePreview";
+import SaveConfigModal from "./SaveConfigModal";
 
 import { logger } from "@/lib/logger";
 interface Product {
@@ -50,7 +51,10 @@ interface GeneratedImage {
   productId: string;
   productName: string;
   status: "pending" | "approved" | "rejected";
+  rejectionTags?: string[]; // Optional tags for why rejected
 }
+
+type RejectionTag = "colors" | "style" | "complex" | "realistic" | "other";
 
 export default function GenerationInterface({
   vendorId,
@@ -75,6 +79,13 @@ export default function GenerationInterface({
   const [referenceWeights, setReferenceWeights] = useState<ReferenceWeight[]>([]);
   const [styleDescription, setStyleDescription] = useState<string>("");
   const [analyzingReferences, setAnalyzingReferences] = useState(false);
+
+  // Session learning state
+  const [currentIteration, setCurrentIteration] = useState(1);
+  const [approvedStyleDescription, setApprovedStyleDescription] = useState<string>("");
+  const [rejectedStyleDescription, setRejectedStyleDescription] = useState<string>("");
+  const [regenerating, setRegenerating] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
   const selectedProductsList = Array.from(selectedProducts)
     .map((id) => products.find((p) => p.id === id))
@@ -229,13 +240,29 @@ export default function GenerationInterface({
     }
   };
 
-  const handleReject = (index: number) => {
+  const handleReject = (index: number, tags?: string[]) => {
     setGeneratedImages((prev) =>
-      prev.map((img, i) => (i === index ? { ...img, status: "rejected" as const } : img)),
+      prev.map((img, i) =>
+        i === index ? { ...img, status: "rejected" as const, rejectionTags: tags } : img
+      ),
     );
     if (index < generatedImages.length - 1) {
       setCurrentReviewIndex(index + 1);
     }
+  };
+
+  const toggleRejectionTag = (index: number, tag: RejectionTag) => {
+    setGeneratedImages((prev) =>
+      prev.map((img, i) => {
+        if (i !== index) return img;
+        const currentTags = img.rejectionTags || [];
+        const hasTag = currentTags.includes(tag);
+        const newTags = hasTag
+          ? currentTags.filter((t) => t !== tag)
+          : [...currentTags, tag];
+        return { ...img, rejectionTags: newTags };
+      })
+    );
   };
 
 
@@ -356,6 +383,215 @@ export default function GenerationInterface({
     }
   };
 
+  const handleRegenerate = async () => {
+    const rejected = generatedImages.filter((img) => img.status === "rejected");
+    const approved = generatedImages.filter((img) => img.status === "approved");
+
+    if (rejected.length === 0) {
+      alert("No rejected images to regenerate");
+      return;
+    }
+
+    setRegenerating(true);
+
+    try {
+      // Step 1: Analyze approved images if we have any
+      let approvedAnalysis = "";
+      if (approved.length > 0) {
+        const approvedUrls = approved.map((img) => img.url);
+        const approvedWeights = approved.map(() => Math.floor(100 / approved.length));
+
+        const approvedResponse = await fetch("/api/vendor/media/analyze-references", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-vendor-id": vendorId,
+          },
+          body: JSON.stringify({
+            imageUrls: approvedUrls,
+            weights: approvedWeights,
+          }),
+        });
+
+        const approvedData = await approvedResponse.json();
+        if (approvedData.success) {
+          approvedAnalysis = approvedData.styleDescription;
+          setApprovedStyleDescription(approvedAnalysis);
+        }
+      }
+
+      // Step 2: Analyze rejected images to understand what to avoid
+      let rejectedAnalysis = "";
+      if (rejected.length > 0) {
+        const rejectedUrls = rejected.map((img) => img.url);
+        const rejectedWeights = rejected.map(() => Math.floor(100 / rejected.length));
+
+        const rejectedResponse = await fetch("/api/vendor/media/analyze-references", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-vendor-id": vendorId,
+          },
+          body: JSON.stringify({
+            imageUrls: rejectedUrls,
+            weights: rejectedWeights,
+          }),
+        });
+
+        const rejectedData = await rejectedResponse.json();
+        if (rejectedData.success) {
+          rejectedAnalysis = rejectedData.styleDescription;
+          setRejectedStyleDescription(rejectedAnalysis);
+        }
+      }
+
+      // Step 3: Build smart prompt with learnings
+      const styleMap: Record<string, string> = {
+        banksy: "in the style of Banksy",
+        futura2000: "in the style of Futura 2000",
+        ladypink: "in the style of Lady Pink",
+        "shepard-fairey": "in the style of Shepard Fairey (Obey Giant)",
+        "leonardo-da-vinci": "in the style of Leonardo da Vinci",
+        "jackson-pollock": "in the style of Jackson Pollock",
+        "salvador-dali": "in the style of Salvador Dali",
+        "andy-warhol": "in the style of Andy Warhol",
+      };
+
+      const formatMap: Record<string, string> = {
+        stamp: "as a rubber stamp design",
+        canvas: "as a canvas painting",
+        sticker: "as a die-cut sticker design",
+        poster: "as a vintage poster",
+      };
+
+      // Step 4: Regenerate only rejected products
+      const regenerationPromises = rejected.map(async (rejectedImg) => {
+        const product = products.find((p) => p.id === rejectedImg.productId);
+        if (!product) return null;
+
+        let styleModifier = "";
+        let formatModifier = "";
+
+        if (artStyle === "random") {
+          const styles = Object.keys(styleMap);
+          const randomSeed = Date.now() + product.id.charCodeAt(0);
+          const randomIndex = Math.floor((randomSeed * Math.random()) % styles.length);
+          styleModifier = styleMap[styles[randomIndex]];
+        } else if (artStyle !== "default") {
+          styleModifier = styleMap[artStyle] || "";
+        }
+
+        if (format === "random") {
+          const formats = Object.keys(formatMap);
+          const randomSeed = Date.now() + product.id.charCodeAt(1);
+          const randomIndex = Math.floor((randomSeed * Math.random()) % formats.length);
+          formatModifier = formatMap[formats[randomIndex]];
+        } else if (format !== "digital") {
+          formatModifier = formatMap[format] || "";
+        }
+
+        let individualPrompt = prompt
+          .replace(/\{product_name\}/g, product.name)
+          .replace(/\{product\}/g, product.name);
+
+        let textModifier = "";
+        if (includeText === "none") {
+          textModifier =
+            "Important: create a purely visual icon with no text, letters, words, numbers, labels, or typography anywhere in the image.";
+        } else if (includeText === "product_name") {
+          textModifier = `Include the text "${product.name}" prominently in the design.`;
+        }
+
+        if (textModifier) individualPrompt += ` ${textModifier}`;
+        if (styleModifier) individualPrompt += ` ${styleModifier}`;
+        if (formatModifier) individualPrompt += ` ${formatModifier}`;
+
+        // Inject reference style description
+        if (styleDescription) {
+          individualPrompt += ` ${styleDescription}`;
+        }
+
+        // Add approved learnings
+        if (approvedAnalysis) {
+          individualPrompt += ` IMPORTANT: ${approvedAnalysis}`;
+        }
+
+        // Add rejection guidance
+        if (rejectedAnalysis) {
+          individualPrompt += ` AVOID the following characteristics: ${rejectedAnalysis.replace("Match the style of the reference images:", "")}`;
+        }
+
+        // Add rejection tags guidance
+        if (rejectedImg.rejectionTags && rejectedImg.rejectionTags.length > 0) {
+          const tagGuidance: Record<string, string> = {
+            colors: "avoid the color palette",
+            style: "avoid the artistic style",
+            complex: "simplify and reduce complexity",
+            realistic: "avoid realistic photography style, use illustrated/abstract approach",
+            other: "significant style adjustment needed",
+          };
+
+          const guidance = rejectedImg.rejectionTags
+            .map((tag) => tagGuidance[tag])
+            .filter(Boolean)
+            .join(", ");
+
+          if (guidance) {
+            individualPrompt += ` User feedback: ${guidance}.`;
+          }
+        }
+
+        individualPrompt += ` (Iteration ${currentIteration + 1})`;
+
+        try {
+          const response = await fetch("/api/vendor/media/ai-generate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-vendor-id": vendorId,
+            },
+            body: JSON.stringify({
+              prompt: individualPrompt,
+            }),
+          });
+
+          const data = await response.json();
+          if (data.success && data.tempUrl) {
+            return {
+              url: data.tempUrl,
+              tempPath: data.tempPath,
+              productId: rejectedImg.productId,
+              productName: product.name,
+              status: "pending" as const,
+            };
+          }
+        } catch (error) {
+          logger.error(`Error regenerating for ${product.name}:`, error);
+        }
+        return null;
+      });
+
+      const newResults = (await Promise.all(regenerationPromises)).filter(Boolean) as GeneratedImage[];
+
+      // Merge: Keep approved images + add new regenerated images
+      const mergedImages = [
+        ...approved,
+        ...newResults,
+      ];
+
+      setGeneratedImages(mergedImages);
+      setCurrentIteration((prev) => prev + 1);
+
+      // Reset to first new regenerated image
+      setCurrentReviewIndex(approved.length);
+    } catch (error) {
+      logger.error("Regeneration error:", error);
+      alert("Failed to regenerate images");
+    } finally {
+      setRegenerating(false);
+    }
+  };
+
   // No products selected
   if (selectedProducts.size === 0) {
     return (
@@ -371,11 +607,166 @@ export default function GenerationInterface({
     );
   }
 
+  // Regenerating loading screen
+  if (regenerating) {
+    const approved = generatedImages.filter((img) => img.status === "approved");
+    const rejected = generatedImages.filter((img) => img.status === "rejected");
+
+    return (
+      <div className="h-full flex items-center justify-center bg-black">
+        <div className="max-w-md text-center space-y-6">
+          <Loader2 className="w-16 h-16 text-white mx-auto animate-spin" strokeWidth={1} />
+          <div>
+            <h3 className="text-xl text-white font-light mb-2">🧠 Learning from Session...</h3>
+            <p className="text-sm text-white/50 font-light">
+              Analyzing {approved.length} approved and {rejected.length} rejected images
+            </p>
+          </div>
+
+          {approvedStyleDescription && (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left">
+              <p className="text-xs text-green-500 mb-2">✓ Approved style:</p>
+              <p className="text-xs text-white/60 font-light leading-relaxed">
+                {approvedStyleDescription}
+              </p>
+            </div>
+          )}
+
+          {rejectedStyleDescription && (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left">
+              <p className="text-xs text-red-500 mb-2">🚫 Avoiding:</p>
+              <p className="text-xs text-white/60 font-light leading-relaxed">
+                {rejectedStyleDescription}
+              </p>
+            </div>
+          )}
+
+          <p className="text-sm text-white/40 font-light">
+            Regenerating {rejected.length} product{rejected.length === 1 ? "" : "s"}...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Review mode - full-screen approval interface
   if (generatedImages.length > 0 && !generating) {
     const currentImage = generatedImages[currentReviewIndex];
     const approvedCount = generatedImages.filter((img) => img.status === "approved").length;
     const rejectedCount = generatedImages.filter((img) => img.status === "rejected").length;
+    const pendingCount = generatedImages.filter((img) => img.status === "pending").length;
+    const allReviewed = pendingCount === 0;
+    const successRate = Math.round((approvedCount / generatedImages.length) * 100);
+
+    // Show summary screen if all reviewed
+    if (allReviewed) {
+      return (
+        <div className="h-full flex flex-col bg-black">
+          {/* Header */}
+          <div className="flex-shrink-0 px-6 py-4 border-b border-white/10">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg text-white font-light">Review Complete!</h2>
+                <p className="text-sm text-white/50 font-light">
+                  Iteration {currentIteration} • {successRate}% success rate
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setGeneratedImages([]);
+                  setCurrentIteration(1);
+                  setApprovedStyleDescription("");
+                  setRejectedStyleDescription("");
+                }}
+                className="px-6 py-2 bg-white/5 border border-white/10 text-white rounded-lg text-sm font-medium hover:bg-white/10 transition-all"
+              >
+                Exit
+              </button>
+            </div>
+          </div>
+
+          {/* Summary Content */}
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="max-w-2xl w-full space-y-6">
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+                  <div className="text-4xl font-light text-green-500 mb-2">{approvedCount}</div>
+                  <div className="text-sm text-white/50 font-light">Approved</div>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+                  <div className="text-4xl font-light text-red-500 mb-2">{rejectedCount}</div>
+                  <div className="text-sm text-white/50 font-light">Rejected</div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-3">
+                {rejectedCount > 0 && (
+                  <button
+                    onClick={handleRegenerate}
+                    className="w-full py-4 bg-white text-black rounded-xl font-medium hover:bg-white/90 transition-all flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw className="w-5 h-5" strokeWidth={2} />
+                    Regenerate Rejected ({rejectedCount})
+                    {approvedCount > 0 && " - AI will learn from approved"}
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setShowSaveModal(true)}
+                  className="w-full py-4 bg-white/5 hover:bg-white/[0.08] border border-white/10 hover:border-white/20 rounded-xl text-white font-medium transition-all flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-5 h-5" strokeWidth={2} />
+                  Save Configuration
+                </button>
+
+                {approvedCount > 0 && (
+                  <button
+                    onClick={() => {
+                      // Save all approved images
+                      const approved = generatedImages.filter((img) => img.status === "approved");
+                      approved.forEach((img, index) => handleApprove(generatedImages.indexOf(img)));
+                      setTimeout(() => {
+                        setGeneratedImages([]);
+                        setCurrentIteration(1);
+                      }, 1000);
+                    }}
+                    className="w-full py-4 bg-green-500 hover:bg-green-600 rounded-xl text-white font-medium transition-all flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-5 h-5" strokeWidth={2} />
+                    Save Approved & Exit
+                  </button>
+                )}
+              </div>
+
+              {/* Learnings Preview */}
+              {(approvedStyleDescription || rejectedStyleDescription) && (
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
+                  <h3 className="text-sm text-white/70 font-light">Session Learnings</h3>
+                  {approvedStyleDescription && (
+                    <div>
+                      <p className="text-xs text-green-500 mb-1">✓ Approved Style:</p>
+                      <p className="text-xs text-white/60 font-light leading-relaxed">
+                        {approvedStyleDescription}
+                      </p>
+                    </div>
+                  )}
+                  {rejectedStyleDescription && (
+                    <div>
+                      <p className="text-xs text-red-500 mb-1">✗ Avoided Style:</p>
+                      <p className="text-xs text-white/60 font-light leading-relaxed">
+                        {rejectedStyleDescription}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="h-full flex flex-col bg-black">
@@ -388,6 +779,7 @@ export default function GenerationInterface({
                 {currentReviewIndex + 1} of {generatedImages.length} •
                 {approvedCount > 0 && ` ${approvedCount} approved`}
                 {rejectedCount > 0 && ` • ${rejectedCount} rejected`}
+                {pendingCount > 0 && ` • ${pendingCount} pending`}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -402,14 +794,14 @@ export default function GenerationInterface({
         </div>
 
         {/* Main content */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          <div className="max-w-4xl w-full">
+        <div className="flex-1 flex items-center justify-center p-4 md:p-8 overflow-y-auto">
+          <div className="max-w-2xl w-full">
             {/* Image */}
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white mb-6">
+            <div className="relative w-full max-h-[55vh] md:max-h-[60vh] rounded-2xl overflow-hidden bg-white mb-6 flex items-center justify-center">
               <img
                 src={currentImage.url}
                 alt={currentImage.productName}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain max-h-[55vh] md:max-h-[60vh]"
               />
 
               {/* Status badge */}
@@ -440,24 +832,55 @@ export default function GenerationInterface({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-center gap-4">
-              <button
-                onClick={() => handleReject(currentReviewIndex)}
-                disabled={currentImage.status === "rejected"}
-                className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all disabled:opacity-50"
-              >
-                <X className="w-5 h-5" strokeWidth={2} />
-                Reject
-              </button>
+            <div className="space-y-4">
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={() => handleReject(currentReviewIndex)}
+                  disabled={currentImage.status === "rejected"}
+                  className="flex items-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-white transition-all disabled:opacity-50"
+                >
+                  <X className="w-5 h-5" strokeWidth={2} />
+                  Reject
+                </button>
 
-              <button
-                onClick={() => handleApprove(currentReviewIndex)}
-                disabled={currentImage.status === "approved"}
-                className="flex items-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-600 rounded-xl text-white transition-all disabled:opacity-50"
-              >
-                <Check className="w-5 h-5" strokeWidth={2} />
-                Approve
-              </button>
+                <button
+                  onClick={() => handleApprove(currentReviewIndex)}
+                  disabled={currentImage.status === "approved"}
+                  className="flex items-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-600 rounded-xl text-white transition-all disabled:opacity-50"
+                >
+                  <Check className="w-5 h-5" strokeWidth={2} />
+                  Approve
+                </button>
+              </div>
+
+              {/* Rejection Tags */}
+              {currentImage.status === "rejected" && (
+                <div className="text-center">
+                  <p className="text-xs text-white/50 mb-2 font-light">Why reject? (optional)</p>
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    {[
+                      { id: "colors" as RejectionTag, label: "🎨 Colors", desc: "Wrong palette" },
+                      { id: "style" as RejectionTag, label: "🖼️ Style", desc: "Wrong art style" },
+                      { id: "complex" as RejectionTag, label: "🔧 Too Complex", desc: "Too busy" },
+                      { id: "realistic" as RejectionTag, label: "📸 Too Realistic", desc: "Not illustrated" },
+                      { id: "other" as RejectionTag, label: "💡 Other", desc: "Just didn't vibe" },
+                    ].map((tag) => (
+                      <button
+                        key={tag.id}
+                        onClick={() => toggleRejectionTag(currentReviewIndex, tag.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                          currentImage.rejectionTags?.includes(tag.id)
+                            ? "bg-red-500 text-white"
+                            : "bg-white/5 text-white/60 hover:bg-white/10 border border-white/10"
+                        }`}
+                        title={tag.desc}
+                      >
+                        {tag.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Navigation */}
@@ -579,8 +1002,9 @@ export default function GenerationInterface({
 
   // Generation interface
   return (
-    <div className="h-full flex flex-col p-8">
-      <div className="max-w-3xl mx-auto w-full">
+    <div className="h-full flex flex-col overflow-hidden">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-2xl mx-auto w-full p-6">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
@@ -723,6 +1147,7 @@ export default function GenerationInterface({
             </>
           )}
         </button>
+        </div>
       </div>
 
       {/* Reference Image Selector Modal */}
@@ -732,6 +1157,39 @@ export default function GenerationInterface({
           selectedImageIds={new Set(referenceImages.map((img) => img.id))}
           onSelectionChange={handleReferenceSelection}
           onClose={() => setShowReferenceSelector(false)}
+        />
+      )}
+
+      {/* Save Config Modal */}
+      {showSaveModal && (
+        <SaveConfigModal
+          vendorId={vendorId}
+          config={{
+            templateId: selectedTemplate?.id,
+            basePrompt: prompt,
+            artStyle,
+            format,
+            includeText,
+            referenceImages: referenceImages.map((img, index) => ({
+              mediaFileId: img.id,
+              fileUrl: img.file_url,
+              weight: referenceWeights[index]?.weight || 0,
+              thumbnailUrl: img.file_url,
+            })),
+            approvedStyleDescription,
+            rejectedStyleDescription,
+            iterationsCount: currentIteration,
+            successRate: Math.round(
+              (generatedImages.filter((img) => img.status === "approved").length /
+                generatedImages.length) *
+                100
+            ),
+            totalGenerated: generatedImages.length,
+          }}
+          onClose={() => setShowSaveModal(false)}
+          onSaved={() => {
+            // Optionally refresh something or show a toast
+          }}
         />
       )}
     </div>

@@ -10,6 +10,8 @@ import { ActiveFilterChips } from "@/components/analytics/ActiveFilterChips";
 import { Sparkline } from "@/components/ui/Sparkline";
 import { ComparisonSelector, ComparisonBadge, ComparisonType } from "@/components/analytics/ComparisonSelector";
 import AIInsightsPanel from "@/components/vendor/AIInsightsPanel";
+import { PageLoader } from "@/components/vendor/VendorSkeleton";
+import { pageLayouts } from "@/lib/design-system";
 import {
   DollarSign,
   ShoppingCart,
@@ -1281,12 +1283,11 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="analytics-page dashboard-container">
-      <div className="w-full">
+    <div className={pageLayouts.page}>
+      <div className={pageLayouts.content}>
         {/* Compact Header - Minimal */}
         <div className="analytics-header">
           <div className="flex items-center justify-between w-full">
-            <h1 className="text-2xl font-light text-white/90">Analytics</h1>
             <div className="flex items-center gap-4">
               {/* Compact Date Range */}
               <DateRangePicker

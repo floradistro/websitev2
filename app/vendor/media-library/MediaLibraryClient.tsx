@@ -6,8 +6,6 @@ import { useAppAuth } from "@/context/AppAuthContext";
 import {
   ImagePlus,
   Search,
-  Grid3x3,
-  List,
   Download,
   Trash2,
   Eye,
@@ -28,6 +26,10 @@ import {
   Folder,
   FolderOpen,
   FolderPlus,
+  Mail,
+  Tv,
+  Globe,
+  Palette,
 } from "lucide-react";
 import ProductBrowser from "./ProductBrowser";
 import GenerationInterface from "./GenerationInterface";
@@ -162,7 +164,6 @@ export default function MediaLibraryClient() {
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [selectedCategory, setSelectedCategory] = useState<MediaCategory>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null); // null = root, uuid = inside a folder
   const [folders, setFolders] = useState<MediaFolder[]>([]);
   const [creatingFolder, setCreatingFolder] = useState(false);
@@ -234,7 +235,10 @@ export default function MediaLibraryClient() {
   const [fixingImages, setFixingImages] = useState(false);
 
   // Dual-pane view states
-  const [splitViewMode, setSplitViewMode] = useState(true);
+  const [splitViewMode, setSplitViewMode] = useState(false);
+  const [productsPanelCollapsed, setProductsPanelCollapsed] = useState(false);
+  const [useForDropdownOpen, setUseForDropdownOpen] = useState(false);
+  const [rightPanelMode, setRightPanelMode] = useState<'hidden' | 'generate' | 'products' | 'campaign'>('hidden');
   const [draggedMedia, setDraggedMedia] = useState<MediaFile | null>(null);
   const [dropTargetProduct, setDropTargetProduct] = useState<string | null>(null);
   const [autoMatchResults, setAutoMatchResults] = useState<any>(null);
@@ -931,7 +935,7 @@ export default function MediaLibraryClient() {
 
   return (
     <div
-      className="absolute inset-0 bg-black overflow-hidden flex flex-col"
+      className="absolute inset-0 bg-black overflow-hidden"
       onDragOver={(e) => {
         e.preventDefault();
         // Only show upload overlay if NOT in split view and dragging files
@@ -952,57 +956,107 @@ export default function MediaLibraryClient() {
         }
       }}
     >
-      {/* ✨ Magical Toolbar - Effortless & Beautiful */}
-      <div className="h-14 bg-gradient-to-b from-white/[0.03] to-transparent border-b border-white/[0.08] flex items-center px-3 flex-shrink-0 backdrop-blur-sm">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          {/* View Mode - Compact pill */}
-          <div className="flex items-center gap-0.5 bg-black/40 rounded-full p-1 border border-white/[0.08] flex-shrink-0">
-            <button
-              onClick={() => setSplitViewMode(!splitViewMode)}
-              className={`p-1.5 rounded-full transition-all duration-300 flex items-center justify-center ${
-                splitViewMode
-                  ? "bg-white text-black shadow-lg shadow-white/20"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/10"
-              }`}
-              title="Split View"
-            >
-              <Columns2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-full transition-all duration-300 flex items-center justify-center ${
-                viewMode === "grid"
-                  ? "bg-white text-black shadow-lg shadow-white/20"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/10"
-              }`}
-              title="Grid View"
-            >
-              <Grid3x3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-full transition-all duration-300 flex items-center justify-center ${
-                viewMode === "list"
-                  ? "bg-white text-black shadow-lg shadow-white/20"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/10"
-              }`}
-              title="List View"
-            >
-              <List className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Search - Glassmorphic */}
-          <div className="relative w-56 flex-shrink-0">
+      {/* SINGLE COMPREHENSIVE TOOLBAR - POS Style */}
+      <div className="h-full flex flex-col">
+        <div className="flex-shrink-0 h-14 border-b border-white/10 flex items-center px-4 gap-3">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+          {/* Search */}
+          <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder="Search products & media..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-black/40 border border-white/[0.08] rounded-full pl-9 pr-3 py-2 text-xs text-white placeholder:text-white/40 focus:outline-none focus:bg-black/60 focus:border-white/20 transition-all duration-200 focus:shadow-lg focus:shadow-white/5"
+              className="w-full bg-white/5 border border-white/10 rounded-full pl-9 pr-4 py-2 text-xs text-white placeholder:text-white/40 focus:outline-none focus:bg-white/10 focus:border-white/20 transition-all"
             />
           </div>
+
+          {/* Studio Mode Selector */}
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => {
+                if (selectedCategory === null) {
+                  // Entering studio mode - show Products studio by default
+                  setSelectedCategory("product_photos");
+                  setRightPanelMode('generate');
+                  setSplitViewMode(true);
+                  setGenerationMode(true);
+                  setProductsPanelCollapsed(false); // Always show panel when entering studio
+                } else {
+                  // Exiting studio mode
+                  setSelectedCategory(null);
+                  setRightPanelMode('hidden');
+                  setSplitViewMode(false);
+                  setGenerationMode(false);
+                  setProductsPanelCollapsed(false); // Reset collapsed state
+                }
+              }}
+              className={`px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-[0.15em] font-medium transition-all duration-200 border flex items-center gap-2 ${
+                selectedCategory !== null
+                  ? "bg-white/[0.08] text-white border-white/[0.12]"
+                  : "text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]"
+              }`}
+            >
+              <Sparkles className="w-4 h-4" strokeWidth={selectedCategory !== null ? 2 : 1.5} />
+              <span>Studio</span>
+            </button>
+
+            {/* Studio modes - only when studio is active */}
+            {selectedCategory !== null && (
+              <>
+                <div className="h-5 w-px bg-white/10" />
+                {categories.filter(c => c.value !== null).map((cat) => (
+                  <button
+                    key={cat.label}
+                    onClick={() => {
+                      setSelectedCategory(cat.value);
+                      // Set appropriate panel mode based on category
+                      if (cat.value === 'product_photos') {
+                        setRightPanelMode('generate');
+                        setGenerationMode(true);
+                      } else {
+                        setRightPanelMode('campaign'); // Use campaign as placeholder for other modes
+                        setGenerationMode(false);
+                      }
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-[0.15em] font-medium transition-all duration-200 border ${
+                      selectedCategory === cat.value
+                        ? "bg-white/[0.08] text-white border-white/[0.12]"
+                        : "text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+
+          {/* Breadcrumbs (inline when in folder) */}
+          {(currentFolderId !== null || breadcrumbs.length > 0) && (
+            <>
+              <div className="h-5 w-px bg-white/10" />
+              <div className="flex items-center gap-2 text-xs text-white/60">
+                <button onClick={() => setCurrentFolderId(null)} className="hover:text-white transition-colors">
+                  Root
+                </button>
+                {breadcrumbs.map((folder, index) => (
+                  <div key={folder.id} className="flex items-center gap-2">
+                    <span className="text-white/30">/</span>
+                    <button
+                      onClick={() => setCurrentFolderId(folder.id)}
+                      className={`transition-colors ${
+                        index === breadcrumbs.length - 1 ? "text-white font-medium" : "hover:text-white"
+                      }`}
+                    >
+                      {folder.name}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
           {/* Selection Actions - Smooth slide-in */}
           {selectedFiles.size > 0 && (
@@ -1015,24 +1069,24 @@ export default function MediaLibraryClient() {
               <div className="h-5 w-px bg-white/10 mx-1" />
 
               {/* Selection count badge */}
-              <div className="px-2.5 py-1 bg-purple-500/20 border border-purple-500/30 rounded-full">
-                <span className="text-xs text-purple-300 font-semibold tabular-nums">
-                  {selectedFiles.size}
+              <div className="px-2.5 py-1.5 bg-white/[0.08] border border-white/[0.12] rounded-lg">
+                <span className="text-[10px] text-white font-medium tabular-nums uppercase tracking-[0.15em]">
+                  {selectedFiles.size} Selected
                 </span>
               </div>
 
               {/* Quick actions */}
-              <div className="flex items-center gap-1 bg-black/40 border border-white/[0.08] rounded-full p-1">
+              <div className="flex items-center gap-1.5">
                 <button
                   onClick={handleBulkRetag}
                   disabled={retagging || removingBg}
-                  className="px-3 py-1.5 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
+                  className="px-3 py-1.5 hover:bg-white/[0.04] text-white/40 hover:text-white rounded-lg text-[10px] uppercase tracking-[0.15em] font-medium transition-all duration-200 flex items-center justify-center gap-1.5 disabled:opacity-40 border border-transparent hover:border-white/[0.08]"
                   title="Re-tag with AI"
                 >
                   {retagging ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Brain className="w-4 h-4" />
+                    <Brain className="w-4 h-4" strokeWidth={1.5} />
                   )}
                   {retagging && bulkProgress?.operation === "retag" ? (
                     <span className="tabular-nums">{bulkProgress.completed}/{bulkProgress.total}</span>
@@ -1041,18 +1095,16 @@ export default function MediaLibraryClient() {
                   )}
                 </button>
 
-                <div className="h-5 w-px bg-white/10" />
-
                 <button
                   onClick={handleRemoveBackground}
                   disabled={retagging || removingBg}
-                  className="px-3 py-1.5 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
+                  className="px-3 py-1.5 hover:bg-white/[0.04] text-white/40 hover:text-white rounded-lg text-[10px] uppercase tracking-[0.15em] font-medium transition-all duration-200 flex items-center justify-center gap-1.5 disabled:opacity-40 border border-transparent hover:border-white/[0.08]"
                   title="Remove background"
                 >
                   {removingBg ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Scissors className="w-4 h-4" />
+                    <Scissors className="w-4 h-4" strokeWidth={1.5} />
                   )}
                   {removingBg && bulkProgress?.operation === "remove-bg" ? (
                     <span className="tabular-nums">{bulkProgress.completed}/{bulkProgress.total}</span>
@@ -1061,27 +1113,23 @@ export default function MediaLibraryClient() {
                   )}
                 </button>
 
-                <div className="h-5 w-px bg-white/10" />
-
                 <button
                   onClick={handleAutoMatch}
                   disabled={autoMatching}
-                  className="px-3 py-1.5 hover:bg-white/10 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
+                  className="px-3 py-1.5 hover:bg-white/[0.04] text-white/40 hover:text-white rounded-lg text-[10px] uppercase tracking-[0.15em] font-medium transition-all duration-200 flex items-center justify-center gap-1.5 disabled:opacity-40 border border-transparent hover:border-white/[0.08]"
                   title="Link to products"
                 >
                   {autoMatching ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Link2 className="w-4 h-4" />
+                    <Link2 className="w-4 h-4" strokeWidth={1.5} />
                   )}
                   <span>Link</span>
                 </button>
 
-                <div className="h-5 w-px bg-white/10" />
-
                 <button
                   onClick={handleDelete}
-                  className="px-2.5 py-1.5 hover:bg-red-500/20 text-red-400/70 hover:text-red-300 rounded-full text-xs font-medium transition-all flex items-center justify-center"
+                  className="px-2.5 py-1.5 hover:bg-red-500/10 text-red-400/60 hover:text-red-300 rounded-lg text-[10px] uppercase tracking-[0.15em] font-medium transition-all duration-200 flex items-center justify-center border border-transparent hover:border-red-500/20"
                   title="Delete selected"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -1090,146 +1138,211 @@ export default function MediaLibraryClient() {
 
               <button
                 onClick={() => setSelectedFiles(new Set())}
-                className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-full transition-all flex items-center justify-center"
+                className="p-2 text-white/40 hover:text-white hover:bg-white/[0.04] rounded-lg transition-all duration-200 flex items-center justify-center border border-transparent hover:border-white/[0.08]"
                 title="Clear selection"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" strokeWidth={1.5} />
               </button>
+            </div>
+          )}
+
+          {/* Use For Dropdown - contextual actions */}
+          {selectedFiles.size > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setUseForDropdownOpen(!useForDropdownOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 text-white/40 hover:text-white rounded-lg text-[10px] uppercase tracking-[0.15em] font-medium transition-all duration-200 border border-transparent hover:border-white/[0.08] hover:bg-white/[0.04]"
+              >
+                <span>Use For</span>
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {useForDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setUseForDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0a0a] border border-white/[0.12] rounded-lg shadow-2xl z-20 py-1">
+                    <button
+                      onClick={() => {
+                        setRightPanelMode('products');
+                        setSplitViewMode(true);
+                        setProductsPanelCollapsed(false);
+                        setUseForDropdownOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-xs text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors flex items-center gap-2"
+                    >
+                      <Link2 className="w-4 h-4" strokeWidth={1.5} />
+                      Link to Products
+                    </button>
+                    <button
+                      onClick={() => {
+                        setRightPanelMode('campaign');
+                        setSplitViewMode(true);
+                        setUseForDropdownOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-xs text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors flex items-center gap-2"
+                    >
+                      <Mail className="w-4 h-4" strokeWidth={1.5} />
+                      Create Campaign
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUseForDropdownOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-xs text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors flex items-center gap-2"
+                    >
+                      <Tv className="w-4 h-4" strokeWidth={1.5} />
+                      Add to Menu
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUseForDropdownOpen(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-xs text-white/70 hover:text-white hover:bg-white/[0.04] transition-colors flex items-center gap-2"
+                    >
+                      <Globe className="w-4 h-4" strokeWidth={1.5} />
+                      Social Media
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
           <div className="flex-1" />
 
-          {/* Right Actions - Premium feel */}
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {splitViewMode && (
-              <button
-                onClick={handleAutoMatch}
-                disabled={autoMatching}
-                className="px-3 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 border border-purple-500/30 rounded-full text-xs font-semibold text-purple-300 transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 shadow-lg shadow-purple-500/10"
-              >
-                {autoMatching ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Matching...</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-4 h-4" />
-                    <span>Auto-Match</span>
-                  </>
-                )}
-              </button>
-            )}
-
+          {/* Auto-Match (when in split view) */}
+          {splitViewMode && selectedProductsForGeneration.size > 0 && (
             <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="px-3 py-2 bg-white text-black rounded-full text-xs font-semibold hover:bg-white/90 transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-lg shadow-white/20"
+              onClick={handleAutoMatch}
+              disabled={autoMatching}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.08] border border-white/[0.12] rounded-lg text-[10px] uppercase tracking-[0.15em] font-medium text-white hover:bg-white/[0.12] transition-all duration-200 disabled:opacity-40"
             >
-              {isUploading ? (
+              {autoMatching ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Uploading...</span>
+                  <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} />
+                  <span>Matching...</span>
                 </>
               ) : (
                 <>
-                  <Upload className="w-4 h-4" />
-                  <span>Upload</span>
+                  <Zap className="w-4 h-4" strokeWidth={1.5} />
+                  <span>Auto-Match</span>
                 </>
               )}
             </button>
+          )}
+
+          {/* Item Count */}
+          <span className="text-[10px] text-white/40 tabular-nums uppercase tracking-[0.15em] font-medium">
+            {filteredFiles.length} items
+          </span>
           </div>
         </div>
-      </div>
 
-      {/* Main Content - Split View or Media-Only */}
-      {splitViewMode ? (
+        {/* Main Content - Split View or Media-Only */}
+        {splitViewMode ? (
         <div className="flex-1 flex overflow-hidden">
-          {/* Products Panel */}
-          <div className="w-80 flex-shrink-0">
-            {vendor && (
-              <ProductBrowser
-                vendorId={vendor.id}
-                onDragStart={(product) => setDropTargetProduct(product.id)}
-              onProductSelect={(product) => {
-                logger.debug("🎬 ProductBrowser CLICK ->setGalleryProduct", {
-                  productName: product.name,
-                  productId: product.id,
-                  timestamp: new Date().toISOString()
-                });
-                setGalleryProduct(product);
-                logger.debug("✅ setGalleryProduct called successfully");
-              }}
-              onLinkMedia={handleLinkProductToMedia}
-              selectionMode={generationMode}
-              selectedProducts={selectedProductsForGeneration}
-              onSelectionChange={setSelectedProductsForGeneration}
-            />
-            )}
-          </div>
+          {/* Studio Panel - Shows tools for active studio mode */}
+          {selectedCategory !== null && !productsPanelCollapsed && (
+            <div className="w-80 flex-shrink-0 border-r border-white/10 flex flex-col">
+              {/* Studio Header */}
+              <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+                <div>
+                  <div className="text-xs text-white/40 uppercase tracking-[0.15em] font-medium">Studio</div>
+                  <div className="text-sm text-white/90 capitalize">{categories.find(c => c.value === selectedCategory)?.label || 'Tools'}</div>
+                </div>
+                <button
+                  onClick={() => setProductsPanelCollapsed(true)}
+                  className="p-1.5 text-white/40 hover:text-white hover:bg-white/[0.04] rounded-lg transition-all duration-200"
+                  title="Collapse Panel"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                  </svg>
+                </button>
+              </div>
 
+              {/* Studio Content */}
+              <div className="flex-1 overflow-hidden">
+                {/* Products Studio */}
+                {selectedCategory === 'product_photos' && vendor && (
+                  <ProductBrowser
+                    vendorId={vendor.id}
+                    onDragStart={(product) => setDropTargetProduct(product.id)}
+                    onProductSelect={(product) => {
+                      setGalleryProduct(product);
+                    }}
+                    onLinkMedia={handleLinkProductToMedia}
+                    selectionMode={true}
+                    selectedProducts={selectedProductsForGeneration}
+                    onSelectionChange={setSelectedProductsForGeneration}
+                  />
+                )}
+
+                {/* Marketing Studio - Coming Soon */}
+                {selectedCategory === 'marketing' && (
+                  <div className="p-6 text-center mt-20">
+                    <Mail className="w-12 h-12 text-white/20 mx-auto mb-4" strokeWidth={1.5} />
+                    <div className="text-sm text-white/60 mb-2">Marketing Studio</div>
+                    <div className="text-xs text-white/30">Campaign builder, email tools, and social media management</div>
+                  </div>
+                )}
+
+                {/* Menus Studio - Coming Soon */}
+                {selectedCategory === 'menus' && (
+                  <div className="p-6 text-center mt-20">
+                    <Tv className="w-12 h-12 text-white/20 mx-auto mb-4" strokeWidth={1.5} />
+                    <div className="text-sm text-white/60 mb-2">Menus Studio</div>
+                    <div className="text-xs text-white/30">Menu builder for digital signage and print</div>
+                  </div>
+                )}
+
+                {/* Brand Studio - Coming Soon */}
+                {selectedCategory === 'brand' && (
+                  <div className="p-6 text-center mt-20">
+                    <Palette className="w-12 h-12 text-white/20 mx-auto mb-4" strokeWidth={1.5} />
+                    <div className="text-sm text-white/60 mb-2">Brand Studio</div>
+                    <div className="text-xs text-white/30">Logo variations, color palettes, and brand assets</div>
+                  </div>
+                )}
+
+                {/* Linking Mode - When using "Link to Products" */}
+                {rightPanelMode === 'products' && vendor && selectedCategory === null && (
+                  <ProductBrowser
+                    vendorId={vendor.id}
+                    onDragStart={(product) => setDropTargetProduct(product.id)}
+                    onProductSelect={(product) => {
+                      setGalleryProduct(product);
+                    }}
+                    onLinkMedia={handleLinkProductToMedia}
+                    selectionMode={false}
+                    selectedProducts={selectedProductsForGeneration}
+                    onSelectionChange={setSelectedProductsForGeneration}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Floating Expand Button - When panel is collapsed */}
+          {selectedCategory !== null && productsPanelCollapsed && (
+            <button
+              onClick={() => setProductsPanelCollapsed(false)}
+              className="absolute left-4 top-20 z-10 p-2 bg-white/[0.08] hover:bg-white/[0.12] border border-white/[0.12] rounded-lg transition-all duration-200 text-white/60 hover:text-white shadow-lg"
+              title="Show Studio Panel"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
 
           {/* Center/Main Panel - Media Grid OR Generation Interface */}
-          <div className="flex-1 flex flex-col">
-
-            {/* Category Toolbar */}
-            <div className="h-12 bg-white/[0.02] border-b border-white/[0.06] flex items-center px-4 gap-2 flex-shrink-0">
-              {categories.map((cat) => (
-                <button
-                  key={cat.label}
-                  onClick={() => {
-                    setSelectedCategory(cat.value);
-                    // Auto-enable generation mode for non-"All Media" categories
-                    if (cat.value !== null) {
-                      setGenerationMode(true);
-                      if (!splitViewMode) setSplitViewMode(true);
-                    } else {
-                      setGenerationMode(false);
-                    }
-                  }}
-                  className={`flex-shrink-0 px-4 py-1.5 rounded-xl text-xs font-medium transition-colors ${
-                    selectedCategory === cat.value
-                      ? "bg-white/[0.12] text-white"
-                      : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-              <div className="flex-1" />
-              <span className="text-xs text-white/40 tabular-nums">
-                {filteredFiles.length} items
-              </span>
-            </div>
-
-            {/* Breadcrumb Navigation - Show when inside a folder, regardless of category */}
-            {(currentFolderId !== null || breadcrumbs.length > 0) && (
-              <div className="px-4 py-2 bg-white/[0.02] border-b border-white/[0.06] flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentFolderId(null)}
-                  className="text-xs text-white/60 hover:text-white transition-colors"
-                >
-                  Root
-                </button>
-                {breadcrumbs.map((folder, index) => (
-                  <div key={folder.id} className="flex items-center gap-2">
-                    <span className="text-white/30">/</span>
-                    <button
-                      onClick={() => setCurrentFolderId(folder.id)}
-                      className={`text-xs transition-colors ${
-                        index === breadcrumbs.length - 1
-                          ? "text-white font-medium"
-                          : "text-white/60 hover:text-white"
-                      }`}
-                    >
-                      {folder.name}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
+          <div className="flex-1 flex flex-col overflow-hidden relative">
             {/* Grid with Drop Zone OR Generation Interface OR Gallery */}
             <div className="flex-1 overflow-hidden">
               {(() => {
@@ -1437,41 +1550,6 @@ export default function MediaLibraryClient() {
         </div>
       ) : (
         <>
-          {/* Category Toolbar */}
-          <div className="h-12 bg-white/[0.02] border-b border-white/[0.06] flex items-center px-4 gap-2 flex-shrink-0 overflow-x-auto">
-            {categories.map((cat) => (
-              <button
-                key={cat.label}
-                onClick={() => setSelectedCategory(cat.value)}
-                onDragOver={(e) => {
-                  if (!draggingFile) return;
-                  e.preventDefault();
-                  setDragOverCategory(cat.value);
-                }}
-                onDragLeave={() => setDragOverCategory(null)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (draggingFile && cat.value) {
-                    handleChangeCategory(draggingFile, cat.value);
-                  }
-                  setDragOverCategory(null);
-                  setDraggingFile(null);
-                }}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-xl text-xs font-medium transition-colors ${
-                  selectedCategory === cat.value
-                    ? "bg-white/[0.12] text-white"
-                    : dragOverCategory === cat.value
-                      ? "bg-white/[0.08] text-white"
-                      : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-            <div className="flex-1" />
-            <span className="text-xs text-white/40 tabular-nums">{filteredFiles.length} items</span>
-          </div>
-
           {/* Gallery or Grid */}
           {galleryProduct && vendor ? (
             <div className="relative flex-1 w-full">
@@ -1651,6 +1729,7 @@ export default function MediaLibraryClient() {
           )}
         </>
       )}
+      </div>
 
       {/* Context Menu */}
       {contextMenu && (

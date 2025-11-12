@@ -11,17 +11,6 @@ export function ProductsHeader({ totalProducts, isLoading }: ProductsHeaderProps
   return (
     <header className="flex items-center justify-between mb-6" role="banner">
       <div>
-        <h1
-          className={cn(
-            ds.typography.size.xs,
-            ds.typography.weight.light,
-            ds.typography.transform.uppercase,
-            ds.typography.tracking.wide,
-            "text-white mb-1",
-          )}
-        >
-          Products
-        </h1>
         <p
           className={cn(
             ds.colors.text.quaternary,

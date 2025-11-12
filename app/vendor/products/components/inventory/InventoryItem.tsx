@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, MapPin } from "lucide-react";
+import { ChevronDown, ChevronUp, MapPin, CheckSquare, Square } from "lucide-react";
 import { ds, cn } from "@/components/ds";
 import { LocationStock } from "./LocationStock";
 
@@ -26,6 +26,9 @@ interface InventoryItemProps {
     amount: number,
   ) => Promise<void>;
   isAdjusting: Record<string, boolean>;
+  selectedItems: Set<string>;
+  onToggleSelect: (productId: string, locationId: string) => void;
+  isSingleLocationMode?: boolean; // NEW: Don't show expand when filtering by location
 }
 
 export function InventoryItem({
@@ -39,8 +42,13 @@ export function InventoryItem({
   locations,
   onAdjust,
   isAdjusting,
+  selectedItems,
+  onToggleSelect,
+  isSingleLocationMode = false,
 }: InventoryItemProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  // Auto-expand when in single-location mode (ALWAYS)
+  const shouldAutoExpand = isSingleLocationMode;
+  const [isExpanded, setIsExpanded] = useState(shouldAutoExpand);
 
   const stockStatus = totalQuantity === 0 ? "Empty" : totalQuantity <= 10 ? "Low" : "In Stock";
   const stockColor =
@@ -52,18 +60,41 @@ export function InventoryItem({
   return (
     <div
       className={cn(
-        "rounded-2xl border overflow-hidden",
+        "rounded-2xl border overflow-hidden transition-all",
         ds.colors.bg.secondary,
         ds.colors.border.default,
       )}
     >
       {/* Main Row */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className={cn("w-full p-4 transition-colors text-left", "hover:bg-white/[0.02]")}
-      >
-        <div className="flex items-center gap-4">
-          {/* Product Info */}
+      <div className="flex items-center gap-4 p-4">
+        {/* Checkbox for bulk selection */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            // Toggle all locations for this product
+            locations.forEach((loc) => onToggleSelect(productId, loc.location_id));
+          }}
+          className="flex-shrink-0"
+        >
+          {locations.every((loc) => selectedItems.has(`${productId}-${loc.location_id}`)) ? (
+            <CheckSquare size={18} className="text-white" />
+          ) : locations.some((loc) => selectedItems.has(`${productId}-${loc.location_id}`)) ? (
+            <Square size={18} className="text-white/50" />
+          ) : (
+            <Square size={18} className="text-white/30" />
+          )}
+        </button>
+
+        {/* Product Info - Clickable (unless single location mode) */}
+        <button
+          onClick={() => !shouldAutoExpand && setIsExpanded(!isExpanded)}
+          disabled={shouldAutoExpand}
+          className={cn(
+            "flex-1 min-w-0 transition-colors text-left flex items-center gap-4",
+            !shouldAutoExpand && "hover:bg-white/[0.02]",
+            shouldAutoExpand && "cursor-default"
+          )}
+        >
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h3 className={cn(ds.typography.size.sm, "text-white font-light")}>{productName}</h3>
@@ -85,11 +116,16 @@ export function InventoryItem({
               )}
             >
               <span>{category}</span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <MapPin size={10} />
-                {locations.length} location{locations.length !== 1 ? "s" : ""}
-              </span>
+              {/* Hide location count in single-location mode */}
+              {!shouldAutoExpand && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin size={10} />
+                    {locations.length} location{locations.length !== 1 ? "s" : ""}
+                  </span>
+                </>
+              )}
               <span>•</span>
               <span>${price.toFixed(2)}/g</span>
             </div>
@@ -137,31 +173,37 @@ export function InventoryItem({
             </div>
           </div>
 
-          {/* Expand Icon */}
-          <div className={cn(ds.colors.text.quaternary, "transition-colors")}>
-            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </div>
-        </div>
-      </button>
+          {/* Expand Icon - Hide in single location mode */}
+          {!shouldAutoExpand && (
+            <div className={cn(ds.colors.text.quaternary, "transition-colors")}>
+              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </div>
+          )}
+        </button>
+      </div>
 
-      {/* Expanded - Locations */}
-      {isExpanded && (
-        <div className={cn("border-t p-4", ds.colors.border.default, "bg-black/20")}>
-          <div className="flex items-center gap-2 mb-4">
-            <MapPin size={14} className={ds.colors.text.quaternary} />
-            <h4
-              className={cn(
-                ds.typography.size.xs,
-                ds.typography.transform.uppercase,
-                ds.typography.tracking.wide,
-                ds.colors.text.tertiary,
-              )}
-            >
-              Stock by Location
-            </h4>
-          </div>
+      {/* Expanded - Locations (always show in single location mode) */}
+      {(isExpanded || shouldAutoExpand) && (
+        <div>
+          {/* Only show header when there are multiple locations */}
+          {!shouldAutoExpand && locations.length > 1 && (
+            <div className={cn("border-t p-4 flex items-center gap-2", ds.colors.border.default, "bg-black/20")}>
+              <MapPin size={14} className={ds.colors.text.quaternary} />
+              <h4
+                className={cn(
+                  ds.typography.size.xs,
+                  ds.typography.transform.uppercase,
+                  ds.typography.tracking.wide,
+                  ds.colors.text.tertiary,
+                )}
+              >
+                Stock by Location
+              </h4>
+            </div>
+          )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          {/* FULL WIDTH LIST - No grid, no padding */}
+          <div>
             {locations.map((location) => (
               <LocationStock
                 key={location.inventory_id}
@@ -172,6 +214,8 @@ export function InventoryItem({
                 quantity={location.quantity}
                 onAdjust={onAdjust}
                 isAdjusting={isAdjusting[`${productId}-${location.location_id}`] || false}
+                isSelected={selectedItems.has(`${productId}-${location.location_id}`)}
+                onToggleSelect={() => onToggleSelect(productId, location.location_id)}
               />
             ))}
           </div>

@@ -166,10 +166,9 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-4 gap-x-10 gap-y-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {accessibleApps.map((app) => {
           const Icon = app.icon;
-          const iconColor = iconColors[app.glowColor] || "text-white";
 
           return (
             <Link
@@ -177,33 +176,36 @@ export function AppsGrid({ badgeCounts = {} }: { badgeCounts?: BadgeCounts }) {
               href={app.route}
               prefetch={true}
               onMouseEnter={() => handleMouseEnter(app.route)}
-              className="group flex flex-col items-center gap-2.5 active:scale-[0.96] transition-transform duration-200 ease-out"
+              className="group relative p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-200 active:scale-[0.98]"
             >
-              {/* Premium Icon Container */}
-              <div className="relative w-14 h-14">
-                {/* Dark container with premium hover */}
-                <div className="relative w-full h-full bg-[#0a0a0a] group-hover:bg-white/[0.04] rounded-2xl flex items-center justify-center border border-white/[0.06] group-hover:border-white/[0.12] transition-all duration-300 ease-out shadow-lg shadow-black/40">
-                  {/* Colored icon with subtle refinement */}
+              <div className="flex items-start gap-3">
+                {/* Icon */}
+                <div className="flex-shrink-0">
                   <Icon
-                    size={44}
-                    className={`${iconColor} transition-opacity duration-300 ease-out group-hover:opacity-100`}
+                    size={20}
+                    className="text-white/40 group-hover:text-white"
                     strokeWidth={1.5}
                   />
                 </div>
 
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-white/90 group-hover:text-white mb-0.5 transition-colors">
+                    {app.name}
+                  </div>
+                  <div className="text-[10px] text-white/30 leading-relaxed">
+                    {app.description}
+                  </div>
+                </div>
+
                 {/* Notification Badge */}
                 {badgeCounts[app.key] > 0 && (
-                  <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-black">
-                    <span className="text-white text-[9px] font-semibold">
+                  <div className="absolute top-2 right-2 min-w-[18px] h-[18px] px-1.5 bg-red-500/90 rounded-full flex items-center justify-center">
+                    <span className="text-white text-[9px] font-semibold tabular-nums">
                       {badgeCounts[app.key] > 99 ? "99+" : badgeCounts[app.key]}
                     </span>
                   </div>
                 )}
-              </div>
-
-              {/* App Name - Premium Typography */}
-              <div className="text-white/40 group-hover:text-white text-[9px] text-center uppercase tracking-[0.2em] leading-tight transition-colors duration-300 ease-out font-medium">
-                {app.name}
               </div>
             </Link>
           );

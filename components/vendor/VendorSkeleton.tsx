@@ -1,7 +1,32 @@
 /**
  * Reusable skeleton loaders for vendor pages
  * Styles are in globals-dashboard.css
+ *
+ * Apple-level Consistency:
+ * - All skeletons use consistent spacing, sizing, and animation
+ * - Designed to match the standardized page layouts
  */
+
+import { Loader2 } from "lucide-react";
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 🔄 UNIFIED PAGE LOADER - Use this for all full-page loading states
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export function PageLoader({ message = "Loading..." }: { message?: string }) {
+  return (
+    <div className="flex items-center justify-center py-16">
+      <div className="text-center">
+        <Loader2 className="w-8 h-8 text-white/40 mx-auto mb-3 animate-spin" strokeWidth={1.5} />
+        <p className="text-sm text-white/40 font-light">{message}</p>
+      </div>
+    </div>
+  );
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 📦 COMPONENT SKELETONS - Individual skeleton components
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export function StatCardSkeleton() {
   return (

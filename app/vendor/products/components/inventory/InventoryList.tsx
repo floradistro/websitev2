@@ -1,6 +1,6 @@
-import { Package } from "lucide-react";
 import { ds, cn } from "@/components/ds";
 import { InventoryItem } from "./InventoryItem";
+import { FocusedInventoryItem } from "./FocusedInventoryItem";
 
 interface LocationInventory {
   inventory_id: string;
@@ -30,68 +30,83 @@ interface InventoryListProps {
     amount: number,
   ) => Promise<void>;
   isAdjusting: Record<string, boolean>;
+  selectedItems: Set<string>;
+  onToggleSelect: (productId: string, locationId: string) => void;
+  isSingleLocationMode?: boolean;
 }
 
-export function InventoryList({ products, isLoading, onAdjust, isAdjusting }: InventoryListProps) {
-  if (isLoading) {
+export function InventoryList({
+  products,
+  isLoading,
+  onAdjust,
+  isAdjusting,
+  selectedItems,
+  onToggleSelect,
+  isSingleLocationMode = false,
+}: InventoryListProps) {
+  if (isLoading && products.length === 0) {
     return (
-      <div
-        className={cn(
-          "rounded-2xl border p-12 text-center",
-          ds.colors.bg.secondary,
-          ds.colors.border.default,
-        )}
-      >
-        <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-        <p
-          className={cn(
-            ds.typography.size.xs,
-            ds.typography.transform.uppercase,
-            ds.typography.tracking.wide,
-            ds.colors.text.quaternary,
-          )}
-        >
-          Loading inventory...
-        </p>
+      <div className={cn("rounded-2xl border p-8 text-center", ds.colors.bg.secondary, ds.colors.border.default)}>
+        <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+        <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>Loading inventory...</p>
       </div>
     );
   }
 
   if (products.length === 0) {
     return (
-      <div
-        className={cn(
-          "rounded-2xl border p-16 text-center",
-          ds.colors.bg.secondary,
-          ds.colors.border.default,
-        )}
-      >
-        <Package size={48} className="text-white/10 mx-auto mb-4" strokeWidth={1} />
-        <p className={cn(ds.typography.size.sm, "text-white/60 mb-2")}>No inventory found</p>
-        <p className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
-          Try adjusting your filters
+      <div className={cn("rounded-2xl border p-8 text-center", ds.colors.bg.secondary, ds.colors.border.default)}>
+        <p className={cn(ds.typography.size.sm, ds.colors.text.tertiary)}>
+          No products found
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {products.map((product) => (
-        <InventoryItem
-          key={product.product_id}
-          productId={product.product_id}
-          productName={product.product_name}
-          sku={product.sku}
-          category={product.category}
-          price={product.price}
-          costPrice={product.cost_price}
-          totalQuantity={product.total_quantity}
-          locations={product.locations}
-          onAdjust={onAdjust}
-          isAdjusting={isAdjusting}
-        />
-      ))}
+    <div className="space-y-3 mb-6">
+      {products.map((product) => {
+        // Use focused view when filtering by single location
+        if (isSingleLocationMode && product.locations.length === 1) {
+          const location = product.locations[0];
+          return (
+            <FocusedInventoryItem
+              key={`${product.product_id}-${location.location_id}`}
+              productId={product.product_id}
+              productName={product.product_name}
+              sku={product.sku}
+              category={product.category}
+              price={product.price}
+              costPrice={product.cost_price}
+              location={location}
+              onAdjust={onAdjust}
+              isAdjusting={isAdjusting[`${product.product_id}-${location.location_id}`] || false}
+              isSelected={selectedItems.has(`${product.product_id}-${location.location_id}`)}
+              onToggleSelect={() => onToggleSelect(product.product_id, location.location_id)}
+            />
+          );
+        }
+
+        // Use normal expandable view for multi-location
+        return (
+          <InventoryItem
+            key={product.product_id}
+            productId={product.product_id}
+            productName={product.product_name}
+            sku={product.sku}
+            category={product.category}
+            price={product.price}
+            costPrice={product.cost_price}
+            totalQuantity={product.total_quantity}
+            locations={product.locations}
+            onAdjust={onAdjust}
+            isAdjusting={isAdjusting}
+            selectedItems={selectedItems}
+            onToggleSelect={onToggleSelect}
+            isSingleLocationMode={isSingleLocationMode}
+          />
+        );
+      })}
     </div>
   );
 }

@@ -23,6 +23,8 @@ import {
   Boxes,
   Activity,
   Award,
+  Mail,
+  Tag,
 } from "lucide-react";
 
 export interface NavItem {
@@ -58,11 +60,19 @@ export const topLevelNavItems: NavItem[] = [
     description: "Terminals, sessions & payment processing",
     isCore: true,
   },
+  {
+    href: "/vendor/marketing/campaigns",
+    icon: Mail,
+    label: "Marketing",
+    description: "Email campaigns",
+    appKey: "marketing",
+    isCore: true,
+  },
 ];
 
 // Collapsible sections
 export const navSections: NavSection[] = [
-  // CATALOG - Products + Suppliers + Lab Results
+  // CATALOG - Products + Suppliers + Lab Results + Labels
   {
     label: "Catalog",
     icon: Package,
@@ -75,6 +85,13 @@ export const navSections: NavSection[] = [
         description: "Manage catalog & inventory",
         appKey: "products",
         isCore: true,
+      },
+      {
+        href: "/vendor/labels",
+        icon: Tag,
+        label: "Labels",
+        description: "Print product labels",
+        appKey: "products",
       },
       {
         href: "/vendor/suppliers",
@@ -139,7 +156,7 @@ export const navSections: NavSection[] = [
     ],
   },
 
-  // INSIGHTS - Analytics + Marketing
+  // INSIGHTS - Analytics + Loyalty
   {
     label: "Insights",
     icon: TrendingUp,

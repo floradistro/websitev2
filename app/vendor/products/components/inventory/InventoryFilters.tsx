@@ -33,26 +33,28 @@ export function InventoryFilters({
   onLocationFilterChange,
 }: InventoryFiltersProps) {
   return (
-    <div
-      className={cn(
-        "rounded-2xl border p-4 mb-6",
-        ds.colors.bg.secondary,
-        ds.colors.border.default,
-      )}
-    >
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="mb-6">
+      <div className="flex items-center gap-3">
         {/* Search */}
-        <div className="relative">
+        <div className="relative flex-1">
           <Search
             size={14}
             className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.colors.text.quaternary)}
           />
-          <Input
+          <input
             type="text"
             placeholder="Search products..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10"
+            className={cn(
+              "w-full pl-10 pr-3 py-2 rounded-lg border transition-colors",
+              ds.colors.bg.secondary,
+              ds.colors.border.default,
+              ds.colors.text.primary,
+              ds.typography.size.xs,
+              "placeholder:text-white/30",
+              "hover:border-white/20 focus:border-white/20 focus:outline-none",
+            )}
           />
         </div>
 
@@ -61,12 +63,13 @@ export function InventoryFilters({
           value={stockFilter}
           onChange={(e) => onStockFilterChange(e.target.value as any)}
           className={cn(
-            "rounded-xl border px-3 py-2 transition-colors w-full",
+            "px-3 py-2 rounded-lg border transition-colors appearance-none bg-no-repeat bg-right pr-8",
+            "bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMUw2IDZMMTEgMSIgc3Ryb2tlPSIjOTk5IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')]",
             ds.colors.bg.secondary,
             ds.colors.border.default,
             ds.colors.text.primary,
             ds.typography.size.xs,
-            "hover:border-white/20 focus:border-white/20 focus:outline-none",
+            "hover:border-white/20 focus:border-white/20 focus:outline-none cursor-pointer",
           )}
         >
           <option value="all">All Stock Levels</option>
@@ -80,12 +83,13 @@ export function InventoryFilters({
           value={categoryFilter}
           onChange={(e) => onCategoryFilterChange(e.target.value)}
           className={cn(
-            "rounded-xl border px-3 py-2 transition-colors w-full",
+            "px-3 py-2 rounded-lg border transition-colors appearance-none bg-no-repeat bg-right pr-8",
+            "bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMUw2IDZMMTEgMSIgc3Ryb2tlPSIjOTk5IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')]",
             ds.colors.bg.secondary,
             ds.colors.border.default,
             ds.colors.text.primary,
             ds.typography.size.xs,
-            "hover:border-white/20 focus:border-white/20 focus:outline-none",
+            "hover:border-white/20 focus:border-white/20 focus:outline-none cursor-pointer",
           )}
         >
           <option value="all">All Categories</option>
@@ -101,12 +105,13 @@ export function InventoryFilters({
           value={locationFilter}
           onChange={(e) => onLocationFilterChange(e.target.value)}
           className={cn(
-            "rounded-xl border px-3 py-2 transition-colors w-full",
+            "px-3 py-2 rounded-lg border transition-colors appearance-none bg-no-repeat bg-right pr-8",
+            "bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMUw2IDZMMTEgMSIgc3Ryb2tlPSIjOTk5IiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PC9zdmc+')]",
             ds.colors.bg.secondary,
             ds.colors.border.default,
             ds.colors.text.primary,
             ds.typography.size.xs,
-            "hover:border-white/20 focus:border-white/20 focus:outline-none",
+            "hover:border-white/20 focus:border-white/20 focus:outline-none cursor-pointer",
           )}
         >
           <option value="all">All Locations</option>

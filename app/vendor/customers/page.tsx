@@ -13,6 +13,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAppAuth } from "@/context/AppAuthContext";
+import { PageLoader } from "@/components/vendor/VendorSkeleton";
+import { pageLayouts, cardVariants, textPresets } from "@/lib/design-system";
 
 import { logger } from "@/lib/logger";
 interface Customer {
@@ -113,27 +115,14 @@ export default function CustomersPage() {
     platinum: "bg-purple-500/20 text-purple-300 border-purple-500/30",
   };
 
-  return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Content Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-white/[0.04]">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
-              <Users size={24} className="text-teal-400/70 sm:w-7 sm:h-7" strokeWidth={1.5} />
-            </div>
-            <div>
-              <h1 className="text-base sm:text-lg font-light text-white/80 tracking-tight">
-                Customers
-              </h1>
-              <p className="text-[11px] text-white/30 mt-0.5 tracking-wide">
-                {stats.total.toLocaleString()} total customers
-              </p>
-            </div>
-          </div>
-        </div>
+  // Show loading state for initial load
+  if (loading && customers.length === 0) {
+    return <PageLoader message="Loading customers..." />;
+  }
 
+  return (
+    <div className={pageLayouts.page}>
+      <div className={pageLayouts.content}>
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 sm:p-5">
@@ -272,16 +261,7 @@ export default function CustomersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
-                {loading ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-6 py-12 text-center text-white/30 text-[11px] tracking-wide font-light"
-                    >
-                      Loading customers...
-                    </td>
-                  </tr>
-                ) : customers.length === 0 ? (
+                {customers.length === 0 ? (
                   <tr>
                     <td
                       colSpan={6}

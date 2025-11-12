@@ -21,6 +21,8 @@ import {
   Save,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
+import { PageLoader } from "@/components/vendor/VendorSkeleton";
+import { pageLayouts } from "@/lib/design-system";
 
 interface LoyaltyStats {
   total_members: number;
@@ -253,13 +255,7 @@ export default function LoyaltyPage() {
   };
 
   if (loading || isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-white/40 text-[10px] font-light tracking-[0.2em] uppercase">
-          Loading...
-        </div>
-      </div>
-    );
+    return <PageLoader message="Loading loyalty program..." />;
   }
 
   const tierColors = {
@@ -270,17 +266,8 @@ export default function LoyaltyPage() {
   };
 
   return (
-    <div className="w-full space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-white/40 text-[10px] font-light tracking-[0.2em] uppercase mb-2">
-            Customer Loyalty
-          </div>
-          <h1 className="text-white text-3xl font-light">Rewards Program</h1>
-        </div>
-      </div>
-
+    <div className={pageLayouts.page}>
+      <div className={pageLayouts.content}>
       {/* Tab Navigation */}
       <div className="minimal-glass subtle-glow border-b border-white/5">
         <div className="flex gap-1 p-1">
@@ -335,6 +322,7 @@ export default function LoyaltyPage() {
           onGenerateTestPass={handleGenerateTestPass}
         />
       )}
+      </div>
     </div>
   );
 }
@@ -779,7 +767,7 @@ function ConfigurationTab({
           >
             {saving ? (
               <>
-                <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
                 Saving...
               </>
             ) : (
@@ -1050,7 +1038,7 @@ function WalletTab({
             >
               {generatingTest ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin"></div>
                   Generating Pass...
                 </>
               ) : (

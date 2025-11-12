@@ -5,7 +5,8 @@ import { Save, Building2, MapPin, Users, Map, Eye, EyeOff } from "lucide-react";
 import { useAppAuth } from "@/context/AppAuthContext";
 import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
-
+import { PageLoader } from "@/components/vendor/VendorSkeleton";
+import { pageLayouts } from "@/lib/design-system";
 import { logger } from "@/lib/logger";
 export default function SettingsPage() {
   const { vendor } = useAppAuth();
@@ -101,16 +102,9 @@ export default function SettingsPage() {
 
   // Always render the page structure - even while loading vendor data
   return (
-    <div className="w-full min-h-screen p-8">
-      {/* Header */}
-      <div className="mb-12">
-        <h1 className="text-white/70 text-2xl tracking-tight mb-1 font-light">Settings</h1>
-        <p className="text-white/25 text-[11px] uppercase tracking-[0.2em] font-light">
-          Business Configuration
-        </p>
-      </div>
-
-      {/* Quick Links */}
+    <div className={pageLayouts.page}>
+      <div className={pageLayouts.content}>
+        {/* Quick Links */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
         <Link
           href="/vendor/locations"
@@ -345,6 +339,7 @@ export default function SettingsPage() {
           )}
         </div>
       </form>
+      </div>
     </div>
   );
 }

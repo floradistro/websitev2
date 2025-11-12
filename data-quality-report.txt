@@ -1,0 +1,108 @@
+================================================================================
+                     CUSTOMER DATA QUALITY REPORT
+================================================================================
+Generated: 11/11/2025, 9:38:50 PM
+Vendor ID: cd2e1122-d511-4edb-be5d-98ef274b4baf
+
+================================================================================
+1. DATA COMPLETENESS
+================================================================================
+
+Total Customers: 6956
+
+Field Completeness:
+  First Name:         6,603 / 6,956 (94.9%)
+  Last Name:          6,552 / 6,956 (94.2%)
+  Email:              6,956 / 6,956 (100.0%)
+  Phone:              6,477 / 6,956 (93.1%)
+  Real Email:         2,863 / 6,956 (41.2%)
+  Placeholder Email:  4,093 / 6,956 (58.8%)
+  Loyalty Points:     3,969 / 6,956 (57.1%)
+  Total Spent:        2,112 / 6,956 (30.4%)
+  Total Orders:       2,145 / 6,956 (30.8%)
+
+⚠️  Missing Critical Fields:
+     353 customers missing first name
+     404 customers missing last name
+
+================================================================================
+2. DATA UNIQUENESS
+================================================================================
+
+Unique Phone Numbers: 6,472
+Unique Emails: 2,862
+
+✅ No duplicate phone numbers found
+
+⚠️  1 duplicate email addresses found:
+     deannalm85@gmail.com: 2 occurrences
+
+================================================================================
+3. DATA CONSISTENCY
+================================================================================
+
+Phone Number Formats:
+  (###) ###-####: 3,464 (53.6%)
+  ##########: 2,995 (46.3%)
+  Various formats: 7 (0.1%)
+  ⚠️  Invalid format: 11
+
+⚠️  Invalid email formats: 51
+
+================================================================================
+4. DATA ACCURACY
+================================================================================
+
+⚠️  33 customers with orders but no spending
+
+================================================================================
+5. DATA TIMELINESS
+================================================================================
+
+Customers by Age:
+  Last 30 days:   6,886 (99.0%)
+  30-90 days:         9 (0.1%)
+  90+ days:          61 (0.9%)
+
+================================================================================
+6. LOYALTY DATA QUALITY
+================================================================================
+
+Loyalty Statistics:
+  Total Loyalty Points:   758,778
+  Average Points:         109.1
+  Max Points:             8,510
+  Total Spent:            $665,913.99
+  Average Spent:          $95.73
+  Max Spent:              $17,734.53
+
+Loyalty Tiers:
+  bronze         :  6,943 (99.8%)
+  silver         :      9 (0.1%)
+  gold           :      3 (0.0%)
+  platinum       :      1 (0.0%)
+
+================================================================================
+7. OVERALL DATA QUALITY SCORE
+================================================================================
+
+Data Quality Score: 75/100 (Grade: C+)
+
+Issues Identified:
+  ⚠️  Missing first names
+  ⚠️  Missing last names
+  ⚠️  Low real email rate
+  ⚠️  Inconsistent phone formatting
+
+================================================================================
+8. RECOMMENDATIONS
+================================================================================
+
+Action Items:
+• Encourage customers to provide real email addresses for better communication
+• Update customer records to include missing last names
+• Standardize phone number format across all records
+
+================================================================================
+                           END OF REPORT
+================================================================================

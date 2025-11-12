@@ -243,3 +243,104 @@ export const textStyles = {
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(" ");
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 📄 PAGE LAYOUTS - Standardized Patterns
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const pageLayouts = {
+  // Standard page wrapper (NO title - layout handles it)
+  page: "w-full",
+
+  // Page content spacing
+  content: "space-y-6",
+
+  // Stats grid (2 cols mobile, 4 cols desktop)
+  statsGrid: "grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4",
+
+  // Two column grid
+  twoCol: "grid grid-cols-1 md:grid-cols-2 gap-4",
+
+  // Three column grid
+  threeCol: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3",
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 🎴 CARD VARIANTS - Consistent Card Styles
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const cardVariants = {
+  // Standard stat card (for metrics/KPIs)
+  stat: cn(
+    "p-4 rounded-lg",
+    ds.colors.bg.elevated,
+    ds.colors.border.default,
+    "border",
+    "hover:bg-white/[0.04]",
+    ds.effects.transition.normal
+  ),
+
+  // Interactive card (hover effects)
+  interactive: cn(
+    "p-6 rounded-2xl",
+    ds.colors.bg.elevated,
+    ds.colors.border.default,
+    "border",
+    "hover:bg-white/[0.04] hover:border-white/[0.12]",
+    ds.effects.transition.normal
+  ),
+
+  // Section card (larger, for grouping content)
+  section: cn(
+    "p-6 md:p-8 rounded-3xl",
+    ds.colors.bg.elevated,
+    ds.colors.border.default,
+    "border"
+  ),
+
+  // Accent card (with colored left border)
+  accent: cn(
+    "p-6 rounded-2xl",
+    ds.colors.bg.elevated,
+    ds.colors.border.default,
+    "border border-l-2"
+  ),
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 📝 TEXT PRESETS - Standardized Typography Patterns
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const textPresets = {
+  // Stat label (consistent across all pages)
+  statLabel: cn(
+    ds.typography.size.xs,
+    ds.typography.transform.uppercase,
+    ds.typography.tracking.wide,
+    ds.colors.text.quaternary,
+    ds.typography.weight.medium
+  ),
+
+  // Stat value (consistent across all pages)
+  statValue: cn(
+    ds.typography.size["2xl"],
+    ds.typography.weight.light,
+    ds.colors.text.primary
+  ),
+
+  // Section subtitle (above sections)
+  sectionSubtitle: cn(
+    ds.typography.size.xs,
+    ds.typography.transform.uppercase,
+    ds.typography.tracking.wide,
+    ds.colors.text.quaternary,
+    ds.typography.weight.medium
+  ),
+
+  // Section title
+  sectionTitle: cn(
+    ds.typography.size.lg,
+    ds.typography.weight.light,
+    ds.colors.text.primary
+  ),
+};

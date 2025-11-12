@@ -51,9 +51,9 @@ export default function ReferencePreview({
   }
 
   return (
-    <div className="space-y-4">
-      {/* Reference images grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+    <div className="space-y-3">
+      {/* Reference images grid - compact 3 column max */}
+      <div className="grid grid-cols-3 gap-2">
         {references.map((ref) => {
           const weight = getWeight(ref.id);
           return (
@@ -73,16 +73,16 @@ export default function ReferencePreview({
               {/* Remove button */}
               <button
                 onClick={() => onRemove(ref.id)}
-                className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
               >
-                <X className="w-4 h-4 text-white" strokeWidth={2} />
+                <X className="w-3 h-3 text-white" strokeWidth={2} />
               </button>
 
-              {/* Weight slider */}
-              <div className="p-3 space-y-2">
+              {/* Weight slider - compact */}
+              <div className="p-2 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/50 font-light">Influence</span>
-                  <span className="text-xs text-white font-medium">{weight}%</span>
+                  <span className="text-[10px] text-white/50 font-light">Influence</span>
+                  <span className="text-[10px] text-white font-medium">{weight}%</span>
                 </div>
                 <input
                   type="range"
@@ -91,7 +91,7 @@ export default function ReferencePreview({
                   step="5"
                   value={weight}
                   onChange={(e) => onWeightChange(ref.id, parseInt(e.target.value))}
-                  className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+                  className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:w-2.5 [&::-moz-range-thumb]:h-2.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
                 />
               </div>
             </div>
@@ -99,27 +99,29 @@ export default function ReferencePreview({
         })}
       </div>
 
-      {/* Style description */}
-      <div className="rounded-xl bg-white/5 border border-white/10 p-4">
-        <div className="flex items-start gap-3">
+      {/* Style description - compact with max height */}
+      <div className="rounded-lg bg-white/5 border border-white/10 p-3">
+        <div className="flex items-start gap-2">
           <div className="flex-shrink-0">
             <Sparkles
-              className={`w-5 h-5 ${analyzing ? "text-white/40" : "text-white/60"}`}
+              className={`w-4 h-4 ${analyzing ? "text-white/40" : "text-white/60"}`}
               strokeWidth={1.5}
             />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm text-white/70 font-light mb-1">Style Analysis</h4>
+            <h4 className="text-xs text-white/70 font-light mb-1">Style Analysis</h4>
             {analyzing ? (
               <div className="flex items-center gap-2">
-                <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
-                <p className="text-sm text-white/40 font-light">Analyzing references...</p>
+                <Loader2 className="w-3 h-3 text-white/40 animate-spin" />
+                <p className="text-xs text-white/40 font-light">Analyzing...</p>
               </div>
             ) : styleDescription ? (
-              <p className="text-sm text-white/90 font-light leading-relaxed">{styleDescription}</p>
+              <div className="max-h-20 overflow-y-auto scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20">
+                <p className="text-xs text-white/90 font-light leading-relaxed pr-2">{styleDescription}</p>
+              </div>
             ) : (
-              <p className="text-sm text-white/40 font-light italic">
-                Adjust weights to analyze style
+              <p className="text-xs text-white/40 font-light italic">
+                Adjust weights to analyze
               </p>
             )}
           </div>

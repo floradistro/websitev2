@@ -118,58 +118,11 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {/* PWA Safe Area Spacer */}
-      <div
-        className="fixed top-0 left-0 right-0 z-[120] pointer-events-none bg-black"
-        style={{
-          height: "env(safe-area-inset-top, 0px)",
-        }}
-      />
 
-      {/* Mobile/Tablet Top Bar - Shows below xl breakpoint (< 1280px) */}
-      <nav
-        className={`xl:hidden sticky z-[110] border-b border-white/5 transition-all duration-300 bg-[#0a0a0a] ${
-          isVisible ? "translate-y-0" : "-translate-y-full"
-        }`}
-        style={{
-          top: "env(safe-area-inset-top, 0px)",
-        }}
-      >
-        <div className="flex items-center justify-between h-12 px-4 gap-3">
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 -ml-1.5 text-white/60 hover:text-white transition-all duration-200 hover:bg-white/5 rounded-lg flex-shrink-0"
-          >
-            <Menu size={18} strokeWidth={2} />
-          </button>
-
-          <div className="flex-1 flex justify-center">
-            <UniversalSearch />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleRefresh}
-              className="p-1.5 text-white/40 hover:text-white/70 transition-all duration-200 hover:bg-white/5 rounded-lg flex-shrink-0"
-              title="Refresh"
-            >
-              <RefreshCw size={16} strokeWidth={1.5} />
-            </button>
-
-            <Link
-              href="/vendor/apps"
-              className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden border border-white/10 transition-all duration-200 hover:border-white/20 flex-shrink-0"
-            >
-              <img src={vendorLogo} alt={vendorName} className="w-full h-full object-contain p-1" />
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Mobile/Tablet Menu Overlay - Shows below xl breakpoint */}
+      {/* Mobile/Tablet Menu Overlay - Shows below md breakpoint */}
       {mobileMenuOpen && (
         <div
-          className="xl:hidden fixed inset-0 z-[150] bg-black/90 backdrop-blur-lg"
+          className="md:hidden fixed inset-0 z-[150] bg-black/90 backdrop-blur-lg"
           onClick={() => setMobileMenuOpen(false)}
         >
           <div
@@ -370,24 +323,26 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      {/* Desktop Header - DESKTOP ONLY (xl breakpoint = 1280px+) */}
-      <nav
-        className="hidden xl:block border-b border-white/[0.06] fixed top-0 left-0 right-0 z-[110] bg-[#0a0a0a]"
-        style={{
-          paddingTop: "env(safe-area-inset-top, 0px)",
-        }}
-      >
-        <div className="w-full px-6">
-          <div className="flex justify-between items-center h-[52px]">
-            <Link href="/vendor/apps" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 bg-white/[0.04] rounded-lg flex items-center justify-center overflow-hidden border border-white/[0.08] transition-all duration-200 group-hover:border-white/[0.12]">
+      <div className="fixed inset-0 bg-black">
+        {/* Icon-Only Sidebar - Expands on hover (Steve Jobs style) */}
+        {!pathname?.includes("/tv-menus") && (
+          <aside
+            suppressHydrationWarning
+            className="hidden md:flex flex-col w-[60px] hover:w-[240px] border-r border-white/[0.06] fixed left-0 top-0 bottom-0 bg-[#0a0a0a] transition-all duration-300 ease-out group overflow-hidden z-[100]"
+          >
+            {/* Logo/Brand at top */}
+            <Link
+              href="/vendor/apps"
+              className="flex items-center gap-3 px-3 py-4 border-b border-white/[0.06] flex-shrink-0 overflow-hidden"
+            >
+              <div className="w-[36px] h-[36px] bg-white/[0.04] rounded-lg flex items-center justify-center overflow-hidden border border-white/[0.08] transition-all duration-200 group-hover:border-white/[0.12] flex-shrink-0">
                 <img
                   src={vendorLogo}
                   alt={vendorName}
                   className="w-full h-full object-contain p-0.5"
                 />
               </div>
-              <div>
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap overflow-hidden">
                 <div className="text-white/90 text-[11px] tracking-wide font-medium">
                   {vendorName}
                 </div>
@@ -395,50 +350,8 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
               </div>
             </Link>
 
-            <div className="flex items-center gap-4">
-              <UniversalSearch />
-              <button
-                onClick={handleRefresh}
-                className="text-white/40 hover:text-white/70 transition-all duration-200 p-1.5 hover:bg-white/5 rounded-lg"
-                title="Refresh"
-              >
-                <RefreshCw size={14} strokeWidth={1.5} />
-              </button>
-              <Link
-                href="/vendor/apps"
-                className="text-white/60 hover:text-white text-[10px] uppercase tracking-[0.15em] transition-all duration-200"
-              >
-                Apps
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="group text-white/40 hover:text-white/70 text-[10px] uppercase tracking-[0.15em] transition-all duration-200 flex items-center gap-1.5"
-              >
-                <LogOut size={12} strokeWidth={2} />
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <div
-        className="fixed inset-0 bg-black xl:top-[52px]"
-        style={{
-          top: "calc(48px + env(safe-area-inset-top, 0px))",
-          paddingBottom: "env(safe-area-inset-bottom)",
-        }}
-      >
-        {/* Desktop Sidebar - DESKTOP ONLY (hidden on mobile/tablet and tv-menus page) */}
-        {!pathname?.includes("/tv-menus") && (
-          <aside
-            className="hidden xl:block w-60 border-r border-white/[0.06] fixed left-0 bottom-0 overflow-y-auto bg-[#0a0a0a]"
-            style={{
-              top: "calc(52px + env(safe-area-inset-top, 0px))",
-              bottom: "env(safe-area-inset-bottom)",
-            }}
-          >
-            <nav className="px-2 py-3 space-y-0.5 pb-8" suppressHydrationWarning>
+            {/* Navigation */}
+            <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-0.5" suppressHydrationWarning>
               {/* Top level items */}
               {topLevelNavItems
                 .filter((item) => !item.appKey || hasAppAccess(item.appKey))
@@ -450,19 +363,17 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                       key={item.href}
                       href={item.href}
                       onMouseEnter={() => handleNavHover(item.href)}
-                      className={`group flex items-center justify-between px-3 py-2 transition-all duration-200 border rounded-lg ${
+                      title={item.label}
+                      className={`flex items-center gap-3 px-3 py-2.5 transition-all duration-200 border rounded-lg overflow-hidden ${
                         active
                           ? "text-white bg-white/[0.08] border-white/[0.12]"
                           : "text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]"
                       }`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <Icon size={14} strokeWidth={active ? 2 : 1.5} />
-                        <span className="text-[10px] uppercase tracking-[0.15em] font-medium">
-                          {item.label}
-                        </span>
-                      </div>
-                      {active && <div className="w-1 h-1 rounded-full bg-white/90" />}
+                      <Icon size={18} strokeWidth={active ? 2 : 1.5} className="flex-shrink-0" />
+                      <span className="text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {item.label}
+                      </span>
                     </Link>
                   );
                 })}
@@ -477,20 +388,21 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                   <div key={section.label}>
                     <button
                       onClick={() => toggleSection(section.label)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 border ${
+                      title={section.label}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 border overflow-hidden ${
                         hasActiveItem
                           ? "bg-white/[0.04] text-white border-white/[0.08]"
                           : "text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]"
                       }`}
                     >
-                      <div className="flex items-center gap-2.5">
-                        <SectionIcon size={14} strokeWidth={hasActiveItem ? 2 : 1.5} />
-                        <span className="text-[10px] uppercase tracking-[0.15em] font-medium">
+                      <div className="flex items-center gap-3">
+                        <SectionIcon size={18} strokeWidth={hasActiveItem ? 2 : 1.5} className="flex-shrink-0" />
+                        <span className="text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           {section.label}
                         </span>
                       </div>
                       <svg
-                        className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                        className={`w-3 h-3 transition-all duration-200 opacity-0 group-hover:opacity-100 flex-shrink-0 ${isExpanded ? "rotate-180" : ""}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -505,7 +417,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                     </button>
 
                     {isExpanded && (
-                      <div className="mt-0.5 ml-2 space-y-0.5">
+                      <div className="mt-0.5 space-y-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         {section.items
                           .filter((item) => !item.appKey || hasAppAccess(item.appKey))
                           .map((item) => {
@@ -516,19 +428,17 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                                 key={item.href}
                                 href={item.href}
                                 onMouseEnter={() => handleNavHover(item.href)}
-                                className={`group flex items-center justify-between px-3 py-1.5 rounded-lg transition-all duration-200 ${
+                                title={item.label}
+                                className={`flex items-center gap-3 px-3 pl-6 py-2 rounded-lg transition-all duration-200 overflow-hidden ${
                                   active
                                     ? "bg-white/[0.08] text-white"
                                     : "text-white/40 hover:text-white hover:bg-white/[0.04]"
                                 }`}
                               >
-                                <div className="flex items-center gap-2.5">
-                                  <Icon size={13} strokeWidth={active ? 2 : 1.5} />
-                                  <span className="text-[9px] uppercase tracking-[0.15em] font-medium">
-                                    {item.label}
-                                  </span>
-                                </div>
-                                {active && <div className="w-1 h-1 rounded-full bg-white/90" />}
+                                <Icon size={16} strokeWidth={active ? 2 : 1.5} className="flex-shrink-0" />
+                                <span className="text-[9px] uppercase tracking-[0.15em] font-medium whitespace-nowrap">
+                                  {item.label}
+                                </span>
                               </Link>
                             );
                           })}
@@ -538,49 +448,81 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                 );
               })}
 
-              {/* Settings at bottom */}
+              {/* Settings */}
               {(!settingsNavItem.appKey || hasAppAccess(settingsNavItem.appKey)) && (
                 <Link
                   href={settingsNavItem.href}
-                  className={`group flex items-center justify-between px-3 py-2 mt-1 transition-all duration-200 border rounded-lg ${
+                  title={settingsNavItem.label}
+                  className={`flex items-center gap-3 px-3 py-2.5 mt-1 transition-all duration-200 border rounded-lg overflow-hidden ${
                     isActive(settingsNavItem.href)
                       ? "text-white bg-white/[0.08] border-white/[0.12]"
                       : "text-white/40 hover:text-white hover:bg-white/[0.04] border-transparent"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <settingsNavItem.icon
-                      size={14}
-                      strokeWidth={isActive(settingsNavItem.href) ? 2 : 1.5}
-                    />
-                    <span className="text-[10px] uppercase tracking-[0.15em] font-medium">
-                      {settingsNavItem.label}
-                    </span>
-                  </div>
-                  {isActive(settingsNavItem.href) && (
-                    <div className="w-1 h-1 rounded-full bg-white/90" />
-                  )}
+                  <settingsNavItem.icon
+                    size={18}
+                    strokeWidth={isActive(settingsNavItem.href) ? 2 : 1.5}
+                    className="flex-shrink-0"
+                  />
+                  <span className="text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {settingsNavItem.label}
+                  </span>
                 </Link>
               )}
             </nav>
+
+            {/* Logout at bottom */}
+            <div className="px-2 py-3 border-t border-white/[0.06] flex-shrink-0">
+              <button
+                onClick={handleLogout}
+                title="Sign Out"
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-white/40 hover:text-white/70 text-[10px] uppercase tracking-[0.15em] transition-all duration-200 hover:bg-white/[0.04] rounded-lg overflow-hidden"
+              >
+                <LogOut size={18} strokeWidth={1.5} className="flex-shrink-0" />
+                <span className="whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  Sign Out
+                </span>
+              </button>
+            </div>
           </aside>
         )}
 
         {/* Main Content - FULL WIDTH on mobile/tablet and tv-menus, with sidebar on desktop */}
         <main
-          className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes("/tv-menus") ? "xl:left-60" : ""}`}
+          suppressHydrationWarning
+          className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes("/tv-menus") ? "md:left-[60px]" : ""}`}
         >
           <div
             className={
               pathname?.includes("/tv-menus")
                 ? ""
-                : "px-4 md:px-6 lg:px-8 xl:py-10 xl:px-10 2xl:px-16 pt-4 md:pt-6 pb-10"
+                : "px-4 md:px-6 lg:px-8 md:py-6 md:px-10 lg:px-12 xl:px-16 pt-4 pb-10"
             }
           >
+            {/* Page Title - Prominent and always visible */}
+            {!pathname?.includes("/tv-menus") && (
+              <div className="mb-6">
+                <h1 className="text-2xl md:text-3xl font-light text-white/90 tracking-tight">
+                  {currentPage}
+                </h1>
+              </div>
+            )}
             {children}
           </div>
         </main>
       </div>
+
+      {/* Floating Mobile Menu Button - Bottom right */}
+      <button
+        onClick={() => setMobileMenuOpen(true)}
+        suppressHydrationWarning
+        className="md:hidden fixed bottom-6 right-6 z-[90] w-14 h-14 bg-white text-black rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
+        style={{
+          bottom: "calc(1.5rem + env(safe-area-inset-bottom))",
+        }}
+      >
+        <Menu size={24} strokeWidth={2} />
+      </button>
 
       <VendorSupportChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <AIActivityMonitor />

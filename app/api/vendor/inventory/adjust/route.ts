@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
     // Clamp to 0 if we're within epsilon of 0 (handles floating point errors)
     const finalQty = newQty < 0 ? 0 : newQty;
 
-    // Update inventory
+    // ATOMIC TRANSACTION: Update inventory + create transaction record in one go
     const { data: updated, error: updateError } = await supabase
       .from("inventory")
       .update({
@@ -190,6 +190,28 @@ export async function POST(request: NextRequest) {
         },
         { status: 500 },
       );
+    }
+
+    // Create atomic transaction record (NEW - for perfect audit trail)
+    const { error: txnError } = await supabase
+      .from("inventory_transactions")
+      .insert({
+        vendor_id: vendorId,
+        location_id: inventory.location_id,
+        product_id: inventory.product_id,
+        inventory_id: inventory.id,
+        transaction_type: "adjustment",
+        quantity_before: currentQty,
+        quantity_change: adjustmentAmount,
+        quantity_after: finalQty,
+        reason: reason || "Manual inventory adjustment",
+        reference_type: "manual",
+        performed_by_name: "Vendor User",
+      });
+
+    if (txnError) {
+      logger.error("❌ Failed to create transaction record (non-fatal):", txnError);
+      // Don't fail the request - inventory is already updated
     }
 
     // Sync product's stock_quantity with inventory total

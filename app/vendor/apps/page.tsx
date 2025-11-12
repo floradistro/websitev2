@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAppAuth } from "@/context/AppAuthContext";
 import { AppsGrid } from "@/components/admin/AppsGrid";
-import { MapPin, User, Briefcase, Store, Sparkles, TrendingUp, Package } from "lucide-react";
+import { MapPin, Briefcase, TrendingUp, Package } from "lucide-react";
 import { useVendorDashboard } from "@/hooks/useVendorData";
 import { DashboardSkeleton } from "@/components/vendor/VendorSkeleton";
 import { KPIWidget } from "@/components/dashboard/KPIWidget";
@@ -141,50 +141,65 @@ export default function MegaDashboard() {
   };
 
   return (
-    <div className="absolute inset-0 bg-[#0a0a0a] overflow-hidden flex flex-col">
-      {/* Subtle ambient glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-white/[0.008] rounded-full blur-3xl" />
-      </div>
+    <div className="w-full">
+      {/* Quick Stats */}
+      {dashboardData && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+          <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] transition-all duration-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-medium">
+                Products
+              </span>
+              <Package className="w-4 h-4 text-white/20" strokeWidth={1.5} />
+            </div>
+            <div className="text-2xl font-light text-white/90">{stats.approved}</div>
+            {stats.lowStock > 0 && (
+              <div className="text-[10px] text-red-400/60 mt-1">
+                {stats.lowStock} low stock
+              </div>
+            )}
+          </div>
 
-      <div className="flex-1 overflow-y-auto w-full relative z-10">
-        {/* Left-aligned content container */}
-        <div className="max-w-5xl mx-auto px-8 pt-16">
-          {/* Greeting Header - Left aligned */}
-          <div className="mb-10">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center overflow-hidden shadow-lg shadow-black/40">
-                <img
-                  src={vendor?.logo_url || "/yacht-club-logo.png"}
-                  alt={vendor?.store_name || "Logo"}
-                  className="w-full h-full object-contain p-2"
-                />
-              </div>
-              <div>
-                <h1 className="text-white text-xl tracking-tight font-medium">{getGreeting()}</h1>
-                <p className="text-white/40 text-[10px] uppercase tracking-[0.15em] font-medium">
-                  {vendor?.store_name || "Your Store"}
-                </p>
-              </div>
+          <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] transition-all duration-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-medium">
+                30-Day Sales
+              </span>
+              <TrendingUp className="w-4 h-4 text-white/20" strokeWidth={1.5} />
+            </div>
+            <div className="text-2xl font-light text-white/90">
+              ${(stats.totalSales30d / 1000).toFixed(1)}k
             </div>
           </div>
 
-          {/* Section divider */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3">
-              <h2 className="text-white/90 text-sm uppercase tracking-[0.15em] font-medium">
-                Apps
-              </h2>
-              <div className="flex-1 h-px bg-white/[0.06]" />
+          <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] transition-all duration-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-medium">
+                Location
+              </span>
+              <MapPin className="w-4 h-4 text-white/20" strokeWidth={1.5} />
+            </div>
+            <div className="text-sm font-light text-white/90 truncate">
+              {primaryLocation?.name || "No location"}
             </div>
           </div>
 
-          {/* App Grid - Left aligned, constrained width */}
-          <div className="max-w-3xl pb-16">
-            <AppsGrid badgeCounts={badgeCounts} />
+          <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] transition-all duration-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] uppercase tracking-[0.15em] text-white/40 font-medium">
+                Role
+              </span>
+              <Briefcase className="w-4 h-4 text-white/20" strokeWidth={1.5} />
+            </div>
+            <div className="text-sm font-light text-white/90 capitalize">
+              {role?.replace(/_/g, " ") || "User"}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Apps Grid */}
+      <AppsGrid badgeCounts={badgeCounts} />
 
       {/* AI KPI Creator Modal */}
       <AIKPICreator
