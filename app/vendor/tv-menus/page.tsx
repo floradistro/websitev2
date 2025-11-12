@@ -445,7 +445,9 @@ export default function SimpleTVMenusPage() {
 
         if (catData.success) {
           // Extract just the category names from the objects
-          const categoryNames = (catData.categories || []).map((cat: any) => cat.slug || cat.name);
+          // Use cat.name (capitalized like "Vape", "Flower") NOT cat.slug (lowercase)
+          // This matches how products are filtered in tv-display
+          const categoryNames = (catData.categories || []).map((cat: any) => cat.name);
           setAvailableCategories(categoryNames);
         } else {
           if (process.env.NODE_ENV === "development") {

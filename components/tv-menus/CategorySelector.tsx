@@ -31,30 +31,45 @@ export default function CategorySelector({
   };
 
   const handleCategoryClick = (category: string) => {
+    console.log("🔘 [CategorySelector] Clicked:", category);
+    console.log("🔘 [CategorySelector] Current selection:", selectedCategories);
+    console.log("🔘 [CategorySelector] Is all selected:", isAllSelected);
+
     // If "All" is selected, clicking any category should select only that one
     if (isAllSelected) {
+      console.log("🔘 [CategorySelector] Selecting only:", category);
       onCategoriesChange([category]);
       return;
     }
 
-    // Toggle the category
-    const newCategories = selectedCategories.includes(category)
-      ? selectedCategories.filter((c) => c !== category)
+    // Toggle the category (case-insensitive comparison)
+    const categoryLower = category.toLowerCase();
+    const isSelected = selectedCategories.some((c) => c.toLowerCase() === categoryLower);
+
+    const newCategories = isSelected
+      ? selectedCategories.filter((c) => c.toLowerCase() !== categoryLower)
       : [...selectedCategories, category];
+
+    console.log("🔘 [CategorySelector] New categories:", newCategories);
 
     // If all categories are selected, treat as "all"
     if (newCategories.length === availableCategories.length) {
+      console.log("🔘 [CategorySelector] All selected - clearing");
       onCategoriesChange([]);
     } else if (newCategories.length === 0) {
       // If nothing selected, go back to "all"
+      console.log("🔘 [CategorySelector] None selected - clearing");
       onCategoriesChange([]);
     } else {
+      console.log("🔘 [CategorySelector] Calling onCategoriesChange with:", newCategories);
       onCategoriesChange(newCategories);
     }
   };
 
   const isCategorySelected = (category: string) => {
-    return selectedCategories.includes(category);
+    // Case-insensitive comparison
+    const categoryLower = category.toLowerCase();
+    return selectedCategories.some((c) => c.toLowerCase() === categoryLower);
   };
 
   return (

@@ -991,8 +991,12 @@ function TVDisplayContent() {
           {(() => {
             // Use same category priority logic as product filtering
             // Priority 1: Menu categories, Priority 2: Group member categories
-            const displayCategories =
+            const categoriesRaw =
               activeMenu?.config_data?.categories || groupMember?.assigned_categories || [];
+            // Remove duplicates (case-insensitive)
+            const displayCategories = Array.from(
+              new Set(categoriesRaw.map((cat: string) => cat.toLowerCase()))
+            ).map((cat) => categoriesRaw.find((c: string) => c.toLowerCase() === cat) || cat);
 
             return (
               !isSplitView &&
@@ -1261,24 +1265,31 @@ function TVDisplayContent() {
                           paddingBottom: isPortrait ? "0.75%" : "0",
                         }}
                       >
-                        {(splitLeftTitle || splitLeftCategory) && (
-                          <h2
-                            className="font-black uppercase tracking-wide text-center mb-2 flex-shrink-0"
-                            style={{
-                              color: theme.styles.productName.color,
-                              fontSize: "clamp(1.5rem, 3vw, 4rem)",
-                              lineHeight: 0.9,
-                            }}
-                          >
-                            {splitLeftTitle || splitLeftCategory}
-                          </h2>
-                        )}
                         {(() => {
                           const { grouped: leftGrouped, ungrouped: leftUngrouped } =
                             groupProductsBySubcategory(leftProducts);
                           const hasLeftSubcategories = leftGrouped.size > 0;
 
+                          // Only show main header if:
+                          // 1. There's a custom title (user override), OR
+                          // 2. There are NO subcategories (regular category display)
+                          const shouldShowHeader = splitLeftTitle || !hasLeftSubcategories;
+                          const headerText = splitLeftTitle || splitLeftCategory;
+
                           return (
+                            <>
+                              {shouldShowHeader && (splitLeftTitle || splitLeftCategory) && (
+                                <h2
+                                  className="font-black uppercase tracking-wide text-center mb-2 flex-shrink-0"
+                                  style={{
+                                    color: theme.styles.productName.color,
+                                    fontSize: "clamp(1.5rem, 3vw, 4rem)",
+                                    lineHeight: 0.9,
+                                  }}
+                                >
+                                  {headerText}
+                                </h2>
+                              )}
                             <div
                               className={`w-full ${hasLeftSubcategories ? "overflow-y-auto" : gridClasses}`}
                               style={{
@@ -1410,6 +1421,7 @@ function TVDisplayContent() {
                                 </>
                               )}
                             </div>
+                            </>
                           );
                         })()}
                       </div>
@@ -1432,24 +1444,31 @@ function TVDisplayContent() {
                           paddingLeft: "0.75%",
                         }}
                       >
-                        {(splitRightTitle || splitRightCategory) && (
-                          <h2
-                            className="font-black uppercase tracking-wide text-center mb-2 flex-shrink-0"
-                            style={{
-                              color: theme.styles.productName.color,
-                              fontSize: "clamp(1.5rem, 3vw, 4rem)",
-                              lineHeight: 0.9,
-                            }}
-                          >
-                            {splitRightTitle || splitRightCategory}
-                          </h2>
-                        )}
                         {(() => {
                           const { grouped: rightGrouped, ungrouped: rightUngrouped } =
                             groupProductsBySubcategory(rightProducts);
                           const hasRightSubcategories = rightGrouped.size > 0;
 
+                          // Only show main header if:
+                          // 1. There's a custom title (user override), OR
+                          // 2. There are NO subcategories (regular category display)
+                          const shouldShowHeader = splitRightTitle || !hasRightSubcategories;
+                          const headerText = splitRightTitle || splitRightCategory;
+
                           return (
+                            <>
+                              {shouldShowHeader && (splitRightTitle || splitRightCategory) && (
+                                <h2
+                                  className="font-black uppercase tracking-wide text-center mb-2 flex-shrink-0"
+                                  style={{
+                                    color: theme.styles.productName.color,
+                                    fontSize: "clamp(1.5rem, 3vw, 4rem)",
+                                    lineHeight: 0.9,
+                                  }}
+                                >
+                                  {headerText}
+                                </h2>
+                              )}
                             <div
                               className={`w-full ${hasRightSubcategories ? "overflow-y-auto" : gridClasses}`}
                               style={{
@@ -1581,6 +1600,7 @@ function TVDisplayContent() {
                                 </>
                               )}
                             </div>
+                            </>
                           );
                         })()}
                       </div>
