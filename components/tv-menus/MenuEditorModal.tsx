@@ -16,6 +16,7 @@ interface MenuEditorModalProps {
   menu: any;
   onClose: () => void;
   onSave: (menuData: any) => void;
+  onThemeChange?: (menuId: string, newTheme: string) => Promise<boolean>;
   updating: boolean;
   error: string | null;
   availableCategories: string[];
@@ -27,6 +28,7 @@ export default function MenuEditorModal({
   menu,
   onClose,
   onSave,
+  onThemeChange,
   updating,
   error,
   availableCategories,
@@ -309,14 +311,32 @@ export default function MenuEditorModal({
 
             {/* Theme */}
             <div>
-              <label className="block text-xs text-white/40 mb-2">Theme</label>
+              <label className="block text-xs text-white/40 mb-2">
+                Theme
+                <span className="ml-2 text-[10px] text-white/30">(changes apply instantly)</span>
+              </label>
               <div className="grid grid-cols-4 gap-2">
                 {themes.map((t) => {
                   const isSelected = theme === t.id;
                   return (
                     <button
                       key={t.id}
-                      onClick={() => setTheme(t.id)}
+                      onClick={async () => {
+                        console.log("🎨 [THEME BUTTON] Clicked:", t.id);
+
+                        // Update local state immediately for instant UI feedback
+                        setTheme(t.id);
+                        console.log("🎨 [THEME BUTTON] Local state updated");
+
+                        // If instant theme update function is provided, call it
+                        if (onThemeChange && menu?.id) {
+                          console.log("🎨 [THEME BUTTON] Calling onThemeChange...");
+                          const result = await onThemeChange(menu.id, t.id);
+                          console.log("🎨 [THEME BUTTON] Result:", result);
+                        } else {
+                          console.warn("🎨 [THEME BUTTON] No onThemeChange function or menu ID");
+                        }
+                      }}
                       className={`p-2 rounded-lg border transition-all ${
                         isSelected
                           ? "border-white bg-white/5"

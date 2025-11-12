@@ -4,18 +4,16 @@
  */
 
 import { appleThemes } from "./apple";
-import { luxuryThemes } from "./luxury";
-import { premiumThemes } from "./premium";
+import { ios18Themes } from "./ios18";
 
 /**
- * All TV Menu Display Themes - Premium Collection
- * Steve Jobs-approved: Minimal, elegant, and sophisticated
+ * All TV Menu Display Themes - Curated Collection
+ * Apple-quality themes with stunning iOS 18 animated gradients
  */
 export const themes = [
-  ...appleThemes, // 2 themes
-  ...luxuryThemes, // 8 themes
-  ...premiumThemes, // 12 themes
-]; // Total: 22 themes
+  ...appleThemes, // 2 themes (Apple Light, Apple Dark)
+  ...ios18Themes, // 5 themes (Aurora, Sunset, Ocean, Forest, Twilight)
+]; // Total: 7 focused, beautiful themes
 
 // Re-export individual collections for direct access
-export { appleThemes, luxuryThemes, premiumThemes };
+export { appleThemes, ios18Themes };

@@ -31,6 +31,7 @@ function TVDisplayContent() {
   const menuIdParam = searchParams.get("menu_id");
   const deviceIdParam = searchParams.get("device_id"); // For preview mode
   const isPreview = searchParams.get("preview") === "true"; // Skip registration for iframe previews
+  const themeOverride = searchParams.get("theme"); // Instant theme override for atomic updates
 
   // State
   const [deviceId, setDeviceId] = useState<string | null>(null);
@@ -220,6 +221,10 @@ function TVDisplayContent() {
           // Device exists, just update its status
           const existing = existingDevices[0];
 
+          // Detect orientation
+          const orientation =
+            window.screen.height > window.screen.width ? "portrait" : "landscape";
+
           const { data: device, error } = await supabase
             .from("tv_devices")
             .update({
@@ -229,6 +234,7 @@ function TVDisplayContent() {
               last_heartbeat_at: new Date().toISOString(),
               user_agent: navigator.userAgent,
               screen_resolution: `${window.screen.width}x${window.screen.height}`,
+              screen_orientation: orientation,
               browser_info: {
                 platform: navigator.platform,
                 language: navigator.language,
@@ -244,6 +250,10 @@ function TVDisplayContent() {
           setConnectionStatus("online");
         } else {
           // New device, create it
+          // Detect orientation
+          const orientation =
+            window.screen.height > window.screen.width ? "portrait" : "landscape";
+
           const deviceData: any = {
             device_identifier: crypto.randomUUID(),
             vendor_id: vendorId,
@@ -255,6 +265,7 @@ function TVDisplayContent() {
             last_heartbeat_at: new Date().toISOString(),
             user_agent: navigator.userAgent,
             screen_resolution: `${window.screen.width}x${window.screen.height}`,
+            screen_orientation: orientation,
             browser_info: {
               platform: navigator.platform,
               language: navigator.language,
@@ -910,9 +921,14 @@ function TVDisplayContent() {
     );
   }
 
-  // Get theme - Menu theme takes priority, display group theme is fallback
-  const themeId = activeMenu.theme || displayGroup?.shared_theme;
+  // Get theme - URL override takes priority (for instant atomic updates), then menu theme, then display group theme
+  const themeId = themeOverride || activeMenu.theme || displayGroup?.shared_theme;
   const theme = getTheme(themeId);
+
+  // Log theme selection for debugging
+  if (themeOverride) {
+    console.log("🎨 [TV-DISPLAY] Using theme override from URL:", themeOverride);
+  }
 
   // Check if split view mode
   const layoutStyle = activeMenu?.config_data?.layoutStyle || "single";

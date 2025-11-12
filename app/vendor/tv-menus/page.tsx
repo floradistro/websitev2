@@ -16,6 +16,8 @@ import {
   LayoutGrid,
   RotateCw,
   Sparkles,
+  ChevronRight,
+  Home,
 } from "lucide-react";
 import { themes, getTheme, type TVTheme } from "@/lib/themes";
 import { type CategoryPricingConfig } from "@/lib/category-pricing-defaults";
@@ -38,6 +40,8 @@ interface TVDevice {
   active_menu_id: string | null;
   location_id: string | null;
   last_heartbeat_at: string;
+  screen_resolution?: string;
+  screen_orientation?: "portrait" | "landscape";
 }
 
 interface TVMenu {
@@ -179,6 +183,11 @@ export default function SimpleTVMenusPage() {
       return;
     }
 
+    // Don't load devices until a location is selected (for multi-location users)
+    if (!selectedLocation && locations.length > 1) {
+      return;
+    }
+
     try {
       // Load locations
       const locRes = await fetch(`/api/vendor/locations?vendor_id=${vendor.id}`);
@@ -194,25 +203,27 @@ export default function SimpleTVMenusPage() {
           allLocations = allLocations.filter((loc: Location) =>
             accessibleLocationIds.includes(loc.id),
           );
-        } else {
         }
 
         setLocations(allLocations);
-        // Don't auto-select first location - start with "All Locations"
       }
 
-      // Load devices
+      // Load devices - ONLY for selected location
       let devQuery = supabase
         .from("tv_devices")
         .select("*")
         .eq("vendor_id", vendor.id)
         .order("tv_number");
 
-      // Apply location filter if specific location is selected
-      if (selectedLocation && selectedLocation !== "") {
+      // CRITICAL: Always filter by location at the database level
+      if (selectedLocation) {
+        // Specific location selected - filter to that location only
         devQuery = devQuery.eq("location_id", selectedLocation);
-      } else {
+      } else if (accessibleLocationIds.length > 0) {
+        // No specific location but user has limited access - filter to accessible locations
+        devQuery = devQuery.in("location_id", accessibleLocationIds);
       }
+      // If no selectedLocation and no accessibleLocationIds (admin with single location), load all
 
       const { data: devData, error: devError } = await devQuery;
 
@@ -223,7 +234,7 @@ export default function SimpleTVMenusPage() {
       } else {
         // Check heartbeat timestamps and update status
         const now = new Date();
-        let devicesWithStatus =
+        const devicesWithStatus =
           devData?.map((device) => {
             const lastHeartbeat = device.last_heartbeat_at
               ? new Date(device.last_heartbeat_at)
@@ -240,13 +251,6 @@ export default function SimpleTVMenusPage() {
               connection_status: actualStatus,
             };
           }) || [];
-
-        // Filter devices based on location permissions (unless specific location is selected, which is already filtered)
-        if (!selectedLocation && accessibleLocationIds.length > 0) {
-          devicesWithStatus = devicesWithStatus.filter(
-            (device) => device.location_id && accessibleLocationIds.includes(device.location_id),
-          );
-        }
 
         setDevices(devicesWithStatus);
       }
@@ -266,7 +270,7 @@ export default function SimpleTVMenusPage() {
       }
       setLoading(false);
     }
-  }, [vendor, selectedLocation, accessibleLocationIds, permissionsLoaded]);
+  }, [vendor, selectedLocation, accessibleLocationIds, permissionsLoaded, locations.length]);
 
   useEffect(() => {
     loadData();
@@ -440,7 +444,9 @@ export default function SimpleTVMenusPage() {
         const catData = await catResponse.json();
 
         if (catData.success) {
-          setAvailableCategories(catData.categories || []);
+          // Extract just the category names from the objects
+          const categoryNames = (catData.categories || []).map((cat: any) => cat.slug || cat.name);
+          setAvailableCategories(categoryNames);
         } else {
           if (process.env.NODE_ENV === "development") {
             logger.error("❌ Error fetching categories:", catData.error);
@@ -533,6 +539,66 @@ export default function SimpleTVMenusPage() {
       setError(err.message || "Failed to update menu");
     } finally {
       setUpdating(false);
+    }
+  };
+
+  // INSTANT theme update - applies theme immediately without closing modal
+  const updateThemeInstantly = async (menuId: string, newTheme: string) => {
+    try {
+      console.log("🎨 [INSTANT THEME] Updating theme:", { menuId, newTheme });
+      console.log("🎨 [INSTANT THEME] Current menus state:", menus.map((m) => ({ id: m.id, name: m.name, theme: m.theme })));
+
+      const response = await fetch("/api/vendor/tv-menus/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          menuId: menuId,
+          theme: newTheme,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("🎨 [INSTANT THEME] HTTP Error:", response.status, response.statusText);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("🎨 [INSTANT THEME] API Response:", data);
+
+      if (!data.success) {
+        console.error("🎨 [INSTANT THEME] Failed:", data.error);
+        throw new Error(data.error || "Failed to update theme");
+      }
+
+      // Update local state to keep UI in sync
+      setMenus((prevMenus) => {
+        const updated = prevMenus.map((m) => (m.id === menuId ? { ...m, theme: newTheme } : m));
+        console.log("🎨 [INSTANT THEME] Updated menus state:", updated.map((m) => ({ id: m.id, name: m.name, theme: m.theme })));
+        return updated;
+      });
+
+      // Update editing menu state if it's currently being edited
+      setEditingMenu((prev) => {
+        const updated = prev?.id === menuId ? { ...prev, theme: newTheme } : prev;
+        console.log("🎨 [INSTANT THEME] Updated editing menu:", updated);
+        return updated;
+      });
+
+      // Force instant preview refresh with timestamp
+      const refreshTime = Date.now();
+      console.log("🎨 [INSTANT THEME] Forcing preview refresh with timestamp:", refreshTime);
+      setPreviewRefresh(refreshTime);
+
+      console.log("🎨 [INSTANT THEME] ✅ Success! Theme updated to:", newTheme);
+      return true;
+    } catch (err: any) {
+      console.error("🎨 [INSTANT THEME] ❌ Error:", err);
+      if (process.env.NODE_ENV === "development") {
+        logger.error("Error updating theme instantly:", err);
+      }
+      return false;
     }
   };
 
@@ -773,6 +839,19 @@ export default function SimpleTVMenusPage() {
       {/* Header */}
       <div className="border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-10">
         <div className="px-6 pt-8 pb-4">
+          {/* Breadcrumbs */}
+          <div className="flex items-center gap-2 mb-4 text-xs">
+            <a
+              href="/vendor"
+              className="flex items-center gap-1.5 text-white/40 hover:text-white/80 transition-colors"
+            >
+              <Home size={14} />
+              Dashboard
+            </a>
+            <ChevronRight size={12} className="text-white/20" />
+            <span className="text-white/80 font-medium">Digital Signage</span>
+          </div>
+
           <div className="flex items-center justify-between">
             <div>
               <h1
@@ -920,16 +999,16 @@ export default function SimpleTVMenusPage() {
             </code>
           </div>
         ) : (
-          <div className="flex gap-2 items-start px-2">
+          <div className="flex gap-4 px-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-white/5 hover:scrollbar-thumb-white/30">
             {devices.map((device) => {
               const assignedMenu = menus.find((m) => m.id === device.active_menu_id);
 
-              // Calculate width to fit displays edge-to-edge on desktop
-              const displayCount = devices.length;
-              const flexBasis =
-                displayCount <= 3
-                  ? `calc((100vw - ${(displayCount + 1) * 8}px) / ${displayCount})`
-                  : `calc((100vw - ${(displayCount + 1) * 8}px) / ${displayCount})`;
+              // Determine actual orientation from device
+              const isPortrait = device.screen_orientation === "portrait";
+              const aspectRatio = isPortrait ? "9/16" : "16/9";
+              const iframeWidth = isPortrait ? 1080 : 1920;
+              const iframeHeight = isPortrait ? 1920 : 1080;
+              const containerWidth = isPortrait ? 280 : 480;
 
               return (
                 <motion.div
@@ -937,13 +1016,13 @@ export default function SimpleTVMenusPage() {
                   layout
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="flex-shrink-0 bg-white/3 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-all group"
-                  style={{ flexBasis, minWidth: "280px" }}
+                  className="bg-white/3 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-all group flex-shrink-0"
+                  style={{ width: `${containerWidth}px` }}
                 >
-                  {/* Live Preview - Large, True 16:9 */}
+                  {/* Live Preview - Respects Device Orientation */}
                   <div
                     className="relative bg-black overflow-hidden"
-                    style={{ aspectRatio: "16/9" }}
+                    style={{ aspectRatio }}
                   >
                     {device.connection_status === "online" && device.active_menu_id ? (
                       <div
@@ -954,13 +1033,13 @@ export default function SimpleTVMenusPage() {
                         }}
                       >
                         <iframe
-                          key={`${device.id}-${device.active_menu_id}-${previewRefresh}`}
-                          src={`/tv-display?vendor_id=${vendor?.id}&location_id=${device.location_id || ""}&tv_number=${device.tv_number}&device_id=${device.id}&menu_id=${device.active_menu_id}&preview=true`}
+                          key={`${device.id}-${device.active_menu_id}-${assignedMenu?.theme}-${previewRefresh}`}
+                          src={`/tv-display?vendor_id=${vendor?.id}&location_id=${device.location_id || ""}&tv_number=${device.tv_number}&device_id=${device.id}&menu_id=${device.active_menu_id}&theme=${assignedMenu?.theme || ""}&preview=true&_t=${previewRefresh}`}
                           className="border-0 pointer-events-none"
                           title={device.device_name}
                           style={{
-                            width: "1920px",
-                            height: "1080px",
+                            width: `${iframeWidth}px`,
+                            height: `${iframeHeight}px`,
                             transform: "scale(var(--scale))",
                             transformOrigin: "top left",
                           }}
@@ -968,7 +1047,7 @@ export default function SimpleTVMenusPage() {
                             const container = e.currentTarget.parentElement?.parentElement;
                             if (container) {
                               const containerWidth = container.offsetWidth;
-                              const scale = containerWidth / 1920;
+                              const scale = containerWidth / iframeWidth;
                               e.currentTarget.style.setProperty("--scale", scale.toString());
                             }
                           }}
@@ -1200,6 +1279,7 @@ export default function SimpleTVMenusPage() {
               setError(null);
             }}
             onSave={updateMenu}
+            onThemeChange={updateThemeInstantly}
             updating={updating}
             error={error}
             availableCategories={availableCategories}
