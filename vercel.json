@@ -8,6 +8,9 @@
     "app/api/vendor/marketing/**/*.ts": {
       "maxDuration": 60
     },
+    "app/api/vendor/campaigns/**/*.ts": {
+      "maxDuration": 60
+    },
     "app/api/vendor/media/**/*.ts": {
       "maxDuration": 60
     },

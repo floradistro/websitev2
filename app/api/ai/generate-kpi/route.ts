@@ -5,6 +5,10 @@ import { createClient } from "@supabase/supabase-js";
 
 import { logger } from "@/lib/logger";
 import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
+
+// Vercel serverless function timeout: 60 seconds for AI KPI generation
+export const maxDuration = 60;
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });

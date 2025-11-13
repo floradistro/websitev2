@@ -56,8 +56,8 @@ function applySecurityHeaders(response: NextResponse, hostname: string): NextRes
     "font-src 'self' data: https://fonts.gstatic.com",
     // Allow connections to API endpoints and services
     "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.cloudinary.com https://api.authorize.net https://apitest.authorize.net https://sentry.io https://*.sentry.io https://vercel.live wss://vercel.live",
-    // Allow frames from payment processors
-    "frame-src 'self' https://accept.authorize.net https://test.authorize.net",
+    // Allow frames from payment processors and Vercel Live
+    "frame-src 'self' https://accept.authorize.net https://test.authorize.net https://vercel.live",
     // Allow workers for barcode scanning
     "worker-src 'self' blob:",
     // Block all object embeds

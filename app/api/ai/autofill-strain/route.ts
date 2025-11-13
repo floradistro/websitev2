@@ -7,6 +7,10 @@ import { createClient } from "@supabase/supabase-js";
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
 import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
+
+// Vercel serverless function timeout: 60 seconds for AI autofill with web search
+export const maxDuration = 60;
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,

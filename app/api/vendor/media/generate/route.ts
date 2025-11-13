@@ -5,6 +5,10 @@ import { getServiceSupabase } from "@/lib/supabase/client";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+
+// Vercel serverless function timeout: 60 seconds for AI image generation
+export const maxDuration = 60;
+
 // Lazy-load OpenAI client to avoid build-time errors
 let openai: OpenAI | null = null;
 function getOpenAI() {

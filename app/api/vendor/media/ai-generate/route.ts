@@ -6,6 +6,10 @@ import OpenAI from "openai";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
+
+// Vercel serverless function timeout: 60 seconds for AI image generation
+export const maxDuration = 60;
+
 // Lazy-load OpenAI client
 let openai: OpenAI | null = null;
 function getOpenAI() {

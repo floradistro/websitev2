@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import Anthropic from "@anthropic-ai/sdk";
 
+// Vercel serverless function timeout: 60 seconds for AI generation
+export const maxDuration = 60;
+
 // POST /api/vendor/campaigns/generate-react - Generate React Email component with Claude
 export async function POST(request: NextRequest) {
   const vendorId = request.headers.get("x-vendor-id");

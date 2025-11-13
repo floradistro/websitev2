@@ -6,6 +6,10 @@ import Exa from "exa-js";
 import { logger } from "@/lib/logger";
 import { toError, isAxiosError } from "@/lib/errors";
 import { checkAIRateLimit, RateLimitConfigs } from "@/lib/rate-limiter";
+
+// Vercel serverless function timeout: 60 seconds for AI autofill
+export const maxDuration = 60;
+
 const SYSTEM_PROMPT = `Extract cannabis product data from web sources. Return ONLY JSON.
 
 RULES:
