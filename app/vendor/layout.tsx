@@ -361,10 +361,14 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                 : 'w-[60px] hover:w-[240px]'
             }`}
           >
-            {/* Logo/Brand at top */}
+            {/* Logo/Brand at top - Centered when collapsed, left-aligned when expanded */}
             <Link
               href="/vendor/apps"
-              className="flex items-center gap-3 px-3 py-4 border-b border-white/[0.06] flex-shrink-0 overflow-hidden"
+              className={`flex items-center gap-3 px-3 py-4 border-b border-white/[0.06] flex-shrink-0 overflow-hidden transition-all duration-300 ${
+                isTouchDevice
+                  ? (sidebarExpanded ? 'justify-start' : 'justify-center')
+                  : 'justify-center group-hover:justify-start'
+              }`}
             >
               <div className="w-[36px] h-[36px] bg-white/[0.04] rounded-lg flex items-center justify-center overflow-hidden border border-white/[0.08] transition-all duration-200 group-hover:border-white/[0.12] flex-shrink-0">
                 <img
@@ -374,36 +378,38 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                 />
               </div>
               <div className={`transition-opacity duration-300 whitespace-nowrap overflow-hidden ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'}`}>
-                <div className="text-white/90 text-[11px] tracking-wide font-medium">
+                <div className="text-white/90 text-[11px] tracking-wide font-medium text-center">
                   {vendorName}
                 </div>
-                <div className="text-white/40 text-[9px] tracking-[0.15em] uppercase">Portal</div>
+                <div className="text-white/40 text-[9px] tracking-[0.15em] uppercase text-center">Portal</div>
               </div>
             </Link>
 
-            {/* Toggle button for touch devices - Only shown on tablets/mobile */}
+            {/* Toggle button for touch devices - Only shown on tablets/mobile, centered when collapsed */}
             {isTouchDevice && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSidebarExpanded(!sidebarExpanded);
-                }}
-                className="mx-2 my-2 p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] transition-colors"
-                aria-label="Toggle menu"
-              >
-                <svg
-                  className="w-5 h-5 text-white/70"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              <div className={`px-2 my-2 transition-all duration-300 ${sidebarExpanded ? '' : 'flex justify-center'}`}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSidebarExpanded(!sidebarExpanded);
+                  }}
+                  className="p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] transition-colors"
+                  aria-label="Toggle menu"
                 >
-                  {sidebarExpanded ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  )}
-                </svg>
-              </button>
+                  <svg
+                    className="w-5 h-5 text-white/70"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    {sidebarExpanded ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    )}
+                  </svg>
+                </button>
+              </div>
             )}
 
             {/* Navigation */}
@@ -430,6 +436,10 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                         active
                           ? "text-white bg-white/[0.08] border-white/[0.12]"
                           : "text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]"
+                      } ${
+                        isTouchDevice
+                          ? (sidebarExpanded ? 'justify-start' : 'justify-center')
+                          : 'justify-center group-hover:justify-start'
                       }`}
                     >
                       <Icon size={18} strokeWidth={active ? 2 : 1.5} className="flex-shrink-0" />
@@ -472,10 +482,14 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                         }
                       }}
                       title={section.label}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 border overflow-hidden ${
+                      className={`w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 border overflow-hidden ${
                         hasActiveItem
                           ? "bg-white/[0.04] text-white border-white/[0.08]"
                           : "text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]"
+                      } ${
+                        isTouchDevice
+                          ? (sidebarExpanded ? 'justify-between' : 'justify-center')
+                          : 'justify-center group-hover:justify-between'
                       }`}
                     >
                       <div className="flex items-center gap-3">
@@ -540,6 +554,10 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                     isActive(settingsNavItem.href)
                       ? "text-white bg-white/[0.08] border-white/[0.12]"
                       : "text-white/40 hover:text-white hover:bg-white/[0.04] border-transparent"
+                  } ${
+                    isTouchDevice
+                      ? (sidebarExpanded ? 'justify-start' : 'justify-center')
+                      : 'justify-center group-hover:justify-start'
                   }`}
                 >
                   <settingsNavItem.icon
@@ -559,7 +577,11 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
               <button
                 onClick={handleLogout}
                 title="Sign Out"
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-white/40 hover:text-white/70 text-[10px] uppercase tracking-[0.15em] transition-all duration-200 hover:bg-white/[0.04] rounded-lg overflow-hidden"
+                className={`w-full flex items-center gap-3 px-3 py-2.5 text-white/40 hover:text-white/70 text-[10px] uppercase tracking-[0.15em] transition-all duration-200 hover:bg-white/[0.04] rounded-lg overflow-hidden ${
+                  isTouchDevice
+                    ? (sidebarExpanded ? 'justify-start' : 'justify-center')
+                    : 'justify-center group-hover:justify-start'
+                }`}
               >
                 <LogOut size={18} strokeWidth={1.5} className="flex-shrink-0" />
                 <span className={`whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}>
@@ -582,9 +604,9 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                 : "px-4 md:px-6 lg:px-8 lg:py-6 lg:px-10 xl:px-12 2xl:px-16 pt-4 pb-10"
             }
           >
-            {/* Page Title - Prominent and always visible */}
+            {/* Page Title - Prominent, centered, always visible */}
             {!pathname?.includes("/tv-menus") && (
-              <div className="mb-6">
+              <div className="mb-8 text-center">
                 <h1 className="text-2xl md:text-3xl font-light text-white/90 tracking-tight">
                   {currentPage}
                 </h1>

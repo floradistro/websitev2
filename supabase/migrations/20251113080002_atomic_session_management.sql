@@ -98,8 +98,8 @@ BEGIN
   -- NOWAIT ensures we fail fast if already locked
   -- =====================================================
 
-  PERFORM 1 FROM registers
-  WHERE registers.id = p_register_id
+  PERFORM 1 FROM pos_registers
+  WHERE pos_registers.id = p_register_id
   FOR UPDATE NOWAIT;
 
   IF NOT FOUND THEN

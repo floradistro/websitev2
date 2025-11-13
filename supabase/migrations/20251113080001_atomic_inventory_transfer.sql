@@ -156,24 +156,29 @@ BEGIN
   -- =====================================================
 
   INSERT INTO stock_movements (
-    product_id,
+    inventory_id,
     movement_type,
     quantity,
     from_location_id,
     to_location_id,
+    reference_type,
+    reference_id,
     reason,
     metadata,
     created_at
   ) VALUES (
-    p_product_id,
+    v_from_inventory.id,
     'transfer',
     p_quantity,
     p_from_location_id,
     p_to_location_id,
+    'inventory_transfer',
+    p_product_id::TEXT,
     COALESCE(p_reason, 'Transfer from ' || v_from_location_name || ' to ' || v_to_location_name),
     jsonb_build_object(
       'created_by', 'atomic_transfer_rpc',
       'vendor_id', p_vendor_id,
+      'product_id', p_product_id,
       'from_qty_before', v_current_qty,
       'from_qty_after', v_new_from_qty,
       'to_qty_before', v_to_current_qty,

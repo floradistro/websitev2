@@ -264,10 +264,11 @@ async function testInventoryTransfer() {
     logPass(`Source inventory updated correctly: ${beforeQty}g → ${afterQty}g`);
 
     // Verify stock movement was created
+    // Note: After fix, product_id is in reference_id (not product_id column)
     const { data: movement } = await supabase
       .from('stock_movements')
       .select('*')
-      .eq('product_id', product.product_id)
+      .eq('reference_id', product.product_id)
       .eq('movement_type', 'transfer')
       .eq('quantity', 7)
       .order('created_at', { ascending: false })
