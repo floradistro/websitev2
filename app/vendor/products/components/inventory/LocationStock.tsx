@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ds, cn, Button } from "@/components/ds";
 import { CheckSquare, Square } from "lucide-react";
+import { formatQuantity, round2, subtract } from "@/lib/utils/precision";
 
 interface LocationStockProps {
   productId: string;
@@ -40,7 +41,8 @@ export function LocationStock({
   const handleDirectEdit = async () => {
     const newQty = parseFloat(editValue);
     if (!isNaN(newQty) && newQty >= 0) {
-      const change = newQty - quantity;
+      // PRECISION FIX: Use precise subtraction and round to 2 decimal places
+      const change = round2(subtract(newQty, quantity));
       if (change !== 0) {
         await onAdjust(productId, locationId, inventoryId, change);
       }
@@ -50,9 +52,9 @@ export function LocationStock({
 
   const handleClearStock = async () => {
     if (confirm(`Set ${locationName} stock to 0g?`)) {
-      // Use precise calculation to avoid floating point issues
+      // PRECISION FIX: Use precise calculation to avoid floating point issues
       // Always set to exactly 0 by subtracting the exact current quantity
-      const preciseAdjustment = -parseFloat(quantity.toString());
+      const preciseAdjustment = round2(subtract(0, quantity));
       await onAdjust(productId, locationId, inventoryId, preciseAdjustment);
     }
   };

@@ -6,6 +6,9 @@ import "./pwa-android-fullscreen.css"; // CRITICAL: Android tablet fullscreen mo
 import NotificationToast from "@/components/NotificationToast";
 import LoadingBar from "@/components/LoadingBar";
 import InstallPWAPrompt from "@/components/InstallPWAPrompt";
+import PWAUpdatePrompt from "@/components/PWAUpdatePrompt";
+import PWAInitializer from "@/components/PWAInitializer";
+import PWADebugPanel from "@/components/PWADebugPanel";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Providers from "./providers";
 
@@ -120,6 +123,9 @@ export default function RootLayout({
             {children}
             <NotificationToast />
             <InstallPWAPrompt />
+            <PWAUpdatePrompt />
+            <PWAInitializer />
+            <PWADebugPanel />
           </Providers>
         </ErrorBoundary>
       </body>

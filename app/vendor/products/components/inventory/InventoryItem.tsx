@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp, MapPin, CheckSquare, Square } from "lucide-react";
 import { ds, cn } from "@/components/ds";
 import { LocationStock } from "./LocationStock";
+import { formatQuantity, formatPercentage, calculateMargin, calculateValue } from "@/lib/utils/precision";
 
 interface LocationInventory {
   inventory_id: string;
@@ -54,8 +55,9 @@ export function InventoryItem({
   const stockColor =
     totalQuantity === 0 ? "text-white/30" : totalQuantity <= 10 ? "text-white/60" : "text-white/80";
 
-  const margin = costPrice ? ((price - costPrice) / price) * 100 : null;
-  const stockValue = price * totalQuantity;
+  // PRECISION FIX: Use Decimal.js for accurate calculations
+  const margin = costPrice ? calculateMargin(price, costPrice) : null;
+  const stockValue = calculateValue(price, totalQuantity);
 
   return (
     <div
@@ -127,7 +129,7 @@ export function InventoryItem({
                 </>
               )}
               <span>•</span>
-              <span>${price.toFixed(2)}/g</span>
+              <span>${formatQuantity(price)}/g</span>
             </div>
           </div>
 
@@ -144,10 +146,10 @@ export function InventoryItem({
             >
               Total Stock
             </div>
-            <div className="text-2xl font-light text-white">{totalQuantity.toFixed(2)}g</div>
+            <div className="text-2xl font-light text-white">{formatQuantity(totalQuantity)}g</div>
             {margin !== null && (
               <div className={cn(ds.typography.size.xs, ds.colors.text.tertiary)}>
-                {margin.toFixed(1)}% margin
+                {formatPercentage(margin)}% margin
               </div>
             )}
           </div>
@@ -166,10 +168,7 @@ export function InventoryItem({
               Value
             </div>
             <div className="text-xl font-light text-white">
-              $
-              {stockValue.toLocaleString(undefined, {
-                maximumFractionDigits: 0,
-              })}
+              ${stockValue.toDecimalPlaces(0).toNumber().toLocaleString()}
             </div>
           </div>
 

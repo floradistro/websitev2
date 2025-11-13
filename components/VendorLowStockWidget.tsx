@@ -261,7 +261,7 @@ export function VendorLowStockWidget({
 
           {lowStockItems.length > maxItems && (
             <Link
-              href="/vendor/inventory"
+              href="/vendor/products"
               className="block text-center text-sm text-blue-400 hover:text-blue-300 py-2 transition-colors"
             >
               View all {lowStockItems.length} low stock items →
@@ -280,7 +280,7 @@ export function VendorLowStockWidget({
             Create Purchase Order
           </Link>
           <Link
-            href="/vendor/inventory"
+            href="/vendor/products"
             className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white text-sm font-medium text-center transition-all"
           >
             Manage Inventory

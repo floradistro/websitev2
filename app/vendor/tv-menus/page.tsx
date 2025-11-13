@@ -844,7 +844,7 @@ export default function SimpleTVMenusPage() {
           {/* Breadcrumbs */}
           <div className="flex items-center gap-2 mb-4 text-xs">
             <a
-              href="/vendor"
+              href="/vendor/apps"
               className="flex items-center gap-1.5 text-white/40 hover:text-white/80 transition-colors"
             >
               <Home size={14} />
