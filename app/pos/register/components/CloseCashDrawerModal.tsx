@@ -34,8 +34,9 @@ export function CloseCashDrawerModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#0a0a0a] border-2 border-white/20 rounded-2xl p-8 max-w-md w-full">
+    <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50 overflow-y-auto">
+      <div className="min-h-full flex items-center justify-center p-4 sm:p-6">
+        <div className="bg-[#0a0a0a] border-2 border-white/20 rounded-2xl p-6 sm:p-8 max-w-md w-full my-8">
         {/* Header */}
         <div className="mb-6">
           <h2
@@ -180,6 +181,7 @@ export function CloseCashDrawerModal({
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );
