@@ -355,7 +355,14 @@ export default function CampaignDetailPage() {
 
             <div className="grid grid-cols-2 gap-4">
               {channels.map((channelData) => {
-                const config = channelConfig[channelData.channel];
+                const config = channelConfig[channelData.channel as keyof typeof channelConfig];
+
+                // Skip if channel type not supported yet
+                if (!config) {
+                  console.warn(`Unsupported channel type: ${channelData.channel}`);
+                  return null;
+                }
+
                 const Icon = config.icon;
                 const channelEngagement = channelData.sent_count > 0
                   ? ((channelData.engaged_count / channelData.sent_count) * 100).toFixed(1)

@@ -31,7 +31,7 @@ export async function GET(
       );
     }
 
-    // Get channels
+    // Get channels (gracefully handle if table doesn't exist yet)
     const { data: channels, error } = await supabase
       .from("campaign_channels")
       .select("*")
@@ -39,9 +39,15 @@ export async function GET(
       .order("created_at", { ascending: true });
 
     if (error) {
+      // If table doesn't exist yet, return empty array
+      if (error.message?.includes('relation "campaign_channels" does not exist')) {
+        console.warn("campaign_channels table doesn't exist yet - returning empty array");
+        return NextResponse.json({ channels: [] });
+      }
+
       console.error("Error fetching channels:", error);
       return NextResponse.json(
-        { error: "Failed to fetch channels" },
+        { error: "Failed to fetch channels", details: error.message },
         { status: 500 }
       );
     }
