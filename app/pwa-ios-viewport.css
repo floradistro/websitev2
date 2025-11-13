@@ -1,171 +1,93 @@
 /**
- * iOS PWA Viewport & Safe Area Management
+ * iOS PWA Safe Area Fix - SIMPLE & EFFECTIVE
  *
- * Apple's Human Interface Guidelines for PWAs:
- * - Respect safe area insets (notch, Dynamic Island, home indicator)
- * - Use env() variables for proper spacing
- * - viewport-fit="cover" allows content to extend into safe areas
- * - Then use padding with safe-area-inset-* to keep content visible
+ * Problem: Content goes behind iOS status bar and large gap at bottom
+ * Solution: Add padding using env() safe area insets
  *
- * Problem: iOS PWA shows gaps and content behind status bar
- * Solution: Proper safe area handling + correct viewport units
+ * IMPORTANT: This CSS only applies when:
+ * 1. Running on iOS (detected via -webkit-touch-callout)
+ * 2. Running in standalone mode (installed PWA)
  */
 
-/* iOS PWA Detection - Only applies when running as installed PWA on iOS */
+/* iOS PWA Detection */
 @supports (-webkit-touch-callout: none) {
   @media (display-mode: standalone) {
-    :root {
-      /* iOS-specific viewport height that accounts for all UI chrome */
-      --ios-viewport-height: 100dvh; /* Dynamic viewport height */
-      --safe-area-inset-top: env(safe-area-inset-top, 0px);
-      --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
-      --safe-area-inset-left: env(safe-area-inset-left, 0px);
-      --safe-area-inset-right: env(safe-area-inset-right, 0px);
-    }
-
-    html {
-      /* Full viewport height using iOS-safe dynamic viewport */
-      height: 100dvh;
-      min-height: 100dvh;
-      width: 100vw;
-      /* Do NOT use position: fixed on iOS - causes scroll issues */
-      overflow-x: hidden;
-      margin: 0;
-      padding: 0;
-    }
-
+    /* Add safe area padding to body - NO position changes */
     body {
-      /* Full height with safe area accommodation */
-      min-height: 100dvh;
-      height: 100dvh;
-      width: 100vw;
-      margin: 0;
-      /* Padding for safe areas - keeps content out of notch/home indicator */
-      padding-top: var(--safe-area-inset-top);
-      padding-bottom: var(--safe-area-inset-bottom);
-      padding-left: var(--safe-area-inset-left);
-      padding-right: var(--safe-area-inset-right);
-      /* Prevent bounce scrolling (iOS elastic effect) */
+      padding-top: env(safe-area-inset-top) !important;
+      padding-bottom: env(safe-area-inset-bottom) !important;
+      padding-left: env(safe-area-inset-left) !important;
+      padding-right: env(safe-area-inset-right) !important;
+
+      /* Prevent iOS rubber band scrolling */
       overscroll-behavior: none;
       -webkit-overflow-scrolling: touch;
-      overflow-x: hidden;
+
+      /* Ensure body takes full height */
+      min-height: 100dvh;
     }
 
-    /* Next.js root container */
+    /* Adjust #__next to account for safe area padding */
     #__next {
-      /* Fill available space (already accounting for safe areas via body padding) */
-      min-height: calc(100dvh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom));
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
+      min-height: calc(
+        100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)
+      );
     }
 
-    /* Main content area */
-    main,
-    [role="main"] {
-      flex: 1;
-      width: 100%;
-      overflow-x: hidden;
-    }
-
-    /* Prevent zoom on input focus (iOS Safari) */
+    /* Prevent zoom on input focus */
     input,
     textarea,
     select {
-      font-size: 16px !important; /* Prevents iOS zoom */
+      font-size: 16px !important;
     }
 
-    /* Fixed positioned elements should respect safe areas */
-    .fixed {
-      /* Use padding for safe areas on fixed elements */
-      padding-top: max(var(--safe-area-inset-top), 1rem);
-      padding-bottom: max(var(--safe-area-inset-bottom), 1rem);
-      padding-left: max(var(--safe-area-inset-left), 1rem);
-      padding-right: max(var(--safe-area-inset-right), 1rem);
+    /* Landscape mode - extra padding for notch on sides */
+    @media (orientation: landscape) {
+      body {
+        padding-left: max(env(safe-area-inset-left), 40px) !important;
+        padding-right: max(env(safe-area-inset-right), 40px) !important;
+      }
     }
+  }
+}
 
-    /* iOS-specific: Prevent rubber band scrolling at document boundaries */
-    html,
-    body {
-      position: fixed;
-      width: 100%;
-      overflow: hidden;
-    }
-
-    #__next {
-      height: calc(100dvh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom));
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* Status bar styling - blend with app */
-    /* iOS PWA has black-translucent status bar, so top content should have dark background */
-    body::before {
-      content: "";
+/* Debug mode - add class="debug-safe-areas" to body to visualize */
+@supports (-webkit-touch-callout: none) {
+  @media (display-mode: standalone) {
+    body.debug-safe-areas::before {
+      content: "Status Bar Safe Area: " attr(data-top);
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      height: var(--safe-area-inset-top);
-      background: #000000; /* Match your app's background */
-      z-index: 9998;
+      height: env(safe-area-inset-top);
+      background: rgba(255, 0, 0, 0.5);
+      z-index: 999999;
       pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: white;
+      font-weight: bold;
     }
 
-    /* Home indicator area - also match background */
-    body::after {
-      content: "";
+    body.debug-safe-areas::after {
+      content: "Home Indicator Safe Area";
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: var(--safe-area-inset-bottom);
-      background: #000000; /* Match your app's background */
-      z-index: 9998;
+      height: env(safe-area-inset-bottom);
+      background: rgba(0, 255, 0, 0.5);
+      z-index: 999999;
       pointer-events: none;
-    }
-  }
-}
-
-/* iOS Landscape Mode - Dynamic Island and notch positioning */
-@supports (-webkit-touch-callout: none) {
-  @media (display-mode: standalone) and (orientation: landscape) {
-    /* In landscape, notch/Dynamic Island are on the sides */
-    body {
-      padding-left: max(var(--safe-area-inset-left), 40px);
-      padding-right: max(var(--safe-area-inset-right), 40px);
-    }
-  }
-}
-
-/* Debug helper for iOS - shows safe area insets */
-@supports (-webkit-touch-callout: none) {
-  @media (display-mode: standalone) {
-    body.debug-safe-areas {
-      /* Top safe area visualizer */
-      &::before {
-        background: rgba(255, 0, 0, 0.3) !important;
-        z-index: 99999 !important;
-      }
-      /* Bottom safe area visualizer */
-      &::after {
-        background: rgba(0, 255, 0, 0.3) !important;
-        z-index: 99999 !important;
-      }
-    }
-  }
-}
-
-/* iOS-specific: Fix for content jumping when keyboard appears */
-@supports (-webkit-touch-callout: none) {
-  @media (display-mode: standalone) {
-    /* When input is focused */
-    input:focus,
-    textarea:focus {
-      /* Prevent iOS from zooming/jumping */
-      scroll-margin-top: calc(var(--safe-area-inset-top) + 60px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: white;
+      font-weight: bold;
     }
   }
 }
