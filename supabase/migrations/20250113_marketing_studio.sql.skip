@@ -91,11 +91,11 @@ CREATE TABLE IF NOT EXISTS campaign_channels (
 );
 
 -- Indexes
-CREATE INDEX idx_campaign_channels_campaign ON campaign_channels(campaign_id);
-CREATE INDEX idx_campaign_channels_vendor ON campaign_channels(vendor_id);
-CREATE INDEX idx_campaign_channels_channel ON campaign_channels(channel);
-CREATE INDEX idx_campaign_channels_status ON campaign_channels(status);
-CREATE INDEX idx_campaign_channels_ai_generated ON campaign_channels(ai_generated) WHERE ai_generated = true;
+CREATE INDEX IF NOT EXISTS idx_campaign_channels_campaign ON campaign_channels(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_channels_vendor ON campaign_channels(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_channels_channel ON campaign_channels(channel);
+CREATE INDEX IF NOT EXISTS idx_campaign_channels_status ON campaign_channels(status);
+CREATE INDEX IF NOT EXISTS idx_campaign_channels_ai_generated ON campaign_channels(ai_generated) WHERE ai_generated = true;
 
 COMMENT ON TABLE campaign_channels IS 'Channel-specific content and performance for multi-channel campaigns';
 COMMENT ON COLUMN campaign_channels.content IS 'Polymorphic JSONB storing channel-specific content structure';
@@ -145,10 +145,10 @@ CREATE TABLE IF NOT EXISTS customer_segments (
 );
 
 -- Indexes
-CREATE INDEX idx_customer_segments_vendor ON customer_segments(vendor_id);
-CREATE INDEX idx_customer_segments_type ON customer_segments(type);
-CREATE INDEX idx_customer_segments_active ON customer_segments(is_active) WHERE is_active = true;
-CREATE INDEX idx_customer_segments_ai_generated ON customer_segments(ai_generated) WHERE ai_generated = true;
+CREATE INDEX IF NOT EXISTS idx_customer_segments_vendor ON customer_segments(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_customer_segments_type ON customer_segments(type);
+CREATE INDEX IF NOT EXISTS idx_customer_segments_active ON customer_segments(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_customer_segments_ai_generated ON customer_segments(ai_generated) WHERE ai_generated = true;
 
 COMMENT ON TABLE customer_segments IS 'AI-powered and manual customer segmentation for targeted campaigns';
 COMMENT ON COLUMN customer_segments.rules IS 'Query builder rules for dynamic segment membership';
@@ -190,13 +190,13 @@ CREATE TABLE IF NOT EXISTS campaign_touchpoints (
 );
 
 -- Indexes
-CREATE INDEX idx_campaign_touchpoints_campaign ON campaign_touchpoints(campaign_id);
-CREATE INDEX idx_campaign_touchpoints_channel ON campaign_touchpoints(channel_id);
-CREATE INDEX idx_campaign_touchpoints_customer ON campaign_touchpoints(customer_id);
-CREATE INDEX idx_campaign_touchpoints_vendor ON campaign_touchpoints(vendor_id);
-CREATE INDEX idx_campaign_touchpoints_action ON campaign_touchpoints(action);
-CREATE INDEX idx_campaign_touchpoints_created_at ON campaign_touchpoints(created_at DESC);
-CREATE INDEX idx_campaign_touchpoints_order ON campaign_touchpoints(order_id) WHERE order_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_campaign_touchpoints_campaign ON campaign_touchpoints(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_touchpoints_channel ON campaign_touchpoints(channel_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_touchpoints_customer ON campaign_touchpoints(customer_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_touchpoints_vendor ON campaign_touchpoints(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_campaign_touchpoints_action ON campaign_touchpoints(action);
+CREATE INDEX IF NOT EXISTS idx_campaign_touchpoints_created_at ON campaign_touchpoints(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_campaign_touchpoints_order ON campaign_touchpoints(order_id) WHERE order_id IS NOT NULL;
 
 COMMENT ON TABLE campaign_touchpoints IS 'Cross-channel customer journey tracking for campaign attribution';
 
@@ -244,9 +244,9 @@ CREATE TABLE IF NOT EXISTS social_accounts (
 );
 
 -- Indexes
-CREATE INDEX idx_social_accounts_vendor ON social_accounts(vendor_id);
-CREATE INDEX idx_social_accounts_platform ON social_accounts(platform);
-CREATE INDEX idx_social_accounts_active ON social_accounts(is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_social_accounts_vendor ON social_accounts(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_social_accounts_platform ON social_accounts(platform);
+CREATE INDEX IF NOT EXISTS idx_social_accounts_active ON social_accounts(is_active) WHERE is_active = true;
 
 COMMENT ON TABLE social_accounts IS 'Connected social media accounts for multi-channel campaigns';
 
@@ -323,14 +323,14 @@ CREATE TABLE IF NOT EXISTS wallet_passes (
 );
 
 -- Indexes
-CREATE INDEX idx_wallet_passes_vendor ON wallet_passes(vendor_id);
-CREATE INDEX idx_wallet_passes_customer ON wallet_passes(customer_id);
-CREATE INDEX idx_wallet_passes_campaign ON wallet_passes(campaign_id);
-CREATE INDEX idx_wallet_passes_type ON wallet_passes(pass_type);
-CREATE INDEX idx_wallet_passes_serial ON wallet_passes(serial_number);
-CREATE INDEX idx_wallet_passes_barcode ON wallet_passes(barcode_value);
-CREATE INDEX idx_wallet_passes_expires ON wallet_passes(expires_at) WHERE expires_at IS NOT NULL;
-CREATE INDEX idx_wallet_passes_redeemed ON wallet_passes(redeemed) WHERE redeemed = true;
+CREATE INDEX IF NOT EXISTS idx_wallet_passes_vendor ON wallet_passes(vendor_id);
+CREATE INDEX IF NOT EXISTS idx_wallet_passes_customer ON wallet_passes(customer_id);
+CREATE INDEX IF NOT EXISTS idx_wallet_passes_campaign ON wallet_passes(campaign_id);
+CREATE INDEX IF NOT EXISTS idx_wallet_passes_type ON wallet_passes(pass_type);
+CREATE INDEX IF NOT EXISTS idx_wallet_passes_serial ON wallet_passes(serial_number);
+CREATE INDEX IF NOT EXISTS idx_wallet_passes_barcode ON wallet_passes(barcode_value);
+CREATE INDEX IF NOT EXISTS idx_wallet_passes_expires ON wallet_passes(expires_at) WHERE expires_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_wallet_passes_redeemed ON wallet_passes(redeemed) WHERE redeemed = true;
 
 COMMENT ON TABLE wallet_passes IS 'Apple Wallet passes for coupons, loyalty cards, events, and more';
 

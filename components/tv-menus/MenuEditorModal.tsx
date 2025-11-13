@@ -155,6 +155,7 @@ export default function MenuEditorModal({
   );
 
   const handleSave = () => {
+    console.log("💾 [MenuEditor] Saving menu with categories:", categories);
     onSave({
       name,
       description,

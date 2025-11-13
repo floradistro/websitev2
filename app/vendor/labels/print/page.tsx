@@ -17,8 +17,11 @@ import {
   ChevronLeft,
   Save,
   Package,
+  Search,
+  X,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 function PrintInterface() {
   const { vendor, isLoading } = useAppAuth();
@@ -26,10 +29,17 @@ function PrintInterface() {
   const isBulkMode = searchParams.get("bulk") === "true";
 
   const [selectedTemplate, setSelectedTemplate] = useState("avery_5160");
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [labels, setLabels] = useState<LabelData[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(0.6);
+
+  // Product selection
+  const [showProductSelector, setShowProductSelector] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [productSearch, setProductSearch] = useState("");
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
   // Customization options
   const [showBorders, setShowBorders] = useState(false);
@@ -42,30 +52,65 @@ function PrintInterface() {
   const template = LABEL_TEMPLATES[selectedTemplate];
   const templateList = getTemplateList();
 
+  // Fetch vendor products
   useEffect(() => {
-    // Generate sample labels for preview
-    const sampleLabels: LabelData[] = [
-      {
-        productName: "Blue Dream",
-        sku: "BD-001",
-        price: "$35",
-        category: "Flower",
-        strainType: "hybrid",
-        thc: "22%",
-        effect: "Relaxed, Happy",
-      },
-      {
-        productName: "OG Kush",
-        sku: "OG-002",
-        price: "$40",
-        category: "Flower",
-        strainType: "indica",
-        thc: "24%",
-        effect: "Sleepy, Euphoric",
-      },
-    ];
-    setLabels(sampleLabels);
-  }, []);
+    const fetchProducts = async () => {
+      if (!vendor?.id) return;
+
+      setLoadingProducts(true);
+      try {
+        const response = await fetch(`/api/products?vendor_id=${vendor.id}&limit=100`);
+        const data = await response.json();
+        if (data.success) {
+          setProducts(data.products || []);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchProducts();
+  }, [vendor?.id]);
+
+  // Generate labels based on selected product or generic placeholders
+  useEffect(() => {
+    const totalLabels = template.grid.rows * template.grid.columns;
+
+    if (selectedProduct) {
+      // Use selected product data
+      const productLabel: LabelData = {
+        productName: selectedProduct.name,
+        sku: selectedProduct.sku || "",
+        price: selectedProduct.regular_price ? `$${selectedProduct.regular_price}` : "",
+        category: selectedProduct.category_name || "",
+        strainType: selectedProduct.custom_fields?.strain_type || "",
+        thc: selectedProduct.custom_fields?.thca_percentage
+          ? `${selectedProduct.custom_fields.thca_percentage}%`
+          : "",
+        effect: selectedProduct.custom_fields?.effects || "",
+      };
+
+      // Fill all positions with the same product
+      const allLabels: LabelData[] = Array(totalLabels).fill(productLabel);
+      setLabels(allLabels);
+    } else {
+      // Use generic placeholder data
+      const genericLabel: LabelData = {
+        productName: "Product Name",
+        sku: "SKU-000",
+        price: "$0.00",
+        category: "Category",
+        strainType: "Type",
+        thc: "0%",
+        effect: "Effects",
+      };
+
+      const allLabels: LabelData[] = Array(totalLabels).fill(genericLabel);
+      setLabels(allLabels);
+    }
+  }, [template, selectedProduct]);
 
   const handlePrint = () => {
     window.print();
@@ -98,6 +143,20 @@ function PrintInterface() {
         }}
       >
         <div className="h-full flex flex-col">
+          {/* Vendor Logo */}
+          {showLogo && vendor?.logo_url && (
+            <div className="flex justify-center mb-1">
+              <Image
+                src={vendor.logo_url}
+                alt={vendor.name || "Logo"}
+                width={40}
+                height={40}
+                style={{ objectFit: "contain" }}
+                className="print:block"
+              />
+            </div>
+          )}
+
           {/* Product Name */}
           <div
             style={{
@@ -161,8 +220,22 @@ function PrintInterface() {
         style={{
           width: `${template.page.width}in`,
           height: `${template.page.height}in`,
+          outline: showBorders ? "1px dashed #999" : "none",
         }}
       >
+        {/* Page margin guide when borders are shown */}
+        {showBorders && (
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              top: `${template.page.margin_top}in`,
+              left: `${template.page.margin_left}in`,
+              right: `${template.page.margin_right}in`,
+              bottom: `${template.page.margin_bottom}in`,
+              border: "1px dashed #ccc",
+            }}
+          />
+        )}
         {labels.map((label, index) => renderLabel(label, index))}
       </div>
     );
@@ -223,6 +296,30 @@ function PrintInterface() {
               <p className="text-sm text-white/40 mt-1">
                 {isBulkMode ? "Bulk print mode" : "Quick print"}
               </p>
+            </div>
+
+            {/* Product Selection */}
+            <div>
+              <label className="text-xs uppercase tracking-wider text-white/40 mb-2 block">
+                Product
+              </label>
+              <button
+                onClick={() => setShowProductSelector(true)}
+                className="w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-sm hover:bg-white/[0.06] transition-colors text-left flex items-center justify-between"
+              >
+                <span className="truncate">
+                  {selectedProduct ? selectedProduct.name : "Select product..."}
+                </span>
+                <Package className="w-4 h-4 text-white/40 flex-shrink-0 ml-2" />
+              </button>
+              {selectedProduct && (
+                <button
+                  onClick={() => setSelectedProduct(null)}
+                  className="text-xs text-white/40 hover:text-white mt-1 transition-colors"
+                >
+                  Clear selection (use sample data)
+                </button>
+              )}
             </div>
 
             {/* Template Selection */}
@@ -384,9 +481,11 @@ function PrintInterface() {
           {/* Preview Area */}
           <div className="flex-1 overflow-auto p-8">
             <div
+              className="flex justify-center items-start min-h-full"
               style={{
                 transform: `scale(${zoomLevel})`,
                 transformOrigin: "top center",
+                paddingBottom: "2rem",
               }}
             >
               {renderSheet()}
@@ -395,6 +494,92 @@ function PrintInterface() {
         </div>
       </div>
     </div>
+
+    {/* Product Selector Modal */}
+    {showProductSelector && (
+      <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 no-print">
+        <div className="bg-[#0a0a0a] border border-white/[0.08] rounded-lg w-full max-w-2xl max-h-[80vh] flex flex-col">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
+            <div>
+              <h2 className="text-xl font-light text-white">Select Product</h2>
+              <p className="text-sm text-white/40 mt-1">
+                Choose a product to print labels for
+              </p>
+            </div>
+            <button
+              onClick={() => setShowProductSelector(false)}
+              className="p-2 hover:bg-white/[0.04] rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-white/60" />
+            </button>
+          </div>
+
+          {/* Search */}
+          <div className="p-6 border-b border-white/[0.06]">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-white/[0.16]"
+              />
+            </div>
+          </div>
+
+          {/* Product List */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {loadingProducts ? (
+              <div className="text-center py-12">
+                <div className="text-white/40">Loading products...</div>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-12">
+                <Package className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                <div className="text-white/40">No products found</div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {products
+                  .filter((product) =>
+                    product.name.toLowerCase().includes(productSearch.toLowerCase())
+                  )
+                  .map((product) => (
+                    <button
+                      key={product.id}
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setShowProductSelector(false);
+                        setProductSearch("");
+                      }}
+                      className="w-full p-4 bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] rounded-lg text-left transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="text-white font-medium">{product.name}</div>
+                          <div className="text-sm text-white/40 mt-1">
+                            {product.sku && <span>SKU: {product.sku}</span>}
+                            {product.category_name && (
+                              <span className="ml-3">{product.category_name}</span>
+                            )}
+                          </div>
+                        </div>
+                        {product.regular_price && (
+                          <div className="text-white font-medium ml-4">
+                            ${product.regular_price}
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }
