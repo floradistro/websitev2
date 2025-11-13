@@ -63,8 +63,17 @@ export async function GET(request: NextRequest) {
 
     // Apply filters
     if (search) {
+      // SECURITY FIX: Escape special characters to prevent SQL injection
+      // PostgREST operators: . , ( ) and special chars must be escaped
+      const sanitizedSearch = search
+        .replace(/\\/g, '\\\\')  // Escape backslashes first
+        .replace(/\./g, '\\.')   // Escape dots (operator separator)
+        .replace(/,/g, '\\,')    // Escape commas (OR separator)
+        .replace(/\(/g, '\\(')   // Escape parentheses
+        .replace(/\)/g, '\\)');
+
       query = query.or(
-        `name.ilike.%${search}%,sku.ilike.%${search}%,description.ilike.%${search}%`,
+        `name.ilike.%${sanitizedSearch}%,sku.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%`,
       );
     }
     if (status && status !== "all") {

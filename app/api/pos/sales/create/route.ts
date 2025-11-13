@@ -293,6 +293,11 @@ export async function POST(request: NextRequest) {
     // ============================================================================
     // STEP 6: DEDUCT INVENTORY (ATOMIC - RACE CONDITION SAFE)
     // ============================================================================
+    // CRITICAL FIX: Track all inventory errors and rollback if ANY fail
+    // Previous bug: Sale completed even when inventory couldn't be deducted
+    // ============================================================================
+
+    const inventoryErrors: Array<{ item: string; error: string }> = [];
 
     for (const item of items) {
       const { data: result, error: deductError } = await supabase.rpc("decrement_inventory", {
@@ -304,28 +309,53 @@ export async function POST(request: NextRequest) {
         if (process.env.NODE_ENV === "development") {
           logger.error("❌ Inventory deduction failed:", deductError);
         }
-        // CRITICAL: Inventory deduction failed
-        // In production, this should trigger:
-        // 1. Alert to staff
-        // 2. Manual inventory reconciliation
-        // 3. Order flagged for review
 
-        await supabase
-          .from("orders")
-          .update({
-            metadata: {
-              ...order.metadata,
-              inventory_error: true,
-              inventory_error_message: deductError.message,
-            },
-          })
-          .eq("id", order.id);
-
-        if (process.env.NODE_ENV === "development") {
-          logger.error("🚨 INVENTORY ERROR - Order flagged:", order.id);
-        }
-      } else {
+        // Track this error for rollback
+        inventoryErrors.push({
+          item: item.productName,
+          error: deductError.message,
+        });
       }
+    }
+
+    // CRITICAL: If ANY inventory deduction failed, ROLLBACK THE ENTIRE SALE
+    if (inventoryErrors.length > 0) {
+      if (process.env.NODE_ENV === "development") {
+        logger.error("🚨 CRITICAL: Inventory deduction failed for", inventoryErrors.length, "items");
+        logger.error("Errors:", inventoryErrors);
+      }
+
+      // Rollback order items
+      await supabase.from("order_items").delete().eq("order_id", order.id);
+
+      // Rollback order (mark as failed instead of deleting for audit trail)
+      await supabase
+        .from("orders")
+        .update({
+          status: "failed",
+          payment_status: "failed",
+          fulfillment_status: "cancelled",
+          metadata: {
+            ...order.metadata,
+            inventory_errors: inventoryErrors,
+            rollback_reason: "Inventory deduction failed",
+            failed_at: new Date().toISOString(),
+          },
+        })
+        .eq("id", order.id);
+
+      // Return error to prevent sale completion
+      return NextResponse.json(
+        {
+          error: "Sale cannot be completed - insufficient inventory",
+          details: inventoryErrors.length === 1
+            ? `${inventoryErrors[0].item}: ${inventoryErrors[0].error}`
+            : `${inventoryErrors.length} items failed inventory deduction`,
+          inventory_errors: inventoryErrors,
+          order_id: order.id, // For debugging/audit
+        },
+        { status: 400 } // Bad request - inventory not available
+      );
     }
 
     // ============================================================================

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
+import { validateNumber, round2 } from "@/lib/utils/precision";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -15,6 +16,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { productId, fromLocationId, toLocationId, quantity, reason } = body;
 
+    // VALIDATION: Comprehensive input validation
     if (!productId || !fromLocationId || !toLocationId || !quantity) {
       return NextResponse.json(
         {
@@ -33,194 +35,92 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const transferQty = parseFloat(quantity);
-    if (transferQty <= 0) {
+    // PRECISION FIX: Validate and round quantity to 2 decimal places
+    const validation = validateNumber(quantity, {
+      min: 0.01,
+      max: 999999,
+      allowNegative: false,
+      allowZero: false,
+      label: 'Transfer quantity'
+    });
+
+    if (!validation.valid) {
       return NextResponse.json(
         {
-          error: "Transfer quantity must be greater than 0",
+          error: validation.error,
         },
         { status: 400 },
       );
     }
+
+    const transferQty = round2(validation.value!);
 
     const supabase = getServiceSupabase();
 
-    // Verify both locations belong to vendor
-    const { data: locations, error: locError } = await supabase
-      .from("locations")
-      .select("id, name")
-      .eq("vendor_id", vendorId)
-      .in("id", [fromLocationId, toLocationId]);
+    // =====================================================
+    // ATOMIC TRANSFER VIA RPC FUNCTION
+    // =====================================================
+    // Uses atomic_inventory_transfer() PostgreSQL function with:
+    // - Row-level locking (FOR UPDATE NOWAIT)
+    // - Automatic transaction management
+    // - Automatic rollback on failure
+    // - Precision decimal calculations
+    // - Stock movement audit trail
+    // - Product stock_quantity update
+    // =====================================================
 
-    if (locError || !locations || locations.length !== 2) {
-      return NextResponse.json(
-        {
-          error: "One or both locations not found or not authorized",
-        },
-        { status: 403 },
-      );
-    }
+    const { data: result, error: rpcError } = await supabase.rpc(
+      'atomic_inventory_transfer',
+      {
+        p_vendor_id: vendorId,
+        p_product_id: productId,
+        p_from_location_id: fromLocationId,
+        p_to_location_id: toLocationId,
+        p_quantity: transferQty,
+        p_reason: reason || null,
+      }
+    );
 
-    const fromLocation = locations.find((l) => l.id === fromLocationId);
-    const toLocation = locations.find((l) => l.id === toLocationId);
-
-    // Get or create inventory records
-    const { data: fromInventory, error: fromInvError } = await supabase
-      .from("inventory")
-      .select("*")
-      .eq("product_id", productId)
-      .eq("location_id", fromLocationId)
-      .maybeSingle();
-
-    if (fromInvError) {
+    if (rpcError) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("Error fetching from inventory:", fromInvError);
+        logger.error("❌ Atomic transfer RPC error:", rpcError);
       }
-      return NextResponse.json({ error: fromInvError.message }, { status: 500 });
-    }
 
-    if (!fromInventory) {
+      // Parse error messages for better UX
+      const errorMessage = rpcError.message || "Failed to transfer inventory";
+
+      // Handle specific error cases
+      if (errorMessage.includes('Insufficient stock')) {
+        return NextResponse.json({ error: errorMessage }, { status: 400 });
+      }
+      if (errorMessage.includes('not found or not authorized')) {
+        return NextResponse.json({ error: errorMessage }, { status: 403 });
+      }
+      if (errorMessage.includes('Transfer already in progress')) {
+        return NextResponse.json(
+          {
+            error: "This transfer is already in progress. Please wait and try again.",
+            retry: true,
+          },
+          { status: 409 } // Conflict
+        );
+      }
+      if (errorMessage.includes('same location')) {
+        return NextResponse.json({ error: errorMessage }, { status: 400 });
+      }
+
+      // Generic error
       return NextResponse.json(
         {
-          error: "No inventory found at source location",
+          error: errorMessage,
+          details: process.env.NODE_ENV === "development" ? rpcError : undefined,
         },
-        { status: 404 },
+        { status: 500 }
       );
     }
 
-    const currentQty = parseFloat(fromInventory.quantity || 0);
-
-    if (currentQty < transferQty) {
-      return NextResponse.json(
-        {
-          error: `Insufficient stock at ${fromLocation?.name}. Available: ${currentQty}g`,
-        },
-        { status: 400 },
-      );
-    }
-
-    // Deduct from source location
-    const newFromQty = currentQty - transferQty;
-
-    const { error: fromUpdateError } = await supabase
-      .from("inventory")
-      .update({
-        quantity: newFromQty,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", fromInventory.id);
-
-    if (fromUpdateError) {
-      if (process.env.NODE_ENV === "development") {
-        logger.error("Error updating from inventory:", fromUpdateError);
-      }
-      return NextResponse.json({ error: fromUpdateError.message }, { status: 500 });
-    }
-
-    // Add to destination location (upsert)
-    const { data: toInventory, error: toInvError } = await supabase
-      .from("inventory")
-      .select("*")
-      .eq("product_id", productId)
-      .eq("location_id", toLocationId)
-      .maybeSingle();
-
-    const toCurrentQty = toInventory ? parseFloat(toInventory.quantity || 0) : 0;
-    const newToQty = toCurrentQty + transferQty;
-
-    if (toInventory) {
-      // Update existing
-      const { error: toUpdateError } = await supabase
-        .from("inventory")
-        .update({
-          quantity: newToQty,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", toInventory.id);
-
-      if (toUpdateError) {
-        if (process.env.NODE_ENV === "development") {
-          logger.error("Error updating to inventory:", toUpdateError);
-        }
-        // Rollback from inventory
-        await supabase
-          .from("inventory")
-          .update({ quantity: currentQty })
-          .eq("id", fromInventory.id);
-
-        return NextResponse.json({ error: toUpdateError.message }, { status: 500 });
-      }
-    } else {
-      // Create new inventory record
-      const { error: toCreateError } = await supabase.from("inventory").insert({
-        product_id: productId,
-        location_id: toLocationId,
-        vendor_id: vendorId,
-        quantity: newToQty,
-        low_stock_threshold: 10,
-        notes: "Created via transfer",
-      });
-
-      if (toCreateError) {
-        if (process.env.NODE_ENV === "development") {
-          logger.error("Error creating to inventory:", toCreateError);
-        }
-        // Rollback from inventory
-        await supabase
-          .from("inventory")
-          .update({ quantity: currentQty })
-          .eq("id", fromInventory.id);
-
-        return NextResponse.json({ error: toCreateError.message }, { status: 500 });
-      }
-    }
-
-    // Create stock movement record
-    await supabase.from("stock_movements").insert({
-      product_id: productId,
-      movement_type: "transfer",
-      quantity: transferQty,
-      from_location_id: fromLocationId,
-      to_location_id: toLocationId,
-      reason: reason || `Transfer from ${fromLocation?.name} to ${toLocation?.name}`,
-      metadata: {
-        created_by: "vendor",
-        vendor_id: vendorId,
-        from_qty_before: currentQty,
-        from_qty_after: newFromQty,
-        to_qty_before: toCurrentQty,
-        to_qty_after: newToQty,
-      },
-    });
-
-    // Update product's total stock_quantity
-    const { data: allInventory } = await supabase
-      .from("inventory")
-      .select("quantity")
-      .eq("product_id", productId);
-
-    const totalStock =
-      allInventory?.reduce((sum, inv) => sum + parseFloat(inv.quantity || 0), 0) || 0;
-
-    await supabase
-      .from("products")
-      .update({
-        stock_quantity: totalStock,
-        stock_status: totalStock > 0 ? "instock" : "outofstock",
-      })
-      .eq("id", productId);
-
-    return NextResponse.json({
-      success: true,
-      message: `Transferred ${transferQty}g from ${fromLocation?.name} to ${toLocation?.name}`,
-      transfer: {
-        quantity: transferQty,
-        from_location: fromLocation?.name,
-        to_location: toLocation?.name,
-        from_qty_after: newFromQty,
-        to_qty_after: newToQty,
-      },
-    });
+    // RPC function returns JSON result with all transfer details
+    return NextResponse.json(result);
   } catch (error) {
     const err = toError(error);
     if (process.env.NODE_ENV === "development") {

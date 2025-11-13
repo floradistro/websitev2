@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ds, cn, Button } from "@/components/ds";
 import { CheckSquare, Square } from "lucide-react";
-import { formatQuantity, round2, subtract } from "@/lib/utils/precision";
+import { formatQuantity, round2, subtract, validateNumber } from "@/lib/utils/precision";
 
 interface LocationStockProps {
   productId: string;
@@ -39,15 +39,27 @@ export function LocationStock({
   };
 
   const handleDirectEdit = async () => {
-    const newQty = parseFloat(editValue);
-    if (!isNaN(newQty) && newQty >= 0) {
-      // PRECISION FIX: Use precise subtraction and round to 2 decimal places
-      const change = round2(subtract(newQty, quantity));
-      if (change !== 0) {
-        await onAdjust(productId, locationId, inventoryId, change);
-      }
-      setEditMode(false);
+    // VALIDATION FIX: Comprehensive validation
+    const validation = validateNumber(editValue, {
+      min: 0,
+      max: 999999,
+      allowNegative: false,
+      allowZero: true,
+      label: 'Quantity'
+    });
+
+    if (!validation.valid) {
+      alert(validation.error);
+      return;
     }
+
+    const newQty = validation.value!;
+    // PRECISION FIX: Use precise subtraction and round to 2 decimal places
+    const change = round2(subtract(newQty, quantity));
+    if (change !== 0) {
+      await onAdjust(productId, locationId, inventoryId, change);
+    }
+    setEditMode(false);
   };
 
   const handleClearStock = async () => {
@@ -93,6 +105,8 @@ export function LocationStock({
               <input
                 type="number"
                 step="0.1"
+                min="0"
+                max="999999"
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={(e) => {
@@ -110,6 +124,8 @@ export function LocationStock({
                   ds.typography.size.sm,
                   "text-white"
                 )}
+                aria-label="Edit quantity"
+                aria-describedby="quantity-hint"
               />
               <button
                 onClick={handleDirectEdit}
@@ -126,7 +142,7 @@ export function LocationStock({
               <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-0.5")}>
                 Current Stock
               </div>
-              <div className="text-lg font-light text-white">{quantity.toFixed(2)}g</div>
+              <div className="text-lg font-light text-white">{formatQuantity(quantity)}g</div>
             </button>
           )}
         </div>

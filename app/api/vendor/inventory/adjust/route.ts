@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
+import { round2, add, isNegative, nonNegative } from "@/lib/utils/precision";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -140,25 +141,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // PRECISION FIX: Use Decimal.js for all calculations
     const currentQty = parseFloat(inventory.quantity || 0);
     const adjustmentAmount = parseFloat(adjustment);
-    const newQty = currentQty + adjustmentAmount;
 
-    // Use a larger epsilon to handle floating point precision issues and rounding
-    // e.g., display shows 2.00g (rounded) but DB has 1.995g
-    // User tries to zero out: 1.995 + (-2.00) = -0.005g
-    // We allow up to -0.1g tolerance to handle these cases
-    if (newQty < -0.1) {
+    // Calculate new quantity with precise arithmetic
+    const newQtyDecimal = add(currentQty, adjustmentAmount);
+
+    // Check if result would be negative (beyond tolerance)
+    if (isNegative(newQtyDecimal) && newQtyDecimal.toNumber() < -0.1) {
       return NextResponse.json(
         {
           error: "Cannot reduce inventory below 0",
+          current: currentQty,
+          attempted_adjustment: adjustmentAmount,
+          would_result_in: newQtyDecimal.toNumber(),
         },
         { status: 400 },
       );
     }
 
-    // Clamp to 0 if we're within epsilon of 0 (handles floating point errors and small negatives)
-    const finalQty = newQty < 0 ? 0 : newQty;
+    // Use nonNegative to clamp to 0 if within tolerance, then round to 2 decimals
+    const finalQty = round2(nonNegative(newQtyDecimal));
 
     // ATOMIC TRANSACTION: Update inventory + create transaction record in one go
     const { data: updated, error: updateError } = await supabase

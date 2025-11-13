@@ -60,10 +60,16 @@ export function PWASettingsSection() {
     checkPWA();
   }, []);
 
-  // Detect platform
+  // Detect platform (including iPad Pro fix)
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
-    if (/iphone|ipad|ipod/.test(ua)) {
+    const isIOS = /iphone|ipad|ipod/.test(ua) ||
+                  // iPad Pro detection (reports as Mac)
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+                  // iOS 13+ iPad detection
+                  (navigator.platform === 'iPad');
+
+    if (isIOS) {
       setPlatform("ios");
     } else if (/android/.test(ua)) {
       setPlatform("android");
@@ -331,10 +337,46 @@ export function PWASettingsSection() {
         </div>
       </div>
 
+      {/* Install Instructions (iOS - always show if not PWA) */}
+      {!isPWA && platform === "ios" && (
+        <div className="bg-blue-500/10 border border-blue-400/20 rounded-2xl p-4 mb-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-blue-400/20 flex items-center justify-center flex-shrink-0">
+              <Download size={16} className="text-blue-400" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1">
+              <div className="text-blue-200 text-sm font-light mb-2">
+                Install WhaleTools on iPad
+              </div>
+              <div className="space-y-2 text-[11px] text-blue-300/80">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-blue-400/20 flex items-center justify-center text-blue-200 text-[9px] font-bold flex-shrink-0">
+                    1
+                  </div>
+                  <span>Tap the <strong>Share</strong> button <span className="text-blue-200">(⬆︎)</span> in Safari</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-blue-400/20 flex items-center justify-center text-blue-200 text-[9px] font-bold flex-shrink-0">
+                    2
+                  </div>
+                  <span>Select <strong>"Add to Home Screen"</strong></span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-blue-400/20 flex items-center justify-center text-blue-200 text-[9px] font-bold flex-shrink-0">
+                    3
+                  </div>
+                  <span>Tap <strong>"Add"</strong> in the top right</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {/* Install Button (if not installed) */}
-        {!isPWA && (
+        {/* Install Button (Android/Desktop only - iOS uses manual) */}
+        {!isPWA && platform !== "ios" && (
           <button
             onClick={handleInstall}
             disabled={!installPrompt}

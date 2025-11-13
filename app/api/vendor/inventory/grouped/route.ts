@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
+import { add, toDecimal, round2 } from "@/lib/utils/precision";
 
 import { logger } from "@/lib/logger";
 import { toError } from "@/lib/errors";
@@ -64,12 +65,15 @@ export async function GET(request: NextRequest) {
     });
 
     // Build grouped products (fast, no loops in loops)
+    // PRECISION FIX: Use Decimal.js for quantity summation
     const groupedProducts = (products || []).map((product) => {
       const productInventory = inventoryByProduct.get(product.id) || [];
 
-      const total_quantity = productInventory.reduce(
-        (sum, inv) => sum + (parseFloat(inv.quantity) || 0),
-        0,
+      const total_quantity = round2(
+        productInventory.reduce(
+          (sum, inv) => add(sum, inv.quantity || 0),
+          toDecimal(0),
+        )
       );
 
       // CRITICAL FIX: Only include locations with quantity > 0

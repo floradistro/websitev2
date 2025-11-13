@@ -11,6 +11,7 @@ import { InventoryList } from "./InventoryList";
 import { ProductsPagination } from "../ProductsPagination";
 import axios from "axios";
 import { logger } from "@/lib/logger";
+import { calculateValue, toDecimal } from "@/lib/utils/precision";
 
 interface LocationInventory {
   inventory_id: string;
@@ -173,13 +174,18 @@ export function InventoryTab() {
     return Array.from(cats);
   }, [products]);
 
-  // Calculate stats
+  // Calculate stats - PRECISION FIX: Use Decimal.js for value calculation
   const stats = useMemo(() => {
     const total = products.length;
     const inStock = products.filter((p) => p.total_quantity > 10).length;
     const lowStock = products.filter((p) => p.total_quantity > 0 && p.total_quantity <= 10).length;
     const outOfStock = products.filter((p) => p.total_quantity === 0).length;
-    const totalValue = products.reduce((sum, p) => sum + p.price * p.total_quantity, 0);
+
+    // PRECISION FIX: Calculate total value using precise arithmetic
+    const totalValue = products.reduce((sum, p) => {
+      const productValue = calculateValue(p.price, p.total_quantity);
+      return sum.plus(productValue);
+    }, toDecimal(0)).toNumber();
 
     return { total, inStock, lowStock, outOfStock, totalValue };
   }, [products]);
@@ -190,7 +196,7 @@ export function InventoryTab() {
       const key = `${productId}-${locationId}`;
       setAdjusting((prev) => ({ ...prev, [key]: true }));
 
-      // Optimistic update
+      // Optimistic update - PRECISION FIX: Use precise arithmetic
       setProducts((prev) =>
         prev.map((p) => {
           if (p.product_id !== productId) return p;
@@ -198,10 +204,10 @@ export function InventoryTab() {
             ...p,
             locations: p.locations.map((loc) => {
               if (loc.location_id !== locationId) return loc;
-              const newQty = Math.max(0, loc.quantity + amount);
+              const newQty = Math.max(0, toDecimal(loc.quantity).plus(amount).toNumber());
               return { ...loc, quantity: newQty };
             }),
-            total_quantity: p.total_quantity + amount,
+            total_quantity: toDecimal(p.total_quantity).plus(amount).toNumber(),
           };
         })
       );
