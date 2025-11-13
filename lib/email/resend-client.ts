@@ -20,7 +20,7 @@ export async function sendEmail({
   to,
   subject,
   html,
-  from = 'Flora Distro <noreply@floradistro.com>',
+  from = 'WhaleTools <onboarding@resend.dev>',
   replyTo,
 }: {
   to: string | string[];

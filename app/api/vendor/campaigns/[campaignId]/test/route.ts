@@ -113,7 +113,7 @@ export async function POST(
       to: testEmail,
       subject: `[TEST] ${campaign.subject}`,
       html: emailHtml,
-      from: `${campaign.from_name || vendor?.store_name} <noreply@floradistro.com>`,
+      from: `${campaign.from_name || vendor?.store_name || 'WhaleTools'} <onboarding@resend.dev>`,
       replyTo: campaign.from_email,
     });
 
