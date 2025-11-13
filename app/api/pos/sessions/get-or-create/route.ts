@@ -55,79 +55,29 @@ try {
     });
 
     if (error) {
+      // ❌ CRITICAL: Atomic function not deployed!
+      // Fail loudly instead of using broken fallback code
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Atomic session error:", error);
-      }
-      // Fallback: If function doesn't exist, use the old approach
-      // (This will happen until SQL is run in Supabase)
-
-      // Check for existing session
-      const { data: existingSession } = await supabase
-        .from("pos_sessions")
-        .select("*")
-        .eq("register_id", registerId)
-        .eq("status", "open")
-        .maybeSingle();
-
-      if (existingSession) {
-        return NextResponse.json({
-          session: existingSession,
-          method: "legacy_existing",
-        });
+        logger.error("❌ CRITICAL: Atomic session function not deployed!", error);
       }
 
-      // Create new session
-      const sessionNumber = `S-${new Date().toISOString().slice(0, 19).replace(/[-:]/g, "").replace("T", "-")}`;
-
-      const { data: newSession, error: createError } = await supabase
-        .from("pos_sessions")
-        .insert({
-          register_id: registerId,
-          location_id: locationId,
-          vendor_id: vendorId,
-          user_id: userId,
-          session_number: sessionNumber,
-          status: "open",
-          opening_cash: openingCash,
-          total_sales: 0.0,
-          total_transactions: 0,
-          total_cash: 0.0,
-          total_card: 0.0,
-          walk_in_sales: 0.0,
-          pickup_orders_fulfilled: 0,
-          opened_at: new Date().toISOString(),
-          last_transaction_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-      if (createError) {
-        // Check if it's a duplicate key error (unique constraint violation)
-        if (createError.code === "23505") {
-          // Another device created session at exact same time
-          // Fetch and return that session
-          const { data: raceSession } = await supabase
-            .from("pos_sessions")
-            .select("*")
-            .eq("register_id", registerId)
-            .eq("status", "open")
-            .single();
-
-          if (raceSession) {
-            return NextResponse.json({
-              session: raceSession,
-              method: "legacy_race_recovery",
-            });
-          }
-        }
-
-        return NextResponse.json({ error: createError.message }, { status: 500 });
-      }
-
-      return NextResponse.json({
-        session: newSession,
-        method: "legacy_created",
-      });
+      return NextResponse.json(
+        {
+          error: "Atomic session function not deployed",
+          details:
+            "The get_or_create_session() database function is missing. " +
+            "Please deploy migrations/001_enterprise_session_management.sql via Supabase Dashboard.",
+          migration_required: true,
+          instructions: {
+            step1: "Go to https://supabase.com/dashboard/project/uaednwpxursknmwdeejn/sql/new",
+            step2: "Copy content from migrations/001_enterprise_session_management.sql",
+            step3: "Click 'Run' to deploy the atomic function",
+            step4: "Retry session creation"
+          },
+          database_error: error.message,
+        },
+        { status: 500 }
+      );
     }
 
     // Success - atomic function worked

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Modal, Button, Input } from "@/components/ds";
 import { ds, cn } from "@/components/ds";
 import { Trash2, Package, Building2, CheckCircle2, XCircle, Search, X } from "lucide-react";
@@ -60,7 +60,17 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
 
   const [productSearch, setProductSearch] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedProductIndex, setSelectedProductIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const quantityInputRef = useRef<HTMLInputElement>(null);
+  const unitPriceInputRef = useRef<HTMLInputElement>(null);
+
+  // Current line item being entered
+  const [currentLineItem, setCurrentLineItem] = useState<{
+    product: Product | null;
+    quantity: string;
+    unit_price: string;
+  }>({ product: null, quantity: "", unit_price: "" });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -159,24 +169,59 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
 
   const filteredProducts = getFilteredProducts();
 
-  const addProduct = (product: Product) => {
-    // Check if already added
-    if (lineItems.some((item) => item.product_id === product.id)) {
+  // Select product for inline entry
+  const selectProduct = useCallback((product: Product) => {
+    setCurrentLineItem({
+      product,
+      quantity: "",
+      unit_price: product.regular_price?.toString() || "",
+    });
+    setProductSearch("");
+    setShowDropdown(false);
+    // Focus quantity input after selection
+    setTimeout(() => quantityInputRef.current?.focus(), 50);
+  }, []);
+
+  // Confirm and add the current line item
+  const confirmLineItem = useCallback(() => {
+    if (!currentLineItem.product) return;
+
+    const quantity = parseFloat(currentLineItem.quantity);
+    const unit_price = parseFloat(currentLineItem.unit_price);
+
+    if (!quantity || quantity <= 0) {
+      setError("Please enter a valid quantity");
+      return;
+    }
+
+    if (unit_price < 0 || isNaN(unit_price)) {
+      setError("Please enter a valid unit price");
       return;
     }
 
     const newItem: POLineItem = {
-      product_id: product.id,
-      product_name: product.name,
-      product_sku: product.sku || "",
-      quantity: 1,
-      unit_price: parseFloat(product.regular_price?.toString() || "0"),
+      product_id: currentLineItem.product.id,
+      product_name: currentLineItem.product.name,
+      product_sku: currentLineItem.product.sku || "",
+      quantity,
+      unit_price,
     };
 
     setLineItems([...lineItems, newItem]);
+    setCurrentLineItem({ product: null, quantity: "", unit_price: "" });
     setProductSearch("");
-    setShowDropdown(false);
-  };
+    setError(null);
+    // Return focus to search
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  }, [currentLineItem, lineItems]);
+
+  // Cancel current line item entry
+  const cancelLineItem = useCallback(() => {
+    setCurrentLineItem({ product: null, quantity: "", unit_price: "" });
+    setProductSearch("");
+    setError(null);
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  }, []);
 
   const removeLineItem = (index: number) => {
     setLineItems(lineItems.filter((_, i) => i !== index));
@@ -284,9 +329,62 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
     setLineItems([]);
     setProductSearch("");
     setShowDropdown(false);
+    setCurrentLineItem({ product: null, quantity: "", unit_price: "" });
+    setSelectedProductIndex(0);
     setError(null);
     setSuccess(false);
   };
+
+  // Keyboard navigation for product dropdown
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showDropdown || filteredProducts.length === 0) {
+      if (e.key === "Enter" && !showDropdown) {
+        setShowDropdown(true);
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setSelectedProductIndex((prev) =>
+          prev < filteredProducts.length - 1 ? prev + 1 : prev,
+        );
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setSelectedProductIndex((prev) => (prev > 0 ? prev - 1 : 0));
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (filteredProducts[selectedProductIndex]) {
+          selectProduct(filteredProducts[selectedProductIndex]);
+        }
+        break;
+      case "Escape":
+        e.preventDefault();
+        setShowDropdown(false);
+        setProductSearch("");
+        break;
+    }
+  };
+
+  // Reset selected index when filtered products change
+  useEffect(() => {
+    setSelectedProductIndex(0);
+  }, [productSearch]);
+
+  // Scroll selected product into view
+  useEffect(() => {
+    if (showDropdown && filteredProducts.length > 0) {
+      const selectedElement = document.querySelector(
+        `[data-product-index="${selectedProductIndex}"]`,
+      );
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+    }
+  }, [selectedProductIndex, showDropdown, filteredProducts.length]);
 
   const subtotal = calculateSubtotal();
 
@@ -447,58 +545,160 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
           </span>
         </div>
 
-        {/* Search Input */}
-        <div className="relative mb-3">
-          <Search
-            size={16}
-            className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.colors.text.quaternary)}
-          />
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={productSearch}
-            onChange={(e) => {
-              setProductSearch(e.target.value);
-              setShowDropdown(true);
-            }}
-            onFocus={() => setShowDropdown(true)}
-            onBlur={() => {
-              // Delay to allow clicking on dropdown items
-              setTimeout(() => setShowDropdown(false), 200);
-            }}
-            placeholder="Search products..."
+        {/* Inline Entry Form */}
+        {currentLineItem.product ? (
+          <div
             className={cn(
-              "w-full rounded-lg pl-10 pr-10 py-2.5 text-sm",
-              "bg-white/5 border border-white/10",
-              "text-white placeholder:text-white/30",
-              "focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50",
+              "rounded-lg border-2 p-4 mb-3",
+              "bg-white/5 border-primary-500/50",
+              "shadow-lg",
             )}
-          />
-          {productSearch && (
-            <button
-              onClick={() => {
-                setProductSearch("");
-                searchInputRef.current?.focus();
-              }}
-              className={cn(
-                "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/10",
-              )}
-            >
-              <X size={14} className={ds.colors.text.quaternary} />
-            </button>
-          )}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex-1 min-w-0">
+                <div className={cn(ds.typography.size.sm, "text-white font-medium truncate")}>
+                  {currentLineItem.product.name}
+                </div>
+                {currentLineItem.product.sku && (
+                  <div className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
+                    SKU: {currentLineItem.product.sku}
+                  </div>
+                )}
+              </div>
+              <Button variant="ghost" size="sm" onClick={cancelLineItem}>
+                <X size={14} />
+              </Button>
+            </div>
 
-          {/* Dropdown Results */}
-          {showDropdown && (
-            <div
-              className={cn(
-                "absolute z-10 w-full mt-2 rounded-lg border max-h-80 overflow-y-auto",
-                "bg-black/95 backdrop-blur-xl",
-                ds.colors.border.default,
-                "shadow-2xl",
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1 block")}>
+                  Quantity *
+                </label>
+                <input
+                  ref={quantityInputRef}
+                  type="number"
+                  value={currentLineItem.quantity}
+                  onChange={(e) =>
+                    setCurrentLineItem({ ...currentLineItem, quantity: e.target.value })
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === "Tab") {
+                      e.preventDefault();
+                      unitPriceInputRef.current?.focus();
+                    } else if (e.key === "Escape") {
+                      e.preventDefault();
+                      cancelLineItem();
+                    }
+                  }}
+                  min={0}
+                  step={0.01}
+                  placeholder="0.00"
+                  className={cn(
+                    "w-full rounded-lg px-3 py-2 text-sm",
+                    "bg-white/5 border border-white/10",
+                    "text-white placeholder:text-white/30",
+                    "focus:outline-none focus:ring-2 focus:ring-primary-500/50",
+                  )}
+                />
+              </div>
+              <div>
+                <label className={cn(ds.typography.size.xs, ds.colors.text.quaternary, "mb-1 block")}>
+                  Unit Price *
+                </label>
+                <input
+                  ref={unitPriceInputRef}
+                  type="number"
+                  value={currentLineItem.unit_price}
+                  onChange={(e) =>
+                    setCurrentLineItem({ ...currentLineItem, unit_price: e.target.value })
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      confirmLineItem();
+                    } else if (e.key === "Escape") {
+                      e.preventDefault();
+                      cancelLineItem();
+                    }
+                  }}
+                  min={0}
+                  step={0.01}
+                  placeholder="0.00"
+                  className={cn(
+                    "w-full rounded-lg px-3 py-2 text-sm",
+                    "bg-white/5 border border-white/10",
+                    "text-white placeholder:text-white/30",
+                    "focus:outline-none focus:ring-2 focus:ring-primary-500/50",
+                  )}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <span className={cn(ds.typography.size.xs, ds.colors.text.quaternary)}>
+                Press Enter to add, Escape to cancel
+              </span>
+              <Button variant="primary" size="sm" onClick={confirmLineItem}>
+                Add Item
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Search Input */}
+            <div className="relative mb-3">
+              <Search
+                size={16}
+                className={cn("absolute left-3 top-1/2 -translate-y-1/2", ds.colors.text.quaternary)}
+              />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={productSearch}
+                onChange={(e) => {
+                  setProductSearch(e.target.value);
+                  setShowDropdown(true);
+                }}
+                onFocus={() => setShowDropdown(true)}
+                onBlur={() => {
+                  // Delay to allow clicking on dropdown items
+                  setTimeout(() => setShowDropdown(false), 200);
+                }}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="Search products... (↑↓ to navigate, Enter to select)"
+                className={cn(
+                  "w-full rounded-lg pl-10 pr-10 py-2.5 text-sm",
+                  "bg-white/5 border border-white/10",
+                  "text-white placeholder:text-white/30",
+                  "focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50",
+                )}
+              />
+              {productSearch && (
+                <button
+                  onClick={() => {
+                    setProductSearch("");
+                    searchInputRef.current?.focus();
+                  }}
+                  className={cn(
+                    "absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-white/10",
+                  )}
+                >
+                  <X size={14} className={ds.colors.text.quaternary} />
+                </button>
               )}
-            >
-              <div className="p-2">
+
+              {/* Dropdown Results */}
+              {showDropdown && (
+                <div
+                  className={cn(
+                    "absolute z-10 w-full mt-2 rounded-lg border max-h-80 overflow-y-auto",
+                    "bg-black/95 backdrop-blur-xl",
+                    ds.colors.border.default,
+                    "shadow-2xl",
+                  )}
+                >
+                  <div className="p-2">
                 {loadingProducts ? (
                   <div
                     className={cn(
@@ -531,17 +731,21 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
                       {filteredProducts.length} product
                       {filteredProducts.length === 1 ? "" : "s"}
                     </div>
-                    {filteredProducts.map((product) => {
+                    {filteredProducts.map((product, idx) => {
                       const isAdded = lineItems.some((item) => item.product_id === product.id);
+                      const isSelected = idx === selectedProductIndex;
                       return (
                         <button
                           key={product.id}
-                          onClick={() => addProduct(product)}
+                          data-product-index={idx}
+                          onClick={() => selectProduct(product)}
                           disabled={isAdded}
+                          onMouseEnter={() => setSelectedProductIndex(idx)}
                           className={cn(
                             "w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-left",
                             "hover:bg-white/10 transition-colors",
                             "disabled:opacity-40 disabled:cursor-not-allowed",
+                            isSelected && !isAdded && "bg-white/10 ring-1 ring-primary-500/30",
                           )}
                         >
                           <div className="flex-1 min-w-0">
@@ -577,10 +781,12 @@ export function CreatePOModal({ isOpen, onClose, onSuccess }: CreatePOModalProps
                     })}
                   </>
                 )}
-              </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
 
         {/* Selected Products List */}
         {lineItems.length > 0 ? (

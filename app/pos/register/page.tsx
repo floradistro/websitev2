@@ -189,49 +189,18 @@ export default function POSRegisterPage() {
     try {
       setProcessing(true);
 
-      // DIAGNOSTIC: Double-check for any existing open sessions before creating
-      const { data: existingCheck } = await supabase
-        .from("pos_sessions")
-        .select("id, session_number, status")
-        .eq("register_id", registerId)
-        .eq("status", "open")
-        .maybeSingle();
-
-      if (existingCheck) {
-        const shouldClose = confirm(
-          `⚠️ Detected Open Session\n\nSession: ${existingCheck.session_number}\n\n` +
-            `An open session exists for this register. This should have been detected earlier.\n\n` +
-            `Click OK to force-close it and create a new session, or Cancel to join the existing session.`,
-        );
-
-        if (!shouldClose) {
-          // Join the existing session
-          setSessionId(existingCheck.id);
-          setShowOpenDrawerModal(false);
-          setProcessing(false);
-          return;
-        }
-
-        // Force-close the existing session
-        await fetch("/api/pos/sessions/close", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId: existingCheck.id,
-            closingCash: 0,
-            closingNotes: "Force-closed due to stuck session",
-          }),
-        });
-      }
-
-      const response = await fetch("/api/pos/sessions/open", {
+      // 🚀 ATOMIC SESSION CREATION - No race conditions possible!
+      // The database function handles all logic: check existing + create new
+      // Uses FOR UPDATE lock to prevent duplicates
+      const response = await fetch("/api/pos/sessions/get-or-create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           registerId,
           locationId: selectedLocation?.id,
+          vendorId: vendor?.id,
+          userId: user?.id,
           openingCash,
-          openingNotes: notes,
         }),
       });
 
@@ -239,15 +208,34 @@ export default function POSRegisterPage() {
         const data = await response.json();
         setSessionId(data.session.id);
         setShowOpenDrawerModal(false);
+
+        // Notify user if they joined an existing session
+        if (data.method === "atomic" && data.session.total_transactions > 0) {
+          alert(
+            `✅ Joined Existing Session\n\n` +
+            `Session: ${data.session.session_number}\n` +
+            `Transactions: ${data.session.total_transactions}\n\n` +
+            `You are now sharing this session.`
+          );
+        }
       } else {
         const error = await response.json();
-        // Show detailed error message to help diagnose issues
-        const errorMsg = error.details
-          ? `${error.error}\n\n${error.details}`
-          : error.error || "Failed to start session";
-        alert(`❌ Failed to Create Session\n\n${errorMsg}\n\n[Status: ${response.status}]`);
 
-        // Log full error for debugging
+        // If atomic function not deployed, show clear instructions
+        if (error.migration_required) {
+          alert(
+            `⚠️ Database Migration Required\n\n` +
+            `The atomic session function needs to be deployed.\n\n` +
+            `Please run: migrations/001_enterprise_session_management.sql\n\n` +
+            `Contact your system administrator.`
+          );
+        } else {
+          const errorMsg = error.details
+            ? `${error.error}\n\n${error.details}`
+            : error.error || "Failed to start session";
+          alert(`❌ Failed to Create Session\n\n${errorMsg}\n\n[Status: ${response.status}]`);
+        }
+
         if (process.env.NODE_ENV === "development") {
           logger.error("Session creation failed:", {
             status: response.status,
@@ -261,7 +249,11 @@ export default function POSRegisterPage() {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error starting session:", error);
       }
-      alert(`❌ Failed to Start Session\n\nNetwork or system error occurred.\n\nDetails: ${error instanceof Error ? error.message : String(error)}`);
+      alert(
+        `❌ Failed to Start Session\n\n` +
+        `Network or system error occurred.\n\n` +
+        `Details: ${error instanceof Error ? error.message : String(error)}`
+      );
     } finally {
       setProcessing(false);
     }
