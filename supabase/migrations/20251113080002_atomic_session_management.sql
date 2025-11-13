@@ -39,7 +39,9 @@ WHERE id IN (
 
 -- Now add the unique constraint
 -- This prevents ANY future duplicates at database level
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_pos_sessions_one_open_per_register
+-- Note: CONCURRENTLY cannot be used in transaction blocks, so we use regular CREATE INDEX
+-- This is safe because we just cleaned up duplicates above
+CREATE UNIQUE INDEX IF NOT EXISTS idx_pos_sessions_one_open_per_register
 ON pos_sessions (register_id)
 WHERE status = 'open';
 
@@ -53,6 +55,9 @@ COMMENT ON INDEX idx_pos_sessions_one_open_per_register IS
 -- This function is IMPOSSIBLE to race condition
 -- Uses row-level locking + unique constraint
 -- =====================================================
+
+-- Drop existing function if it has wrong return type
+DROP FUNCTION IF EXISTS get_or_create_session(UUID, UUID, UUID, UUID, NUMERIC);
 
 CREATE OR REPLACE FUNCTION get_or_create_session(
   p_register_id UUID,

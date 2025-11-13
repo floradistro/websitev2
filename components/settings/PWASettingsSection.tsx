@@ -23,9 +23,11 @@ import {
   CheckCircle,
   AlertCircle,
   Info,
-  Loader2
+  Loader2,
+  Tag
 } from "lucide-react";
 import { usePWAUpdate } from "@/hooks/usePWAUpdate";
+import { APP_VERSION, getInstalledVersion, needsReinstall, getVersionChangeType } from "@/lib/pwa-version";
 
 export function PWASettingsSection() {
   // PWA Update Hook
@@ -49,6 +51,8 @@ export function PWASettingsSection() {
   } | null>(null);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [clearing, setClearing] = useState(false);
+  const [installedVersion, setInstalledVersion] = useState<string | null>(null);
+  const [versionMismatch, setVersionMismatch] = useState(false);
 
   // Detect PWA mode
   useEffect(() => {
@@ -170,6 +174,20 @@ export function PWASettingsSection() {
     return () => window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
   }, []);
 
+  // Check version on mount and periodically
+  useEffect(() => {
+    const checkVersion = () => {
+      const installed = getInstalledVersion();
+      setInstalledVersion(installed);
+      setVersionMismatch(needsReinstall());
+    };
+    checkVersion();
+
+    // Check every 30 seconds for version changes
+    const interval = setInterval(checkVersion, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Clear all caches
   const handleClearCaches = async () => {
     if (!confirm("Clear all caches? This will delete offline data and require re-downloading.")) {
@@ -279,7 +297,7 @@ export function PWASettingsSection() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Installation Status */}
         <div className="bg-white/[0.02] border border-white/[0.04] rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -296,6 +314,30 @@ export function PWASettingsSection() {
             {isPWA ? "Installed" : "Browser"}
           </div>
           <div className="text-white/30 text-[10px] mt-1">{platform.toUpperCase()}</div>
+        </div>
+
+        {/* Version */}
+        <div className={`bg-white/[0.02] border rounded-2xl p-4 ${
+          versionMismatch ? "border-orange-400/30 bg-orange-500/5" : "border-white/[0.04]"
+        }`}>
+          <div className="flex items-center gap-2 mb-2">
+            {versionMismatch ? (
+              <AlertCircle size={14} className="text-orange-400/60" strokeWidth={1.5} />
+            ) : (
+              <Tag size={14} className="text-white/40" strokeWidth={1.5} />
+            )}
+            <span className="text-white/40 text-[10px] uppercase tracking-wider font-light">
+              Version
+            </span>
+          </div>
+          <div className="text-white/70 text-lg font-light">v{APP_VERSION}</div>
+          {versionMismatch && installedVersion ? (
+            <div className="text-orange-400/60 text-[10px] mt-1">
+              v{installedVersion} → v{APP_VERSION}
+            </div>
+          ) : (
+            <div className="text-white/30 text-[10px] mt-1">Up to date</div>
+          )}
         </div>
 
         {/* Service Worker */}

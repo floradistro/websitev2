@@ -21,6 +21,8 @@ const withPWA = withPWAInit({
   skipWaiting: true,
   // Use build ID for versioning (ensures updates on every deploy)
   buildId: process.env.VERCEL_GIT_COMMIT_SHA || Date.now().toString(),
+  // Inject custom service worker code for manual update handling
+  swSrc: "public/sw-custom.js",
   // Smart caching strategies
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: false,

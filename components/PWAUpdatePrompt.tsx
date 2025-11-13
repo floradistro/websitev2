@@ -26,6 +26,8 @@ export default function PWAUpdatePrompt() {
   const { updateAvailable, updateReady, isUpdating, applyUpdate, dismissUpdate } = usePWAUpdate();
   const [isVisible, setIsVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [countdown, setCountdown] = useState(15); // Auto-update after 15 seconds
+  const [autoUpdateCancelled, setAutoUpdateCancelled] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -42,11 +44,27 @@ export default function PWAUpdatePrompt() {
     }
   }, [updateAvailable, mounted]);
 
+  // Auto-update countdown
+  useEffect(() => {
+    if (!updateAvailable || !updateReady || isUpdating || autoUpdateCancelled) return;
+
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      // Countdown reached 0 - auto-update
+      applyUpdate();
+    }
+  }, [countdown, updateAvailable, updateReady, isUpdating, autoUpdateCancelled, applyUpdate]);
+
   const handleUpdate = () => {
     applyUpdate();
   };
 
   const handleDismiss = () => {
+    setAutoUpdateCancelled(true);
     setIsVisible(false);
     setTimeout(() => {
       dismissUpdate();
@@ -119,6 +137,8 @@ export default function PWAUpdatePrompt() {
                 <p className="text-white/70 text-sm mb-4 leading-relaxed">
                   {isUpdating
                     ? "Please wait while we update to the latest version..."
+                    : updateReady && !autoUpdateCancelled
+                    ? `Auto-updating in ${countdown} second${countdown !== 1 ? 's' : ''}...`
                     : "A new version of WhaleTools is ready. Update now for the latest features and improvements."}
                 </p>
 

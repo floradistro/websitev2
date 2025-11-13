@@ -8,6 +8,7 @@ import NotificationToast from "@/components/NotificationToast";
 import LoadingBar from "@/components/LoadingBar";
 import InstallPWAPrompt from "@/components/InstallPWAPrompt";
 import PWAUpdatePrompt from "@/components/PWAUpdatePrompt";
+import PWAReinstallPrompt from "@/components/PWAReinstallPrompt";
 import PWAInitializer from "@/components/PWAInitializer";
 import PWADebugPanel from "@/components/PWADebugPanel";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -125,6 +126,7 @@ export default function RootLayout({
             <NotificationToast />
             <InstallPWAPrompt />
             <PWAUpdatePrompt />
+            <PWAReinstallPrompt />
             <PWAInitializer />
             <PWADebugPanel />
           </Providers>
