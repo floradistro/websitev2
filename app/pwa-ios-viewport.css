@@ -1,60 +1,45 @@
 /**
- * iOS PWA Viewport Fix - FIXED HEIGHT APPROACH
+ * iOS PWA Viewport Fix - SIMPLE HEIGHT APPROACH
  *
- * Problem: App needs to be fixed height from bottom of status bar to bottom of screen
- * Solution: Use fixed positioning and height with safe area insets
+ * Problem: App needs full height, content below status bar, no scroll lock
+ * Solution: Simple height calculation with padding, no fixed positioning
  *
  * Key Requirements:
- * - Content starts right below iOS status bar
- * - Content extends to bottom edge (accounting for home indicator)
- * - No gaps, no overlaps, fixed height
+ * - Full viewport height on load
+ * - Content starts below status bar
+ * - Natural scrolling behavior (no lock)
+ * - Hide iOS nav bars by default (fullscreen in manifest)
  */
 
 /* UNIVERSAL: Apply to all PWA installations */
 @media (display-mode: standalone), (display-mode: fullscreen) {
   html {
-    /* Fixed viewport height */
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
+    /* Full height, natural scroll */
+    height: 100%;
+    width: 100%;
   }
 
   body {
-    /* Fixed positioning - no padding, use margins for safe areas */
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    /* Full viewport height with safe area padding */
+    min-height: 100vh;
+    min-height: 100dvh;
 
-    /* Height calculation: full viewport minus safe areas */
-    height: 100vh;
-    height: 100dvh;
+    /* Padding pushes content away from safe areas */
+    padding-top: env(safe-area-inset-top, 0) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0) !important;
+    padding-left: env(safe-area-inset-left, 0) !important;
+    padding-right: env(safe-area-inset-right, 0) !important;
 
-    /* Margins push content away from safe areas */
-    margin-top: env(safe-area-inset-top, 0) !important;
-    margin-bottom: env(safe-area-inset-bottom, 0) !important;
-    margin-left: env(safe-area-inset-left, 0) !important;
-    margin-right: env(safe-area-inset-right, 0) !important;
-
-    /* Prevent scrolling on body */
-    overflow: hidden;
+    /* Prevent rubber band scrolling on body */
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* App container takes full available space */
+  /* App container - natural height, natural scroll */
   #__next {
-    position: fixed;
-    top: env(safe-area-inset-top, 0);
-    left: env(safe-area-inset-left, 0);
-    right: env(safe-area-inset-right, 0);
-    bottom: env(safe-area-inset-bottom, 0);
-
-    /* Allow scrolling within app container */
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
   }
 
   /* Prevent zoom on input focus */
@@ -68,36 +53,25 @@
 /* ALSO apply in regular browser mode for iOS (as fallback) */
 @supports (-webkit-touch-callout: none) {
   html {
-    height: 100vh;
-    height: 100dvh;
-    overflow: hidden;
+    height: 100%;
+    width: 100%;
   }
 
   body {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 100vh;
-    height: 100dvh;
-    margin-top: env(safe-area-inset-top, 0) !important;
-    margin-bottom: env(safe-area-inset-bottom, 0) !important;
-    margin-left: env(safe-area-inset-left, 0) !important;
-    margin-right: env(safe-area-inset-right, 0) !important;
-    overflow: hidden;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-top: env(safe-area-inset-top, 0) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0) !important;
+    padding-left: env(safe-area-inset-left, 0) !important;
+    padding-right: env(safe-area-inset-right, 0) !important;
     overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
   }
 
   #__next {
-    position: fixed;
-    top: env(safe-area-inset-top, 0);
-    left: env(safe-area-inset-left, 0);
-    right: env(safe-area-inset-right, 0);
-    bottom: env(safe-area-inset-bottom, 0);
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
   }
 }
 

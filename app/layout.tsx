@@ -111,7 +111,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col overflow-x-hidden min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden`}
         style={{
           backgroundColor: "#000000",
         }}
