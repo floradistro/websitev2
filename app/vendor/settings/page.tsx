@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase/client";
 import Link from "next/link";
 import { PageLoader } from "@/components/vendor/VendorSkeleton";
 import { pageLayouts } from "@/lib/design-system";
+import { PWASettingsSection } from "@/components/settings/PWASettingsSection";
 import { logger } from "@/lib/logger";
 export default function SettingsPage() {
   const { vendor } = useAppAuth();
@@ -314,6 +315,9 @@ export default function SettingsPage() {
             </button>
           </div>
         </div>
+
+        {/* PWA Settings Section */}
+        <PWASettingsSection />
 
         {/* Save Button */}
         <div className="flex items-center gap-4">
