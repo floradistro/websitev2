@@ -162,6 +162,7 @@ class DejavooPaymentProcessor implements IPaymentProcessor {
         printReceipt: "No",
         getReceipt: "Both",
         getExtendedData: true,
+        timeout: 600, // 10 minutes to allow customers time to add tip and complete payment
       });
 
       // Log transaction

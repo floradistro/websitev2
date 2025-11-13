@@ -113,7 +113,7 @@ export class DejavooClient {
   constructor(config: DejavooConfig) {
     this.authkey = config.authkey;
     this.tpn = config.tpn;
-    this.defaultTimeout = config.timeout || 120; // 2 minutes default
+    this.defaultTimeout = config.timeout || 600; // 10 minutes default (increased from 2 min to handle tip entry)
 
     // Set base URL based on environment
     this.baseUrl =

@@ -8,6 +8,7 @@ import { logger } from "@/lib/logger";
 import { toError, isPaymentError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const maxDuration = 600; // 10 minutes to allow customers time to add tip and complete payment
 
 /**
  * POST /api/pos/payment/process

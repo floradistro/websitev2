@@ -141,6 +141,18 @@ export function POSPayment({
             }),
           });
 
+          // Check if response is JSON before parsing
+          const contentType = response.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            // Response is not JSON (likely HTML error page from timeout or server error)
+            const text = await response.text();
+            throw new Error(
+              response.ok
+                ? "Server returned invalid response format"
+                : `Server error (${response.status}): ${text.substring(0, 200)}`,
+            );
+          }
+
           const result = await response.json();
 
           if (!result.success) {
