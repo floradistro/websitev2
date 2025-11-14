@@ -18,7 +18,7 @@ import {
 import Link from "next/link";
 import { POSModal } from "./POSModal";
 import { POSCashDrawer } from "./POSCashDrawer";
-import { CloseCashDrawerModal } from "@/app/pos/register/components/CloseCashDrawerModal";
+import { CloseCashDrawerModal } from "@/app/vendor/pos/register/components/CloseCashDrawerModal";
 
 import { logger } from "@/lib/logger";
 interface POSSession {
