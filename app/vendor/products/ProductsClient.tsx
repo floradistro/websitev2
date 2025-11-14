@@ -75,8 +75,8 @@ export default function ProductsClient() {
   );
 
   return (
-    <main
-      className={cn(ds.colors.bg.primary, "min-h-screen px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-6")}
+    <div
+      className={cn("w-full")}
       role="main"
       aria-label="Product management"
     >
@@ -262,6 +262,6 @@ export default function ProductsClient() {
           Skip to products list
         </a>
       </div>
-    </main>
+    </div>
   );
 }
