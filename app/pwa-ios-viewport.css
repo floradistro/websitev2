@@ -1,45 +1,56 @@
 /**
- * iOS PWA Viewport Fix - SIMPLE HEIGHT APPROACH
+ * iOS PWA Viewport Fix - TRUE FULLSCREEN WITH SAFE AREAS
  *
- * Problem: App needs full height, content below status bar, no scroll lock
- * Solution: Simple height calculation with padding, no fixed positioning
+ * Problem: Gap appears under app in PWA mode
+ * Solution: Use exact height (100dvh) and margin instead of padding to avoid extra space
  *
  * Key Requirements:
- * - Full viewport height on load
- * - Content starts below status bar
- * - Natural scrolling behavior (no lock)
- * - Hide iOS nav bars by default (fullscreen in manifest)
+ * - True fullscreen - no gap at bottom
+ * - Content below iOS status bar (safe-area-inset-top)
+ * - Natural scrolling behavior
+ * - Accommodate home indicator area
  */
 
 /* UNIVERSAL: Apply to all PWA installations */
 @media (display-mode: standalone), (display-mode: fullscreen) {
   html {
-    /* Full height, natural scroll */
+    /* Lock to full viewport height */
     height: 100%;
+    height: 100dvh;
     width: 100%;
+    overflow: hidden;
   }
 
   body {
-    /* Full viewport height with safe area padding */
-    min-height: 100vh;
-    min-height: 100dvh;
-
-    /* Padding pushes content away from safe areas */
-    padding-top: env(safe-area-inset-top, 0) !important;
-    padding-bottom: env(safe-area-inset-bottom, 0) !important;
-    padding-left: env(safe-area-inset-left, 0) !important;
-    padding-right: env(safe-area-inset-right, 0) !important;
+    /* Exact viewport height - no min-height to avoid gaps */
+    height: 100%;
+    height: 100dvh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
 
     /* Prevent rubber band scrolling on body */
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
+    overflow: hidden;
   }
 
-  /* App container - natural height, natural scroll */
+  /* App container gets the safe area handling */
   #__next {
-    min-height: 100vh;
-    min-height: 100dvh;
+    /* Exact height with safe area calculations */
+    height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     width: 100%;
+
+    /* Margins push content away from notch/status bar and home indicator */
+    margin-top: env(safe-area-inset-top, 0px);
+    margin-bottom: env(safe-area-inset-bottom, 0px);
+    margin-left: env(safe-area-inset-left, 0px);
+    margin-right: env(safe-area-inset-right, 0px);
+
+    /* Allow scrolling within the app */
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Prevent zoom on input focus */
@@ -54,24 +65,32 @@
 @supports (-webkit-touch-callout: none) {
   html {
     height: 100%;
+    height: 100dvh;
     width: 100%;
+    overflow: hidden;
   }
 
   body {
-    min-height: 100vh;
-    min-height: 100dvh;
-    padding-top: env(safe-area-inset-top, 0) !important;
-    padding-bottom: env(safe-area-inset-bottom, 0) !important;
-    padding-left: env(safe-area-inset-left, 0) !important;
-    padding-right: env(safe-area-inset-right, 0) !important;
+    height: 100%;
+    height: 100dvh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
+    overflow: hidden;
   }
 
   #__next {
-    min-height: 100vh;
-    min-height: 100dvh;
+    height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     width: 100%;
+    margin-top: env(safe-area-inset-top, 0px);
+    margin-bottom: env(safe-area-inset-bottom, 0px);
+    margin-left: env(safe-area-inset-left, 0px);
+    margin-right: env(safe-area-inset-right, 0px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

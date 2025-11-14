@@ -202,6 +202,17 @@ export class DejavooClient {
   private async makeRequest<T>(endpoint: string, payload: any): Promise<T> {
     const url = `${this.baseUrl}/${endpoint}`;
 
+    // Log the full request for debugging
+    logger.info("🔵 Dejavoo API Request", {
+      url,
+      endpoint,
+      payload: {
+        ...payload,
+        Authkey: payload.Authkey ? `${payload.Authkey.substring(0, 3)}***` : 'MISSING',
+        Tpn: payload.Tpn || 'MISSING',
+      }
+    });
+
     try {
       const response = await fetch(url, {
         method: "POST",
@@ -214,10 +225,21 @@ export class DejavooClient {
       // Check for HTTP errors
       if (!response.ok) {
         let errorBody = "";
+        let parsedError: any = null;
         try {
           errorBody = await response.text();
+          try {
+            parsedError = JSON.parse(errorBody);
+          } catch (e) {
+            // Not JSON
+          }
           if (process.env.NODE_ENV === "development") {
-            logger.error("🔴 DejaVoo API Error Response:", errorBody);
+            logger.error("🔴 DejaVoo API Error Response:", {
+              status: response.status,
+              statusText: response.statusText,
+              body: errorBody,
+              parsed: parsedError
+            });
           }
         } catch (e) {
           // Ignore
