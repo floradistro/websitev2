@@ -198,7 +198,7 @@ interface PageHeaderProps {
 Replace headers in this order (highest traffic first):
 
 **Week 1: Core Vendor Pages**
-1. ✅ `/vendor/apps` (Dashboard)
+1. ✅ `/vendor/dashboard` (Dashboard)
 2. ✅ `/vendor/products`
 3. ✅ `/vendor/orders`
 4. ✅ `/vendor/analytics`

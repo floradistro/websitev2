@@ -636,7 +636,7 @@ export default function POSRegisterPage() {
             <button
               onClick={() => {
                 clearLocation();
-                window.location.href = "/vendor/apps";
+                window.location.href = "/vendor/dashboard";
               }}
               className="px-6 py-3 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all text-xs uppercase tracking-[0.15em]"
             >

@@ -127,7 +127,7 @@ Comprehensive precision mathematics library:
 ## 📦 NAVIGATION FIXES (BONUS)
 
 ### Issues Found & Fixed:
-1. ✅ Digital Signage breadcrumb: `/vendor` → `/vendor/apps`
+1. ✅ Digital Signage breadcrumb: `/vendor` → `/vendor/dashboard`
 2. ✅ POS Navigation: Already working correctly
 3. ✅ Duplicate inventory page: Removed `/vendor/inventory/`
 

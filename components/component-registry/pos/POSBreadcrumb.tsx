@@ -59,7 +59,7 @@ export function POSBreadcrumb({ items, showSessionInfo = true }: POSBreadcrumbPr
           <nav className="flex items-center gap-2 text-xs uppercase tracking-[0.15em]">
             {/* Home/Dashboard Link */}
             <Link
-              href="/vendor/apps"
+              href="/vendor/dashboard"
               className="flex items-center gap-1.5 text-white/40 hover:text-white transition-colors"
             >
               <Home size={14} />

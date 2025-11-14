@@ -256,7 +256,7 @@ hover:bg-red-500/30 hover:border-red-500/40 transition-all
 
 ### Files Analyzed:
 - `/Users/whale/Desktop/whaletools/app/vendor/layout.tsx` (Major)
-- `/Users/whale/Desktop/whaletools/app/vendor/apps/page.tsx`
+- `/Users/whale/Desktop/whaletools/app/vendor/dashboard/page.tsx`
 - `/Users/whale/Desktop/whaletools/app/vendor/operations/page.tsx`
 - `/Users/whale/Desktop/whaletools/app/vendor/tv-menus/page.tsx` (Major)
 - `/Users/whale/Desktop/whaletools/app/vendor/media-library/page.tsx`

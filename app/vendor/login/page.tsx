@@ -25,7 +25,7 @@ export default function VendorLogin() {
       if (success) {
         // Force full page reload to ensure auth context is properly initialized
         // This prevents the issue where apps don't show until manual refresh
-        window.location.href = "/vendor/apps";
+        window.location.href = "/vendor/dashboard";
       } else {
         setError("Invalid email or password. Please try again.");
       }

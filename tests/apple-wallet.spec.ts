@@ -11,7 +11,7 @@ test.describe("Apple Wallet Integration", () => {
     await page.click('button[type="submit"]');
 
     // Wait for the redirect to complete
-    await page.waitForURL("**/vendor/apps", { timeout: 30000 });
+    await page.waitForURL("**/vendor/dashboard", { timeout: 30000 });
     await page.waitForLoadState("networkidle");
   });
 

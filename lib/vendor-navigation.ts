@@ -47,7 +47,7 @@ export interface NavSection {
 // Top-level always-visible items
 export const topLevelNavItems: NavItem[] = [
   {
-    href: "/vendor/apps",
+    href: "/vendor/dashboard",
     icon: Home,
     label: "Dashboard",
     description: "Overview & metrics",

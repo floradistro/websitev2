@@ -63,8 +63,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
   // Prefetch data on hover for faster navigation
   const handleNavHover = (href: string) => {
     const dataEndpoint = {
-      "/vendor/apps": "/api/page-data/vendor-dashboard",
-      "/vendor/dashboard": "/api/page-data/vendor-dashboard", // Keep for backwards compatibility
+      "/vendor/dashboard": "/api/page-data/vendor-dashboard",
       "/vendor/products": "/api/page-data/vendor-products",
       "/vendor/inventory": "/api/page-data/vendor-inventory",
     }[href];
@@ -133,7 +132,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
             <div className="flex items-center justify-between px-4 py-4 border-b border-white/5 relative z-10">
               <Link
-                href="/vendor/apps"
+                href="/vendor/dashboard"
                 className="flex items-center gap-3 group"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -259,11 +258,11 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
               }}
             >
               <Link
-                href="/vendor/apps"
+                href="/vendor/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center justify-center gap-2 w-full px-3 py-2.5 text-white/60 text-[10px] uppercase tracking-[0.15em] border border-white/20 rounded-xl transition-all duration-200 hover:bg-white/10 hover:border-white/30 hover:text-white"
               >
-                All Apps
+                Dashboard
               </Link>
               <button
                 onClick={() => {
@@ -462,9 +461,9 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                 : "px-4 md:px-6 lg:px-8 lg:py-6 lg:px-10 xl:px-12 2xl:px-16 pt-4 pb-10"
             }
           >
-            {/* Page Title - Prominent, centered, always visible */}
-            {!pathname?.includes("/tv-menus") && !pathname?.includes("/pos") && (
-              <div className="mb-8 flex flex-col items-center gap-4">
+            {/* Simple Header: Logo + Title (except for POS/TV pages) */}
+            {!pathname?.includes("/tv-menus") && !pathname?.includes("/pos") && !pathname?.includes("/login") && (
+              <div className="flex flex-col items-center mb-6 space-y-4">
                 {/* Vendor Logo - Subtle, elegant */}
                 <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center overflow-hidden backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.08]">
                   <img

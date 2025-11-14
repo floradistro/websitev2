@@ -32,8 +32,8 @@ test.describe("POS Session Flow", () => {
       await page.click('button[type="submit"]');
       
       // Wait for redirect to dashboard
-      await page.waitForURL("**/vendor/apps", { timeout: 10000 });
-      await expect(page).toHaveURL(/\/vendor\/apps/);
+      await page.waitForURL("**/vendor/dashboard", { timeout: 10000 });
+      await expect(page).toHaveURL(/\/vendor\/dashboard/);
     });
 
     // Step 2: Navigate to POS
@@ -174,7 +174,7 @@ test.describe("POS Session Flow", () => {
       await page.fill('input[type="password"]', VENDOR_PASSWORD);
       await page.click('button[type="submit"]');
       
-      await page.waitForURL("**/vendor/apps", { timeout: 10000 });
+      await page.waitForURL("**/vendor/dashboard", { timeout: 10000 });
     });
 
     // Step 2: Start first session
@@ -253,7 +253,7 @@ test.describe("POS Session Flow", () => {
       await page.fill('input[type="password"]', VENDOR_PASSWORD);
       await page.click('button[type="submit"]');
       
-      await page.waitForURL("**/vendor/apps");
+      await page.waitForURL("**/vendor/dashboard");
 
       await page.goto("http://localhost:3000/vendor/pos/register");
       await page.waitForLoadState("networkidle");
