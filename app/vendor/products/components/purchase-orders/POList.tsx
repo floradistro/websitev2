@@ -1,5 +1,6 @@
-import { Package, Calendar, Building2, Users, PackageCheck, MapPin } from "lucide-react";
+import { Package, Calendar, Building2, Users, PackageCheck, MapPin, Edit2, Trash2, MoreVertical } from "lucide-react";
 import { ds, cn, Button } from "@/components/ds";
+import { useState } from "react";
 import type { PurchaseOrder } from "./types";
 
 interface POListProps {
@@ -7,9 +8,12 @@ interface POListProps {
   isLoading: boolean;
   type: "inbound" | "outbound";
   onReceive?: (po: PurchaseOrder) => void;
+  onEdit?: (po: PurchaseOrder) => void;
+  onDelete?: (po: PurchaseOrder) => void;
 }
 
-export function POList({ orders, isLoading, type, onReceive }: POListProps) {
+export function POList({ orders, isLoading, type, onReceive, onEdit, onDelete }: POListProps) {
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   if (isLoading) {
     return (
       <div
@@ -164,15 +168,90 @@ export function POList({ orders, isLoading, type, onReceive }: POListProps) {
                 </div>
               </div>
 
-              {/* Action Button - Only "Receive Items" */}
-              {type === "inbound" &&
-                onReceive &&
-                ["ordered", "confirmed", "shipped", "receiving"].includes(po.status) && (
-                  <Button variant="primary" size="sm" onClick={() => onReceive(po)}>
-                    <PackageCheck size={12} />
-                    {po.status === "receiving" ? "Continue Receiving" : "Receive Items"}
-                  </Button>
+              {/* Actions */}
+              <div className="flex items-center gap-2">
+                {/* Receive Button */}
+                {type === "inbound" &&
+                  onReceive &&
+                  ["ordered", "confirmed", "shipped", "receiving", "partially_received"].includes(po.status) && (
+                    <Button variant="primary" size="sm" onClick={() => onReceive(po)}>
+                      <PackageCheck size={12} />
+                      {po.status === "receiving" || po.status === "partially_received" ? "Continue Receiving" : "Receive Items"}
+                    </Button>
+                  )}
+
+                {/* More Actions Menu */}
+                {(onEdit || onDelete) && po.status !== "received" && (
+                  <div className="relative">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setOpenMenuId(openMenuId === po.id ? null : po.id)}
+                    >
+                      <MoreVertical size={14} />
+                    </Button>
+
+                    {/* Dropdown Menu */}
+                    {openMenuId === po.id && (
+                      <>
+                        {/* Backdrop to close menu */}
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setOpenMenuId(null)}
+                        />
+
+                        {/* Menu */}
+                        <div
+                          className={cn(
+                            "absolute right-0 top-full mt-1 z-20",
+                            "min-w-[160px] rounded-lg border",
+                            ds.colors.bg.secondary,
+                            ds.colors.border.default,
+                            "shadow-lg",
+                          )}
+                        >
+                          {onEdit && (
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                onEdit(po);
+                              }}
+                              className={cn(
+                                "w-full flex items-center gap-2 px-3 py-2",
+                                "text-left text-sm",
+                                ds.colors.text.secondary,
+                                "hover:bg-white/5",
+                                "rounded-t-lg",
+                              )}
+                            >
+                              <Edit2 size={12} />
+                              Edit PO
+                            </button>
+                          )}
+                          {onDelete && po.status !== "partially_received" && (
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                onDelete(po);
+                              }}
+                              className={cn(
+                                "w-full flex items-center gap-2 px-3 py-2",
+                                "text-left text-sm",
+                                "text-red-400 hover:text-red-300",
+                                "hover:bg-red-500/10",
+                                "rounded-b-lg",
+                              )}
+                            >
+                              <Trash2 size={12} />
+                              Delete PO
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 )}
+              </div>
             </div>
           </div>
         </div>

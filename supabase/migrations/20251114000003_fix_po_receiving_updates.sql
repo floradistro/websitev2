@@ -1,3 +1,8 @@
+-- Fix purchase order receiving to properly update item quantities and PO status
+-- Problem: receive_purchase_order_items() creates receive records but doesn't update
+-- purchase_order_items.quantity_received or purchase_orders.status
+
+-- Step 1: Fix the receive function to update purchase_order_items
 CREATE OR REPLACE FUNCTION receive_purchase_order_items(
   p_po_id UUID,
   p_items JSONB,
@@ -21,7 +26,11 @@ DECLARE
   v_results JSONB := '[]'::JSONB;
   v_success_count INT := 0;
   v_fail_count INT := 0;
+  v_new_quantity_received DECIMAL;
+  v_all_received BOOLEAN;
+  v_any_received BOOLEAN;
 BEGIN
+  -- Verify PO exists and belongs to vendor
   SELECT * INTO v_po
   FROM purchase_orders
   WHERE id = p_po_id AND vendor_id = p_vendor_id;
@@ -33,11 +42,14 @@ BEGIN
     );
   END IF;
 
+  -- Process each item
   FOR v_item IN SELECT * FROM jsonb_array_elements(p_items)
   LOOP
     BEGIN
+      -- Extract values from JSON
       v_quantity_received := (v_item->>'quantity_received')::DECIMAL;
 
+      -- Get PO item details
       SELECT * INTO v_po_item
       FROM purchase_order_items
       WHERE id = (v_item->>'po_item_id')::UUID;
@@ -52,6 +64,7 @@ BEGIN
         CONTINUE;
       END IF;
 
+      -- Check if receiving would exceed ordered quantity
       IF (COALESCE(v_po_item.quantity_received, 0) + v_quantity_received) > v_po_item.quantity THEN
         v_results := v_results || jsonb_build_object(
           'success', false,
@@ -67,6 +80,7 @@ BEGIN
 
       v_unit_cost := v_po_item.unit_price;
 
+      -- Find or create inventory record
       SELECT id, quantity, average_cost INTO v_inventory_id, v_current_qty, v_current_avg_cost
       FROM inventory
       WHERE product_id = v_po_item.product_id
@@ -74,6 +88,7 @@ BEGIN
         AND vendor_id = p_vendor_id;
 
       IF NOT FOUND THEN
+        -- Create new inventory record
         INSERT INTO inventory (
           product_id,
           location_id,
@@ -91,6 +106,7 @@ BEGIN
         )
         RETURNING id INTO v_inventory_id;
       ELSE
+        -- Update existing inventory with weighted average cost
         v_new_qty := v_current_qty + v_quantity_received;
         v_new_avg_cost := (v_current_qty * v_current_avg_cost + v_quantity_received * v_unit_cost) / v_new_qty;
 
@@ -103,6 +119,7 @@ BEGIN
         WHERE id = v_inventory_id;
       END IF;
 
+      -- Create receiving record
       INSERT INTO purchase_order_receives (
         purchase_order_id,
         po_item_id,
@@ -121,6 +138,7 @@ BEGIN
         v_inventory_id
       );
 
+      -- Create stock movement record
       INSERT INTO stock_movements (
         inventory_id,
         movement_type,
@@ -143,6 +161,17 @@ BEGIN
         p_vendor_id
       );
 
+      -- **FIX: Update purchase_order_items with new quantity_received**
+      v_new_quantity_received := COALESCE(v_po_item.quantity_received, 0) + v_quantity_received;
+
+      UPDATE purchase_order_items
+      SET
+        quantity_received = v_new_quantity_received,
+        quantity_remaining = quantity - v_new_quantity_received,
+        updated_at = NOW()
+      WHERE id = (v_item->>'po_item_id')::UUID;
+
+      -- Success
       v_results := v_results || jsonb_build_object(
         'success', true,
         'item_id', v_item->>'po_item_id'
@@ -159,10 +188,31 @@ BEGIN
     END;
   END LOOP;
 
+  -- If all items failed, rollback the transaction
   IF v_success_count = 0 AND v_fail_count > 0 THEN
     RAISE EXCEPTION 'All items failed to receive';
   END IF;
 
+  -- **FIX: Update purchase order status after receiving**
+  -- Check if all items are fully received
+  SELECT
+    COUNT(*) = COUNT(*) FILTER (WHERE quantity_received >= quantity),
+    COUNT(*) FILTER (WHERE quantity_received > 0) > 0
+  INTO v_all_received, v_any_received
+  FROM purchase_order_items
+  WHERE purchase_order_id = p_po_id;
+
+  IF v_all_received THEN
+    UPDATE purchase_orders
+    SET status = 'received', updated_at = NOW()
+    WHERE id = p_po_id;
+  ELSIF v_any_received THEN
+    UPDATE purchase_orders
+    SET status = 'partially_received', updated_at = NOW()
+    WHERE id = p_po_id AND status = 'ordered';
+  END IF;
+
+  -- Return results
   RETURN jsonb_build_object(
     'success', true,
     'successful_items', v_success_count,
@@ -172,5 +222,8 @@ BEGIN
 END;
 $$;
 
+-- Grant execute permission
 GRANT EXECUTE ON FUNCTION receive_purchase_order_items(UUID, JSONB, UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION receive_purchase_order_items(UUID, JSONB, UUID) TO service_role;
+
+COMMENT ON FUNCTION receive_purchase_order_items IS 'Atomic function to receive purchase order items. Updates inventory, receiving records, stock movements, PO item quantities, and PO status in a single transaction.';

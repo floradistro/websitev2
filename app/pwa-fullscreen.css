@@ -1,0 +1,147 @@
+/**
+ * PWA Fullscreen Mode - Universal iOS & Android
+ *
+ * CLEAN IMPLEMENTATION - No conflicts, no legacy code
+ * Works on iPad Pro, iPhone, Android tablets, and Android phones
+ */
+
+/* ============================================================
+   iOS PWA MODE (iPhone & iPad)
+   ============================================================ */
+
+/* Detect iOS using WebKit feature that only exists on iOS */
+@supports (-webkit-touch-callout: none) {
+  /* Apply to ALL pages when running on iOS - PWA or not */
+  html {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Next.js root container */
+  #__next {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Add safe area spacing to first child */
+  #__next > * {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Prevent zoom on input focus (iOS) */
+  input,
+  textarea,
+  select,
+  button {
+    font-size: 16px !important;
+  }
+}
+
+/* ============================================================
+   ANDROID PWA MODE (Phones & Tablets)
+   ============================================================ */
+
+/* Detect Android using absence of iOS-specific feature */
+@supports not (-webkit-touch-callout: none) {
+  /* Apply to ALL pages when running on Android - PWA or not */
+  html {
+    width: 100vw;
+    height: 100vh;
+    height: 100svh; /* Small viewport height for Android */
+    position: fixed;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    width: 100vw;
+    height: 100vh;
+    height: 100svh;
+    position: fixed;
+    overflow: hidden;
+    overscroll-behavior: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Next.js root container */
+  #__next {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+}
+
+/* ============================================================
+   DEBUG MODE - Visual confirmation CSS is working
+   ============================================================ */
+
+/* Uncomment to enable debug mode */
+/*
+@supports (-webkit-touch-callout: none) {
+  body::after {
+    content: "iOS PWA Mode Active";
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 0, 0, 0.9);
+    color: white;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 999999;
+    border-radius: 0 0 8px 8px;
+    pointer-events: none;
+  }
+}
+
+@supports not (-webkit-touch-callout: none) {
+  body::after {
+    content: "Android PWA Mode Active";
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 255, 0, 0.9);
+    color: black;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 999999;
+    border-radius: 0 0 8px 8px;
+    pointer-events: none;
+  }
+}
+*/

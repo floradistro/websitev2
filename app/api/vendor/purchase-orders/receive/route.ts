@@ -46,15 +46,29 @@ export async function POST(request: NextRequest) {
     });
 
     if (rpcError) {
-      logger.error("❌ RPC error receiving items:", rpcError);
+      logger.error("❌ RPC error receiving items:", {
+        error: rpcError,
+        message: rpcError.message,
+        details: rpcError.details,
+        hint: rpcError.hint,
+      });
       return NextResponse.json(
-        { success: false, error: rpcError.message || "Failed to receive items" },
+        {
+          success: false,
+          error: rpcError.message || "Failed to receive items",
+          hint: rpcError.hint,
+          details: rpcError.details,
+        },
         { status: 500 },
       );
     }
 
     if (!result || !result.success) {
-      logger.error("❌ Receive function returned error:", result);
+      logger.error("❌ Receive function returned error:", {
+        result,
+        result_error: result?.error,
+        result_details: result?.results,
+      });
       return NextResponse.json(
         {
           success: false,

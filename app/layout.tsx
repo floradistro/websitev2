@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
-import "./pwa-android-fullscreen.css"; // CRITICAL: Android tablet fullscreen mode
-import "./pwa-ios-viewport.css"; // CRITICAL: iOS safe area & viewport handling
+import "./pwa-fullscreen.css"; // CRITICAL: Universal PWA fullscreen (iOS & Android)
 import NotificationToast from "@/components/NotificationToast";
 import LoadingBar from "@/components/LoadingBar";
 import InstallPWAPrompt from "@/components/InstallPWAPrompt";

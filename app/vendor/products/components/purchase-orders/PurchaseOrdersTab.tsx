@@ -108,6 +108,30 @@ export function PurchaseOrdersTab() {
     setShowCreateModal(false);
   };
 
+  const handleEdit = (po: PurchaseOrder) => {
+    // TODO: Implement edit modal
+    alert(`Edit PO: ${po.po_number} - Coming soon!`);
+  };
+
+  const handleDelete = async (po: PurchaseOrder) => {
+    if (!confirm(`Are you sure you want to delete PO ${po.po_number}? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(`/api/vendor/purchase-orders?po_id=${po.id}`);
+
+      if (response.data.success) {
+        await loadOrders(); // Refresh list
+      } else {
+        alert(`Failed to delete PO: ${response.data.error}`);
+      }
+    } catch (error: any) {
+      alert(`Error deleting PO: ${error.response?.data?.error || error.message}`);
+      logger.error("Error deleting PO:", error);
+    }
+  };
+
   return (
     <div>
       {/* Header Note with Create Button */}
@@ -162,6 +186,8 @@ export function PurchaseOrdersTab() {
         isLoading={loading}
         type="inbound"
         onReceive={handleReceive}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
       />
 
       {/* Modals */}

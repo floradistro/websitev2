@@ -530,133 +530,18 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      case "receive": {
-        const { id, items } = poData;
-
-        if (!id) {
-          return NextResponse.json({ success: false, error: "id is required" }, { status: 400 });
-        }
-
-        // Get the PO with items
-        const { data: po, error: poError } = await supabase
-          .from("purchase_orders")
-          .select(
-            `
-            *,
-            items:purchase_order_items(*)
-          `,
-          )
-          .eq("id", id)
-          .eq("vendor_id", vendorId)
-          .eq("po_type", "inbound")
-          .maybeSingle();
-
-        if (poError) {
-          if (process.env.NODE_ENV === "development") {
-            logger.error("❌ Error fetching inbound PO:", poError);
-          }
-          return NextResponse.json({ success: false, error: "Database error" }, { status: 500 });
-        }
-
-        if (!po) {
-          return NextResponse.json(
-            {
-              success: false,
-              error: "Inbound purchase order not found or access denied",
-            },
-            { status: 404 },
-          );
-        }
-
-        // Update inventory quantities for received items
-        // This assumes location_id is provided in the request
-        if (!poData.location_id) {
-          return NextResponse.json(
-            {
-              success: false,
-              error: "location_id is required for receiving items",
-            },
-            { status: 400 },
-          );
-        }
-
-        for (const item of po.items) {
-          const quantityReceived =
-            items?.find((i: any) => i.item_id === item.id)?.quantity_received || item.quantity;
-
-          // Update or insert inventory record
-          const { data: existingInventory } = await supabase
-            .from("inventory")
-            .select("*")
-            .eq("product_id", item.product_id)
-            .eq("location_id", poData.location_id)
-            .maybeSingle();
-
-          if (existingInventory) {
-            await supabase
-              .from("inventory")
-              .update({
-                quantity: existingInventory.quantity + quantityReceived,
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", existingInventory.id);
-          } else {
-            await supabase.from("inventory").insert({
-              product_id: item.product_id,
-              variant_id: item.variant_id,
-              location_id: poData.location_id,
-              vendor_id: vendorId,
-              quantity: quantityReceived,
-            });
-          }
-
-          // Update PO item with received quantity
-          await supabase
-            .from("purchase_order_items")
-            .update({
-              quantity_received: quantityReceived,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", item.id);
-        }
-
-        // Update PO status to received
-        const { data: updatedPO, error: updateError } = await supabase
-          .from("purchase_orders")
-          .update({
-            status: "received",
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", id)
-          .select()
-          .maybeSingle();
-
-        if (updateError) {
-          if (process.env.NODE_ENV === "development") {
-            logger.error("❌ Error updating PO status:", updateError);
-          }
-          return NextResponse.json({ success: false, error: updateError.message }, { status: 500 });
-        }
-
-        if (!updatedPO) {
-          if (process.env.NODE_ENV === "development") {
-            logger.error("❌ PO update affected 0 rows - PO may have been deleted");
-          }
-          return NextResponse.json(
-            {
-              success: false,
-              error: "Purchase order not found or was deleted. Please refresh the page.",
-            },
-            { status: 404 },
-          );
-        }
-
-        return NextResponse.json({
-          success: true,
-          data: updatedPO,
-          message: "Purchase order received and inventory updated",
-        });
-      }
+      // REMOVED: Ghost code for "receive" action
+      // This dangerous duplicate implementation has been removed.
+      // All receiving operations should use the atomic RPC function
+      // via the dedicated endpoint: /api/vendor/purchase-orders/receive/route.ts
+      //
+      // The duplicate code had critical issues:
+      // - No row locking (race conditions)
+      // - No weighted average cost calculation
+      // - No validations (cancelled POs, quantity limits, etc.)
+      // - Always marked as "received" instead of "partially_received"
+      //
+      // If you need to receive items, use the proper endpoint.
 
       case "fulfill": {
         const { id } = poData;
@@ -858,6 +743,253 @@ export async function POST(request: NextRequest) {
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in POST /api/vendor/purchase-orders:", err);
     }
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+// PATCH /api/vendor/purchase-orders - Update purchase order details
+export async function PATCH(request: NextRequest) {
+  try {
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
+    const supabase = getServiceSupabase();
+    const body = await request.json();
+    const { po_id, items, ...updateData } = body;
+
+    if (!po_id) {
+      return NextResponse.json({ success: false, error: "po_id is required" }, { status: 400 });
+    }
+
+    // Verify PO exists and belongs to vendor
+    const { data: existingPO, error: fetchError } = await supabase
+      .from("purchase_orders")
+      .select("*")
+      .eq("id", po_id)
+      .eq("vendor_id", vendorId)
+      .maybeSingle();
+
+    if (fetchError) {
+      logger.error("Error fetching PO:", fetchError);
+      return NextResponse.json({ success: false, error: "Database error" }, { status: 500 });
+    }
+
+    if (!existingPO) {
+      return NextResponse.json(
+        { success: false, error: "Purchase order not found or access denied" },
+        { status: 404 },
+      );
+    }
+
+    // Prevent editing received POs
+    if (existingPO.status === "received") {
+      return NextResponse.json(
+        { success: false, error: "Cannot edit a fully received purchase order" },
+        { status: 400 },
+      );
+    }
+
+    // Update PO fields
+    const updates: any = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (updateData.supplier_id !== undefined) updates.supplier_id = updateData.supplier_id;
+    if (updateData.wholesale_customer_id !== undefined)
+      updates.wholesale_customer_id = updateData.wholesale_customer_id;
+    if (updateData.location_id !== undefined) updates.location_id = updateData.location_id;
+    if (updateData.status !== undefined) updates.status = updateData.status;
+    if (updateData.payment_terms !== undefined) updates.payment_terms = updateData.payment_terms;
+    if (updateData.expected_delivery_date !== undefined)
+      updates.expected_delivery_date = updateData.expected_delivery_date;
+    if (updateData.internal_notes !== undefined) updates.internal_notes = updateData.internal_notes;
+    if (updateData.shipping_cost !== undefined) updates.shipping_cost = updateData.shipping_cost;
+    if (updateData.tax !== undefined) updates.tax = updateData.tax;
+    if (updateData.tax_rate !== undefined) updates.tax_rate = updateData.tax_rate;
+
+    // If items are provided, update them
+    if (items && Array.isArray(items)) {
+      // Get current items
+      const { data: currentItems } = await supabase
+        .from("purchase_order_items")
+        .select("*")
+        .eq("purchase_order_id", po_id);
+
+      const currentItemIds = new Set(currentItems?.map((i) => i.id) || []);
+      const providedItemIds = new Set(items.filter((i) => i.id).map((i) => i.id));
+
+      // Delete removed items
+      const itemsToDelete = [...currentItemIds].filter((id) => !providedItemIds.has(id));
+      if (itemsToDelete.length > 0) {
+        await supabase.from("purchase_order_items").delete().in("id", itemsToDelete);
+      }
+
+      // Update or insert items
+      for (const item of items) {
+        const lineTotal = parseFloat(item.quantity) * parseFloat(item.unit_price);
+
+        if (item.id) {
+          // Update existing item
+          await supabase
+            .from("purchase_order_items")
+            .update({
+              quantity: parseFloat(item.quantity),
+              unit_price: parseFloat(item.unit_price),
+              line_total: lineTotal,
+              notes: item.notes || null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", item.id);
+        } else {
+          // Insert new item
+          await supabase.from("purchase_order_items").insert({
+            purchase_order_id: po_id,
+            product_id: item.product_id,
+            variant_id: item.variant_id || null,
+            quantity: parseFloat(item.quantity),
+            unit_price: parseFloat(item.unit_price),
+            line_total: lineTotal,
+            notes: item.notes || null,
+          });
+        }
+      }
+
+      // Recalculate totals
+      const subtotal = items.reduce(
+        (sum, item) => sum + parseFloat(item.quantity) * parseFloat(item.unit_price),
+        0,
+      );
+      const tax = parseFloat(updateData.tax) || subtotal * (parseFloat(updateData.tax_rate) || 0);
+      const shipping = parseFloat(updateData.shipping_cost) || 0;
+      updates.subtotal = subtotal;
+      updates.tax = tax;
+      updates.shipping = shipping;
+      updates.total = subtotal + tax + shipping;
+    }
+
+    // Update the PO
+    const { data: updatedPO, error: updateError } = await supabase
+      .from("purchase_orders")
+      .update(updates)
+      .eq("id", po_id)
+      .select(
+        `
+        *,
+        supplier:suppliers!supplier_id(id, external_name),
+        wholesale_customer:wholesale_customers!wholesale_customer_id(id, external_company_name),
+        location:locations!purchase_orders_location_id_fkey(id, name),
+        items:purchase_order_items!purchase_order_items_purchase_order_id_fkey(
+          *,
+          product:products!purchase_order_items_product_id_fkey(id, name, sku)
+        )
+      `,
+      )
+      .maybeSingle();
+
+    if (updateError) {
+      logger.error("Error updating PO:", updateError);
+      return NextResponse.json({ success: false, error: updateError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: updatedPO,
+      message: "Purchase order updated successfully",
+    });
+  } catch (error) {
+    const err = toError(error);
+    logger.error("Error in PATCH /api/vendor/purchase-orders:", err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+// DELETE /api/vendor/purchase-orders - Delete a purchase order
+export async function DELETE(request: NextRequest) {
+  try {
+    const authResult = await requireVendor(request);
+    if (authResult instanceof NextResponse) return authResult;
+    const { vendorId } = authResult;
+
+    const supabase = getServiceSupabase();
+    const { searchParams } = new URL(request.url);
+    const po_id = searchParams.get("po_id");
+
+    if (!po_id) {
+      return NextResponse.json({ success: false, error: "po_id is required" }, { status: 400 });
+    }
+
+    // Verify PO exists and belongs to vendor
+    const { data: existingPO, error: fetchError } = await supabase
+      .from("purchase_orders")
+      .select("*, items:purchase_order_items(*)")
+      .eq("id", po_id)
+      .eq("vendor_id", vendorId)
+      .maybeSingle();
+
+    if (fetchError) {
+      logger.error("Error fetching PO:", fetchError);
+      return NextResponse.json({ success: false, error: "Database error" }, { status: 500 });
+    }
+
+    if (!existingPO) {
+      return NextResponse.json(
+        { success: false, error: "Purchase order not found or access denied" },
+        { status: 404 },
+      );
+    }
+
+    // Prevent deleting received POs (they have inventory implications)
+    if (existingPO.status === "received" || existingPO.status === "partially_received") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Cannot delete a purchase order that has received inventory",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Check if any items have been partially received
+    const hasReceivedItems = existingPO.items?.some((item: any) => item.quantity_received > 0);
+    if (hasReceivedItems) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Cannot delete a purchase order with received items",
+        },
+        { status: 400 },
+      );
+    }
+
+    // Delete related records first (cascading may not be set up)
+    await supabase.from("purchase_order_items").delete().eq("purchase_order_id", po_id);
+    await supabase.from("purchase_order_payments").delete().eq("purchase_order_id", po_id);
+    await supabase
+      .from("inventory_reservations")
+      .delete()
+      .eq("reference_id", po_id)
+      .eq("reservation_type", "purchase_order");
+
+    // Delete the PO
+    const { error: deleteError } = await supabase
+      .from("purchase_orders")
+      .delete()
+      .eq("id", po_id)
+      .eq("vendor_id", vendorId);
+
+    if (deleteError) {
+      logger.error("Error deleting PO:", deleteError);
+      return NextResponse.json({ success: false, error: deleteError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Purchase order deleted successfully",
+    });
+  } catch (error) {
+    const err = toError(error);
+    logger.error("Error in DELETE /api/vendor/purchase-orders:", err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
