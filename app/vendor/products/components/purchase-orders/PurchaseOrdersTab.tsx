@@ -109,7 +109,7 @@ export function PurchaseOrdersTab() {
   };
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div>
       {/* Header Note with Create Button */}
       <div
         className={cn(
