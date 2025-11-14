@@ -731,7 +731,7 @@ export function POSProductGrid({
                     }}
                   >
                     {/* Letter Header */}
-                    <div className="sticky top-0 z-10 bg-[#0a0a0a]/95 backdrop-blur-sm py-2 mb-3">
+                    <div className="sticky top-0 z-10 bg-black/95 backdrop-blur-sm py-2 mb-3">
                       <h3 className="text-[11px] uppercase tracking-[0.2em] text-white/40 font-light">
                         {letter}
                       </h3>
@@ -921,7 +921,7 @@ function ProductCard({
   };
 
   return (
-    <div className="group flex flex-col bg-[#0a0a0a] hover:bg-[#141414] border border-white/5 hover:border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1">
+    <div className="group flex flex-col bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1">
       {/* Product Image - Clickable (single click navigates, double-click opens quick view) */}
       <div
         className="relative aspect-[4/5] overflow-hidden bg-black cursor-pointer"

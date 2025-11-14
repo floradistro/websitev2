@@ -229,7 +229,7 @@ export default function POSReceivingPage() {
     return (
       <div className="h-full bg-black text-white flex flex-col">
         {/* Header */}
-        <div className="bg-zinc-900/50 border-b border-white/5 p-4">
+        <div className="bg-white/5 border-b border-white/5 p-4">
           <button
             onClick={() => setSelectedPO(null)}
             className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-3"
@@ -296,7 +296,7 @@ export default function POSReceivingPage() {
               <div
                 key={item.id}
                 id={`item-${item.id}`}
-                className="bg-zinc-900/50 border border-white/5 rounded-xl p-4 transition-all"
+                className="bg-white/5 border border-white/5 rounded-xl p-4 transition-all"
               >
                 {/* Product Info */}
                 <div className="mb-3">
@@ -366,7 +366,7 @@ export default function POSReceivingPage() {
         </div>
 
         {/* Footer Actions */}
-        <div className="border-t border-white/5 p-4 bg-zinc-900/50">
+        <div className="border-t border-white/5 p-4 bg-white/5">
           <div className="flex gap-3">
             <button
               onClick={() => setSelectedPO(null)}
@@ -396,7 +396,7 @@ export default function POSReceivingPage() {
   return (
     <div className="h-full bg-black text-white flex flex-col">
       {/* Header */}
-      <div className="bg-zinc-900/50 border-b border-white/5 p-4">
+      <div className="bg-white/5 border-b border-white/5 p-4">
         <button
           onClick={() => router.push("/pos/register")}
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-3"
@@ -448,7 +448,7 @@ export default function POSReceivingPage() {
               <button
                 key={po.id}
                 onClick={() => setSelectedPO(po)}
-                className="w-full bg-zinc-900/50 border border-white/5 hover:border-white/20 rounded-xl p-4 text-left transition-all"
+                className="w-full bg-white/5 border border-white/5 hover:border-white/20 rounded-xl p-4 text-left transition-all"
               >
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div className="flex-1">
