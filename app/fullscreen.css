@@ -57,8 +57,21 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Safe area padding for notched devices */
-  body {
+  /* Make first child of body fill the entire screen */
+  body > * {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Safe area padding for notched devices - apply to content inside */
+  body > * > * {
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     padding-left: env(safe-area-inset-left, 0px);

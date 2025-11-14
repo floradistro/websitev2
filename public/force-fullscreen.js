@@ -14,7 +14,6 @@
                 window.navigator.standalone === true;
 
   // Run on ALL pages (both regular web and PWA) to ensure consistency
-  console.log('[Fullscreen] ' + (isPWA ? 'PWA mode' : 'Web mode') + ' - forcing minimal UI');
 
   // Force scroll to hide Safari UI immediately on load
   function hideAddressBar() {
@@ -71,6 +70,4 @@
       'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content'
     );
   }
-
-  console.log('[Fullscreen] Fullscreen mode activated');
 })();
