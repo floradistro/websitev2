@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import {
   Search,
@@ -12,15 +12,14 @@ import {
   ShoppingBag,
   Calendar,
   User,
-  ChevronRight,
-  TrendingUp,
+  X,
+  ChevronDown,
 } from "lucide-react";
-import { useAppAuth } from "@/context/AppAuthContext";
-import { StatCard } from "@/components/ui/StatCard";
-import { Badge } from "@/components/ui/Badge";
+import { useAppAuth, UserRole } from "@/context/AppAuthContext";
 import { PageLoader } from "@/components/vendor/VendorSkeleton";
 import { pageLayouts } from "@/lib/design-system";
 import { logger } from "@/lib/logger";
+
 interface OrderItem {
   id: string;
   productId: string;
@@ -82,10 +81,15 @@ interface OrderStats {
 
 type OrderTypeFilter = "all" | "pickup" | "delivery" | "instore";
 type StatusFilter = "all" | "completed" | "processing" | "pending" | "cancelled";
-type LocationFilter = "all" | string;
+
+// Helper to check if user is admin
+const isAdminRole = (role: UserRole | null): boolean => {
+  return role === "vendor_owner" || role === "vendor_manager" || role === "admin";
+};
 
 export default function VendorOrders() {
-  const { isAuthenticated, isLoading: authLoading, vendor } = useAppAuth();
+  const { isAuthenticated, isLoading: authLoading, vendor, role, locations, primaryLocation } =
+    useAppAuth();
 
   // Data state
   const [orders, setOrders] = useState<Order[]>([]);
@@ -96,7 +100,54 @@ export default function VendorOrders() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [orderTypeFilter, setOrderTypeFilter] = useState<OrderTypeFilter>("all");
-  const [locationFilter, setLocationFilter] = useState<LocationFilter>("all");
+  const [locationFilter, setLocationFilter] = useState<string>("all"); // Location ID or "all"
+  const [dateRange, setDateRange] = useState<string>("last_30_days");
+  const [customStartDate, setCustomStartDate] = useState<string>("");
+  const [customEndDate, setCustomEndDate] = useState<string>("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Determine user's location access
+  const isAdmin = useMemo(() => isAdminRole(role), [role]);
+  const userLocationName = useMemo(() => {
+    if (isAdmin) return null;
+    return primaryLocation?.name || (locations[0]?.name ?? null);
+  }, [isAdmin, primaryLocation, locations]);
+
+  // Show location filter for admins with multiple locations
+  const showLocationFilter = useMemo(() => {
+    return isAdmin && locations.length > 1;
+  }, [isAdmin, locations]);
+
+  // Calculate date range for display
+  const dateRangeDisplay = useMemo(() => {
+    if (dateRange === "custom" && customStartDate && customEndDate) {
+      const start = new Date(customStartDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      const end = new Date(customEndDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+      return `${start} - ${end}`;
+    }
+    switch (dateRange) {
+      case "today":
+        return "Today";
+      case "yesterday":
+        return "Yesterday";
+      case "last_7_days":
+        return "Last 7 Days";
+      case "last_30_days":
+        return "Last 30 Days";
+      case "this_month":
+        return "This Month";
+      case "last_month":
+        return "Last Month";
+      default:
+        return "Last 30 Days";
+    }
+  }, [dateRange, customStartDate, customEndDate]);
 
   // UI state - using force update pattern to prevent re-render loops
   const [, forceUpdate] = useState({});
@@ -108,6 +159,21 @@ export default function VendorOrders() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Close date picker on click outside
+  useEffect(() => {
+    if (!showDatePicker) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".date-picker-container")) {
+        setShowDatePicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showDatePicker]);
 
   const openModal = useCallback((order: Order) => {
     selectedOrderRef.current = order;
@@ -136,20 +202,21 @@ export default function VendorOrders() {
         setLoading(true);
 
         const params = new URLSearchParams({
-          location: locationFilter,
           ...(orderTypeFilter !== "all" && { order_type: orderTypeFilter }),
           ...(statusFilter !== "all" && { status: statusFilter }),
-          date_range: "last_30_days",
+          ...(locationFilter !== "all" && { location: locationFilter }),
+          date_range: dateRange,
+          ...(dateRange === "custom" && customStartDate && { start_date: customStartDate }),
+          ...(dateRange === "custom" && customEndDate && { end_date: customEndDate }),
         });
 
         const response = await fetch(`/api/vendor/orders?${params}`, {
-          headers: {
-            "x-vendor-id": vendor.id,
-          },
+          credentials: "include",
         });
 
         if (!response.ok) {
-          throw new Error("Failed to load orders");
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Failed to load orders");
         }
 
         const data = await response.json();
@@ -172,7 +239,17 @@ export default function VendorOrders() {
     }
 
     loadOrders();
-  }, [authLoading, isAuthenticated, vendor?.id, statusFilter, orderTypeFilter, locationFilter]);
+  }, [
+    authLoading,
+    isAuthenticated,
+    vendor?.id,
+    statusFilter,
+    orderTypeFilter,
+    locationFilter,
+    dateRange,
+    customStartDate,
+    customEndDate,
+  ]);
 
   // Filter orders by search
   const filteredOrders = orders.filter((order) => {
@@ -203,355 +280,356 @@ export default function VendorOrders() {
   const getOrderTypeIcon = (type: string) => {
     switch (type.toLowerCase()) {
       case "pickup":
-        return <Store size={14} className="text-white/40" />;
+        return <Store size={9} strokeWidth={2.5} className="text-white/40" />;
       case "shipping":
-        return <Truck size={14} className="text-white/40" />;
+      case "delivery":
+        return <Truck size={9} strokeWidth={2.5} className="text-white/40" />;
       default:
-        return <ShoppingBag size={14} className="text-white/40" />;
+        return <ShoppingBag size={9} strokeWidth={2.5} className="text-white/40" />;
     }
   };
 
-  // Location names for filter
-  const locations = stats ? Object.keys(stats.by_location) : [];
 
   return (
-    <div className={pageLayouts.page}>
-      <div className={pageLayouts.content}>
-        {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 spacing-grid mb-8">
-        <StatCard
-          label="Total Orders"
-          value={loading ? "—" : stats?.total_orders || 0}
-          sublabel="Last 30 Days"
-          icon={Package}
-          loading={loading}
-          delay="0s"
-        />
-        <StatCard
-          label="Gross Revenue"
-          value={loading ? "—" : `$${(stats?.total_revenue || 0).toFixed(2)}`}
-          sublabel="Before Commission"
-          icon={DollarSign}
-          loading={loading}
-          delay="0.1s"
-        />
-        <StatCard
-          label="Commission"
-          value={loading ? "—" : `$${(stats?.total_commission || 0).toFixed(2)}`}
-          sublabel="Platform Fee"
-          icon={TrendingUp}
-          loading={loading}
-          delay="0.2s"
-        />
-        <StatCard
-          label="Net Earnings"
-          value={loading ? "—" : `$${(stats?.net_earnings || 0).toFixed(2)}`}
-          sublabel="Your Payout"
-          icon={DollarSign}
-          loading={loading}
-          delay="0.3s"
-        />
-      </div>
-
-      {/* Location Stats */}
-      {stats && Object.keys(stats.by_location).length > 1 && (
-        <div className="mb-8">
-          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-4">By Location</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 spacing-grid">
-            {Object.entries(stats.by_location).map(([locationName, locationStats]) => (
-              <div key={locationName} className="minimal-glass p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} className="text-white/40" />
-                    <h4 className="text-white text-sm font-medium">{locationName}</h4>
-                  </div>
-                  <Badge variant="neutral">{locationStats.order_count}</Badge>
-                </div>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between text-white/60">
-                    <span>Revenue</span>
-                    <span className="text-white">${locationStats.revenue.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-white/60">
-                    <span>Net Earnings</span>
-                    <span className="text-green-500/80">
-                      ${locationStats.net_earnings.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="minimal-glass p-6 mb-8">
-        <div className="flex flex-col gap-4">
-          {/* Search */}
-          <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-            <input
-              type="text"
-              placeholder="Search by customer, order number, or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-black/20 border border-white/10 text-white placeholder-white/30 pl-10 pr-4 py-3 focus:outline-none focus:border-white/30 transition-all rounded-2xl text-base"
-            />
+    <div className="h-full w-full flex flex-col bg-[#0a0a0a] overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-4 border-b border-white/5">
+        <div className="flex items-start justify-between">
+          <div>
+            <h3
+              className="text-xs uppercase tracking-[0.15em] text-white font-black"
+              style={{ fontWeight: 900 }}
+            >
+              Orders
+            </h3>
+            <div className="flex items-center gap-1.5 text-white/40 text-[10px] mt-1 uppercase tracking-wider">
+              {!isAdmin && userLocationName && (
+                <>
+                  <MapPin size={10} strokeWidth={2} />
+                  <span>{userLocationName}</span>
+                  <span className="text-white/20">·</span>
+                </>
+              )}
+              <Calendar size={10} strokeWidth={2} />
+              <span>{dateRangeDisplay}</span>
+            </div>
           </div>
 
-          {/* Filter Buttons */}
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Order Type Filter */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              <FilterButton
-                active={orderTypeFilter === "all"}
-                onClick={() => setOrderTypeFilter("all")}
-                icon={<Package size={14} />}
+          {/* Stats Summary & Filters */}
+          <div className="flex items-center gap-3">
+            {/* Date Range Picker */}
+            <div className="relative date-picker-container">
+              <button
+                onClick={() => setShowDatePicker(!showDatePicker)}
+                className="flex items-center gap-1.5 bg-black/40 border border-white/10 text-white text-[9px] uppercase tracking-[0.12em] font-black px-2.5 py-1.5 rounded-lg hover:bg-black/60 hover:border-white/20 transition-all"
+                style={{ fontWeight: 900 }}
               >
-                All Orders
-              </FilterButton>
-              <FilterButton
-                active={orderTypeFilter === "pickup"}
-                onClick={() => setOrderTypeFilter("pickup")}
-                icon={<Store size={14} />}
-                count={stats?.by_type.pickup}
-              >
-                Pickup
-              </FilterButton>
-              <FilterButton
-                active={orderTypeFilter === "delivery"}
-                onClick={() => setOrderTypeFilter("delivery")}
-                icon={<Truck size={14} />}
-                count={stats?.by_type.delivery}
-              >
-                Shipping
-              </FilterButton>
-              <FilterButton
-                active={orderTypeFilter === "instore"}
-                onClick={() => setOrderTypeFilter("instore")}
-                icon={<ShoppingBag size={14} />}
-                count={stats?.by_type.instore}
-              >
-                In-Store
-              </FilterButton>
-            </div>
+                <Calendar size={10} strokeWidth={2.5} />
+                <span>{dateRangeDisplay}</span>
+                <ChevronDown size={10} strokeWidth={2.5} className="text-white/40" />
+              </button>
 
-            {/* Status Filter */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              <FilterButton active={statusFilter === "all"} onClick={() => setStatusFilter("all")}>
-                All Status
-              </FilterButton>
-              <FilterButton
-                active={statusFilter === "completed"}
-                onClick={() => setStatusFilter("completed")}
-              >
-                Completed
-              </FilterButton>
-              <FilterButton
-                active={statusFilter === "processing"}
-                onClick={() => setStatusFilter("processing")}
-              >
-                Processing
-              </FilterButton>
-              <FilterButton
-                active={statusFilter === "pending"}
-                onClick={() => setStatusFilter("pending")}
-              >
-                Pending
-              </FilterButton>
-            </div>
-
-            {/* Location Filter */}
-            {locations.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                <FilterButton
-                  active={locationFilter === "all"}
-                  onClick={() => setLocationFilter("all")}
-                  icon={<MapPin size={14} />}
+              {/* Date Picker Dropdown */}
+              {showDatePicker && (
+                <div className="absolute right-0 top-full mt-2 bg-[#0a0a0a] border border-white/10 rounded-xl p-2 shadow-xl z-50 min-w-[200px] shadow-2xl"
+                  style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}
                 >
-                  All Locations
-                </FilterButton>
-                {locations.map((location) => (
-                  <FilterButton
-                    key={location}
-                    active={locationFilter === location}
-                    onClick={() => setLocationFilter(location)}
+                  {/* Quick Filters */}
+                  <div className="space-y-0.5 mb-2 pb-2 border-b border-white/5">
+                    {[
+                      { value: "today", label: "Today" },
+                      { value: "yesterday", label: "Yesterday" },
+                      { value: "last_7_days", label: "Last 7 Days" },
+                      { value: "last_30_days", label: "Last 30 Days" },
+                      { value: "this_month", label: "This Month" },
+                      { value: "last_month", label: "Last Month" },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => {
+                          setDateRange(option.value);
+                          setShowDatePicker(false);
+                        }}
+                        className={`w-full text-left px-2.5 py-1.5 text-[9px] uppercase tracking-[0.12em] font-black rounded-lg transition-all ${
+                          dateRange === option.value
+                            ? "bg-white/10 text-white"
+                            : "text-white/60 hover:bg-white/5 hover:text-white"
+                        }`}
+                        style={{ fontWeight: 900 }}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Custom Date Range */}
+                  <div className="space-y-2">
+                    <div
+                      className="text-[9px] uppercase tracking-[0.12em] font-black text-white/40 px-2.5"
+                      style={{ fontWeight: 900 }}
+                    >
+                      Custom Range
+                    </div>
+                    <div className="space-y-1.5 px-2.5">
+                      <div>
+                        <label className="text-[8px] uppercase tracking-wider text-white/40 block mb-1">
+                          From
+                        </label>
+                        <input
+                          type="date"
+                          value={customStartDate}
+                          onChange={(e) => {
+                            setCustomStartDate(e.target.value);
+                            setDateRange("custom");
+                          }}
+                          className="w-full bg-black/60 border border-white/10 text-white text-[9px] px-2 py-1 rounded-lg focus:outline-none focus:border-white/20 transition-all"
+                          style={{ colorScheme: "dark" }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[8px] uppercase tracking-wider text-white/40 block mb-1">
+                          To
+                        </label>
+                        <input
+                          type="date"
+                          value={customEndDate}
+                          onChange={(e) => {
+                            setCustomEndDate(e.target.value);
+                            setDateRange("custom");
+                          }}
+                          className="w-full bg-black/60 border border-white/10 text-white text-[9px] px-2 py-1 rounded-lg focus:outline-none focus:border-white/20 transition-all"
+                          style={{ colorScheme: "dark" }}
+                        />
+                      </div>
+                      {dateRange === "custom" && customStartDate && customEndDate && (
+                        <button
+                          onClick={() => setShowDatePicker(false)}
+                          className="w-full bg-white/10 hover:bg-white/20 text-white text-[9px] uppercase tracking-[0.12em] font-black px-2 py-1.5 rounded-lg transition-all mt-2"
+                          style={{ fontWeight: 900 }}
+                        >
+                          Apply
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Location Filter Dropdown (Admins Only) */}
+            {showLocationFilter && (
+              <>
+                <div className="h-6 w-px bg-white/10" />
+                <div className="relative">
+                  <select
+                    value={locationFilter}
+                    onChange={(e) => setLocationFilter(e.target.value)}
+                    className="appearance-none bg-black/40 border border-white/10 text-white text-[9px] uppercase tracking-[0.12em] font-black px-2.5 pr-6 py-1.5 rounded-lg focus:outline-none focus:border-white/20 transition-all cursor-pointer hover:bg-black/60"
+                    style={{
+                      fontWeight: 900,
+                      colorScheme: "dark",
+                    }}
                   >
-                    {location}
-                  </FilterButton>
-                ))}
-              </div>
+                    <option value="all" className="bg-[#0a0a0a] text-white">
+                      All Locations
+                    </option>
+                    {locations.map((loc) => (
+                      <option key={loc.id} value={loc.id} className="bg-[#0a0a0a] text-white">
+                        {loc.name}
+                      </option>
+                    ))}
+                  </select>
+                  <MapPin
+                    size={10}
+                    strokeWidth={2.5}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none"
+                  />
+                </div>
+              </>
             )}
+
+            <div className="h-6 w-px bg-white/10" />
+
+            <div className="text-right">
+              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">Orders</div>
+              <div
+                className="text-white text-sm font-black"
+                style={{ fontWeight: 900 }}
+              >
+                {loading ? "—" : stats?.total_orders || 0}
+              </div>
+            </div>
+            <div className="h-6 w-px bg-white/10" />
+            <div className="text-right">
+              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">Revenue</div>
+              <div
+                className="text-white text-sm font-black"
+                style={{ fontWeight: 900 }}
+              >
+                {loading ? "—" : `$${(stats?.total_revenue || 0).toFixed(2)}`}
+              </div>
+            </div>
+            <div className="h-6 w-px bg-white/10" />
+            <div className="text-right">
+              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em]">Net</div>
+              <div
+                className="text-white text-sm font-black"
+                style={{ fontWeight: 900 }}
+              >
+                {loading ? "—" : `$${(stats?.net_earnings || 0).toFixed(2)}`}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Orders Table */}
-      {loading ? (
-        <div className="minimal-glass p-12 text-center">
-          <div className="text-white/40 text-xs uppercase tracking-wider">Loading orders...</div>
+      {/* Search & Filters */}
+      <div className="px-4 py-2.5 border-b border-white/5 space-y-2">
+        {/* Search */}
+        <div className="relative">
+          <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30" strokeWidth={2} />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-black/40 border border-white/5 text-white placeholder-white/20 pl-8 pr-3 py-1.5 focus:outline-none focus:border-white/10 focus:bg-black/60 transition-all rounded-lg text-[10px] font-medium"
+          />
         </div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="minimal-glass p-12">
-          <div className="text-center">
-            <Package size={48} className="text-white/20 mx-auto mb-4" />
-            <div className="text-white/60 mb-2">No orders found</div>
-            <div className="text-white/40 text-sm">
-              {search
-                ? "Try adjusting your search"
-                : "Orders will appear here once customers make purchases"}
+
+        {/* Filters Row */}
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-0.5">
+          {/* Status */}
+          <FilterPill active={statusFilter === "all"} onClick={() => setStatusFilter("all")}>
+            All
+          </FilterPill>
+          <FilterPill
+            active={statusFilter === "completed"}
+            onClick={() => setStatusFilter("completed")}
+          >
+            Done
+          </FilterPill>
+          <FilterPill
+            active={statusFilter === "processing"}
+            onClick={() => setStatusFilter("processing")}
+          >
+            Active
+          </FilterPill>
+          <FilterPill
+            active={statusFilter === "pending"}
+            onClick={() => setStatusFilter("pending")}
+          >
+            Pending
+          </FilterPill>
+
+          <div className="h-3 w-px bg-white/10" />
+
+          {/* Type */}
+          <FilterPill
+            active={orderTypeFilter === "pickup"}
+            onClick={() => setOrderTypeFilter("pickup")}
+            icon={<Store size={9} strokeWidth={2.5} />}
+          >
+            Pickup
+          </FilterPill>
+          <FilterPill
+            active={orderTypeFilter === "delivery"}
+            onClick={() => setOrderTypeFilter("delivery")}
+            icon={<Truck size={9} strokeWidth={2.5} />}
+          >
+            Ship
+          </FilterPill>
+          <FilterPill
+            active={orderTypeFilter === "instore"}
+            onClick={() => setOrderTypeFilter("instore")}
+            icon={<ShoppingBag size={9} strokeWidth={2.5} />}
+          >
+            Store
+          </FilterPill>
+        </div>
+      </div>
+
+      {/* Orders List - Scrollable */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 min-h-0 bg-[#0a0a0a]">
+        {loading ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-white/40 text-[10px] uppercase tracking-[0.15em]">
+              Loading orders...
             </div>
           </div>
-        </div>
-      ) : (
-        <>
-          {/* Mobile List View */}
-          <div
-            className="lg:hidden divide-y divide-white/5 -mx-4"
-            style={{ animation: "fadeInUp 0.6s ease-out 0.3s both" }}
-          >
-            {filteredOrders.map((order) => (
-              <div
-                key={order.id}
-                onClick={(e) => {
-                  e.preventDefault();
-                  openModal(order);
-                }}
-                className="px-4 py-4 hover:bg-white/[0.02] transition-all bg-black cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="text-white text-sm font-medium mb-1">{order.customerName}</div>
-                    <div className="text-white/40 text-xs font-mono">{order.orderNumber}</div>
+        ) : filteredOrders.length === 0 ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <Package size={32} className="text-white/20 mx-auto mb-3" strokeWidth={1} />
+              <div className="text-white/60 text-[10px] uppercase tracking-[0.15em] mb-1">
+                No orders found
+              </div>
+              <div className="text-white/40 text-[9px]">
+                {search ? "Try adjusting your search" : "Orders will appear here"}
+              </div>
+            </div>
+          </div>
+        ) : (
+          filteredOrders.map((order) => (
+            <div
+              key={order.id}
+              onClick={() => openModal(order)}
+              className="bg-black/40 border border-white/5 hover:border-white/10 rounded-xl p-2.5 transition-all cursor-pointer group"
+            >
+              {/* Single Line: Customer + Status */}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <div
+                    className="text-white font-black text-[10px] uppercase tracking-tight truncate"
+                    style={{ fontWeight: 900 }}
+                  >
+                    {order.customerName}
                   </div>
-                  <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
+                  <div className="text-white/30 text-[9px] font-mono">
+                    {order.orderNumber.split("-").pop()}
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-xs mb-2">
-                  <div className="flex items-center gap-2 text-white/60">
+                <div className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[8px] uppercase tracking-wider text-white/60 font-black">
+                  {order.status}
+                </div>
+              </div>
+
+              {/* Meta Row */}
+              <div className="flex items-center justify-between text-[9px] text-white/40 mb-2">
+                <div className="flex items-center gap-2">
+                  <span>{new Date(order.date).toLocaleDateString()}</span>
+                  <span>·</span>
+                  <div className="flex items-center gap-1">
                     {getOrderTypeIcon(order.orderType)}
                     <span>{order.orderType}</span>
                   </div>
-                  <div className="text-white/60">{order.locationName}</div>
+                  {isAdmin && (
+                    <>
+                      <span>·</span>
+                      <span>{order.locationName}</span>
+                    </>
+                  )}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/60">
-                    {new Date(order.date).toLocaleDateString()}
-                  </span>
-                  <span className="text-white font-medium">
-                    ${order.vendorNetEarnings.toFixed(2)}
-                  </span>
+                <span>{order.itemCount} item{order.itemCount !== 1 ? "s" : ""}</span>
+              </div>
+
+              {/* Totals - Single Line */}
+              <div className="flex items-center justify-between text-[9px] pt-2 border-t border-white/5">
+                <div className="flex items-center gap-2 text-white/30">
+                  <span>${order.vendorSubtotal.toFixed(2)}</span>
+                  <span>-${order.vendorCommission.toFixed(2)}</span>
+                </div>
+                <div
+                  className="text-white font-black text-xs"
+                  style={{ fontWeight: 900 }}
+                >
+                  ${order.vendorNetEarnings.toFixed(2)}
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Desktop Table View */}
-          <div className="hidden lg:block minimal-glass overflow-hidden">
-            <table className="w-full">
-              <thead className="border-b border-white/5 bg-black/40">
-                <tr>
-                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">
-                    Order
-                  </th>
-                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">
-                    Date
-                  </th>
-                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">
-                    Customer
-                  </th>
-                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">
-                    Type
-                  </th>
-                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">
-                    Location
-                  </th>
-                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">
-                    Items
-                  </th>
-                  <th className="text-right text-xs font-medium text-white/60 uppercase tracking-wider p-4">
-                    Revenue
-                  </th>
-                  <th className="text-right text-xs font-medium text-white/60 uppercase tracking-wider p-4">
-                    Net
-                  </th>
-                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4">
-                    Status
-                  </th>
-                  <th className="text-left text-xs font-medium text-white/60 uppercase tracking-wider p-4"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {filteredOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-white/[0.02] transition-all group">
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <Package size={16} className="text-white/40" />
-                        <span className="text-white font-mono text-sm">{order.orderNumber}</span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2 text-white/60 text-sm">
-                        <Calendar size={14} className="text-white/40" />
-                        {new Date(order.date).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <User size={14} className="text-white/40" />
-                        <span className="text-white text-sm">{order.customerName}</span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        {getOrderTypeIcon(order.orderType)}
-                        <span className="text-white/60 text-sm">{order.orderType}</span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <MapPin size={14} className="text-white/40" />
-                        <span className="text-white/60 text-sm">{order.locationName}</span>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className="text-white/60 text-sm">
-                        {order.itemCount} item{order.itemCount !== 1 ? "s" : ""}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right">
-                      <span className="text-white text-sm font-medium">
-                        ${order.vendorSubtotal.toFixed(2)}
-                      </span>
-                    </td>
-                    <td className="p-4 text-right">
-                      <span className="text-green-500/80 text-sm font-medium">
-                        ${order.vendorNetEarnings.toFixed(2)}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
-                    </td>
-                    <td className="p-4">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          openModal(order);
-                        }}
-                        className="text-white/60 hover:text-white text-sm flex items-center gap-1 transition-colors group-hover:gap-2 duration-300"
-                      >
-                        View
-                        <ChevronRight size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+            </div>
+          ))
+        )}
+      </div>
 
       {/* Order Detail Modal */}
       {isMounted &&
@@ -561,44 +639,39 @@ export default function VendorOrders() {
           <OrderDetailModal
             order={selectedOrderRef.current}
             onClose={closeModal}
-            getStatusVariant={getStatusVariant}
             getOrderTypeIcon={getOrderTypeIcon}
           />,
           document.body,
         )}
-      </div>
     </div>
   );
 }
 
-// Filter Button Component
-function FilterButton({
+// Filter Pill Component - Pure Monochrome
+function FilterPill({
   active,
   onClick,
   children,
   icon,
-  count,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
   icon?: React.ReactNode;
-  count?: number;
+  variant?: "success" | "warning" | "neutral"; // Keep for backwards compatibility but don't use
 }) {
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-2 text-xs uppercase tracking-wider transition-all whitespace-nowrap rounded-2xl flex items-center gap-2 ${
+      className={`px-2 py-1 text-[9px] uppercase tracking-[0.12em] font-black transition-all whitespace-nowrap rounded-md flex items-center gap-1 border ${
         active
-          ? "bg-gradient-to-r from-white/10 to-white/5 text-white border border-white/20"
-          : "bg-black/20 text-white/50 border border-white/10 hover:border-white/20 hover:text-white/70"
+          ? "border-white/20 bg-white/5 text-white"
+          : "bg-black/40 text-white/40 border-white/5 hover:border-white/10 hover:text-white/60"
       }`}
+      style={{ fontWeight: 900 }}
     >
       {icon}
       {children}
-      {count !== undefined && count > 0 && (
-        <span className={`ml-1 ${active ? "text-white/60" : "text-white/40"}`}>({count})</span>
-      )}
     </button>
   );
 }
@@ -607,12 +680,10 @@ function FilterButton({
 function OrderDetailModal({
   order,
   onClose,
-  getStatusVariant,
   getOrderTypeIcon,
 }: {
   order: Order;
   onClose: () => void;
-  getStatusVariant: (status: string) => "success" | "warning" | "error" | "neutral";
   getOrderTypeIcon: (type: string) => React.ReactNode;
 }) {
   // Prevent body scroll when modal is open
@@ -650,170 +721,207 @@ function OrderDetailModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
       <div
-        className="bg-black/95 backdrop-blur-xl border border-white/10 rounded-[20px] max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6"
+        className="bg-[#0a0a0a] backdrop-blur-xl border border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
         onClick={handleContentClick}
         style={{
           transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
         }}
       >
         {/* Header */}
-        <div className="flex justify-between items-start mb-6 pb-6 border-b border-white/10">
+        <div className="flex justify-between items-start p-4 border-b border-white/5">
           <div>
-            <h2 className="text-xl font-light text-white mb-2">{order.orderNumber}</h2>
-            <div className="flex items-center gap-3 text-sm">
-              <div className="flex items-center gap-2 text-white/60">
-                <User size={14} />
+            <h2
+              className="text-sm font-black uppercase text-white tracking-tight mb-2"
+              style={{ fontWeight: 900 }}
+            >
+              {order.orderNumber}
+            </h2>
+            <div className="flex items-center gap-2.5 text-[9px]">
+              <div className="flex items-center gap-1 text-white/50">
+                <User size={9} strokeWidth={2.5} />
                 {order.customerName}
               </div>
-              <div className="flex items-center gap-2 text-white/60">
+              <span className="text-white/20">·</span>
+              <div className="flex items-center gap-1 text-white/50">
                 {getOrderTypeIcon(order.orderType)}
                 {order.orderType}
               </div>
-              <div className="flex items-center gap-2 text-white/60">
-                <MapPin size={14} />
+              <span className="text-white/20">·</span>
+              <div className="flex items-center gap-1 text-white/50">
+                <MapPin size={9} strokeWidth={2.5} />
                 {order.locationName}
               </div>
             </div>
           </div>
-          <button onClick={onClose} className="text-white/60 hover:text-white transition-colors">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-white/40 hover:text-white hover:bg-white/5 transition-all"
+          >
+            <X size={16} strokeWidth={2} />
           </button>
         </div>
 
-        {/* Customer Info */}
-        <div className="mb-6 p-4 bg-white/5 border border-white/5 rounded-2xl">
-          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Customer Details</h3>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <div className="text-white/60 text-xs mb-1">Email</div>
-              <div className="text-white">{order.customerEmail}</div>
-            </div>
-            {order.customerPhone && (
-              <div>
-                <div className="text-white/60 text-xs mb-1">Phone</div>
-                <div className="text-white">{order.customerPhone}</div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Shipping Info (for delivery orders) */}
-        {order.deliveryType === "delivery" && order.shippingAddress && (
-          <div className="mb-6 p-4 bg-white/5 border border-white/5 rounded-2xl">
-            <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">
-              Shipping Information
+        {/* Content */}
+        <div className="p-4 space-y-3">
+          {/* Customer Info */}
+          <div className="bg-[#141414] border border-white/5 rounded-2xl p-3">
+            <h3 className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-2 font-black">
+              Customer
             </h3>
-            <div className="space-y-2 text-sm">
-              {order.trackingNumber && (
+            <div className="grid grid-cols-2 gap-3 text-[10px]">
+              <div>
+                <div className="text-white/40 uppercase tracking-[0.15em] mb-1">Email</div>
+                <div className="text-white">{order.customerEmail}</div>
+              </div>
+              {order.customerPhone && (
                 <div>
-                  <span className="text-white/60">Tracking: </span>
-                  <span className="text-white font-mono">{order.trackingNumber}</span>
-                  {order.trackingUrl && (
-                    <a
-                      href={order.trackingUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-2 text-blue-400 hover:text-blue-300 text-xs"
-                    >
-                      Track Package →
-                    </a>
-                  )}
-                </div>
-              )}
-              {order.shippingCarrier && (
-                <div>
-                  <span className="text-white/60">Carrier: </span>
-                  <span className="text-white">{order.shippingCarrier}</span>
+                  <div className="text-white/40 uppercase tracking-[0.15em] mb-1">Phone</div>
+                  <div className="text-white">{order.customerPhone}</div>
                 </div>
               )}
             </div>
           </div>
-        )}
 
-        {/* Order Items */}
-        <div className="mb-6">
-          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Order Items</h3>
-          <div className="space-y-2">
-            {order.items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl"
-              >
-                {item.productImage && (
-                  <img
-                    src={item.productImage}
-                    alt={item.productName}
-                    className="w-12 h-12 rounded-lg object-cover"
-                  />
+          {/* Shipping Info (for delivery orders) */}
+          {order.deliveryType === "delivery" && order.shippingAddress && (
+            <div className="bg-[#141414] border border-white/5 rounded-2xl p-3">
+              <h3 className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-2 font-black">
+                Shipping
+              </h3>
+              <div className="space-y-2 text-[10px]">
+                {order.trackingNumber && (
+                  <div>
+                    <span className="text-white/40 uppercase tracking-[0.15em]">Tracking: </span>
+                    <span className="text-white font-mono">{order.trackingNumber}</span>
+                    {order.trackingUrl && (
+                      <a
+                        href={order.trackingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-2 text-blue-400 hover:text-blue-300 text-[9px]"
+                      >
+                        Track →
+                      </a>
+                    )}
+                  </div>
                 )}
-                <div className="flex-1">
-                  <div className="text-white text-sm font-medium mb-1">{item.productName}</div>
-                  <div className="flex items-center gap-3 text-xs text-white/60">
-                    <span>Qty: {item.quantityDisplay || item.quantity}</span>
-                    <span>@${item.unitPrice.toFixed(2)}</span>
-                    {item.tierName && <Badge variant="neutral">{item.tierName}</Badge>}
+                {order.shippingCarrier && (
+                  <div>
+                    <span className="text-white/40 uppercase tracking-[0.15em]">Carrier: </span>
+                    <span className="text-white">{order.shippingCarrier}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Order Items */}
+          <div className="bg-[#141414] border border-white/5 rounded-2xl p-3">
+            <h3 className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-2 font-black">
+              Items ({order.itemCount})
+            </h3>
+            <div className="space-y-2">
+              {order.items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 p-2 bg-black/40 border border-white/5 rounded-xl"
+                >
+                  {item.productImage && (
+                    <img
+                      src={item.productImage}
+                      alt={item.productName}
+                      className="w-10 h-10 rounded-lg object-cover"
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div
+                      className="text-white text-[10px] font-black uppercase tracking-tight truncate"
+                      style={{ fontWeight: 900 }}
+                    >
+                      {item.productName}
+                    </div>
+                    <div className="flex items-center gap-2 text-[9px] text-white/60 mt-1">
+                      <span>Qty: {item.quantityDisplay || item.quantity}</span>
+                      <span>@${item.unitPrice.toFixed(2)}</span>
+                      {item.tierName && (
+                        <span className="text-white/40">· {item.tierName}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-white font-black text-xs" style={{ fontWeight: 900 }}>
+                    ${item.lineTotal.toFixed(2)}
                   </div>
                 </div>
-                <div className="text-white font-medium">${item.lineTotal.toFixed(2)}</div>
+              ))}
+            </div>
+          </div>
+
+          {/* Financial Summary */}
+          <div className="bg-[#141414] border border-white/5 rounded-2xl p-3">
+            <h3 className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-2 font-black">
+              Totals
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between text-[10px]">
+                <span className="text-white/60 uppercase tracking-[0.15em]">Subtotal</span>
+                <span className="text-white">${order.vendorSubtotal.toFixed(2)}</span>
               </div>
-            ))}
+              <div className="flex justify-between text-[10px]">
+                <span className="text-white/60 uppercase tracking-[0.15em]">Platform Fee</span>
+                <span className="text-white/60">-${order.vendorCommission.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between pt-2 border-t border-white/10">
+                <span
+                  className="text-white/60 text-[9px] uppercase tracking-[0.15em] font-black"
+                  style={{ fontWeight: 900 }}
+                >
+                  Net Earnings
+                </span>
+                <span className="text-white font-black text-sm" style={{ fontWeight: 900 }}>
+                  ${order.vendorNetEarnings.toFixed(2)}
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Order Summary */}
-        <div className="mb-6 p-4 bg-white/5 border border-white/5 rounded-2xl">
-          <h3 className="text-xs uppercase tracking-wider text-white/60 mb-3">Financial Summary</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-white/60">Subtotal</span>
-              <span className="text-white font-medium">${order.vendorSubtotal.toFixed(2)}</span>
+          {/* Order Metadata */}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="bg-[#141414] border border-white/5 rounded-xl p-2">
+              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">
+                Date
+              </div>
+              <div className="text-white text-[10px]">
+                {new Date(order.date).toLocaleDateString()}
+              </div>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-white/60">Platform Commission</span>
-              <span className="text-red-500/80">-${order.vendorCommission.toFixed(2)}</span>
+            <div className="bg-[#141414] border border-white/5 rounded-xl p-2">
+              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">
+                Status
+              </div>
+              <div className="text-white text-[10px] uppercase tracking-wider font-black">
+                {order.status}
+              </div>
             </div>
-            <div className="flex justify-between pt-2 border-t border-white/10">
-              <span className="text-white font-medium">Your Net Earnings</span>
-              <span className="text-green-500 font-semibold text-lg">
-                ${order.vendorNetEarnings.toFixed(2)}
-              </span>
+            <div className="bg-[#141414] border border-white/5 rounded-xl p-2">
+              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">
+                Payment
+              </div>
+              <div className="text-white text-[10px] uppercase tracking-wider font-black">
+                {order.paymentStatus}
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Order Metadata */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div>
-            <div className="text-white/60 text-xs mb-1">Order Date</div>
-            <div className="text-white">{new Date(order.date).toLocaleDateString()}</div>
-          </div>
-          <div>
-            <div className="text-white/60 text-xs mb-1">Order Status</div>
-            <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
-          </div>
-          <div>
-            <div className="text-white/60 text-xs mb-1">Payment</div>
-            <Badge variant={order.paymentStatus === "paid" ? "success" : "warning"}>
-              {order.paymentStatus}
-            </Badge>
-          </div>
-          <div>
-            <div className="text-white/60 text-xs mb-1">Fulfillment</div>
-            <Badge variant={order.fulfillmentStatus === "fulfilled" ? "success" : "neutral"}>
-              {order.fulfillmentStatus}
-            </Badge>
+            <div className="bg-[#141414] border border-white/5 rounded-xl p-2">
+              <div className="text-white/40 text-[9px] uppercase tracking-[0.15em] mb-1">
+                Fulfillment
+              </div>
+              <div className="text-white text-[10px] uppercase tracking-wider font-black">
+                {order.fulfillmentStatus}
+              </div>
+            </div>
           </div>
         </div>
       </div>

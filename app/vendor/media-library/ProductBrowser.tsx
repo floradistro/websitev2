@@ -44,6 +44,7 @@ interface ProductBrowserProps {
   selectionMode?: boolean;
   selectedProducts?: Set<string>;
   onSelectionChange?: (selectedIds: Set<string>) => void;
+  searchQuery?: string; // Unified search from parent
 }
 
 export default function ProductBrowser({
@@ -54,12 +55,12 @@ export default function ProductBrowser({
   selectionMode = false,
   selectedProducts = new Set(),
   onSelectionChange,
+  searchQuery = '',
 }: ProductBrowserProps) {
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"needs_images" | "has_images" | "all">("needs_images");
-  const [search, setSearch] = useState("");
   const [stats, setStats] = useState({ needsImages: 0, hasImages: 0, total: 0 });
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -69,13 +70,13 @@ export default function ProductBrowser({
     setLoading(true);
     try {
       const params = new URLSearchParams({ filter });
-      if (search.trim()) params.append("search", search.trim());
+      if (searchQuery.trim()) params.append("search", searchQuery.trim());
       if (selectedCategory) params.append("category", selectedCategory);
 
       logger.debug("🔍 ProductBrowser: Loading products", {
         vendorId,
         filter,
-        search,
+        search: searchQuery,
         category: selectedCategory,
         url: `/api/vendor/products/list?${params}`,
       });
@@ -169,7 +170,7 @@ export default function ProductBrowser({
       loadProducts();
       loadStats();
     }
-  }, [vendorId, filter, search, selectedCategory]);
+  }, [vendorId, filter, searchQuery, selectedCategory]);
 
   const loadCategories = async () => {
     try {
@@ -217,42 +218,25 @@ export default function ProductBrowser({
 
   return (
     <div className="h-full flex flex-col bg-black border-r border-white/[0.08]">
-      {/* Header */}
+      {/* Selection Controls */}
       <div className="flex-shrink-0 px-4 py-3 border-b border-white/[0.08]">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-white">Products</h2>
-          {selectionMode && (
-            <div className="flex items-center gap-2">
-              {selectedProducts.size > 0 && (
-                <span className="text-xs text-purple-400 font-medium">
-                  {selectedProducts.size} selected
-                </span>
-              )}
-              <button
-                onClick={selectedProducts.size === products.length ? handleClearSelection : handleSelectAll}
-                className="text-[10px] text-purple-400 hover:text-purple-300 font-medium transition-colors"
-              >
-                {selectedProducts.size === products.length ? "Clear" : "Select All"}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Search */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-white/[0.03] border border-white/[0.08] rounded-lg text-xs text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors"
-          />
-        </div>
+        {selectionMode && selectedProducts.size > 0 && (
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-purple-400 font-medium uppercase tracking-[0.15em]">
+              {selectedProducts.size} selected
+            </span>
+            <button
+              onClick={selectedProducts.size === products.length ? handleClearSelection : handleSelectAll}
+              className="text-[9px] text-purple-400 hover:text-purple-300 font-medium transition-colors uppercase tracking-[0.15em]"
+            >
+              {selectedProducts.size === products.length ? "Clear" : "Select All"}
+            </button>
+          </div>
+        )}
 
         {/* Category Filter */}
         {categories.length > 0 && (
-          <div className="mb-3 relative">
+          <div className="mt-3 relative">
             <button
               onClick={() => setShowCategoryFilter(!showCategoryFilter)}
               className="w-full flex items-center justify-between px-3 py-2 bg-white/[0.03] border border-white/[0.08] rounded-lg text-xs text-white hover:bg-white/[0.06] transition-colors"
@@ -360,7 +344,18 @@ export default function ProductBrowser({
           </div>
         ) : (
           <div className="p-2 space-y-1">
-            {products.map((product) => (
+            {products
+              .filter((product) => {
+                // Filter by unified search from parent
+                if (!searchQuery) return true;
+                const query = searchQuery.toLowerCase();
+                return (
+                  product.name.toLowerCase().includes(query) ||
+                  product.sku?.toLowerCase().includes(query) ||
+                  product.category?.name.toLowerCase().includes(query)
+                );
+              })
+              .map((product) => (
               <div
                 key={product.id}
                 draggable={!product.has_image}

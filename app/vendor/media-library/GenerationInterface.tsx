@@ -932,64 +932,49 @@ export default function GenerationInterface({
   // Template selection
   if (!selectedTemplate) {
     return (
-      <div className="h-full overflow-y-auto p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-2xl text-white font-light mb-2">Choose a Style</h2>
-            <p className="text-sm text-white/50 font-light">
-              Generating for{" "}
-              {selectedProducts.size === 1
-                ? `"${selectedProductsList[0]?.name}"`
-                : `${selectedProducts.size} products`}
-            </p>
-          </div>
+      <div className="h-full overflow-y-auto p-6">
+        <div className="max-w-4xl mx-auto">
+          <h2 
+            className="text-2xl font-black text-white uppercase tracking-tight mb-8"
+            style={{ fontWeight: 900 }}
+          >
+            Choose Style
+          </h2>
 
           {loadingTemplates ? (
             <div className="text-center py-20">
-              <Loader2 className="w-12 h-12 text-white/20 mx-auto mb-4 animate-spin" />
-              <p className="text-white/40 text-sm font-light">Loading templates...</p>
+              <Loader2 className="w-8 h-8 text-white/20 mx-auto mb-4 animate-spin" />
             </div>
           ) : templates.length === 0 ? (
             <div className="text-center py-20">
               <Sparkles className="w-12 h-12 text-white/20 mx-auto mb-4" strokeWidth={1} />
-              <p className="text-white/40 font-light">No templates available</p>
+              <p className="text-white/40 text-sm">No templates available</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {templates.map((template) => (
                 <button
                   key={template.id}
                   onClick={() => setSelectedTemplate(template)}
-                  className="group relative bg-white/5 hover:bg-white/[0.08] border border-white/10 hover:border-white/30 rounded-xl p-5 text-left transition-all"
+                  className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-2xl p-6 text-left transition-all"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-medium text-white truncate mb-1">
-                        {template.name}
-                      </h3>
-                      {template.description && (
-                        <p className="text-xs text-white/50 line-clamp-2 font-light">
-                          {template.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <h3 
+                    className="text-lg font-black text-white uppercase tracking-tight mb-3"
+                    style={{ fontWeight: 900 }}
+                  >
+                    {template.name}
+                  </h3>
+                  
+                  {template.description && (
+                    <p className="text-xs text-white/60 mb-4 line-clamp-2">
+                      {template.description}
+                    </p>
+                  )}
 
-                  <div className="bg-black/30 rounded-lg px-3 py-2 mb-3">
-                    <p className="text-xs text-white/60 font-mono line-clamp-3 leading-relaxed">
+                  <div className="bg-black/40 border border-white/5 rounded-xl px-3 py-2">
+                    <p className="text-[11px] text-white/50 font-mono line-clamp-2 leading-relaxed">
                       {template.prompt_text}
                     </p>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-white/40 font-light flex items-center gap-1">
-                      <TrendingUp className="w-3 h-3" strokeWidth={1.5} />
-                      {template.usage_count} uses
-                    </span>
-                    <span className="text-white/60 group-hover:text-white transition-colors font-light flex items-center gap-1">
-                      Select
-                      <ChevronRight className="w-3 h-3" strokeWidth={2} />
-                    </span>
                   </div>
                 </button>
               ))}
@@ -1007,42 +992,38 @@ export default function GenerationInterface({
         <div className="max-w-2xl mx-auto w-full p-6">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <button
-              onClick={() => {
-                setSelectedTemplate(null);
-                setGeneratedImages([]);
-              }}
-              className="text-white/40 hover:text-white transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" strokeWidth={2} />
-            </button>
-            <h2 className="text-xl text-white font-light">{selectedTemplate.name}</h2>
-          </div>
-          <p className="text-sm text-white/50 font-light">
-            Generating for{" "}
-            {selectedProducts.size === 1
-              ? `"${selectedProductsList[0]?.name}"`
-              : `${selectedProducts.size} products`}
-          </p>
-        </div>
-
-        {/* Reference Images Section */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <label className="block text-sm text-white/70 font-light">
-              Reference Images <span className="text-white/40">(Optional)</span>
-            </label>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setSelectedTemplate(null);
+                  setGeneratedImages([]);
+                }}
+                className="text-white/40 hover:text-white transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" strokeWidth={2} />
+              </button>
+              <h2 
+                className="text-2xl font-black text-white uppercase tracking-tight"
+                style={{ fontWeight: 900 }}
+              >
+                {selectedTemplate.name}
+              </h2>
+            </div>
             <button
               onClick={() => setShowReferenceSelector(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/[0.08] border border-white/10 hover:border-white/20 rounded-lg text-sm text-white transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl text-xs uppercase tracking-[0.15em] text-white transition-all font-black"
+              style={{ fontWeight: 900 }}
             >
-              <ImageIcon className="w-4 h-4" strokeWidth={1.5} />
+              <ImageIcon className="w-4 h-4" strokeWidth={2} />
               {referenceImages.length > 0 ? "Change References" : "Add References"}
             </button>
           </div>
+        </div>
 
-          {referenceImages.length > 0 && (
+        {/* Reference Images Preview */}
+        {referenceImages.length > 0 && (
+          <div className="mb-6">
             <ReferencePreview
               vendorId={vendorId}
               references={referenceImages}
@@ -1052,98 +1033,77 @@ export default function GenerationInterface({
               styleDescription={styleDescription}
               analyzing={analyzingReferences}
             />
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Options */}
+        {/* Options - Minimal Labels */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div>
-            <label className="block text-xs text-white/50 mb-2 font-light uppercase tracking-wider">
-              Artist Style
-            </label>
-            <select
-              value={artStyle}
-              onChange={(e) => setArtStyle(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/30"
-            >
-              <option value="default">Default</option>
-              <option value="random">🎲 Random</option>
-              <option value="banksy">Banksy</option>
-              <option value="futura2000">Futura 2000</option>
-              <option value="ladypink">Lady Pink</option>
-              <option value="shepard-fairey">Shepard Fairey</option>
-              <option value="leonardo-da-vinci">Leonardo da Vinci</option>
-              <option value="jackson-pollock">Jackson Pollock</option>
-              <option value="salvador-dali">Salvador Dali</option>
-              <option value="andy-warhol">Andy Warhol</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-white/50 mb-2 font-light uppercase tracking-wider">
-              Format
-            </label>
-            <select
-              value={format}
-              onChange={(e) => setFormat(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/30"
-            >
-              <option value="digital">Digital</option>
-              <option value="random">🎲 Random</option>
-              <option value="stamp">Stamp</option>
-              <option value="canvas">Canvas</option>
-              <option value="sticker">Sticker</option>
-              <option value="poster">Poster</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-white/50 mb-2 font-light uppercase tracking-wider">
-              Include Text
-            </label>
-            <select
-              value={includeText}
-              onChange={(e) => setIncludeText(e.target.value)}
-              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-white/30"
-            >
-              <option value="none">No Text</option>
-              <option value="product_name">Product Name</option>
-              <option value="custom">Custom (in prompt)</option>
-            </select>
-          </div>
+          <select
+            value={artStyle}
+            onChange={(e) => setArtStyle(e.target.value)}
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+          >
+            <option value="default">Default</option>
+            <option value="random">🎲 Random</option>
+            <option value="banksy">Banksy</option>
+            <option value="futura2000">Futura 2000</option>
+            <option value="ladypink">Lady Pink</option>
+            <option value="shepard-fairey">Shepard Fairey</option>
+            <option value="leonardo-da-vinci">Leonardo da Vinci</option>
+            <option value="jackson-pollock">Jackson Pollock</option>
+            <option value="salvador-dali">Salvador Dali</option>
+            <option value="andy-warhol">Andy Warhol</option>
+          </select>
+          <select
+            value={format}
+            onChange={(e) => setFormat(e.target.value)}
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+          >
+            <option value="digital">Digital</option>
+            <option value="random">🎲 Random</option>
+            <option value="stamp">Stamp</option>
+            <option value="canvas">Canvas</option>
+            <option value="sticker">Sticker</option>
+            <option value="poster">Poster</option>
+          </select>
+          <select
+            value={includeText}
+            onChange={(e) => setIncludeText(e.target.value)}
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+          >
+            <option value="none">No Text</option>
+            <option value="product_name">Product Name</option>
+            <option value="custom">Custom (in prompt)</option>
+          </select>
         </div>
 
-        {/* Prompt */}
+        {/* Prompt - Minimal */}
         <div className="mb-6">
-          <label className="block text-sm text-white/70 mb-2 font-light">
-            Customize Your Prompt
-          </label>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            rows={6}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/30 font-mono resize-none"
+            rows={5}
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/20 hover:bg-white/10 focus:bg-white/10 transition-all resize-none"
             placeholder="Describe the image you want to generate..."
           />
-          <p className="text-xs text-white/40 mt-2 font-light">
-            Use {"{product_name}"} to insert the product name
-          </p>
         </div>
 
-        {/* Generate button */}
+        {/* Generate Button - Steve Jobs Minimal */}
         <button
           onClick={handleGenerate}
           disabled={generating || !prompt.trim()}
-          className="w-full py-4 bg-white text-black rounded-xl font-medium hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-4 bg-white text-black rounded-xl font-black hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm uppercase tracking-[0.15em]"
+          style={{ fontWeight: 900 }}
         >
           {generating ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Generating {selectedProducts.size} {selectedProducts.size === 1 ? "image" : "images"}
-              ...
+              Generating {selectedProducts.size}
             </>
           ) : (
             <>
-              <Sparkles className="w-5 h-5" strokeWidth={2} />
-              Generate {selectedProducts.size} {selectedProducts.size === 1 ? "Image" : "Images"}
+              <Sparkles className="w-5 h-5" strokeWidth={2.5} />
+              Generate {selectedProducts.size}
             </>
           )}
         </button>
