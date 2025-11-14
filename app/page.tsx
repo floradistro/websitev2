@@ -11,7 +11,7 @@ import {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
+    <div className="bg-black text-white overflow-y-auto overflow-x-hidden h-dvh">
       {/* Navigation */}
       <HomeNavigation />
 

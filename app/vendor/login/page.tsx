@@ -37,7 +37,7 @@ export default function VendorLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
+    <div className="h-dvh bg-black flex flex-col relative overflow-hidden">
       {/* PWA Safe Area Spacer */}
       <div
         className="fixed top-0 left-0 right-0 bg-black z-[130] pointer-events-none"
