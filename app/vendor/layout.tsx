@@ -446,7 +446,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Main Content - Always offset by sidebar (60px) */}
         <main
           suppressHydrationWarning
-          className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes("/tv-menus") ? "left-[60px]" : ""} relative z-10`}
+          className={`absolute ${!pathname?.includes("/tv-menus") ? "left-[60px]" : "left-0"} right-0 top-0 bottom-0 overflow-y-auto overflow-x-hidden relative z-10`}
           style={{
             paddingTop: !pathname?.includes("/tv-menus") ? "env(safe-area-inset-top, 0px)" : undefined,
             pointerEvents: 'auto',
