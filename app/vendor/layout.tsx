@@ -35,6 +35,11 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
   const isVisible = useAutoHideHeader(); // ✅ Shared hook - no memory leak
 
+  // Close secondary panel when pathname changes (navigation)
+  useEffect(() => {
+    setActiveSection(null);
+  }, [pathname]);
+
   // Protect vendor routes - redirect to login if not authenticated
   useEffect(() => {
     // Allow special pages without auth
@@ -279,7 +284,11 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         {activeSection && !pathname?.includes("/tv-menus") && (
           <div
             className="fixed inset-0 bg-black/50 z-[90] transition-opacity duration-300"
-            onClick={() => setActiveSection(null)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveSection(null);
+            }}
+            style={{ pointerEvents: 'auto' }}
           />
         )}
 
@@ -291,7 +300,9 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
             style={{
               paddingTop: "env(safe-area-inset-top, 0px)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
+              pointerEvents: 'auto',
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Navigation - Icons Only */}
             <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-1 flex flex-col items-center" suppressHydrationWarning>
@@ -380,13 +391,25 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
             style={{
               paddingTop: "env(safe-area-inset-top, 0px)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
+              pointerEvents: 'auto',
             }}
+            onClick={(e) => e.stopPropagation()}
           >
             {/* Section Header */}
-            <div className="px-4 py-4 border-b border-white/[0.06]">
+            <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
               <h2 className="text-white/90 text-sm font-medium tracking-wide">
                 {activeSection}
               </h2>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveSection(null);
+                }}
+                className="w-6 h-6 flex items-center justify-center text-white/40 hover:text-white/70 transition-colors rounded"
+                aria-label="Close menu"
+              >
+                <X size={14} />
+              </button>
             </div>
 
             {/* Sub-navigation */}
@@ -423,9 +446,10 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Main Content - Always offset by sidebar (60px) */}
         <main
           suppressHydrationWarning
-          className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes("/tv-menus") ? "left-[60px]" : ""}`}
+          className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes("/tv-menus") ? "left-[60px]" : ""} relative z-10`}
           style={{
             paddingTop: !pathname?.includes("/tv-menus") ? "env(safe-area-inset-top, 0px)" : undefined,
+            pointerEvents: 'auto',
           }}
         >
           <div
