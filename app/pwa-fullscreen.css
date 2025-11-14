@@ -104,74 +104,43 @@
 }
 
 /* ============================================================
-   DEBUG MODE - Visual confirmation CSS is working
+   DEBUG MODE - Disabled (uncomment to enable)
    ============================================================ */
 
-/* DEBUG MODE ENABLED - Shows what's being detected */
+/* Uncomment to enable debug mode
 @supports (-webkit-touch-callout: none) {
-  /* Red border at TOP and BOTTOM to show iOS detection */
-  html {
-    border-top: 10px solid red !important;
-    border-bottom: 10px solid red !important;
-  }
-
   body::after {
-    content: "✅ iOS DETECTED - CSS ACTIVE";
+    content: "✅ iOS PWA";
     position: fixed;
     top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 0, 0, 0.95);
+    background: rgba(255, 0, 0, 0.9);
     color: white;
-    padding: 12px 24px;
-    font-size: 16px;
+    padding: 8px 16px;
+    font-size: 12px;
     font-weight: bold;
     z-index: 9999999;
     border-radius: 8px;
     pointer-events: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  }
-
-  /* Green background on app container to show it's filling space */
-  body > div:not([hidden]) {
-    background: linear-gradient(to bottom,
-      rgba(0, 255, 0, 0.2) 0%,
-      rgba(0, 255, 0, 0.1) 50px,
-      transparent 50px
-    ) !important;
   }
 }
 
 @supports not (-webkit-touch-callout: none) {
-  /* Green border at TOP and BOTTOM to show Android detection */
-  html {
-    border-top: 10px solid lime !important;
-    border-bottom: 10px solid lime !important;
-  }
-
   body::after {
-    content: "✅ ANDROID DETECTED - CSS ACTIVE";
+    content: "✅ ANDROID PWA";
     position: fixed;
     top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 255, 0, 0.95);
+    background: rgba(0, 255, 0, 0.9);
     color: black;
-    padding: 12px 24px;
-    font-size: 16px;
+    padding: 8px 16px;
+    font-size: 12px;
     font-weight: bold;
     z-index: 9999999;
     border-radius: 8px;
     pointer-events: none;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  }
-
-  /* Blue background on app container to show it's filling space */
-  body > div:not([hidden]) {
-    background: linear-gradient(to bottom,
-      rgba(0, 0, 255, 0.2) 0%,
-      rgba(0, 0, 255, 0.1) 50px,
-      transparent 50px
-    ) !important;
   }
 }
+*/
