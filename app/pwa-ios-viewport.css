@@ -1,15 +1,15 @@
 /**
- * iOS PWA Viewport Fix - POSITION ABSOLUTE APPROACH
+ * iOS PWA Viewport Fix - ALWAYS APPLY (iPad display-mode detection broken)
  *
- * Problem: iPad Pro PWA shows black gap at bottom with 100dvh
- * Solution: Use position: absolute with top:0 bottom:0 instead of height
+ * Problem: iPad Pro PWA not matching display-mode media query
+ * Solution: Apply to iOS devices directly, skip display-mode check
  *
- * Key insight: height-based approaches fail on iPad PWA
- * Using absolute positioning forces true edge-to-edge
+ * Key insight: iPad PWA doesn't report display-mode correctly
+ * Must use @supports (-webkit-touch-callout: none) to detect iOS
  */
 
-/* Apply to PWA mode only */
-@media (display-mode: standalone), (display-mode: fullscreen) {
+/* Apply to ALL iOS devices using WebKit detection */
+@supports (-webkit-touch-callout: none) {
   html {
     height: 100%;
     margin: 0;
@@ -52,41 +52,6 @@
   textarea,
   select {
     font-size: 16px !important;
-  }
-}
-
-/* Also apply for iOS detection fallback */
-@supports (-webkit-touch-callout: none) {
-  html {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    overscroll-behavior: none;
-    position: relative;
-  }
-
-  #__next {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  #__next > * {
-    padding-top: env(safe-area-inset-top, 0px);
   }
 }
 
