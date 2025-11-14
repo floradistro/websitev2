@@ -30,40 +30,9 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [activeSection, setActiveSection] = useState<string | null>(null);
   const [vendorLogo, setVendorLogo] = useState<string>("/yacht-club-logo.png");
 
-  // Detect if we're on a touch device
-  // CRITICAL: Initialize based on window object to avoid hydration mismatch
-  // and force proper detection on tablets/mobile
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
-
-  useEffect(() => {
-    // Force immediate detection on mount
-    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    setIsTouchDevice(hasTouch);
-
-    // Add data attribute to body for CSS debugging
-    if (hasTouch) {
-      document.body.setAttribute('data-touch-device', 'true');
-    }
-  }, []);
-
-  // Use useMemo to ensure stable initial state and avoid hydration mismatch
-  // On touch devices, collapse all sections by default
-  const initialExpandedState = useMemo(
-    () =>
-      navSections.reduce(
-        (acc, section) => ({
-          ...acc,
-          [section.label]: false, // Always start collapsed
-        }),
-        {},
-      ),
-    [], // Empty dependency array - only compute once
-  );
-
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>(initialExpandedState);
   const isVisible = useAutoHideHeader(); // ✅ Shared hook - no memory leak
 
   // Protect vendor routes - redirect to login if not authenticated
@@ -102,9 +71,6 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
   const currentPage =
     allNavItems.find((item) => pathname?.startsWith(item.href))?.label || "Portal";
   const isActive = (href: string) => pathname?.startsWith(href) ?? false;
-  const toggleSection = (label: string) => {
-    setExpandedSections((prev) => ({ ...prev, [label]: !prev[label] }));
-  };
 
   const vendorName = vendor?.store_name || "Vendor";
 
@@ -215,77 +181,43 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                   );
                 })}
 
-              {/* Collapsible sections */}
-              {navSections.map((section) => {
-                const SectionIcon = section.icon;
-                const isExpanded = expandedSections[section.label];
-                const hasActiveItem = section.items.some((item) => isActive(item.href));
-
-                return (
-                  <div key={section.label} className="mb-1">
-                    <button
-                      onClick={() => toggleSection(section.label)}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 border ${
-                        hasActiveItem
-                          ? "bg-white/5 text-white/90 border-white/10"
-                          : "text-white/40 hover:text-white/70 border-transparent hover:bg-white/5"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <SectionIcon size={16} strokeWidth={hasActiveItem ? 2 : 1.5} />
-                        <span className="text-[10px] uppercase tracking-[0.15em]">
-                          {section.label}
-                        </span>
-                      </div>
-                      <svg
-                        className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-
-                    {isExpanded && (
-                      <div className="mt-1 ml-3 space-y-1">
-                        {section.items
-                          .filter((item) => !item.appKey || hasAppAccess(item.appKey))
-                          .map((item) => {
-                            const Icon = item.icon;
-                            const active = isActive(item.href);
-                            return (
-                              <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={() => setMobileMenuOpen(false)}
-                                onMouseEnter={() => handleNavHover(item.href)}
-                                className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 ${
-                                  active
-                                    ? "bg-white/10 text-white"
-                                    : "text-white/40 hover:text-white/70 hover:bg-white/5"
-                                }`}
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  <Icon size={14} strokeWidth={active ? 2 : 1.5} />
-                                  <span className="text-[9px] uppercase tracking-[0.15em]">
-                                    {item.label}
-                                  </span>
-                                </div>
-                                {active && <div className="w-1 h-1 rounded-full bg-white" />}
-                              </Link>
-                            );
-                          })}
-                      </div>
-                    )}
+              {/* Section items - flat list on mobile */}
+              {navSections.map((section) => (
+                <div key={section.label} className="mb-2">
+                  <div className="px-3 py-1.5 text-white/30 text-[8px] uppercase tracking-[0.2em] font-semibold">
+                    {section.label}
                   </div>
-                );
-              })}
+                  <div className="space-y-1">
+                    {section.items
+                      .filter((item) => !item.appKey || hasAppAccess(item.appKey))
+                      .map((item) => {
+                        const Icon = item.icon;
+                        const active = isActive(item.href);
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            onMouseEnter={() => handleNavHover(item.href)}
+                            className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 ${
+                              active
+                                ? "bg-white/10 text-white"
+                                : "text-white/40 hover:text-white/70 hover:bg-white/5"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Icon size={14} strokeWidth={active ? 2 : 1.5} />
+                              <span className="text-[9px] uppercase tracking-[0.15em]">
+                                {item.label}
+                              </span>
+                            </div>
+                            {active && <div className="w-1 h-1 rounded-full bg-white" />}
+                          </Link>
+                        );
+                      })}
+                  </div>
+                </div>
+              ))}
 
               {/* Settings at bottom */}
               {(!settingsNavItem.appKey || hasAppAccess(settingsNavItem.appKey)) && (
@@ -343,58 +275,27 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
       )}
 
       <div className="fixed inset-0 bg-black">
-        {/* Backdrop overlay - only on touch devices when sidebar is expanded */}
-        {isTouchDevice && sidebarExpanded && !pathname?.includes("/tv-menus") && (
+        {/* Backdrop overlay - closes secondary panel when clicked */}
+        {activeSection && !pathname?.includes("/tv-menus") && (
           <div
             className="fixed inset-0 bg-black/50 z-[90] transition-opacity duration-300"
-            onClick={() => setSidebarExpanded(false)}
+            onClick={() => setActiveSection(null)}
           />
         )}
 
-        {/* Icon-Only Sidebar - Expands on hover (desktop) or tap (tablet/mobile) */}
+        {/* TIER 1: Fixed 60px Icon Bar - NEVER EXPANDS */}
         {!pathname?.includes("/tv-menus") && (
           <aside
             suppressHydrationWarning
-            className={`flex flex-col border-r border-white/[0.06] fixed left-0 top-0 bottom-0 bg-[#0a0a0a] transition-all duration-300 ease-out group overflow-hidden z-[100] ${
-              isTouchDevice
-                ? (sidebarExpanded ? 'w-[240px]' : 'w-[60px]')
-                : 'w-[60px] hover:w-[240px]'
-            }`}
+            className="flex flex-col border-r border-white/[0.06] fixed left-0 top-0 bottom-0 w-[60px] bg-[#0a0a0a] z-[100]"
             style={{
               paddingTop: "env(safe-area-inset-top, 0px)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
             }}
           >
-            {/* Hamburger Menu Button - Always visible at top */}
-            <div className="px-2 py-3 flex-shrink-0">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (isTouchDevice) {
-                    setSidebarExpanded(!sidebarExpanded);
-                  }
-                }}
-                className="w-full p-2.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] transition-colors flex items-center justify-center"
-                aria-label="Toggle menu"
-              >
-                <svg
-                  className="w-5 h-5 text-white/70"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  {isTouchDevice && sidebarExpanded ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  )}
-                </svg>
-              </button>
-            </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-0.5" suppressHydrationWarning>
-              {/* Top level items */}
+            {/* Navigation - Icons Only */}
+            <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3 space-y-1 flex flex-col items-center" suppressHydrationWarning>
+              {/* Top level items (no sub-pages) */}
               {topLevelNavItems
                 .filter((item) => !item.appKey || hasAppAccess(item.appKey))
                 .map((item) => {
@@ -405,113 +306,37 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                       key={item.href}
                       href={item.href}
                       onMouseEnter={() => handleNavHover(item.href)}
-                      onClick={() => {
-                        // On touch devices, expand sidebar to show label before navigating
-                        if (isTouchDevice && !sidebarExpanded) {
-                          setSidebarExpanded(true);
-                        }
-                      }}
                       title={item.label}
-                      className={`flex items-center justify-center gap-3 px-3 py-2.5 transition-all duration-200 border rounded-lg ${
+                      className={`w-11 h-11 flex items-center justify-center transition-all duration-200 border rounded-lg ${
                         active
                           ? "text-white bg-white/[0.08] border-white/[0.12]"
                           : "text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]"
                       }`}
                     >
-                      <Icon size={18} strokeWidth={active ? 2 : 1.5} className="flex-shrink-0" />
-                      <span className={`text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0') : 'opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto'} transition-all duration-300 overflow-hidden`}>
-                        {item.label}
-                      </span>
+                      <Icon size={18} strokeWidth={active ? 2 : 1.5} />
                     </Link>
                   );
                 })}
 
-              {/* Collapsible sections */}
+              {/* Section icons (with sub-pages) */}
               {navSections.map((section) => {
                 const SectionIcon = section.icon;
-                const isExpanded = expandedSections[section.label];
                 const hasActiveItem = section.items.some((item) => isActive(item.href));
+                const isSectionActive = activeSection === section.label;
 
                 return (
-                  <div key={section.label}>
-                    <button
-                      onClick={() => {
-                        // On touch devices: expand sidebar + open THIS section + close others
-                        if (isTouchDevice) {
-                          setSidebarExpanded(true);
-                          // Close all sections first
-                          const allClosed = navSections.reduce(
-                            (acc, s) => ({
-                              ...acc,
-                              [s.label]: false,
-                            }),
-                            {}
-                          );
-                          // Then open only this section
-                          setExpandedSections({
-                            ...allClosed,
-                            [section.label]: true,
-                          });
-                        } else {
-                          // Desktop: just toggle section
-                          toggleSection(section.label);
-                        }
-                      }}
-                      title={section.label}
-                      className={`w-full flex items-center justify-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 border ${
-                        hasActiveItem
-                          ? "bg-white/[0.04] text-white border-white/[0.08]"
-                          : "text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]"
-                      }`}
-                    >
-                      <SectionIcon size={18} strokeWidth={hasActiveItem ? 2 : 1.5} className="flex-shrink-0" />
-                      <span className={`text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0') : 'opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto'} transition-all duration-300 overflow-hidden`}>
-                        {section.label}
-                      </span>
-                      <svg
-                        className={`w-3 h-3 transition-all duration-200 flex-shrink-0 ml-auto ${isExpanded ? "rotate-180" : ""} ${isTouchDevice ? (sidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0') : 'opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto'}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-
-                    {isExpanded && (!isTouchDevice || sidebarExpanded) && (
-                      <div className={`mt-0.5 space-y-0.5 ${isTouchDevice ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}>
-                        {section.items
-                          .filter((item) => !item.appKey || hasAppAccess(item.appKey))
-                          .map((item) => {
-                            const Icon = item.icon;
-                            const active = isActive(item.href);
-                            return (
-                              <Link
-                                key={item.href}
-                                href={item.href}
-                                onMouseEnter={() => handleNavHover(item.href)}
-                                title={item.label}
-                                className={`flex items-center gap-3 px-3 pl-6 py-2 rounded-lg transition-all duration-200 overflow-hidden ${
-                                  active
-                                    ? "bg-white/[0.08] text-white"
-                                    : "text-white/40 hover:text-white hover:bg-white/[0.04]"
-                                }`}
-                              >
-                                <Icon size={16} strokeWidth={active ? 2 : 1.5} className="flex-shrink-0" />
-                                <span className="text-[9px] uppercase tracking-[0.15em] font-medium whitespace-nowrap">
-                                  {item.label}
-                                </span>
-                              </Link>
-                            );
-                          })}
-                      </div>
-                    )}
-                  </div>
+                  <button
+                    key={section.label}
+                    onClick={() => setActiveSection(isSectionActive ? null : section.label)}
+                    title={section.label}
+                    className={`w-11 h-11 flex items-center justify-center rounded-lg transition-all duration-200 border ${
+                      hasActiveItem || isSectionActive
+                        ? "bg-white/[0.08] text-white border-white/[0.12]"
+                        : "text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <SectionIcon size={18} strokeWidth={hasActiveItem || isSectionActive ? 2 : 1.5} />
+                  </button>
                 );
               })}
 
@@ -520,7 +345,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                 <Link
                   href={settingsNavItem.href}
                   title={settingsNavItem.label}
-                  className={`flex items-center justify-center gap-3 px-3 py-2.5 mt-1 transition-all duration-200 border rounded-lg ${
+                  className={`w-11 h-11 flex items-center justify-center mt-1 transition-all duration-200 border rounded-lg ${
                     isActive(settingsNavItem.href)
                       ? "text-white bg-white/[0.08] border-white/[0.12]"
                       : "text-white/40 hover:text-white hover:bg-white/[0.04] border-transparent"
@@ -529,28 +354,69 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                   <settingsNavItem.icon
                     size={18}
                     strokeWidth={isActive(settingsNavItem.href) ? 2 : 1.5}
-                    className="flex-shrink-0"
                   />
-                  <span className={`text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0') : 'opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto'} transition-all duration-300 overflow-hidden`}>
-                    {settingsNavItem.label}
-                  </span>
                 </Link>
               )}
             </nav>
 
             {/* Logout at bottom */}
-            <div className="px-2 py-3 border-t border-white/[0.06] flex-shrink-0">
+            <div className="px-2 py-3 border-t border-white/[0.06] flex-shrink-0 flex items-center justify-center">
               <button
                 onClick={handleLogout}
                 title="Sign Out"
-                className="w-full flex items-center justify-center gap-3 px-3 py-2.5 text-white/40 hover:text-white/70 text-[10px] uppercase tracking-[0.15em] transition-all duration-200 hover:bg-white/[0.04] rounded-lg"
+                className="w-11 h-11 flex items-center justify-center text-white/40 hover:text-white/70 transition-all duration-200 hover:bg-white/[0.04] rounded-lg"
               >
-                <LogOut size={18} strokeWidth={1.5} className="flex-shrink-0" />
-                <span className={`whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0') : 'opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto'} transition-all duration-300 overflow-hidden`}>
-                  Sign Out
-                </span>
+                <LogOut size={18} strokeWidth={1.5} />
               </button>
             </div>
+          </aside>
+        )}
+
+        {/* TIER 2: Secondary Expandable Panel - Shows sub-pages for active section */}
+        {!pathname?.includes("/tv-menus") && activeSection && (
+          <aside
+            suppressHydrationWarning
+            className="flex flex-col border-r border-white/[0.06] fixed left-[60px] top-0 bottom-0 w-[200px] bg-[#0a0a0a] z-[95] transition-all duration-300 ease-out"
+            style={{
+              paddingTop: "env(safe-area-inset-top, 0px)",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
+            }}
+          >
+            {/* Section Header */}
+            <div className="px-4 py-4 border-b border-white/[0.06]">
+              <h2 className="text-white/90 text-sm font-medium tracking-wide">
+                {activeSection}
+              </h2>
+            </div>
+
+            {/* Sub-navigation */}
+            <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
+              {navSections
+                .find((s) => s.label === activeSection)
+                ?.items.filter((item) => !item.appKey || hasAppAccess(item.appKey))
+                .map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onMouseEnter={() => handleNavHover(item.href)}
+                      onClick={() => setActiveSection(null)}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                        active
+                          ? "bg-white/[0.08] text-white"
+                          : "text-white/40 hover:text-white hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <Icon size={16} strokeWidth={active ? 2 : 1.5} />
+                      <span className="text-[10px] uppercase tracking-[0.15em] font-medium">
+                        {item.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+            </nav>
           </aside>
         )}
 

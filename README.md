@@ -407,6 +407,24 @@ lsof -ti:3000 | xargs kill -9
 - Reinstall dependencies: `rm -rf node_modules package-lock.json && npm install`
 - Check TypeScript errors: `npm run type-check`
 
+## 📚 Documentation
+
+### Quick Start
+- **[GETTING_STARTED.md](GETTING_STARTED.md)** - Detailed setup and configuration guide
+
+### Current Status
+- **[Test Reports](docs/current/)** - Latest testing results and production readiness
+- **[docs/INDEX.md](docs/INDEX.md)** - Complete documentation index
+
+### Archive
+- **[Completed Fixes](docs/archive/fixes/)** - All P0/P1 fixes (12 files)
+- **[Deployment Guides](docs/archive/deployment/)** - Migration deployment steps (8 files)
+- **[Analysis](docs/archive/analysis/)** - Architecture and system analysis (10 files)
+
+**Total Documentation:** 34 organized files covering all aspects of the system.
+
+---
+
 ## 📄 License
 
 Proprietary - All Rights Reserved
@@ -421,4 +439,3 @@ For issues and questions:
 ---
 
 Built with ❤️ for the cannabis industry
-# Test

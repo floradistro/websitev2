@@ -193,98 +193,79 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       }
     }
 
-    // Insert product into Supabase
-    const { data: product, error: productError } = await supabase
-      .from("products")
-      .insert(newProduct)
-      .select()
-      .single();
+    // ============================================================================
+    // ATOMIC PRODUCT CREATION (P1 FIX)
+    // ============================================================================
+    // Uses atomic RPC function to prevent partial failures
+    // All-or-nothing: product + inventory + stock movement + variants
 
-    if (productError) {
+    // Prepare variants for atomic creation
+    const variants =
+      productData.product_type === "variable" && productData.variants && productData.variants.length > 0
+        ? productData.variants.map((variant: any) => ({
+            name: variant.name,
+            sku: variant.sku || `${newProduct.sku}-${variant.name.toLowerCase().replace(/\s/g, "-")}`,
+            regular_price: variant.price ? parseFloat(variant.price) : null,
+            sale_price: variant.sale_price ? parseFloat(variant.sale_price) : null,
+            stock_quantity: variant.stock ? parseInt(variant.stock) : 0,
+            attributes: variant.attributes || {},
+            image_url: variant.image_url || null,
+          }))
+        : null;
+
+    const { data: result, error: rpcError } = await supabase.rpc("atomic_create_product", {
+      p_vendor_id: vendorId,
+      p_product_data: {
+        name: newProduct.name,
+        slug: newProduct.slug,
+        description: newProduct.description,
+        short_description: newProduct.short_description,
+        sku: newProduct.sku,
+        regular_price: newProduct.regular_price,
+        sale_price: newProduct.sale_price,
+        cost_price: newProduct.cost_price,
+        product_type: newProduct.product_type,
+        primary_category_id: newProduct.primary_category_id,
+        status: newProduct.status,
+        custom_fields: newProduct.custom_fields,
+        meta_data: newProduct.meta_data,
+        low_stock_threshold: productData.low_stock_amount || 10,
+      },
+      p_initial_stock: shouldManageStock ? stockQty : 0,
+      p_variants: variants,
+    });
+
+    if (rpcError) {
       if (process.env.NODE_ENV === "development") {
-        logger.error("❌ Error creating product:", productError);
+        logger.error("❌ Atomic product creation failed:", rpcError);
       }
       return NextResponse.json(
         {
-          error: productError.message || "Failed to create product",
-          details: productError,
+          error: rpcError.message || "Failed to create product",
+          details: rpcError,
         },
         { status: 500 },
       );
     }
 
-    // Create inventory record if initial quantity provided (enterprise pattern)
-    if (shouldManageStock && stockQty > 0) {
-      // Get vendor's primary location
-      const { data: vendorLocations } = await supabase
-        .from("locations")
-        .select("id, name, is_primary")
-        .eq("vendor_id", vendorId)
-        .eq("is_primary", true)
-        .limit(1);
+    // Get the created product for response
+    const { data: product, error: fetchError } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", result.product_id)
+      .single();
 
-      const primaryLocation = vendorLocations?.[0];
-
-      if (primaryLocation) {
-        // Create inventory record at primary location
-        const { data: inventoryRecord, error: inventoryError } = await supabase
-          .from("inventory")
-          .insert({
-            product_id: product.id,
-            location_id: primaryLocation.id,
-            vendor_id: vendorId,
-            quantity: stockQty,
-            low_stock_threshold: productData.low_stock_amount || 10,
-            notes: "Initial inventory from product creation",
-            metadata: {
-              source: "vendor_product_submission",
-              initial_quantity: stockQty,
-            },
-          })
-          .select()
-          .single();
-
-        if (inventoryError) {
-          if (process.env.NODE_ENV === "development") {
-            logger.warn("⚠️ Could not create inventory record:", inventoryError);
-          }
-          // Don't fail the product creation, just log the warning
-        } else {
-          // Create stock movement audit trail (compliance requirement)
-          await supabase.from("stock_movements").insert({
-            inventory_id: inventoryRecord.id,
-            product_id: product.id,
-            location_id: primaryLocation.id,
-            movement_type: "adjustment",
-            quantity: stockQty,
-            reference_type: "product_creation",
-            reference_id: product.id,
-            notes: "Initial stock from product submission",
-            created_by: vendorId,
-          });
-        }
-      } else {
-        if (process.env.NODE_ENV === "development") {
-          logger.warn("⚠️ No primary location found for vendor, inventory not created");
-        }
+    if (fetchError || !product) {
+      if (process.env.NODE_ENV === "development") {
+        logger.error("❌ Product created but failed to fetch:", fetchError);
       }
-    }
-
-    // Handle variants if provided
-    if (
-      productData.product_type === "variable" &&
-      productData.variants &&
-      productData.variants.length > 0
-    ) {
-      const variantsToInsert = productData.variants.map((variant: any) => ({
-        parent_product_id: product.id,
-        sku: variant.sku || `${product.sku}-${variant.name.toLowerCase().replace(/\s/g, "-")}`,
-        regular_price: variant.price ? parseFloat(variant.price) : null,
-        stock_quantity: variant.stock ? parseInt(variant.stock) : 0,
-        attributes: variant.attributes || {},
-      }));
-
-      await supabase.from("product_variations").insert(variantsToInsert);
+      // Product WAS created successfully, just return the result from RPC
+      return NextResponse.json({
+        success: true,
+        product: { id: result.product_id, name: result.product_name },
+        message: "Product submitted for approval",
+        atomic_result: result,
+      });
     }
 
     // Invalidate relevant caches after product creation (Redis)
