@@ -1,36 +1,38 @@
 /**
- * iOS PWA Viewport Fix - ULTRA SIMPLE APPROACH
+ * iOS PWA Viewport Fix - POSITION ABSOLUTE APPROACH
  *
- * Problem: Black gap at bottom, trying to be too clever with padding
- * Solution: Make everything 100vh, NO PADDING. Let children handle safe areas.
+ * Problem: iPad Pro PWA shows black gap at bottom with 100dvh
+ * Solution: Use position: absolute with top:0 bottom:0 instead of height
  *
- * Key insight: The gap is because we're overthinking it.
- * Just make everything full height and let content scroll.
+ * Key insight: height-based approaches fail on iPad PWA
+ * Using absolute positioning forces true edge-to-edge
  */
 
 /* Apply to PWA mode only */
 @media (display-mode: standalone), (display-mode: fullscreen) {
   html {
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
     margin: 0;
     padding: 0;
     overflow: hidden;
   }
 
   body {
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
     margin: 0;
     padding: 0;
     overflow: hidden;
     overscroll-behavior: none;
+    position: relative;
   }
 
-  /* Main app container - NO PADDING, just full height */
+  /* Main app container - USE ABSOLUTE POSITIONING not height */
   #__next {
-    height: 100vh;
-    height: 100dvh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
     overflow-y: auto;
     overflow-x: hidden;
@@ -53,25 +55,27 @@
 /* Also apply for iOS detection fallback */
 @supports (-webkit-touch-callout: none) {
   html {
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
     margin: 0;
     padding: 0;
     overflow: hidden;
   }
 
   body {
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
     margin: 0;
     padding: 0;
     overflow: hidden;
     overscroll-behavior: none;
+    position: relative;
   }
 
   #__next {
-    height: 100vh;
-    height: 100dvh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
     overflow-y: auto;
     overflow-x: hidden;
