@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Scan, LogOut } from "lucide-react";
+import React, { useState } from "react";
+import { Scan, LogOut, Percent, DollarSign, Check, X as XIcon } from "lucide-react";
 import { POSCustomerSelector } from "./POSCustomerSelector";
 import { POSIDScanner } from "./POSIDScanner";
 import { NewCustomerForm } from "./POSNewCustomerForm";
@@ -35,6 +35,10 @@ export interface CartItem {
   promotionName?: string; // Name of applied promotion
   badgeText?: string; // Badge text (e.g., "20% OFF")
   badgeColor?: string; // Badge color
+  // Manual adjustment fields
+  manualDiscountType?: "percentage" | "amount"; // Type of manual discount
+  manualDiscountValue?: number; // Discount value (% or $)
+  adjustedPrice?: number; // Final price after manual adjustment
 }
 
 interface TaxBreakdown {
@@ -50,7 +54,9 @@ interface POSCartProps {
   onUpdateQuantity: (productId: string, quantity: number) => void;
   onRemoveItem: (productId: string) => void;
   onClearCart: () => void;
-  onCheckout: (customer: Customer | null) => void;
+  onCheckout: (customer: Customer | null, loyaltyPointsRedeemed?: number, loyaltyDiscountAmount?: number) => void;
+  onApplyManualDiscount?: (productId: string, type: "percentage" | "amount", value: number) => void;
+  onRemoveManualDiscount?: (productId: string) => void;
   taxRate: number;
   taxBreakdown?: TaxBreakdown[];
   taxError?: string | null;
@@ -65,6 +71,8 @@ export function POSCart({
   onRemoveItem,
   onClearCart,
   onCheckout,
+  onApplyManualDiscount,
+  onRemoveManualDiscount,
   taxRate,
   taxBreakdown,
   taxError,
@@ -78,11 +86,47 @@ export function POSCart({
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
 
+  // Manual discount state
+  const [discountingItem, setDiscountingItem] = useState<string | null>(null);
+  const [discountType, setDiscountType] = useState<"percentage" | "amount">("percentage");
+  const [discountValue, setDiscountValue] = useState("");
+
+  // Loyalty redemption state
+  const [loyaltyPointsToRedeem, setLoyaltyPointsToRedeem] = useState(0);
+  const [loyaltyProgram, setLoyaltyProgram] = useState<any>(null);
+
   // Calculate totals
   const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
-  const taxAmount = subtotal * taxRate;
-  const total = subtotal + taxAmount;
+  const loyaltyDiscountAmount = loyaltyProgram ? loyaltyPointsToRedeem * loyaltyProgram.point_value : 0;
+  const subtotalAfterLoyalty = Math.max(0, subtotal - loyaltyDiscountAmount);
+  const taxAmount = subtotalAfterLoyalty * taxRate;
+  const total = subtotalAfterLoyalty + taxAmount;
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Load loyalty program settings
+  const loadLoyaltyProgram = async () => {
+    try {
+      const response = await fetch(`/api/vendor/loyalty/program`);
+      if (response.ok) {
+        const data = await response.json();
+        setLoyaltyProgram(data.program);
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        logger.error("Failed to load loyalty program:", error);
+      }
+    }
+  };
+
+  // Load loyalty program on mount
+  React.useEffect(() => {
+    loadLoyaltyProgram();
+  }, []);
+
+  // Reset loyalty points when customer changes
+  React.useEffect(() => {
+    setLoyaltyPointsToRedeem(0);
+  }, [selectedCustomer]);
 
   const handleEndSession = async () => {
     await showConfirm({
@@ -103,6 +147,21 @@ export function POSCart({
       },
     });
   };
+
+  const handleApplyDiscount = (productId: string) => {
+    const value = parseFloat(discountValue);
+    if (value > 0 && onApplyManualDiscount) {
+      onApplyManualDiscount(productId, discountType, value);
+      setDiscountingItem(null);
+      setDiscountValue("");
+    }
+  };
+
+  const maxLoyaltyPoints = selectedCustomer?.loyalty_points || 0;
+  const maxLoyaltyValue = loyaltyProgram ? maxLoyaltyPoints * loyaltyProgram.point_value : 0;
+  const maxRedeemablePoints = loyaltyProgram
+    ? Math.min(maxLoyaltyPoints, Math.floor(subtotal / loyaltyProgram.point_value))
+    : 0;
 
   return (
     <div className="h-full w-full flex flex-col bg-[#0a0a0a] overflow-hidden">
@@ -279,6 +338,90 @@ export function POSCart({
                   )}
                 </div>
               </div>
+
+              {/* Manual Discount UI - Simplified */}
+              {onApplyManualDiscount && (
+                <div className="mt-2 pt-2 border-t border-white/5">
+                  {item.manualDiscountValue && item.manualDiscountValue > 0 ? (
+                    /* Show applied discount */
+                    <div className="flex items-center justify-between">
+                      <div className="text-[10px] text-orange-400 font-bold">
+                        Staff Discount: {item.manualDiscountType === "percentage" ? `${item.manualDiscountValue}%` : `$${item.manualDiscountValue.toFixed(2)}`} OFF
+                      </div>
+                      {onRemoveManualDiscount && (
+                        <button
+                          onClick={() => onRemoveManualDiscount(item.productId)}
+                          className="text-[9px] text-white/40 hover:text-white uppercase tracking-wider"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ) : discountingItem === item.productId ? (
+                    /* Discount input form */
+                    <div className="space-y-2">
+                      <div className="text-[9px] text-white/60 uppercase tracking-[0.15em] font-bold">Apply Discount</div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setDiscountType("percentage")}
+                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold transition-all ${
+                            discountType === "percentage"
+                              ? "bg-orange-500/20 text-orange-400 border-2 border-orange-500/40"
+                              : "bg-white/5 text-white/50 border border-white/10 hover:bg-white/10"
+                          }`}
+                        >
+                          % Percent
+                        </button>
+                        <button
+                          onClick={() => setDiscountType("amount")}
+                          className={`flex-1 py-2 rounded-lg text-[10px] font-bold transition-all ${
+                            discountType === "amount"
+                              ? "bg-orange-500/20 text-orange-400 border-2 border-orange-500/40"
+                              : "bg-white/5 text-white/50 border border-white/10 hover:bg-white/10"
+                          }`}
+                        >
+                          $ Dollar
+                        </button>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={discountValue}
+                          onChange={(e) => setDiscountValue(e.target.value)}
+                          placeholder={discountType === "percentage" ? "Enter %" : "Enter $"}
+                          className="flex-1 bg-white/5 border border-white/10 text-white text-sm text-center py-2 rounded-lg focus:outline-none focus:border-orange-500/40 placeholder-white/30"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => handleApplyDiscount(item.productId)}
+                          disabled={!discountValue || parseFloat(discountValue) <= 0}
+                          className="px-4 py-2 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/30 text-orange-400 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed text-[10px] font-bold uppercase"
+                        >
+                          Apply
+                        </button>
+                        <button
+                          onClick={() => {
+                            setDiscountingItem(null);
+                            setDiscountValue("");
+                          }}
+                          className="px-3 py-2 bg-white/5 hover:bg-white/10 text-white/60 rounded-lg transition-all"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Show "+ Add Discount" button */
+                    <button
+                      onClick={() => setDiscountingItem(item.productId)}
+                      className="w-full py-1.5 text-[10px] text-white/40 hover:text-orange-400 uppercase tracking-[0.15em] transition-colors font-bold"
+                    >
+                      + Staff Discount
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ))
         )}
@@ -300,11 +443,78 @@ export function POSCart({
             <span>${subtotal.toFixed(2)}</span>
           </div>
 
+          {/* Loyalty Points Redemption - Simplified */}
+          {selectedCustomer && selectedCustomer.loyalty_points > 0 && loyaltyProgram && loyaltyProgram.is_active && (
+            <div className="bg-[#141414] border border-green-500/20 rounded-xl p-3 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="text-[10px] text-green-400 font-bold">
+                  💰 Loyalty Points
+                </div>
+                <div className="text-[10px] text-white/60">
+                  {selectedCustomer.loyalty_points.toLocaleString()} available
+                </div>
+              </div>
+
+              {loyaltyPointsToRedeem > 0 ? (
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between bg-green-500/10 rounded-lg p-2">
+                    <div className="text-white/60 text-[10px]">
+                      Using {loyaltyPointsToRedeem.toLocaleString()} points
+                    </div>
+                    <div className="text-green-400 text-sm font-black">
+                      -${loyaltyDiscountAmount.toFixed(2)}
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max={maxRedeemablePoints}
+                    step={Math.max(10, loyaltyProgram.min_redemption_points || 10)}
+                    value={loyaltyPointsToRedeem}
+                    onChange={(e) => setLoyaltyPointsToRedeem(parseInt(e.target.value))}
+                    className="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer slider-green"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setLoyaltyPointsToRedeem(0)}
+                      className="flex-1 py-2 bg-white/5 border border-white/10 text-white/60 rounded-lg text-[10px] font-bold hover:bg-white/10 transition-all"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      onClick={() => setLoyaltyPointsToRedeem(maxRedeemablePoints)}
+                      className="flex-1 py-2 bg-green-500/20 border border-green-500/30 text-green-400 rounded-lg text-[10px] font-bold hover:bg-green-500/30 transition-all"
+                    >
+                      Max ({maxLoyaltyValue.toFixed(2)})
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setLoyaltyPointsToRedeem(Math.min(loyaltyProgram.min_redemption_points || 100, maxRedeemablePoints))}
+                  disabled={maxRedeemablePoints < (loyaltyProgram.min_redemption_points || 100)}
+                  className="w-full py-2.5 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-[10px] font-bold hover:bg-green-500/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  {maxRedeemablePoints < (loyaltyProgram.min_redemption_points || 100)
+                    ? `Need ${loyaltyProgram.min_redemption_points} pts minimum`
+                    : `Use Points (Worth $${maxLoyaltyValue.toFixed(2)})`}
+                </button>
+              )}
+            </div>
+          )}
+
+          {loyaltyPointsToRedeem > 0 && (
+            <div className="flex justify-between text-green-400 text-[10px] uppercase tracking-[0.15em] font-bold">
+              <span>Loyalty Discount</span>
+              <span>-${loyaltyDiscountAmount.toFixed(2)}</span>
+            </div>
+          )}
+
           {/* Tax Breakdown */}
           {taxBreakdown && taxBreakdown.length > 0 ? (
             <>
               {taxBreakdown.map((tax, idx) => {
-                const taxAmt = subtotal * (tax.rate / 100);
+                const taxAmt = subtotalAfterLoyalty * (tax.rate / 100);
                 return (
                   <div
                     key={idx}
@@ -344,7 +554,7 @@ export function POSCart({
         <div className="px-4 pb-4 pt-3 border-t border-white/5 space-y-2 bg-[#0a0a0a]">
           <>
             <button
-              onClick={() => (taxError ? alert(taxError) : onCheckout(selectedCustomer))}
+              onClick={() => (taxError ? alert(taxError) : onCheckout(selectedCustomer, loyaltyPointsToRedeem, loyaltyDiscountAmount))}
               disabled={isProcessing || !!taxError}
               className="w-full bg-white/10 text-white border-2 border-white/20 rounded-2xl px-4 py-4 text-xs uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               style={{ fontWeight: 900 }}

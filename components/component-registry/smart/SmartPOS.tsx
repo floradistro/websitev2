@@ -104,10 +104,54 @@ export function SmartPOS({
           ? {
               ...item,
               quantity,
-              lineTotal: quantity * item.unitPrice,
+              lineTotal: quantity * (item.adjustedPrice || item.unitPrice),
             }
           : item,
       ),
+    );
+  }, []);
+
+  // Apply manual discount
+  const handleApplyManualDiscount = useCallback((productId: string, type: "percentage" | "amount", value: number) => {
+    setCart((prevCart) =>
+      prevCart.map((item) => {
+        if (item.productId === productId) {
+          let adjustedPrice = item.unitPrice;
+
+          if (type === "percentage") {
+            adjustedPrice = item.unitPrice * (1 - value / 100);
+          } else {
+            adjustedPrice = Math.max(0, item.unitPrice - value);
+          }
+
+          return {
+            ...item,
+            manualDiscountType: type,
+            manualDiscountValue: value,
+            adjustedPrice,
+            lineTotal: item.quantity * adjustedPrice,
+          };
+        }
+        return item;
+      }),
+    );
+  }, []);
+
+  // Remove manual discount
+  const handleRemoveManualDiscount = useCallback((productId: string) => {
+    setCart((prevCart) =>
+      prevCart.map((item) => {
+        if (item.productId === productId) {
+          return {
+            ...item,
+            manualDiscountType: undefined,
+            manualDiscountValue: undefined,
+            adjustedPrice: undefined,
+            lineTotal: item.quantity * item.unitPrice,
+          };
+        }
+        return item;
+      }),
     );
   }, []);
 
@@ -123,9 +167,17 @@ export function SmartPOS({
     }
   }, []);
 
+  // Store checkout data temporarily
+  const [checkoutCustomer, setCheckoutCustomer] = useState<any>(null);
+  const [checkoutLoyaltyPoints, setCheckoutLoyaltyPoints] = useState(0);
+  const [checkoutLoyaltyDiscount, setCheckoutLoyaltyDiscount] = useState(0);
+
   // Open payment modal
-  const handleCheckout = () => {
+  const handleCheckout = (customer: any, loyaltyPoints?: number, loyaltyDiscount?: number) => {
     if (cart.length === 0) return;
+    setCheckoutCustomer(customer);
+    setCheckoutLoyaltyPoints(loyaltyPoints || 0);
+    setCheckoutLoyaltyDiscount(loyaltyDiscount || 0);
     setShowPayment(true);
   };
 
@@ -135,8 +187,9 @@ export function SmartPOS({
 
     try {
       const subtotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
-      const taxAmount = subtotal * 0.08;
-      const total = subtotal + taxAmount;
+      const subtotalAfterLoyalty = Math.max(0, subtotal - checkoutLoyaltyDiscount);
+      const taxAmount = subtotalAfterLoyalty * 0.08;
+      const total = subtotalAfterLoyalty + taxAmount;
 
       const response = await fetch("/api/pos/sales/create", {
         method: "POST",
@@ -153,7 +206,12 @@ export function SmartPOS({
           paymentMethod: paymentData.paymentMethod,
           cashTendered: paymentData.cashTendered,
           changeGiven: paymentData.changeGiven,
-          customerName: "Walk-In",
+          customerId: checkoutCustomer?.id,
+          customerName: checkoutCustomer
+            ? `${checkoutCustomer.first_name} ${checkoutCustomer.last_name}`.trim()
+            : "Walk-In",
+          loyaltyPointsRedeemed: checkoutLoyaltyPoints,
+          loyaltyDiscountAmount: checkoutLoyaltyDiscount,
         }),
       });
 
@@ -223,6 +281,8 @@ export function SmartPOS({
               onRemoveItem={handleRemoveItem}
               onClearCart={handleClearCart}
               onCheckout={handleCheckout}
+              onApplyManualDiscount={handleApplyManualDiscount}
+              onRemoveManualDiscount={handleRemoveManualDiscount}
               taxRate={0.08}
               isProcessing={processing}
             />

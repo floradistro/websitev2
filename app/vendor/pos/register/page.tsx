@@ -371,7 +371,7 @@ export default function POSRegisterPage() {
               return {
                 ...item,
                 quantity,
-                lineTotal: quantity * item.unitPrice,
+                lineTotal: quantity * (item.adjustedPrice || item.unitPrice),
               };
             }
 
@@ -398,6 +398,50 @@ export default function POSRegisterPage() {
     },
     [promotions, productsCache],
   );
+
+  // Apply manual discount
+  const handleApplyManualDiscount = useCallback((productId: string, type: "percentage" | "amount", value: number) => {
+    setCart((prevCart) =>
+      prevCart.map((item) => {
+        if (item.productId === productId) {
+          let adjustedPrice = item.unitPrice;
+
+          if (type === "percentage") {
+            adjustedPrice = item.unitPrice * (1 - value / 100);
+          } else {
+            adjustedPrice = Math.max(0, item.unitPrice - value);
+          }
+
+          return {
+            ...item,
+            manualDiscountType: type,
+            manualDiscountValue: value,
+            adjustedPrice,
+            lineTotal: item.quantity * adjustedPrice,
+          };
+        }
+        return item;
+      }),
+    );
+  }, []);
+
+  // Remove manual discount
+  const handleRemoveManualDiscount = useCallback((productId: string) => {
+    setCart((prevCart) =>
+      prevCart.map((item) => {
+        if (item.productId === productId) {
+          return {
+            ...item,
+            manualDiscountType: undefined,
+            manualDiscountValue: undefined,
+            adjustedPrice: undefined,
+            lineTotal: item.quantity * item.unitPrice,
+          };
+        }
+        return item;
+      }),
+    );
+  }, []);
 
   // Remove item from cart
   const handleRemoveItem = useCallback((productId: string) => {
@@ -475,10 +519,16 @@ export default function POSRegisterPage() {
     }
   };
 
+  // Store checkout data temporarily
+  const [checkoutLoyaltyPoints, setCheckoutLoyaltyPoints] = useState(0);
+  const [checkoutLoyaltyDiscount, setCheckoutLoyaltyDiscount] = useState(0);
+
   // Open payment modal
-  const handleCheckout = (customer?: any) => {
+  const handleCheckout = (customer?: any, loyaltyPoints?: number, loyaltyDiscount?: number) => {
     if (cart.length === 0) return;
     setSelectedCustomer(customer || null);
+    setCheckoutLoyaltyPoints(loyaltyPoints || 0);
+    setCheckoutLoyaltyDiscount(loyaltyDiscount || 0);
     setShowPayment(true);
   };
 
@@ -503,8 +553,9 @@ export default function POSRegisterPage() {
 
       // Calculate totals
       const subtotal = cart.reduce((sum, item) => sum + item.lineTotal, 0);
-      const taxAmount = subtotal * taxRate;
-      const total = subtotal + taxAmount;
+      const subtotalAfterLoyalty = Math.max(0, subtotal - checkoutLoyaltyDiscount);
+      const taxAmount = subtotalAfterLoyalty * taxRate;
+      const total = subtotalAfterLoyalty + taxAmount;
 
       // Get customer info
       const customerId = selectedCustomer?.id || null;
@@ -535,6 +586,9 @@ export default function POSRegisterPage() {
           paymentTransactionId: paymentData.transactionId,
           cardType: paymentData.cardType,
           cardLast4: paymentData.cardLast4,
+          // Loyalty redemption
+          loyaltyPointsRedeemed: checkoutLoyaltyPoints,
+          loyaltyDiscountAmount: checkoutLoyaltyDiscount,
         }),
       });
 
@@ -815,6 +869,8 @@ export default function POSRegisterPage() {
             onRemoveItem={handleRemoveItem}
             onClearCart={handleClearCart}
             onCheckout={handleCheckout}
+            onApplyManualDiscount={handleApplyManualDiscount}
+            onRemoveManualDiscount={handleRemoveManualDiscount}
             taxRate={taxRate || 0}
             taxBreakdown={taxBreakdown}
             taxError={taxLoading ? null : taxError}

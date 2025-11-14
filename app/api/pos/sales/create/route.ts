@@ -37,6 +37,9 @@ interface CreateSaleRequest {
   paymentTransactionId?: string;
   cardType?: string;
   cardLast4?: string;
+  // Loyalty redemption
+  loyaltyPointsRedeemed?: number;
+  loyaltyDiscountAmount?: number;
 }
 
 /**
@@ -118,6 +121,8 @@ export async function POST(request: NextRequest) {
       paymentTransactionId,
       cardType,
       cardLast4,
+      loyaltyPointsRedeemed,
+      loyaltyDiscountAmount,
     } = body;
 
     // Validate required fields
@@ -219,6 +224,8 @@ export async function POST(request: NextRequest) {
           walk_in: !customerId,
           cash_tendered: cashTendered,
           change_given: changeGiven,
+          loyalty_points_redeemed: loyaltyPointsRedeemed || 0,
+          loyalty_discount_amount: loyaltyDiscountAmount || 0,
         },
       })
       .select()
@@ -437,6 +444,8 @@ export async function POST(request: NextRequest) {
         orderId: order.id,
         orderNumber,
         total,
+        loyaltyPointsRedeemed,
+        loyaltyDiscountAmount,
       }).catch((err) => logger.error("Background loyalty failed:", err));
     }
 
@@ -493,6 +502,8 @@ async function processLoyaltyPoints(
     orderId: string;
     orderNumber: string;
     total: number;
+    loyaltyPointsRedeemed?: number;
+    loyaltyDiscountAmount?: number;
   },
 ) {
   // Get loyalty program settings (or use defaults)
@@ -535,18 +546,46 @@ async function processLoyaltyPoints(
     }
 
     loyalty = newLoyalty;
-  } else {
-    // Update existing points
+  }
+
+  // Process redemption first if any
+  let currentBalance = loyalty.points_balance;
+  if (data.loyaltyPointsRedeemed && data.loyaltyPointsRedeemed > 0) {
+    const newBalance = currentBalance - data.loyaltyPointsRedeemed;
+
     await supabase
       .from("customer_loyalty")
       .update({
-        points_balance: loyalty.points_balance + pointsEarned,
-        lifetime_points: loyalty.lifetime_points + pointsEarned,
+        points_balance: newBalance,
       })
       .eq("id", loyalty.id);
+
+    // Log redemption transaction
+    await supabase.from("loyalty_transactions").insert({
+      customer_id: data.customerId,
+      transaction_type: "redeemed",
+      points: -data.loyaltyPointsRedeemed,
+      reference_type: "order",
+      reference_id: data.orderId,
+      description: `Redeemed for $${data.loyaltyDiscountAmount?.toFixed(2)} - ${data.orderNumber}`,
+      balance_before: currentBalance,
+      balance_after: newBalance,
+    });
+
+    currentBalance = newBalance;
   }
 
-  // Log transaction
+  // Then add earned points
+  const finalBalance = currentBalance + pointsEarned;
+  await supabase
+    .from("customer_loyalty")
+    .update({
+      points_balance: finalBalance,
+      lifetime_points: loyalty.lifetime_points + pointsEarned,
+    })
+    .eq("id", loyalty.id);
+
+  // Log earned transaction
   await supabase.from("loyalty_transactions").insert({
     customer_id: data.customerId,
     transaction_type: "earned",
@@ -554,12 +593,12 @@ async function processLoyaltyPoints(
     reference_type: "order",
     reference_id: data.orderId,
     description: `Purchase - ${data.orderNumber}`,
-    balance_before: loyalty.points_balance,
-    balance_after: loyalty.points_balance + pointsEarned,
+    balance_before: currentBalance,
+    balance_after: finalBalance,
   });
 
   // Update Apple Wallet pass (non-blocking)
-  updateWalletPass(data.customerId, loyalty.points_balance + pointsEarned).catch((err) =>
+  updateWalletPass(data.customerId, finalBalance).catch((err) =>
     logger.error("Wallet pass update failed:", err),
   );
 }
