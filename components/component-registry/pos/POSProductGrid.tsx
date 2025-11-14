@@ -5,7 +5,6 @@ import Image from "next/image";
 import { ShoppingBag, Eye, Package, ArrowDownAZ, PackageCheck } from "lucide-react";
 import Link from "next/link";
 import { POSQuickView } from "./POSQuickView";
-import { POSVendorDropdown } from "./POSVendorDropdown";
 import { useAppAuth } from "@/context/AppAuthContext";
 
 import { logger } from "@/lib/logger";
@@ -60,7 +59,6 @@ interface POSProductGridProps {
   onSkuInputChange?: (value: string) => void;
   onSkuSubmit?: (e: React.FormEvent) => void;
   skuInputRef?: React.RefObject<HTMLInputElement | null>;
-  onSessionClosed?: () => void;
 }
 
 // Category hierarchy - subcategories grouped under parent categories
@@ -83,7 +81,6 @@ export function POSProductGrid({
   onSkuInputChange,
   onSkuSubmit,
   skuInputRef,
-  onSessionClosed,
 }: POSProductGridProps) {
   const { vendor } = useAppAuth();
   const [products, setProducts] = useState<Product[]>([]);
@@ -495,17 +492,6 @@ export function POSProductGrid({
       {/* Search & Filters - Fixed at top */}
       <div className="flex-shrink-0 p-4 border-b border-white/5 relative z-20">
         <div className="flex gap-2">
-          {/* Vendor Logo Dropdown */}
-          <POSVendorDropdown
-            locationId={locationId}
-            locationName={locationName}
-            vendorId={vendorId}
-            userId={userId}
-            userName={userName}
-            registerId={registerId}
-            onSessionClosed={onSessionClosed}
-          />
-
           {/* Search Bar - filters as you type, Enter/double-click/button to lookup SKU */}
           <div className="flex-1 relative flex gap-2">
             <div className="flex-1 relative">
@@ -532,8 +518,8 @@ export function POSProductGrid({
                     onSkuSubmit(e as any);
                   }
                 }}
-                placeholder={`Search ${filteredProducts.length} products...`}
-                className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 placeholder-white/40 hover:bg-white/10 transition-all"
+                placeholder={searchQuery ? `Search ${filteredProducts.length} products...` : "POS"}
+                className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 placeholder-white/40 hover:bg-white/10 transition-all text-center placeholder:text-center"
                 autoComplete="off"
               />
             </div>
@@ -541,7 +527,7 @@ export function POSProductGrid({
               <button
                 type="button"
                 onClick={(e) => onSkuSubmit(e as any)}
-                className="px-4 py-2.5 bg-white/[0.02] border border-white/[0.06] rounded-2xl text-[10px] uppercase tracking-[0.15em] text-white/60 hover:bg-white/[0.04] hover:text-white/80 transition-all font-light"
+                className="px-4 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-[10px] uppercase tracking-[0.15em] text-white/60 hover:bg-white/10 hover:text-white/80 transition-all"
               >
                 Scan
               </button>
