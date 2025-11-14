@@ -112,7 +112,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden`}
         style={{
-          backgroundColor: "#000000",
+          backgroundColor: "#FF00FF",
         }}
         suppressHydrationWarning
       >

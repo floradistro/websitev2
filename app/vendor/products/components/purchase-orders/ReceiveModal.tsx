@@ -61,10 +61,13 @@ export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: Rece
     if (purchaseOrder?.items) {
       const initialData: Record<string, ReceiveItemData> = {};
       purchaseOrder.items.forEach((item) => {
-        if (item.quantity_remaining && item.quantity_remaining > 0) {
+        const received = item.quantity_received || 0;
+        const remaining = item.quantity_remaining ?? (item.quantity - received);
+
+        if (remaining > 0) {
           initialData[item.id] = {
             po_item_id: item.id,
-            quantity_received: item.quantity_remaining, // Default to full remaining
+            quantity_received: remaining, // Default to full remaining
             condition: "good",
             quality_notes: "",
             notes: "",
@@ -83,7 +86,8 @@ export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: Rece
     if (!item) return;
 
     // Prevent receiving more than remaining
-    const maxReceive = item.quantity_remaining || item.quantity;
+    const received = item.quantity_received || 0;
+    const maxReceive = item.quantity_remaining ?? (item.quantity - received);
     const actualValue = Math.min(Math.max(0, numValue), maxReceive);
 
     setReceiveData((prev) => ({
@@ -158,8 +162,14 @@ export function ReceiveModal({ isOpen, onClose, purchaseOrder, onSuccess }: Rece
     }
   };
 
+  // Filter items that still have quantity to receive
+  // Handle null/undefined quantity_remaining by calculating it
   const receivableItems =
-    purchaseOrder?.items.filter((item) => (item.quantity_remaining || 0) > 0) || [];
+    purchaseOrder?.items.filter((item) => {
+      const received = item.quantity_received || 0;
+      const remaining = item.quantity_remaining ?? (item.quantity - received);
+      return remaining > 0;
+    }) || [];
   const totalReceiving = Object.values(receiveData).reduce(
     (sum, item) => sum + item.quantity_received,
     0,

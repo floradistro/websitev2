@@ -105,11 +105,20 @@ export function POSCart({
 
   // Load loyalty program settings
   const loadLoyaltyProgram = async () => {
+    if (!vendorId) return;
+
     try {
-      const response = await fetch(`/api/vendor/loyalty/program`);
+      const response = await fetch(`/api/vendor/loyalty/program`, {
+        headers: {
+          'x-vendor-id': vendorId,
+        },
+      });
       if (response.ok) {
         const data = await response.json();
         setLoyaltyProgram(data.program);
+        if (process.env.NODE_ENV === "development") {
+          console.log("✅ Loyalty program loaded:", data.program);
+        }
       }
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
@@ -121,11 +130,18 @@ export function POSCart({
   // Load loyalty program on mount
   React.useEffect(() => {
     loadLoyaltyProgram();
-  }, []);
+  }, [vendorId]);
 
   // Reset loyalty points when customer changes
   React.useEffect(() => {
     setLoyaltyPointsToRedeem(0);
+    if (process.env.NODE_ENV === "development") {
+      console.log("🔍 Customer changed:", {
+        customer: selectedCustomer?.first_name,
+        points: selectedCustomer?.loyalty_points,
+        program: loyaltyProgram?.is_active,
+      });
+    }
   }, [selectedCustomer]);
 
   const handleEndSession = async () => {

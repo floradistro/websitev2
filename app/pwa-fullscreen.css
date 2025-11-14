@@ -107,41 +107,71 @@
    DEBUG MODE - Visual confirmation CSS is working
    ============================================================ */
 
-/* Uncomment to enable debug mode */
-/*
+/* DEBUG MODE ENABLED - Shows what's being detected */
 @supports (-webkit-touch-callout: none) {
+  /* Red border at TOP and BOTTOM to show iOS detection */
+  html {
+    border-top: 10px solid red !important;
+    border-bottom: 10px solid red !important;
+  }
+
   body::after {
-    content: "iOS PWA Mode Active";
+    content: "✅ iOS DETECTED - CSS ACTIVE";
     position: fixed;
-    top: 0;
+    top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 0, 0, 0.9);
+    background: rgba(255, 0, 0, 0.95);
     color: white;
-    padding: 8px 16px;
-    font-size: 12px;
+    padding: 12px 24px;
+    font-size: 16px;
     font-weight: bold;
-    z-index: 999999;
-    border-radius: 0 0 8px 8px;
+    z-index: 9999999;
+    border-radius: 8px;
     pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+
+  /* Green background on #__next to show it's filling space */
+  #__next {
+    background: linear-gradient(to bottom,
+      rgba(0, 255, 0, 0.2) 0%,
+      rgba(0, 255, 0, 0.1) 50px,
+      transparent 50px
+    ) !important;
   }
 }
 
 @supports not (-webkit-touch-callout: none) {
+  /* Green border at TOP and BOTTOM to show Android detection */
+  html {
+    border-top: 10px solid lime !important;
+    border-bottom: 10px solid lime !important;
+  }
+
   body::after {
-    content: "Android PWA Mode Active";
+    content: "✅ ANDROID DETECTED - CSS ACTIVE";
     position: fixed;
-    top: 0;
+    top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0, 255, 0, 0.9);
+    background: rgba(0, 255, 0, 0.95);
     color: black;
-    padding: 8px 16px;
-    font-size: 12px;
+    padding: 12px 24px;
+    font-size: 16px;
     font-weight: bold;
-    z-index: 999999;
-    border-radius: 0 0 8px 8px;
+    z-index: 9999999;
+    border-radius: 8px;
     pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+
+  /* Blue background on #__next to show it's filling space */
+  #__next {
+    background: linear-gradient(to bottom,
+      rgba(0, 0, 255, 0.2) 0%,
+      rgba(0, 0, 255, 0.1) 50px,
+      transparent 50px
+    ) !important;
   }
 }
-*/
