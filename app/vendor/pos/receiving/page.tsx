@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Package, ArrowLeft, CheckCircle, AlertCircle, Search, Scan } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { usePOSSession } from "@/context/POSSessionContext";
+import { POSBreadcrumb } from "@/components/component-registry/pos/POSBreadcrumb";
 
 import { logger } from "@/lib/logger";
 interface PurchaseOrder {
@@ -31,8 +33,7 @@ interface POItem {
 
 export default function POSReceivingPage() {
   const router = useRouter();
-  const [locationId, setLocationId] = useState<string | null>(null);
-  const [locationName, setLocationName] = useState<string>("");
+  const { session, location } = usePOSSession();
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,29 +44,13 @@ export default function POSReceivingPage() {
   const [error, setError] = useState<string | null>(null);
   const skuInputRef = useRef<HTMLInputElement>(null);
 
-  // Load location from localStorage (set by POS register)
-  useEffect(() => {
-    const savedLocation = localStorage.getItem("pos_selected_location");
-    if (savedLocation) {
-      try {
-        const location = JSON.parse(savedLocation);
-        setLocationId(location.id);
-        setLocationName(location.name);
-      } catch (e) {
-        if (process.env.NODE_ENV === "development") {
-          logger.error("Failed to parse location:", e);
-        }
-      }
-    }
-  }, []);
-
   // Load POs for this location
   const loadPurchaseOrders = useCallback(async () => {
-    if (!locationId) return;
+    if (!location?.id) return;
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/pos/receiving?location_id=${locationId}`, {
+      const response = await fetch(`/api/pos/receiving?location_id=${location.id}`, {
         credentials: "include",
       });
 
@@ -80,7 +65,7 @@ export default function POSReceivingPage() {
     } finally {
       setLoading(false);
     }
-  }, [locationId]);
+  }, [location?.id]);
 
   useEffect(() => {
     loadPurchaseOrders();
@@ -203,22 +188,32 @@ export default function POSReceivingPage() {
   const receivableItems = selectedPO?.items.filter((item) => item.quantity_remaining > 0) || [];
   const totalReceiving = Object.values(receiveQuantities).reduce((sum, qty) => sum + qty, 0);
 
-  // No location selected
-  if (!locationId) {
+  // Show message if no session - stay in POS, don't redirect
+  if (!session || !location) {
     return (
-      <div className="h-full bg-black text-white flex items-center justify-center p-6">
-        <div className="text-center max-w-md">
-          <Package size={64} className="mx-auto mb-4 text-white/20" />
-          <h2 className="text-xl font-light mb-2">No Location Selected</h2>
-          <p className="text-sm text-white/60 mb-6">
-            Please select a location from the POS register to access receiving.
-          </p>
-          <button
-            onClick={() => router.push("/vendor/pos/register")}
-            className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-light transition-colors"
-          >
-            Go to Register
-          </button>
+      <div className="fixed inset-0 left-[60px] bg-black text-white flex flex-col overflow-hidden">
+        <POSBreadcrumb 
+          items={[
+            { label: "POS", href: "/vendor/pos/receiving" }, 
+            { label: "Receiving" }
+          ]} 
+          showSessionInfo={false}
+        />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="text-center max-w-md">
+            <Package size={64} className="mx-auto mb-6 text-white/20" />
+            <h2 className="text-2xl font-light text-white mb-4">No Active Session</h2>
+            <p className="text-white/60 text-sm mb-8">
+              Start a session on the Register to access Receiving.
+            </p>
+            <button
+              onClick={() => router.push("/vendor/pos/register")}
+              className="px-8 py-4 bg-white text-black rounded-xl hover:bg-white/90 transition-all text-sm font-black uppercase tracking-[0.15em]"
+              style={{ fontWeight: 900 }}
+            >
+              Go to Register
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -227,7 +222,18 @@ export default function POSReceivingPage() {
   // PO Detail View
   if (selectedPO) {
     return (
-      <div className="h-full bg-black text-white flex flex-col">
+      <div className="fixed inset-0 left-[60px] bg-black text-white flex flex-col overflow-hidden">
+        {/* Breadcrumb Navigation */}
+        <POSBreadcrumb
+          items={[
+            { label: "POS", href: "/vendor/pos/receiving" },
+            { label: location.name },
+            { label: "Receiving", href: "/vendor/pos/receiving" },
+            { label: selectedPO.po_number },
+          ]}
+          showSessionInfo={true}
+        />
+
         {/* Header */}
         <div className="bg-white/5 border-b border-white/5 p-4">
           <button
@@ -394,7 +400,17 @@ export default function POSReceivingPage() {
 
   // PO List View
   return (
-    <div className="h-full bg-black text-white flex flex-col">
+    <div className="fixed inset-0 left-[60px] bg-black text-white flex flex-col overflow-hidden">
+      {/* Breadcrumb Navigation */}
+      <POSBreadcrumb
+        items={[
+          { label: "POS", href: "/vendor/pos/receiving" },
+          { label: location.name },
+          { label: "Receiving" },
+        ]}
+        showSessionInfo={true}
+      />
+
       {/* Header */}
       <div className="bg-white/5 border-b border-white/5 p-4">
         <button
@@ -407,7 +423,7 @@ export default function POSReceivingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-light mb-1">Receive Inventory</h1>
-            <p className="text-xs text-white/60">{locationName}</p>
+            <p className="text-xs text-white/60">{location.name}</p>
           </div>
           <Package size={32} className="text-white/20" />
         </div>

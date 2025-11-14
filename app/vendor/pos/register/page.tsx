@@ -6,37 +6,32 @@ import { POSCart, CartItem } from "@/components/component-registry/pos/POSCart";
 import { POSPayment, PaymentData } from "@/components/component-registry/pos/POSPayment";
 import { POSRegisterSelector } from "@/components/component-registry/pos/POSRegisterSelector";
 import { POSLocationSelector } from "@/components/component-registry/pos/POSLocationSelector";
+import { POSBreadcrumb } from "@/components/component-registry/pos/POSBreadcrumb";
 import { OpenCashDrawerModal } from "./components/OpenCashDrawerModal";
 import { useAppAuth } from "@/context/AppAuthContext";
+import { usePOSSession } from "@/context/POSSessionContext";
 import { supabase } from "@/lib/supabase/client";
 import { calculatePrice, type Promotion } from "@/lib/pricing";
 
 import { logger } from "@/lib/logger";
+
 export default function POSRegisterPage() {
   const { user, vendor, locations, isLoading } = useAppAuth();
+  const {
+    session,
+    registerId: contextRegisterId,
+    location: contextLocation,
+    startSession,
+    joinSession,
+    setLocation,
+    clearLocation,
+  } = usePOSSession();
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [registerId, setRegisterId] = useState<string | null>(null);
   const [hasPaymentProcessor, setHasPaymentProcessor] = useState<boolean>(false);
 
-  // CRITICAL FIX: Persist selected location in localStorage to survive navigation
-  const [selectedLocation, setSelectedLocation] = useState<{ id: string; name: string } | null>(
-    () => {
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem("pos_selected_location");
-        if (saved) {
-          try {
-            return JSON.parse(saved);
-          } catch (e) {
-            return null;
-          }
-        }
-      }
-      return null;
-    },
-  );
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [skuInput, setSkuInput] = useState("");
   const [skuLoading, setSkuLoading] = useState(false);
@@ -44,29 +39,33 @@ export default function POSRegisterPage() {
   const skuInputRef = useRef<HTMLInputElement>(null);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [productsCache, setProductsCache] = useState<Map<string, any>>(new Map());
-  const [showSessionModal, setShowSessionModal] = useState(false);
   const [showOpenDrawerModal, setShowOpenDrawerModal] = useState(false);
   const [existingSessionInfo, setExistingSessionInfo] = useState<any>(null);
+  const [showSessionModal, setShowSessionModal] = useState(false);
   const [taxRate, setTaxRate] = useState<number | null>(null);
   const [taxBreakdown, setTaxBreakdown] = useState<
     Array<{ name: string; rate: number; type: string }>
   >([]);
   const [taxError, setTaxError] = useState<string | null>(null);
 
+  // Register management state
+  const [selectedRegister, setSelectedRegister] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
   // Auto-select location for single-location staff
   useEffect(() => {
-    if (!selectedLocation && locations.length === 1) {
+    if (!contextLocation && locations.length === 1) {
       const singleLocation = locations[0];
-      const location = { id: singleLocation.id, name: singleLocation.name };
-      setSelectedLocation(location);
-      localStorage.setItem("pos_selected_location", JSON.stringify(location));
+      setLocation({ id: singleLocation.id, name: singleLocation.name });
     }
-  }, [locations, selectedLocation]);
+  }, [locations, contextLocation, setLocation]);
 
   // FRESH TAX DATA - NO FALLBACKS, NO HARDCODED VALUES
   useEffect(() => {
     async function loadTaxRate() {
-      if (!selectedLocation?.id || !vendor?.id) {
+      if (!contextLocation?.id || !vendor?.id) {
         setTaxRate(null);
         return;
       }
@@ -88,10 +87,10 @@ export default function POSRegisterPage() {
           throw new Error("API returned success: false");
         }
 
-        const location = data.locations?.find((l: any) => l.id === selectedLocation.id);
+        const location = data.locations?.find((l: any) => l.id === contextLocation.id);
 
         if (!location) {
-          throw new Error(`Location ${selectedLocation.name} not found in API response`);
+          throw new Error(`Location ${contextLocation.name} not found in API response`);
         }
 
         const rate = location.settings?.tax_config?.sales_tax_rate;
@@ -99,7 +98,7 @@ export default function POSRegisterPage() {
 
         if (!rate || typeof rate !== "number" || rate <= 0) {
           throw new Error(
-            `NO TAX CONFIGURED FOR ${selectedLocation.name}! Go to Settings > Locations to configure taxes.`,
+            `NO TAX CONFIGURED FOR ${contextLocation.name}! Go to Settings > Locations to configure taxes.`,
           );
         }
 
@@ -118,40 +117,38 @@ export default function POSRegisterPage() {
     }
 
     loadTaxRate();
-  }, [selectedLocation?.id, vendor?.id]);
+  }, [contextLocation?.id, vendor?.id]);
 
-  // Check for existing session on mount
-  useEffect(() => {
-    if (!registerId) return;
+  // NOTE: Existing session check is now handled directly in onRegisterSelected callback
+  // This avoids race conditions and ensures the modal shows immediately
 
-    const checkExistingSession = async () => {
-      try {
-        const { data: existingSession } = await supabase
-          .from("pos_sessions")
-          .select("id, session_number, total_sales, opened_at")
-          .eq("register_id", registerId)
-          .eq("status", "open")
-          .maybeSingle();
-
-        if (existingSession && !sessionId) {
-          // Found existing session - show modal
-          setExistingSessionInfo(existingSession);
-          setShowSessionModal(true);
-        }
-      } catch (error) {
-        if (process.env.NODE_ENV === "development") {
-          logger.error("Error checking for existing session:", error);
-        }
-      }
-    };
-
-    checkExistingSession();
-  }, [registerId, sessionId]);
-
-  const handleJoinSession = () => {
-    if (existingSessionInfo) {
-      setSessionId(existingSessionInfo.id);
+  const handleJoinSession = async () => {
+    console.log("handleJoinSession called", { existingSessionInfo, selectedRegister });
+    if (!existingSessionInfo || !selectedRegister) {
+      console.error("Missing required data", { existingSessionInfo, selectedRegister });
+      return;
+    }
+    
+    try {
+      setProcessing(true);
+      console.log("Joining session via startSession...");
+      
+      // Join existing session via context - startSession will handle existing session
+      await startSession(
+        existingSessionInfo.register_id,
+        contextLocation!.id,
+        contextLocation!.name,
+        selectedRegister.name,
+        0 // No opening cash needed for joining
+      );
+      
       setShowSessionModal(false);
+      console.log("Successfully joined existing session");
+    } catch (error) {
+      console.error("Failed to join session:", error);
+      alert(`Failed to join session: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -186,73 +183,32 @@ export default function POSRegisterPage() {
     // Prevent concurrent requests
     if (processing) return;
 
+    if (!contextRegisterId || !contextLocation || !selectedRegister) {
+      alert("Missing register or location information");
+      return;
+    }
+
     try {
       setProcessing(true);
 
-      // 🚀 ATOMIC SESSION CREATION - No race conditions possible!
-      // The database function handles all logic: check existing + create new
-      // Uses FOR UPDATE lock to prevent duplicates
-      const response = await fetch("/api/pos/sessions/get-or-create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          registerId,
-          locationId: selectedLocation?.id,
-          vendorId: vendor?.id,
-          userId: user?.id,
-          openingCash,
-        }),
-      });
+      // Use session context to start session
+      await startSession(
+        contextRegisterId,
+        contextLocation.id,
+        contextLocation.name,
+        selectedRegister.name,
+        openingCash
+      );
 
-      if (response.ok) {
-        const data = await response.json();
-        setSessionId(data.session.id);
-        setShowOpenDrawerModal(false);
-
-        // Notify user if they joined an existing session
-        if (data.method === "atomic" && data.session.total_transactions > 0) {
-          alert(
-            `✅ Joined Existing Session\n\n` +
-            `Session: ${data.session.session_number}\n` +
-            `Transactions: ${data.session.total_transactions}\n\n` +
-            `You are now sharing this session.`
-          );
-        }
-      } else {
-        const error = await response.json();
-
-        // If atomic function not deployed, show clear instructions
-        if (error.migration_required) {
-          alert(
-            `⚠️ Database Migration Required\n\n` +
-            `The atomic session function needs to be deployed.\n\n` +
-            `Please run: migrations/001_enterprise_session_management.sql\n\n` +
-            `Contact your system administrator.`
-          );
-        } else {
-          const errorMsg = error.details
-            ? `${error.error}\n\n${error.details}`
-            : error.error || "Failed to start session";
-          alert(`❌ Failed to Create Session\n\n${errorMsg}\n\n[Status: ${response.status}]`);
-        }
-
-        if (process.env.NODE_ENV === "development") {
-          logger.error("Session creation failed:", {
-            status: response.status,
-            error,
-            registerId,
-            locationId: selectedLocation?.id,
-          });
-        }
-      }
+      setShowOpenDrawerModal(false);
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
         logger.error("Error starting session:", error);
       }
       alert(
         `❌ Failed to Start Session\n\n` +
-        `Network or system error occurred.\n\n` +
-        `Details: ${error instanceof Error ? error.message : String(error)}`
+          `Network or system error occurred.\n\n` +
+          `Details: ${error instanceof Error ? error.message : String(error)}`
       );
     } finally {
       setProcessing(false);
@@ -279,55 +235,6 @@ export default function POSRegisterPage() {
   useEffect(() => {
     loadPromotions();
   }, [vendor]);
-
-  // Simple session monitoring with polling - works on all devices/networks
-  useEffect(() => {
-    if (!sessionId || !registerId) return;
-
-    const checkSession = async () => {
-      try {
-        const response = await fetch(`/api/pos/sessions/status?sessionId=${sessionId}`);
-
-        if (response.ok) {
-          const { session } = await response.json();
-
-          // Kick out ONLY if session is explicitly closed
-          if (session && session.status === "closed") {
-            setSessionId(null);
-            setRegisterId(null);
-            setCart([]);
-          }
-        }
-      } catch (error) {
-        // Don't kick out on errors - just log them
-        logger.error("Session check error (not kicking out):", error);
-      }
-    };
-
-    // Poll every 2 seconds - fast enough to prevent issues
-    const interval = setInterval(checkSession, 2000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [sessionId, registerId]);
-
-  const loadActiveSession = async () => {
-    if (!selectedLocation?.id) return;
-    try {
-      const response = await fetch(`/api/pos/sessions/active?locationId=${selectedLocation.id}`);
-      if (response.ok) {
-        const data = await response.json();
-        if (data.session) {
-          setSessionId(data.session.id);
-        }
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        logger.error("Error loading session:", error);
-      }
-    }
-  };
 
   // Recalculate cart with current promotions
   const recalculateCart = useCallback(() => {
@@ -488,7 +395,7 @@ export default function POSRegisterPage() {
 
     try {
       const response = await fetch(
-        `/api/pos/products/lookup?sku=${encodeURIComponent(sku.trim())}&location_id=${selectedLocation?.id}`,
+        `/api/pos/products/lookup?sku=${encodeURIComponent(sku.trim())}&location_id=${contextLocation?.id}`,
       );
 
       if (!response.ok) {
@@ -561,7 +468,7 @@ export default function POSRegisterPage() {
         throw new Error("Tax configuration not loaded. Please refresh the page.");
       }
 
-      if (!selectedLocation?.id || !vendor?.id) {
+      if (!contextLocation?.id || !vendor?.id) {
         throw new Error("Location or vendor information missing. Please refresh.");
       }
 
@@ -581,9 +488,9 @@ export default function POSRegisterPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          locationId: selectedLocation.id,
+          locationId: contextLocation.id,
           vendorId: vendor.id,
-          sessionId,
+          sessionId: session?.id,
           userId: user?.id,
           items: cart,
           subtotal,
@@ -623,13 +530,6 @@ export default function POSRegisterPage() {
           `Total: $${total.toFixed(2)}\n` +
           `${paymentData.changeGiven ? `Change: $${paymentData.changeGiven.toFixed(2)}` : ""}`,
       );
-
-      // Reload session in background (non-blocking)
-      loadActiveSession().catch((err) => {
-        if (process.env.NODE_ENV === "development") {
-          logger.error("Failed to reload session:", err);
-        }
-      });
     } catch (error: any) {
       if (process.env.NODE_ENV === "development") {
         logger.error("❌ Sale failed:", error);
@@ -665,7 +565,7 @@ export default function POSRegisterPage() {
   }
 
   // Show location selector if not selected (for admins or multi-location staff)
-  if (!selectedLocation) {
+  if (!contextLocation) {
     // If still loading context, show loading state
     if (isLoading) {
       return (
@@ -697,7 +597,7 @@ export default function POSRegisterPage() {
             </p>
             <button
               onClick={() => {
-                localStorage.removeItem("pos_selected_location");
+                clearLocation();
                 window.location.href = "/vendor/apps";
               }}
               className="px-6 py-3 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all text-xs uppercase tracking-[0.15em]"
@@ -710,55 +610,162 @@ export default function POSRegisterPage() {
     }
 
     return (
-      <POSLocationSelector
-        locations={locations}
-        onLocationSelected={(locationId, locationName) => {
-          const location = { id: locationId, name: locationName };
-          setSelectedLocation(location);
-          // CRITICAL FIX: Persist to localStorage
-          localStorage.setItem("pos_selected_location", JSON.stringify(location));
-        }}
-      />
+      <div className="fixed inset-0 left-[60px] flex items-center justify-center bg-black">
+        <POSLocationSelector
+          locations={locations}
+          onLocationSelected={(locationId, locationName) => {
+            setLocation({ id: locationId, name: locationName });
+          }}
+        />
+      </div>
     );
   }
 
-  // Show register selector if location selected but no register assigned
-  if (!registerId) {
+  // Show register selector if location selected but no register assigned OR no session
+  if (!contextRegisterId || !session) {
     return (
-      <POSRegisterSelector
-        locationId={selectedLocation.id}
-        locationName={selectedLocation.name}
-        onRegisterSelected={(id, sessionId, hasProcessor) => {
-          setRegisterId(id);
-          setHasPaymentProcessor(hasProcessor || false);
-          if (sessionId) {
-            setSessionId(sessionId);
-          } else {
-            // No active session - show drawer count modal
-            setShowOpenDrawerModal(true);
-          }
-        }}
-        onBackToLocationSelector={() => {
-          // Clear location selection to go back to location selector
-          setSelectedLocation(null);
-          localStorage.removeItem("pos_selected_location");
-        }}
-      />
+      <>
+        <div className="fixed inset-0 left-[60px] bg-black">
+          <POSRegisterSelector
+            locationId={contextLocation.id}
+            locationName={contextLocation.name}
+            onRegisterSelected={async (id, sessionId, hasProcessor, registerData) => {
+              console.log("🟢 onRegisterSelected callback triggered:", { 
+                id, 
+                sessionId, 
+                hasProcessor, 
+                registerName: registerData?.register_name,
+                hasCurrentSession: !!registerData?.current_session 
+              });
+              
+              try {
+                // Store register info for session creation
+                const register = { id, name: registerData?.register_name || `Register ${id.slice(0, 8)}` };
+                console.log("🟢 Setting register state:", register);
+                setSelectedRegister(register);
+                setHasPaymentProcessor(hasProcessor || false);
+                
+                if (sessionId && registerData?.current_session) {
+                  // Existing session - fetch full session data and show join modal
+                  console.log("🟢 Existing session detected, fetching session data...", { sessionId });
+                  
+                  const { data: existingSession, error } = await supabase
+                    .from("pos_sessions")
+                    .select("id, session_number, total_sales, opened_at, register_id")
+                    .eq("id", sessionId)
+                    .single();
+                  
+                  if (error) {
+                    console.error("❌ Supabase error:", error);
+                    throw error;
+                  }
+                  
+                  if (existingSession) {
+                    console.log("🟢 Found existing session:", existingSession);
+                    console.log("🟢 Setting existingSessionInfo state and showing modal");
+                    setExistingSessionInfo(existingSession);
+                    setShowSessionModal(true);
+                    console.log("🟢 Modal state should now be visible");
+                  } else {
+                    console.warn("⚠️ No session data returned");
+                  }
+                } else {
+                  // No active session - show drawer count modal to start new
+                  console.log("🟢 No session - showing drawer modal");
+                  setShowOpenDrawerModal(true);
+                }
+              } catch (error) {
+                console.error("❌ Error in onRegisterSelected:", error);
+                alert(`Failed to load session information: ${error instanceof Error ? error.message : String(error)}`);
+              }
+            }}
+            onBackToLocationSelector={() => {
+              clearLocation();
+            }}
+          />
+        </div>
+
+        {/* Modals that need to be accessible from register selector */}
+        {showOpenDrawerModal && (
+          <OpenCashDrawerModal
+            onSubmit={handleOpenDrawerSubmit}
+            onCancel={() => setShowOpenDrawerModal(false)}
+          />
+        )}
+
+        {showSessionModal && existingSessionInfo && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-black border-2 border-white/20 rounded-2xl p-8 max-w-md w-full">
+              <h2
+                className="text-2xl font-black text-white uppercase tracking-tight mb-4"
+                style={{ fontWeight: 900 }}
+              >
+                Session Active
+              </h2>
+              <p className="text-white/60 text-sm mb-6">
+                This register has an active session. Would you like to join it or start a new one?
+              </p>
+
+              <div className="space-y-3 mb-6">
+                <div className="bg-white/5 rounded-xl p-4 space-y-2">
+                  <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Session</div>
+                  <div className="text-white font-bold">{existingSessionInfo.session_number}</div>
+                </div>
+                <div className="bg-white/5 rounded-xl p-4 space-y-2">
+                  <div className="text-white/40 text-xs uppercase tracking-[0.15em]">Total Sales</div>
+                  <div className="text-white font-bold">
+                    ${existingSessionInfo.total_sales.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={handleJoinSession}
+                  disabled={processing}
+                  className="w-full py-3 bg-white text-black rounded-xl hover:bg-white/90 transition-all text-sm font-black uppercase tracking-[0.15em] disabled:opacity-50"
+                  style={{ fontWeight: 900 }}
+                >
+                  {processing ? "Joining..." : "Join Session"}
+                </button>
+                <button
+                  onClick={handleStartNewSession}
+                  disabled={processing}
+                  className="w-full py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/20 hover:border-red-500/50 transition-all text-sm font-black uppercase tracking-[0.15em] disabled:opacity-50"
+                  style={{ fontWeight: 900 }}
+                >
+                  End & Start New
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
   return (
-    <div className="flex h-full w-full bg-black">
+    <div className="fixed inset-0 left-[60px] flex flex-col bg-black">
+      {/* Breadcrumb Navigation with Session Info */}
+      <POSBreadcrumb
+        items={[
+          { label: "POS", href: "/vendor/pos/register" },
+          { label: contextLocation.name },
+          { label: "Register" },
+        ]}
+        showSessionInfo={true}
+      />
+
       {/* Main POS Interface */}
-      <div className="flex flex-1 h-full w-full bg-black">
+      <div className="flex flex-1 h-full w-full bg-black overflow-hidden">
         {/* Left: Product Selection */}
         <div className="flex-1 h-full overflow-hidden">
           <POSProductGrid
-            locationId={selectedLocation.id}
-            locationName={selectedLocation.name}
+            locationId={contextLocation.id}
+            locationName={contextLocation.name}
             vendorId={vendor?.id || ""}
             userName={user?.name || "Staff Member"}
-            registerId={registerId}
+            registerId={contextRegisterId}
             onAddToCart={handleAddToCart}
             displayMode="cards"
             showInventory={true}
@@ -774,7 +781,7 @@ export default function POSRegisterPage() {
           <POSCart
             items={cart}
             vendorId={vendor?.id || ""}
-            locationId={selectedLocation?.id || ""}
+            locationId={contextLocation?.id || ""}
             onUpdateQuantity={handleUpdateQuantity}
             onRemoveItem={handleRemoveItem}
             onClearCart={handleClearCart}
@@ -793,8 +800,8 @@ export default function POSRegisterPage() {
           total={total}
           onPaymentComplete={handlePaymentComplete}
           onCancel={() => setShowPayment(false)}
-          locationId={selectedLocation?.id}
-          registerId={registerId || undefined}
+          locationId={contextLocation?.id}
+          registerId={contextRegisterId || undefined}
           hasPaymentProcessor={hasPaymentProcessor}
         />
       )}

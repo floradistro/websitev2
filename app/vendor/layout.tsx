@@ -20,6 +20,7 @@ import {
 import { prefetchVendorData } from "@/hooks/useVendorData";
 import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { UniversalSearch } from "@/components/UniversalSearch";
+import { POSSessionProvider } from "@/context/POSSessionContext";
 import "../globals-dashboard.css";
 import "./vendor-globals.css";
 
@@ -108,7 +109,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <>
+    <POSSessionProvider>
       {/* Mobile Menu Overlay - Shows below md breakpoint */}
       {mobileMenuOpen && (
         <div
@@ -444,7 +445,11 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Main Content - Always offset by sidebar (60px) */}
         <main
           suppressHydrationWarning
-          className="absolute left-[60px] right-0 top-0 bottom-0 overflow-y-auto overflow-x-hidden relative z-10"
+          className={`absolute left-[60px] right-0 top-0 bottom-0 z-10 ${
+            pathname?.includes("/tv-menus") || pathname?.includes("/pos")
+              ? "overflow-hidden"
+              : "overflow-y-auto overflow-x-hidden"
+          }`}
           style={{
             paddingTop: "env(safe-area-inset-top, 0px)",
             pointerEvents: 'auto',
@@ -481,7 +486,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
       <VendorSupportChat isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <AIActivityMonitor />
-    </>
+    </POSSessionProvider>
   );
 }
 

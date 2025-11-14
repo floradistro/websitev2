@@ -1,28 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAppAuth } from "@/context/AppAuthContext";
+import { usePOSSession } from "@/context/POSSessionContext";
 import { POSPickupQueue } from "@/components/component-registry/pos/POSPickupQueue";
 import { POSVendorDropdown } from "@/components/component-registry/pos/POSVendorDropdown";
-import { POSRegisterSelector } from "@/components/component-registry/pos/POSRegisterSelector";
-
-// Charlotte Central as default for now
-const CHARLOTTE_CENTRAL_ID = "c4eedafb-4050-4d2d-a6af-e164aad5d934";
+import { POSBreadcrumb } from "@/components/component-registry/pos/POSBreadcrumb";
 
 export default function POSOrdersPage() {
-  const searchParams = useSearchParams();
+  const router = useRouter();
   const { isAuthenticated, vendor } = useAppAuth();
+  const { session, registerId, location } = usePOSSession();
   const [mounted, setMounted] = useState(false);
-  const [registerId, setRegisterId] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
-    // Check if register is assigned
-    const savedRegisterId = localStorage.getItem("pos_register_id");
-    if (savedRegisterId) {
-      setRegisterId(savedRegisterId);
-    }
   }, []);
 
   if (!mounted || !isAuthenticated) {
@@ -33,33 +26,53 @@ export default function POSOrdersPage() {
     );
   }
 
-  // Use Charlotte Central as default for now
-  const currentLocationId = searchParams.get("location") || CHARLOTTE_CENTRAL_ID;
-  const currentLocation = {
-    id: currentLocationId,
-    name: "Charlotte Central",
-  };
-
-  // Show register selector if not assigned
-  if (!registerId) {
+  // Show register selector if no session - stay in POS, don't redirect
+  if (!session || !registerId || !location) {
     return (
-      <POSRegisterSelector
-        locationId={CHARLOTTE_CENTRAL_ID}
-        locationName="Charlotte Central"
-        onRegisterSelected={(id) => {
-          setRegisterId(id);
-        }}
-      />
+      <div className="fixed inset-0 left-[60px] bg-black">
+        <POSBreadcrumb
+          items={[
+            { label: "POS", href: "/vendor/pos/orders" },
+            { label: "Orders" },
+          ]}
+          showSessionInfo={false}
+        />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="text-center max-w-md">
+            <h2 className="text-2xl font-light text-white mb-4">No Active Session</h2>
+            <p className="text-white/60 text-sm mb-8">
+              Start a session on the Register to access Orders.
+            </p>
+            <button
+              onClick={() => router.push("/vendor/pos/register")}
+              className="px-8 py-4 bg-white text-black rounded-xl hover:bg-white/90 transition-all text-sm font-black uppercase tracking-[0.15em]"
+              style={{ fontWeight: 900 }}
+            >
+              Go to Register
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 left-[60px] bg-black text-white flex flex-col overflow-hidden">
+      {/* Breadcrumb Navigation with Session Info */}
+      <POSBreadcrumb
+        items={[
+          { label: "POS", href: "/vendor/pos/orders" },
+          { label: location.name },
+          { label: "Orders" },
+        ]}
+        showSessionInfo={true}
+      />
+
       {/* Top Bar with Vendor Dropdown */}
       <div className="border-b border-white/5 flex-shrink-0 p-4">
         <POSVendorDropdown
-          locationId={currentLocation.id}
-          locationName={currentLocation.name}
+          locationId={location.id}
+          locationName={location.name}
           userName="Staff Member"
           vendorId={vendor?.id}
           registerId={registerId}
@@ -70,8 +83,8 @@ export default function POSOrdersPage() {
       <div className="flex-1 overflow-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
           <POSPickupQueue
-            locationId={currentLocation.id}
-            locationName={currentLocation.name}
+            locationId={location.id}
+            locationName={location.name}
             autoRefresh={true}
             refreshInterval={30}
             enableSound={true}

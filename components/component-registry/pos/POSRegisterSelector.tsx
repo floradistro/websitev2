@@ -11,6 +11,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { CloseCashDrawerModal } from "@/app/vendor/pos/register/components/CloseCashDrawerModal";
+import { POSBreadcrumb } from "./POSBreadcrumb";
 
 import { logger } from "@/lib/logger";
 interface Register {
@@ -46,6 +47,7 @@ interface POSRegisterSelectorProps {
     registerId: string,
     sessionId?: string,
     hasPaymentProcessor?: boolean,
+    registerData?: Register,
   ) => void;
   onBackToLocationSelector?: () => void;
 }
@@ -105,11 +107,24 @@ export function POSRegisterSelector({
   };
 
   const handleSelectRegister = async (register: Register) => {
+    console.log("🔵 handleSelectRegister called", { 
+      registerId: register.id, 
+      hasSession: !!register.current_session,
+      sessionId: register.current_session?.id 
+    });
+    
     try {
       // Check if register has active payment processor
       const hasPaymentProcessor = !!(
         register.payment_processor_id && register.payment_processor?.is_active === true
       );
+
+      console.log("🔵 Calling onRegisterSelected with:", {
+        registerId: register.id,
+        sessionId: register.current_session?.id,
+        hasPaymentProcessor,
+        registerName: register.register_name
+      });
 
       // Pass register selection to parent - let parent handle session creation
       // If there's an existing session, pass its ID
@@ -117,9 +132,13 @@ export function POSRegisterSelector({
       onRegisterSelected(
         register.id,
         register.current_session?.id,
-        hasPaymentProcessor
+        hasPaymentProcessor,
+        register
       );
+      
+      console.log("🔵 onRegisterSelected completed");
     } catch (error) {
+      console.error("❌ Error in handleSelectRegister:", error);
       if (process.env.NODE_ENV === "development") {
         logger.error("Error selecting register:", error);
       }
@@ -239,35 +258,43 @@ export function POSRegisterSelector({
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
-      <div className="max-w-2xl w-full">
-        {/* Back to Location Selector Button */}
-        {onBackToLocationSelector && (
-          <div className="mb-6 flex justify-end">
-            <button
-              onClick={() => {
-                // Clear localStorage so location selector shows
-                localStorage.removeItem("pos_selected_location");
-                onBackToLocationSelector();
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 transition-all text-xs uppercase tracking-[0.15em] text-white/60 hover:text-white"
-            >
-              <ArrowLeft size={14} />
-              <span>Change Location</span>
-            </button>
+    <div className="h-full w-full bg-black text-white flex flex-col overflow-y-auto overflow-x-hidden">
+      <POSBreadcrumb
+        items={[
+          { label: "POS", href: "/vendor/pos/register" },
+          { label: locationName },
+          { label: "Select Register" },
+        ]}
+      />
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="max-w-5xl w-full">
+          {/* Back to Location Selector Button */}
+          {onBackToLocationSelector && (
+            <div className="mb-6 flex justify-end">
+              <button
+                onClick={() => {
+                  // Clear localStorage so location selector shows
+                  localStorage.removeItem("pos_selected_location");
+                  onBackToLocationSelector();
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 transition-all text-xs uppercase tracking-[0.15em] text-white/60 hover:text-white"
+              >
+                <ArrowLeft size={14} />
+                <span>Change Location</span>
+              </button>
+            </div>
+          )}
+
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">
+              Select Register
+            </h1>
+            <p className="text-white/60 text-sm uppercase tracking-[0.15em] font-medium">{locationName}</p>
           </div>
-        )}
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">
-            Select Register
-          </h1>
-          <p className="text-white/60 text-sm uppercase tracking-[0.15em] font-medium">{locationName}</p>
-        </div>
-
-        {/* Register Grid */}
-        <div className="grid md:grid-cols-2 gap-4">
+          {/* Register Grid - Responsive with dynamic columns */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto px-2">
           {registers.length === 0 ? (
             <div className="col-span-2 text-center py-12">
               <p className="text-white/40 text-sm uppercase tracking-[0.15em] mb-4">
@@ -277,9 +304,8 @@ export function POSRegisterSelector({
             </div>
           ) : (
             registers.map((register) => (
-              <button
+              <div
                 key={register.id}
-                onClick={() => handleSelectRegister(register)}
                 className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-white/20 hover:bg-white/10 transition-all duration-300 text-left relative group"
               >
                 {/* Icon */}
@@ -321,46 +347,69 @@ export function POSRegisterSelector({
                       )}
                     </div>
                     {/* Close Session Button */}
-                    <div
+                    <button
                       onClick={(e) => handleCloseSession(e, register)}
-                      className="mt-3 w-full py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 rounded-lg text-red-400 text-[10px] uppercase tracking-[0.15em] font-black transition-all text-center cursor-pointer"
+                      className="mt-3 w-full py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 hover:border-red-500/50 rounded-lg text-red-400 text-[10px] uppercase tracking-[0.15em] font-black transition-all text-center"
+                      style={{ fontWeight: 900 }}
                     >
                       End Session
-                    </div>
+                    </button>
+                    {/* Join Session Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectRegister(register);
+                      }}
+                      className="mt-2 w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg text-white text-[10px] uppercase tracking-[0.15em] font-black transition-all text-center"
+                      style={{ fontWeight: 900 }}
+                    >
+                      Join Session
+                    </button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 text-[10px] text-white/40 uppercase tracking-[0.15em]">
-                    Available
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-[10px] text-white/40 uppercase tracking-[0.15em]">
+                      Available
+                    </div>
+                    {/* Select Register Button */}
+                    <button
+                      onClick={() => handleSelectRegister(register)}
+                      className="mt-2 w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-lg text-white text-[10px] uppercase tracking-[0.15em] font-black transition-all text-center"
+                      style={{ fontWeight: 900 }}
+                    >
+                      Select Register
+                    </button>
                   </div>
                 )}
 
                 {/* Select Indicator */}
-                <div className="absolute top-4 right-4 w-8 h-8 bg-white text-black rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-4 right-4 w-8 h-8 bg-white text-black rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                   <Check size={16} strokeWidth={3} />
                 </div>
-              </button>
+              </div>
             ))
           )}
         </div>
 
-        {/* Help Text */}
-        <div className="mt-8 text-center text-white/40 text-xs uppercase tracking-[0.15em]">
-          <p>Select any register to begin</p>
-          <p className="mt-2 text-white/20">You can switch registers anytime</p>
-        </div>
-
-        {/* Force End All Sessions Button */}
-        {registers.some((r) => r.current_session) && (
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={handleForceEndAllSessions}
-              disabled={closingAll}
-              className="px-6 py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/20 hover:border-red-500/50 transition-all text-[10px] font-semibold uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {closingAll ? "Closing All Sessions..." : "⚠️ Force End All Sessions"}
-            </button>
+          {/* Help Text */}
+          <div className="mt-8 text-center text-white/40 text-xs uppercase tracking-[0.15em]">
+            <p>Select any register to begin</p>
+            <p className="mt-2 text-white/20">You can switch registers anytime</p>
           </div>
-        )}
+
+          {/* Force End All Sessions Button */}
+          {registers.some((r) => r.current_session) && (
+            <div className="mt-6 flex justify-center">
+              <button
+                onClick={handleForceEndAllSessions}
+                disabled={closingAll}
+                className="px-6 py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/20 hover:border-red-500/50 transition-all text-[10px] font-semibold uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {closingAll ? "Closing All Sessions..." : "⚠️ Force End All Sessions"}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Close Cash Drawer Modal */}
