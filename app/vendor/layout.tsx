@@ -452,13 +452,13 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         >
           <div
             className={
-              pathname?.includes("/tv-menus")
+              pathname?.includes("/tv-menus") || pathname?.includes("/pos")
                 ? ""
                 : "px-4 md:px-6 lg:px-8 lg:py-6 lg:px-10 xl:px-12 2xl:px-16 pt-4 pb-10"
             }
           >
             {/* Page Title - Prominent, centered, always visible */}
-            {!pathname?.includes("/tv-menus") && (
+            {!pathname?.includes("/tv-menus") && !pathname?.includes("/pos") && (
               <div className="mb-8 flex flex-col items-center gap-4">
                 {/* Vendor Logo - Subtle, elegant */}
                 <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center overflow-hidden backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.08]">
