@@ -14,17 +14,26 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+    <div 
+      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3"
+      style={{
+        touchAction: 'manipulation',
+      }}
+    >
       {apps.map((app) => {
         const Icon = app.icon;
         return (
           <Link
             key={app.href}
             href={app.href}
-            className="aspect-square bg-white/[0.03] border border-white/[0.06] rounded-xl hover:bg-white/[0.05] hover:border-white/[0.08] transition-all duration-300 flex flex-col items-center justify-center gap-3 p-4 group"
+            className="aspect-square bg-white/[0.03] border border-white/[0.06] rounded-xl hover:bg-white/[0.05] hover:border-white/[0.08] transition-all duration-300 flex flex-col items-center justify-center gap-3 p-4 group active:scale-95"
+            style={{
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent',
+            }}
           >
-            <Icon className="w-8 h-8 text-white/40 group-hover:text-white/60 transition-colors" strokeWidth={1.5} />
-            <span className="text-xs text-white/60 group-hover:text-white/80 text-center font-light uppercase tracking-wider transition-colors">
+            <Icon className="w-8 h-8 text-white/40 group-hover:text-white/60 transition-colors pointer-events-none" strokeWidth={1.5} />
+            <span className="text-xs text-white/60 group-hover:text-white/80 text-center font-light uppercase tracking-wider transition-colors pointer-events-none">
               {app.label}
             </span>
           </Link>

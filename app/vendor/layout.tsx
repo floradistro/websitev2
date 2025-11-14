@@ -452,6 +452,9 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
           style={{
             paddingTop: "env(safe-area-inset-top, 0px)",
             pointerEvents: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y',
+            overscrollBehaviorY: 'contain',
           }}
         >
           <div

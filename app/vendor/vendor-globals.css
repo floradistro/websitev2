@@ -4,10 +4,20 @@
   }
 }
 
+/* iOS PWA Scroll & Viewport Fixes */
+html, body {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
 body {
-  overflow-x: hidden;
   max-width: 100vw;
   background: #000000;
+  touch-action: pan-y;
 }
 
 * {
@@ -124,4 +134,41 @@ main::-webkit-scrollbar-thumb:hover {
 main {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+/* iOS PWA: Prevent pull-to-refresh and elastic scrolling */
+main {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+/* Prevent accidental drags on fixed elements */
+aside, nav {
+  touch-action: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* Smooth scrolling for main content only */
+main {
+  scroll-behavior: smooth;
+}
+
+/* Prevent text selection on touch devices during scroll */
+@media (hover: none) and (pointer: coarse) {
+  * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  
+  main {
+    overscroll-behavior: contain;
+  }
 }
