@@ -102,7 +102,57 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================================
-    // STEP 4: UPDATE TRANSACTION STATUS TO VOIDED
+    // STEP 4: PRE-VALIDATE INVENTORY CAN BE RESTORED
+    // ============================================================================
+    // CRITICAL: Verify all inventory records exist BEFORE marking as voided
+    // This prevents the void-but-inventory-not-restored inconsistency
+
+    let orderItems: any[] = [];
+    const inventoryErrors: Array<{ item: string; error: string }> = [];
+
+    if (transaction.order_id) {
+      const { data: items } = await supabase
+        .from("order_items")
+        .select("product_id, product_name, quantity, inventory_id")
+        .eq("order_id", transaction.order_id);
+
+      orderItems = items || [];
+
+      // Verify each inventory record exists
+      for (const item of orderItems) {
+        if (item.inventory_id) {
+          const { data: inv, error: invError } = await supabase
+            .from("inventory")
+            .select("id")
+            .eq("id", item.inventory_id)
+            .single();
+
+          if (invError || !inv) {
+            inventoryErrors.push({
+              item: item.product_name || item.product_id,
+              error: `Inventory record not found: ${item.inventory_id}`,
+            });
+          }
+        }
+      }
+    }
+
+    // BLOCK void if inventory validation failed
+    if (inventoryErrors.length > 0) {
+      if (process.env.NODE_ENV === "development") {
+        logger.error("❌ Cannot void - inventory records missing:", inventoryErrors);
+      }
+      return NextResponse.json(
+        {
+          error: "Cannot void transaction - inventory records missing",
+          inventory_errors: inventoryErrors,
+        },
+        { status: 400 },
+      );
+    }
+
+    // ============================================================================
+    // STEP 5: UPDATE TRANSACTION STATUS TO VOIDED
     // ============================================================================
 
     const { error: updateError } = await supabase
@@ -128,7 +178,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================================
-    // STEP 5: VOID ORDER
+    // STEP 6: VOID ORDER
     // ============================================================================
     if (order) {
       await supabase
@@ -146,43 +196,76 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================================
-    // STEP 6: RESTOCK INVENTORY
+    // STEP 7: RESTOCK INVENTORY (WITH ROLLBACK ON FAILURE)
     // ============================================================================
 
-    if (transaction.order_id) {
-      const { data: orderItems } = await supabase
-        .from("order_items")
-        .select("product_id, product_name, quantity, inventory_id")
-        .eq("order_id", transaction.order_id);
+    if (orderItems.length > 0) {
+      const restoreErrors: Array<{ item: string; error: string }> = [];
 
-      if (orderItems) {
-        for (const item of orderItems) {
-          // Add back to inventory using atomic increment
-          if (item.inventory_id) {
-            const { data: result, error: incrementError } = await supabase.rpc(
-              "increment_inventory",
-              {
-                p_inventory_id: item.inventory_id,
-                p_quantity: item.quantity,
-              },
-            );
+      for (const item of orderItems) {
+        // Add back to inventory using atomic increment
+        if (item.inventory_id) {
+          const { data: result, error: incrementError } = await supabase.rpc(
+            "increment_inventory",
+            {
+              p_inventory_id: item.inventory_id,
+              p_quantity: item.quantity,
+            },
+          );
 
-            if (incrementError) {
-              if (process.env.NODE_ENV === "development") {
-                logger.error(
-                  `⚠️  Failed to restock ${item.product_name || item.product_id}:`,
-                  incrementError,
-                );
-              }
-            } else {
-            }
+          if (incrementError) {
+            restoreErrors.push({
+              item: item.product_name || item.product_id,
+              error: incrementError.message,
+            });
           }
         }
+      }
+
+      // CRITICAL: If ANY inventory restoration failed, un-void the transaction
+      if (restoreErrors.length > 0) {
+        if (process.env.NODE_ENV === "development") {
+          logger.error("❌ Inventory restoration failed, rolling back void:", restoreErrors);
+        }
+
+        // Rollback: Un-void the transaction
+        await supabase
+          .from("pos_transactions")
+          .update({
+            payment_status: transaction.payment_status, // Restore original status
+            notes: `Void failed - inventory restoration error: ${restoreErrors.map((e) => e.error).join(", ")}`,
+            metadata: {
+              ...transaction.metadata,
+              void_attempted_at: new Date().toISOString(),
+              void_failed_reason: "inventory_restoration_failed",
+              void_errors: restoreErrors,
+            },
+          })
+          .eq("id", transactionId);
+
+        // Rollback: Un-void the order
+        if (order) {
+          await supabase
+            .from("orders")
+            .update({
+              status: order.status, // Restore original status
+              payment_status: order.payment_status,
+            })
+            .eq("id", order.id);
+        }
+
+        return NextResponse.json(
+          {
+            error: "Failed to restore inventory - void rolled back",
+            inventory_errors: restoreErrors,
+          },
+          { status: 500 },
+        );
       }
     }
 
     // ============================================================================
-    // STEP 7: REVERSE LOYALTY POINTS (CRITICAL FIX)
+    // STEP 8: REVERSE LOYALTY POINTS
     // ============================================================================
     if (customer && pointsToReverse > 0) {
       // Get current loyalty record
@@ -258,7 +341,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ============================================================================
-    // STEP 8: UPDATE SESSION TOTALS
+    // STEP 9: UPDATE SESSION TOTALS (WITH ROLLBACK ON FAILURE)
     // ============================================================================
     if (transaction.session_id) {
       // Decrement session total using atomic RPC function
@@ -272,9 +355,51 @@ export async function POST(request: NextRequest) {
 
       if (sessionError) {
         if (process.env.NODE_ENV === "development") {
-          logger.error("⚠️  Failed to update session totals:", sessionError);
+          logger.error("❌ Failed to update session totals, rolling back void:", sessionError);
         }
-      } else {
+
+        // Rollback: Restore inventory (decrement back)
+        for (const item of orderItems) {
+          if (item.inventory_id) {
+            await supabase.rpc("decrement_inventory", {
+              p_inventory_id: item.inventory_id,
+              p_quantity: item.quantity,
+            });
+          }
+        }
+
+        // Rollback: Un-void the transaction
+        await supabase
+          .from("pos_transactions")
+          .update({
+            payment_status: transaction.payment_status,
+            notes: `Void failed - session update error: ${sessionError.message}`,
+            metadata: {
+              ...transaction.metadata,
+              void_attempted_at: new Date().toISOString(),
+              void_failed_reason: "session_update_failed",
+            },
+          })
+          .eq("id", transactionId);
+
+        // Rollback: Un-void the order
+        if (order) {
+          await supabase
+            .from("orders")
+            .update({
+              status: order.status,
+              payment_status: order.payment_status,
+            })
+            .eq("id", order.id);
+        }
+
+        return NextResponse.json(
+          {
+            error: "Failed to update session totals - void rolled back",
+            session_error: sessionError.message,
+          },
+          { status: 500 },
+        );
       }
     }
 
