@@ -8,14 +8,13 @@
 (function() {
   'use strict';
 
-  // Only run in PWA mode
+  // Check if we're in PWA mode
   const isPWA = window.matchMedia('(display-mode: standalone)').matches ||
                 window.matchMedia('(display-mode: fullscreen)').matches ||
                 window.navigator.standalone === true;
 
-  if (!isPWA) return;
-
-  console.log('[Fullscreen] PWA detected - forcing fullscreen mode');
+  // Run on ALL pages (both regular web and PWA) to ensure consistency
+  console.log('[Fullscreen] ' + (isPWA ? 'PWA mode' : 'Web mode') + ' - forcing minimal UI');
 
   // Force scroll to hide Safari UI immediately on load
   function hideAddressBar() {

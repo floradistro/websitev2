@@ -1,10 +1,31 @@
 /**
  * Fullscreen Mode - AGGRESSIVE
  *
- * Forces app to fill entire screen with no browser UI visible
+ * Forces app to fill entire screen with minimal browser UI
+ * Applies to BOTH regular web and PWA mode for consistency
  */
 
-/* Only apply when installed as PWA */
+/* Apply fullscreen behavior in ALL modes */
+@media screen {
+  /* Base styles for all modes */
+  html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Enhanced fullscreen when installed as PWA */
 @media (display-mode: standalone), (display-mode: fullscreen) {
   /* Lock viewport to exact screen dimensions */
   html {
