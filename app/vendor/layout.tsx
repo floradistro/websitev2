@@ -437,7 +437,16 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
           >
             {/* Page Title - Prominent, centered, always visible */}
             {!pathname?.includes("/tv-menus") && (
-              <div className="mb-8 text-center">
+              <div className="mb-8 flex flex-col items-center gap-4">
+                {/* Vendor Logo - Subtle, elegant */}
+                <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center overflow-hidden backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.05] hover:border-white/[0.08]">
+                  <img
+                    src={vendorLogo}
+                    alt={vendorName}
+                    className="w-full h-full object-contain p-2"
+                  />
+                </div>
+                {/* Page Title */}
                 <h1 className="text-2xl md:text-3xl font-light text-white/90 tracking-tight">
                   {currentPage}
                 </h1>
