@@ -93,6 +93,9 @@ export default function RootLayout({
       <head>
         {process.env.NODE_ENV === "development" && <script src="/sw-killer.js" />}
 
+        {/* Force fullscreen in PWA mode */}
+        <script src="/force-fullscreen.js" />
+
         {/* PWA Meta Tags - iOS */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
