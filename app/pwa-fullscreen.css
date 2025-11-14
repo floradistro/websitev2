@@ -32,22 +32,22 @@
     padding: 0;
   }
 
-  /* Next.js root container */
-  #__next {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
+  /* Next.js root container - target first visible child since #__next doesn't exist */
+  body > div:not([hidden]) {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Add safe area spacing to first child */
-  #__next > * {
+  /* Add safe area spacing to app content */
+  body > div:not([hidden]) > * {
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -89,17 +89,17 @@
     padding: 0;
   }
 
-  /* Next.js root container */
-  #__next {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
+  /* Next.js root container - target first visible child since #__next doesn't exist */
+  body > div:not([hidden]) {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
 }
 
@@ -132,8 +132,8 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   }
 
-  /* Green background on #__next to show it's filling space */
-  #__next {
+  /* Green background on app container to show it's filling space */
+  body > div:not([hidden]) {
     background: linear-gradient(to bottom,
       rgba(0, 255, 0, 0.2) 0%,
       rgba(0, 255, 0, 0.1) 50px,
@@ -166,8 +166,8 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   }
 
-  /* Blue background on #__next to show it's filling space */
-  #__next {
+  /* Blue background on app container to show it's filling space */
+  body > div:not([hidden]) {
     background: linear-gradient(to bottom,
       rgba(0, 0, 255, 0.2) 0%,
       rgba(0, 0, 255, 0.1) 50px,
