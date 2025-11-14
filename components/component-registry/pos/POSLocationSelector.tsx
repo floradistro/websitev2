@@ -51,13 +51,10 @@ export function POSLocationSelector({ locations, onLocationSelected }: POSLocati
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1
-            className="text-3xl font-black text-white uppercase tracking-tight mb-2"
-            style={{ fontWeight: 900 }}
-          >
+          <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">
             Select Location
           </h1>
-          <p className="text-white/60 text-sm uppercase tracking-[0.15em]">
+          <p className="text-white/60 text-sm uppercase tracking-[0.15em] font-medium">
             Choose which location to access
           </p>
         </div>
@@ -68,7 +65,7 @@ export function POSLocationSelector({ locations, onLocationSelected }: POSLocati
             <button
               key={location.id}
               onClick={() => onLocationSelected(location.id, location.name)}
-              className="bg-white/5 border-2 border-white/10 rounded-2xl p-6 hover:border-white/30 hover:bg-white/10 transition-all duration-300 text-left relative group"
+              className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-white/20 hover:bg-white/10 transition-all duration-300 text-left relative group"
             >
               {/* Icon */}
               <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:bg-white/10 transition-all">
@@ -77,13 +74,10 @@ export function POSLocationSelector({ locations, onLocationSelected }: POSLocati
 
               {/* Info */}
               <div className="mb-4">
-                <div
-                  className="text-white font-black text-lg uppercase tracking-tight mb-1 flex items-center gap-2"
-                  style={{ fontWeight: 900 }}
-                >
+                <div className="text-white font-semibold text-lg tracking-tight mb-1 flex items-center gap-2">
                   {location.name}
                   {location.is_primary && (
-                    <span className="text-[9px] px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-md uppercase tracking-wider">
+                    <span className="text-[9px] px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-md uppercase tracking-wider font-medium">
                       Primary
                     </span>
                   )}
