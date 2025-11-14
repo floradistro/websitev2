@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
-import "./fullscreen.css";
+import "./fullscreen.css"; // MUST be last to override globals.css
 import NotificationToast from "@/components/NotificationToast";
 import LoadingBar from "@/components/LoadingBar";
 import InstallPWAPrompt from "@/components/InstallPWAPrompt";

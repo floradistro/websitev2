@@ -1170,17 +1170,17 @@ textarea {
   }
 }
 
-/* iOS PWA - Ensure full viewport height */
+/* iOS PWA - Disabled: Conflicts with fullscreen.css position: fixed approach
 @supports (-webkit-touch-callout: none) {
   body {
     min-height: -webkit-fill-available;
   }
 
-  /* Fix for iOS PWA viewport */
   html {
     height: -webkit-fill-available;
   }
 }
+*/
 
 /* Streaming chat animations */
 @keyframes fadeIn {
