@@ -459,25 +459,25 @@ export function POSCart({
             <span>${subtotal.toFixed(2)}</span>
           </div>
 
-          {/* Loyalty Points Redemption - Simplified */}
+          {/* Loyalty Points Redemption - Monochrome */}
           {selectedCustomer && selectedCustomer.loyalty_points > 0 && loyaltyProgram && loyaltyProgram.is_active && (
-            <div className="bg-[#141414] border border-green-500/20 rounded-xl p-3 space-y-2.5">
+            <div className="bg-[#141414] border border-white/10 rounded-xl p-3 space-y-2.5">
               <div className="flex items-center justify-between">
-                <div className="text-[10px] text-green-400 font-bold">
-                  💰 Loyalty Points
+                <div className="text-[10px] text-white/80 font-bold uppercase tracking-[0.15em]">
+                  Loyalty Points
                 </div>
-                <div className="text-[10px] text-white/60">
+                <div className="text-[10px] text-white/40">
                   {selectedCustomer.loyalty_points.toLocaleString()} available
                 </div>
               </div>
 
               {loyaltyPointsToRedeem > 0 ? (
                 <div className="space-y-2.5">
-                  <div className="flex items-center justify-between bg-green-500/10 rounded-lg p-2">
-                    <div className="text-white/60 text-[10px]">
+                  <div className="flex items-center justify-between bg-white/5 rounded-lg p-2 border border-white/10">
+                    <div className="text-white/50 text-[10px]">
                       Using {loyaltyPointsToRedeem.toLocaleString()} points
                     </div>
-                    <div className="text-green-400 text-sm font-black">
+                    <div className="text-white font-black text-sm">
                       -${loyaltyDiscountAmount.toFixed(2)}
                     </div>
                   </div>
@@ -488,20 +488,23 @@ export function POSCart({
                     step={Math.max(10, loyaltyProgram.min_redemption_points || 10)}
                     value={loyaltyPointsToRedeem}
                     onChange={(e) => setLoyaltyPointsToRedeem(parseInt(e.target.value))}
-                    className="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer slider-green"
+                    className="w-full h-2 bg-white/10 rounded-full appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, rgba(255,255,255,0.3) ${(loyaltyPointsToRedeem / maxRedeemablePoints) * 100}%, rgba(255,255,255,0.1) ${(loyaltyPointsToRedeem / maxRedeemablePoints) * 100}%)`
+                    }}
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={() => setLoyaltyPointsToRedeem(0)}
-                      className="flex-1 py-2 bg-white/5 border border-white/10 text-white/60 rounded-lg text-[10px] font-bold hover:bg-white/10 transition-all"
+                      className="flex-1 py-2 bg-white/5 border border-white/10 text-white/50 rounded-lg text-[10px] font-bold hover:bg-white/10 hover:text-white/70 transition-all"
                     >
                       Clear
                     </button>
                     <button
                       onClick={() => setLoyaltyPointsToRedeem(maxRedeemablePoints)}
-                      className="flex-1 py-2 bg-green-500/20 border border-green-500/30 text-green-400 rounded-lg text-[10px] font-bold hover:bg-green-500/30 transition-all"
+                      className="flex-1 py-2 bg-white/10 border border-white/20 text-white/80 rounded-lg text-[10px] font-bold hover:bg-white/20 hover:text-white transition-all"
                     >
-                      Max ({maxLoyaltyValue.toFixed(2)})
+                      Max (${maxLoyaltyValue.toFixed(2)})
                     </button>
                   </div>
                 </div>
@@ -509,7 +512,7 @@ export function POSCart({
                 <button
                   onClick={() => setLoyaltyPointsToRedeem(Math.min(loyaltyProgram.min_redemption_points || 100, maxRedeemablePoints))}
                   disabled={maxRedeemablePoints < (loyaltyProgram.min_redemption_points || 100)}
-                  className="w-full py-2.5 bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg text-[10px] font-bold hover:bg-green-500/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="w-full py-2.5 bg-white/5 border border-white/10 text-white/60 rounded-lg text-[10px] font-bold hover:bg-white/10 hover:text-white/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   {maxRedeemablePoints < (loyaltyProgram.min_redemption_points || 100)
                     ? `Need ${loyaltyProgram.min_redemption_points} pts minimum`
@@ -520,7 +523,7 @@ export function POSCart({
           )}
 
           {loyaltyPointsToRedeem > 0 && (
-            <div className="flex justify-between text-green-400 text-[10px] uppercase tracking-[0.15em] font-bold">
+            <div className="flex justify-between text-white/80 text-[10px] uppercase tracking-[0.15em] font-bold">
               <span>Loyalty Discount</span>
               <span>-${loyaltyDiscountAmount.toFixed(2)}</span>
             </div>
