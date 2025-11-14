@@ -278,13 +278,10 @@ export function POSRegisterSelector({
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1
-            className="text-3xl font-black text-white uppercase tracking-tight mb-2"
-            style={{ fontWeight: 900 }}
-          >
+          <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">
             Select Register
           </h1>
-          <p className="text-white/60 text-sm uppercase tracking-[0.15em]">{locationName}</p>
+          <p className="text-white/60 text-sm uppercase tracking-[0.15em] font-medium">{locationName}</p>
         </div>
 
         {/* Register Grid */}
@@ -301,7 +298,7 @@ export function POSRegisterSelector({
               <button
                 key={register.id}
                 onClick={() => handleSelectRegister(register)}
-                className="bg-white/5 border-2 border-white/10 rounded-2xl p-6 hover:border-white/30 hover:bg-white/10 transition-all duration-300 text-left relative group"
+                className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-white/20 hover:bg-white/10 transition-all duration-300 text-left relative group"
               >
                 {/* Icon */}
                 <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:bg-white/10 transition-all">
@@ -310,10 +307,7 @@ export function POSRegisterSelector({
 
                 {/* Info */}
                 <div className="mb-4">
-                  <div
-                    className="text-white font-black text-lg uppercase tracking-tight mb-1"
-                    style={{ fontWeight: 900 }}
-                  >
+                  <div className="text-white font-semibold text-lg tracking-tight mb-1">
                     {register.register_name}
                   </div>
                   <div className="text-white/40 text-xs uppercase tracking-[0.15em]">
@@ -379,8 +373,7 @@ export function POSRegisterSelector({
             <button
               onClick={handleForceEndAllSessions}
               disabled={closingAll}
-              className="px-6 py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/20 hover:border-red-500/50 transition-all text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ fontWeight: 900 }}
+              className="px-6 py-3 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/20 hover:border-red-500/50 transition-all text-[10px] font-semibold uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {closingAll ? "Closing All Sessions..." : "⚠️ Force End All Sessions"}
             </button>
