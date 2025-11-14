@@ -281,7 +281,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
 
       <div className="fixed inset-0 bg-black">
         {/* Backdrop overlay - closes secondary panel when clicked */}
-        {activeSection && !pathname?.includes("/tv-menus") && (
+        {activeSection && (
           <div
             className="fixed inset-0 bg-black/50 z-[90] transition-opacity duration-300"
             onClick={(e) => {
@@ -293,8 +293,7 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         )}
 
         {/* TIER 1: Fixed 60px Icon Bar - NEVER EXPANDS */}
-        {!pathname?.includes("/tv-menus") && (
-          <aside
+        <aside
             suppressHydrationWarning
             className="flex flex-col border-r border-white/[0.06] fixed left-0 top-0 bottom-0 w-[60px] bg-[#0a0a0a] z-[100]"
             style={{
@@ -381,10 +380,9 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
               </button>
             </div>
           </aside>
-        )}
 
         {/* TIER 2: Secondary Expandable Panel - Shows sub-pages for active section */}
-        {!pathname?.includes("/tv-menus") && activeSection && (
+        {activeSection && (
           <aside
             suppressHydrationWarning
             className="flex flex-col border-r border-white/[0.06] fixed left-[60px] top-0 bottom-0 w-[200px] bg-[#0a0a0a] z-[95] transition-all duration-300 ease-out"
@@ -446,9 +444,9 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         {/* Main Content - Always offset by sidebar (60px) */}
         <main
           suppressHydrationWarning
-          className={`absolute ${!pathname?.includes("/tv-menus") ? "left-[60px]" : "left-0"} right-0 top-0 bottom-0 overflow-y-auto overflow-x-hidden relative z-10`}
+          className="absolute left-[60px] right-0 top-0 bottom-0 overflow-y-auto overflow-x-hidden relative z-10"
           style={{
-            paddingTop: !pathname?.includes("/tv-menus") ? "env(safe-area-inset-top, 0px)" : undefined,
+            paddingTop: "env(safe-area-inset-top, 0px)",
             pointerEvents: 'auto',
           }}
         >
