@@ -125,7 +125,7 @@ export const navSections: NavSection[] = [
         isCore: true,
       },
       {
-        href: "/pos/register",
+        href: "/vendor/pos/register",
         icon: CreditCard,
         label: "Point of Sale",
         description: "In-store register",

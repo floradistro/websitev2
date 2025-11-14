@@ -8,12 +8,9 @@ import {
   DollarSign,
   Clock,
   X,
-  Home,
-  ChevronRight,
   ArrowLeft,
 } from "lucide-react";
-import Link from "next/link";
-import { CloseCashDrawerModal } from "@/app/pos/register/components/CloseCashDrawerModal";
+import { CloseCashDrawerModal } from "@/app/vendor/pos/register/components/CloseCashDrawerModal";
 
 import { logger } from "@/lib/logger";
 interface Register {
@@ -244,24 +241,9 @@ export function POSRegisterSelector({
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
       <div className="max-w-2xl w-full">
-        {/* Breadcrumbs and Back Button */}
-        <div className="mb-6 flex items-center justify-between">
-          <nav className="flex items-center gap-2 text-sm">
-            <Link
-              href="/vendor/apps"
-              className="flex items-center gap-1 text-white/40 hover:text-white/80 transition-colors uppercase tracking-[0.15em]"
-            >
-              <Home size={16} />
-              <span>Dashboard</span>
-            </Link>
-            <ChevronRight size={16} className="text-white/20" />
-            <span className="text-white/60 uppercase tracking-[0.15em]">POS</span>
-            <ChevronRight size={16} className="text-white/20" />
-            <span className="text-white uppercase tracking-[0.15em]">Select Register</span>
-          </nav>
-
-          {/* Back to Location Selector Button */}
-          {onBackToLocationSelector && (
+        {/* Back to Location Selector Button */}
+        {onBackToLocationSelector && (
+          <div className="mb-6 flex justify-end">
             <button
               onClick={() => {
                 // Clear localStorage so location selector shows
@@ -273,8 +255,8 @@ export function POSRegisterSelector({
               <ArrowLeft size={14} />
               <span>Change Location</span>
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Header */}
         <div className="text-center mb-8">

@@ -214,7 +214,7 @@ export default function POSReceivingPage() {
             Please select a location from the POS register to access receiving.
           </p>
           <button
-            onClick={() => router.push("/pos/register")}
+            onClick={() => router.push("/vendor/pos/register")}
             className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-light transition-colors"
           >
             Go to Register
@@ -398,7 +398,7 @@ export default function POSReceivingPage() {
       {/* Header */}
       <div className="bg-white/5 border-b border-white/5 p-4">
         <button
-          onClick={() => router.push("/pos/register")}
+          onClick={() => router.push("/vendor/pos/register")}
           className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-3"
         >
           <ArrowLeft size={16} />

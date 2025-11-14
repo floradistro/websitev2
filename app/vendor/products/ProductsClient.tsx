@@ -80,7 +80,7 @@ export default function ProductsClient() {
       role="main"
       aria-label="Product management"
     >
-      <div className="mx-auto">
+      <div className="w-full mx-auto">
         {/* Header */}
         <ProductsHeader totalProducts={total} isLoading={isLoading} />
 
