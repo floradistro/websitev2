@@ -360,6 +360,10 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                 ? (sidebarExpanded ? 'w-[240px]' : 'w-[60px]')
                 : 'w-[60px] hover:w-[240px]'
             }`}
+            style={{
+              paddingTop: "env(safe-area-inset-top, 0px)",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
+            }}
           >
             {/* Logo/Brand at top - Centered when collapsed, left-aligned when expanded */}
             <Link
@@ -482,24 +486,22 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
                         }
                       }}
                       title={section.label}
-                      className={`w-full flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 border overflow-hidden ${
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 border overflow-hidden ${
                         hasActiveItem
                           ? "bg-white/[0.04] text-white border-white/[0.08]"
                           : "text-white/40 hover:text-white border-transparent hover:bg-white/[0.04]"
                       } ${
                         isTouchDevice
-                          ? (sidebarExpanded ? 'justify-between' : 'justify-center')
-                          : 'justify-center group-hover:justify-between'
+                          ? (sidebarExpanded ? 'justify-start' : 'justify-center')
+                          : 'justify-center group-hover:justify-start'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <SectionIcon size={18} strokeWidth={hasActiveItem ? 2 : 1.5} className="flex-shrink-0" />
-                        <span className={`text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}>
-                          {section.label}
-                        </span>
-                      </div>
+                      <SectionIcon size={18} strokeWidth={hasActiveItem ? 2 : 1.5} className="flex-shrink-0" />
+                      <span className={`text-[10px] uppercase tracking-[0.15em] font-medium whitespace-nowrap ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}>
+                        {section.label}
+                      </span>
                       <svg
-                        className={`w-3 h-3 transition-all duration-200 flex-shrink-0 ${isExpanded ? "rotate-180" : ""} ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'}`}
+                        className={`w-3 h-3 transition-all duration-200 flex-shrink-0 ml-auto ${isExpanded ? "rotate-180" : ""} ${isTouchDevice ? (sidebarExpanded ? 'opacity-100' : 'opacity-0') : 'opacity-0 group-hover:opacity-100'}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -596,6 +598,9 @@ function VendorLayoutContent({ children }: { children: React.ReactNode }) {
         <main
           suppressHydrationWarning
           className={`absolute inset-0 overflow-y-auto overflow-x-hidden ${!pathname?.includes("/tv-menus") ? "left-[60px]" : ""}`}
+          style={{
+            paddingTop: !pathname?.includes("/tv-menus") ? "env(safe-area-inset-top, 0px)" : undefined,
+          }}
         >
           <div
             className={
