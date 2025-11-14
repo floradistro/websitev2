@@ -1,74 +1,45 @@
 /**
- * iOS PWA Viewport Fix - TRUE EDGE-TO-EDGE FULLSCREEN
+ * iOS PWA Viewport Fix - ULTRA SIMPLE APPROACH
  *
- * Problem: Huge gap under app, not using full screen height
- * Solution: Use 100dvh for FULL height + padding (with box-sizing) for safe areas
+ * Problem: Black gap at bottom, trying to be too clever with padding
+ * Solution: Make everything 100vh, NO PADDING. Let children handle safe areas.
  *
- * Key Requirements:
- * - Edge-to-edge fullscreen (no gaps anywhere)
- * - Content rendered behind status bar (with padding to keep it readable)
- * - Natural scrolling behavior
- * - box-sizing: border-box ensures padding doesn't add to height
+ * Key insight: The gap is because we're overthinking it.
+ * Just make everything full height and let content scroll.
  */
 
-/* UNIVERSAL: Apply to all PWA installations */
+/* Apply to PWA mode only */
 @media (display-mode: standalone), (display-mode: fullscreen) {
   html {
-    /* Lock to FULL viewport - edge to edge */
-    height: 100%;
+    height: 100vh;
     height: 100dvh;
-    width: 100%;
-    width: 100vw;
-    overflow: hidden;
     margin: 0;
     padding: 0;
+    overflow: hidden;
   }
 
   body {
-    /* FULL viewport - renders completely edge to edge */
-    height: 100%;
+    height: 100vh;
     height: 100dvh;
-    width: 100%;
-    width: 100vw;
     margin: 0;
     padding: 0;
-
-    /* Prevent rubber band scrolling on body */
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
     overflow: hidden;
-
-    /* Lock body in place */
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    overscroll-behavior: none;
   }
 
-  /* App container gets the safe area handling */
+  /* Main app container - NO PADDING, just full height */
   #__next {
-    /* FULL viewport height - fills entire screen edge to edge */
-    height: 100%;
+    height: 100vh;
     height: 100dvh;
     width: 100%;
-
-    /* ONLY top padding for status bar - no bottom padding to avoid gap */
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-    /* NO padding-bottom - let content go to bottom edge */
-
-    /* box-sizing ensures padding doesn't add to height */
-    box-sizing: border-box;
-
-    /* Allow scrolling within the app */
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+  }
 
-    /* Ensure proper positioning */
-    position: relative;
+  /* Add safe area spacing to first child instead */
+  #__next > * {
+    padding-top: env(safe-area-inset-top, 0px);
   }
 
   /* Prevent zoom on input focus */
@@ -79,65 +50,40 @@
   }
 }
 
-/* ALSO apply in regular browser mode for iOS (as fallback) */
+/* Also apply for iOS detection fallback */
 @supports (-webkit-touch-callout: none) {
   html {
-    /* Lock to FULL viewport - edge to edge */
-    height: 100%;
+    height: 100vh;
     height: 100dvh;
-    width: 100%;
-    width: 100vw;
-    overflow: hidden;
     margin: 0;
     padding: 0;
+    overflow: hidden;
   }
 
   body {
-    /* FULL viewport - renders completely edge to edge */
-    height: 100%;
+    height: 100vh;
     height: 100dvh;
-    width: 100%;
-    width: 100vw;
     margin: 0;
     padding: 0;
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
     overflow: hidden;
-
-    /* Lock body in place */
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    overscroll-behavior: none;
   }
 
   #__next {
-    /* FULL viewport height - fills entire screen edge to edge */
-    height: 100%;
+    height: 100vh;
     height: 100dvh;
     width: 100%;
-
-    /* ONLY top padding for status bar - no bottom padding to avoid gap */
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-    /* NO padding-bottom - let content go to bottom edge */
-
-    /* box-sizing ensures padding doesn't add to height */
-    box-sizing: border-box;
-
-    /* Allow scrolling within the app */
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+  }
 
-    /* Ensure proper positioning */
-    position: relative;
+  #__next > * {
+    padding-top: env(safe-area-inset-top, 0px);
   }
 }
 
-/* Debug mode - add to body tag to visualize safe areas */
+/* Debug mode */
 body.debug-safe-areas {
   position: relative;
 }
