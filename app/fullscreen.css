@@ -1,6 +1,31 @@
 /**
- * Fullscreen Mode - DISABLED
+ * iOS Safari Dynamic Viewport Fix
  *
- * This file is intentionally empty.
- * Fullscreen CSS was breaking the app layout.
+ * Safari's address bar appears/disappears causing layout shifts.
+ * Use 100dvh which automatically adjusts for the visible viewport.
+ *
+ * Apply ONLY on iOS Safari (detected via -webkit-touch-callout support)
  */
+
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari detected */
+  html {
+    min-height: 100dvh;
+    height: 100dvh;
+  }
+
+  body {
+    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Main app container fills dynamic viewport */
+  body > div:first-child {
+    min-height: 100dvh;
+    height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+}
