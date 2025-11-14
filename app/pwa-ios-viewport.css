@@ -37,6 +37,9 @@
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+
+    /* DEBUG: Add background to see if #__next is filling space */
+    background: linear-gradient(to bottom, red 0%, red 50px, transparent 50px);
   }
 
   /* Add safe area spacing to first child instead */
