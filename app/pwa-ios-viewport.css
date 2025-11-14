@@ -53,11 +53,11 @@
     height: 100dvh;
     width: 100%;
 
-    /* Padding keeps content readable but fills screen */
+    /* ONLY top padding for status bar - no bottom padding to avoid gap */
     padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
+    /* NO padding-bottom - let content go to bottom edge */
 
     /* box-sizing ensures padding doesn't add to height */
     box-sizing: border-box;
@@ -118,11 +118,11 @@
     height: 100dvh;
     width: 100%;
 
-    /* Padding keeps content readable but fills screen */
+    /* ONLY top padding for status bar - no bottom padding to avoid gap */
     padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
+    /* NO padding-bottom - let content go to bottom edge */
 
     /* box-sizing ensures padding doesn't add to height */
     box-sizing: border-box;
