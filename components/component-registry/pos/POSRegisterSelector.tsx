@@ -9,9 +9,11 @@ import {
   Clock,
   X,
   ArrowLeft,
+  CreditCard,
 } from "lucide-react";
 import { CloseCashDrawerModal } from "@/app/vendor/pos/register/components/CloseCashDrawerModal";
-import { POSBreadcrumb } from "./POSBreadcrumb";
+import { useAppAuth } from "@/context/AppAuthContext";
+import Image from "next/image";
 
 import { logger } from "@/lib/logger";
 interface Register {
@@ -58,6 +60,7 @@ export function POSRegisterSelector({
   onRegisterSelected,
   onBackToLocationSelector,
 }: POSRegisterSelectorProps) {
+  const { vendor } = useAppAuth();
   const [registers, setRegisters] = useState<Register[]>([]);
   const [loading, setLoading] = useState(true);
   const [closingAll, setClosingAll] = useState(false);
@@ -69,18 +72,28 @@ export function POSRegisterSelector({
     totalCash: number;
     openingCash: number;
   } | null>(null);
+  
+  // Real-time payment processor health status
+  const [processorHealth, setProcessorHealth] = useState<Map<string, boolean>>(new Map());
 
   useEffect(() => {
     // Initial load
     loadRegisters();
+    checkProcessorHealth();
 
-    // Aggressive polling every 2 seconds - fast enough to prevent duplicate sessions
-    const interval = setInterval(() => {
+    // Aggressive polling every 2 seconds for register/session updates
+    const registerInterval = setInterval(() => {
       loadRegisters();
     }, 2000);
 
+    // Health check every 5 seconds for terminal status (mission critical)
+    const healthInterval = setInterval(() => {
+      checkProcessorHealth();
+    }, 5000);
+
     return () => {
-      clearInterval(interval);
+      clearInterval(registerInterval);
+      clearInterval(healthInterval);
     };
   }, [locationId]);
 
@@ -103,6 +116,45 @@ export function POSRegisterSelector({
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Check real-time health of all payment processors
+   * This is MISSION CRITICAL - updates every 5 seconds
+   */
+  const checkProcessorHealth = async () => {
+    try {
+      const response = await fetch(
+        `/api/pos/payment-processors/health?locationId=${locationId}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const healthMap = new Map<string, boolean>();
+
+        data.results?.forEach((result: any) => {
+          healthMap.set(result.processor_id, result.is_live);
+        });
+
+        setProcessorHealth(healthMap);
+
+        // Log any terminals that went offline
+        data.results?.forEach((result: any) => {
+          if (!result.is_live && result.error) {
+            if (process.env.NODE_ENV === "development") {
+              logger.warn(`⚠️ Payment processor offline:`, {
+                processor: result.processor_id,
+                error: result.error,
+              });
+            }
+          }
+        });
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === "development") {
+        logger.error("Error checking processor health:", error);
+      }
     }
   };
 
@@ -259,13 +311,6 @@ export function POSRegisterSelector({
 
   return (
     <div className="h-full w-full bg-black text-white flex flex-col overflow-y-auto overflow-x-hidden">
-      <POSBreadcrumb
-        items={[
-          { label: "POS", href: "/vendor/pos/register" },
-          { label: locationName },
-          { label: "Select Register" },
-        ]}
-      />
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-5xl w-full">
           {/* Back to Location Selector Button */}
@@ -287,6 +332,20 @@ export function POSRegisterSelector({
 
           {/* Header */}
           <div className="text-center mb-8">
+            {/* Vendor Logo */}
+            {vendor?.logo_url && (
+              <div className="flex justify-center mb-6">
+                <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-white/5 border border-white/10">
+                  <Image
+                    src={vendor.logo_url}
+                    alt={vendor.name || "Vendor"}
+                    fill
+                    className="object-contain p-2"
+                    priority
+                  />
+                </div>
+              </div>
+            )}
             <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">
               Select Register
             </h1>
@@ -322,6 +381,69 @@ export function POSRegisterSelector({
                     {register.register_number}
                   </div>
                   <div className="text-white/60 text-xs mt-2">{register.device_name}</div>
+                  
+                  {/* Payment Terminal Status - Real-time */}
+                  <div className="mt-3 pt-3 border-t border-white/5">
+                    {register.payment_processor ? (
+                      (() => {
+                        // Check real-time health status
+                        const isLive = processorHealth.get(register.payment_processor.id);
+                        const hasHealthData = processorHealth.has(register.payment_processor.id);
+                        
+                        // Show real-time status if available, fallback to database status
+                        const terminalLive = hasHealthData ? isLive : register.payment_processor.is_active;
+                        
+                        if (terminalLive) {
+                          return (
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1.5 text-[10px] text-green-400">
+                                <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                                <CreditCard size={10} />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[10px] text-white/60 uppercase tracking-[0.15em]">
+                                  {register.payment_processor.processor_name}
+                                </span>
+                                <span className="text-[9px] text-green-400/80 uppercase tracking-[0.15em] flex items-center gap-1">
+                                  Live
+                                  {hasHealthData && (
+                                    <span className="text-[8px] text-green-400/60">●</span>
+                                  )}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1.5 text-[10px] text-red-400/60">
+                                <div className="w-1.5 h-1.5 bg-red-400/60 rounded-full"></div>
+                                <CreditCard size={10} />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-[10px] text-white/40 uppercase tracking-[0.15em]">
+                                  {register.payment_processor.processor_name}
+                                </span>
+                                <span className="text-[9px] text-red-400/60 uppercase tracking-[0.15em]">
+                                  Offline
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        }
+                      })()
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 text-[10px] text-white/30">
+                          <X size={10} />
+                          <CreditCard size={10} />
+                        </div>
+                        <span className="text-[10px] text-white/30 uppercase tracking-[0.15em]">
+                          No Terminal
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Status */}

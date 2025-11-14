@@ -6,7 +6,6 @@ import { POSCart, CartItem } from "@/components/component-registry/pos/POSCart";
 import { POSPayment, PaymentData } from "@/components/component-registry/pos/POSPayment";
 import { POSRegisterSelector } from "@/components/component-registry/pos/POSRegisterSelector";
 import { POSLocationSelector } from "@/components/component-registry/pos/POSLocationSelector";
-import { POSBreadcrumb } from "@/components/component-registry/pos/POSBreadcrumb";
 import { OpenCashDrawerModal } from "./components/OpenCashDrawerModal";
 import { useAppAuth } from "@/context/AppAuthContext";
 import { usePOSSession } from "@/context/POSSessionContext";
@@ -47,6 +46,7 @@ export default function POSRegisterPage() {
     Array<{ name: string; rate: number; type: string }>
   >([]);
   const [taxError, setTaxError] = useState<string | null>(null);
+  const [taxLoading, setTaxLoading] = useState(true);
 
   // Register management state
   const [selectedRegister, setSelectedRegister] = useState<{
@@ -67,10 +67,12 @@ export default function POSRegisterPage() {
     async function loadTaxRate() {
       if (!contextLocation?.id || !vendor?.id) {
         setTaxRate(null);
+        setTaxLoading(false);
         return;
       }
 
       setTaxError(null);
+      setTaxLoading(true);
 
       try {
         const response = await fetch(`/api/vendor/locations`, {
@@ -104,12 +106,14 @@ export default function POSRegisterPage() {
 
         setTaxRate(rate);
         setTaxBreakdown(taxes);
+        setTaxLoading(false);
       } catch (error: any) {
         if (process.env.NODE_ENV === "development") {
           logger.error("❌ TAX LOAD FAILED:", error.message);
         }
         setTaxError(error.message);
         setTaxRate(null);
+        setTaxLoading(false);
         alert(
           `TAX CONFIGURATION ERROR:\n\n${error.message}\n\nPOS cannot operate without tax configuration.`,
         );
@@ -180,28 +184,49 @@ export default function POSRegisterPage() {
   };
 
   const handleOpenDrawerSubmit = async (openingCash: number, notes: string) => {
+    console.log("🟡 handleOpenDrawerSubmit called", { 
+      openingCash, 
+      notes,
+      selectedRegister,
+      contextLocation,
+      contextRegisterId 
+    });
+    
     // Prevent concurrent requests
-    if (processing) return;
+    if (processing) {
+      console.log("⚠️ Already processing, skipping");
+      return;
+    }
 
-    if (!contextRegisterId || !contextLocation || !selectedRegister) {
+    if (!selectedRegister || !contextLocation) {
+      console.error("❌ Missing required data:", { selectedRegister, contextLocation });
       alert("Missing register or location information");
       return;
     }
 
     try {
       setProcessing(true);
+      console.log("🟡 Starting session with:", {
+        registerId: selectedRegister.id,
+        locationId: contextLocation.id,
+        locationName: contextLocation.name,
+        registerName: selectedRegister.name,
+        openingCash
+      });
 
       // Use session context to start session
       await startSession(
-        contextRegisterId,
+        selectedRegister.id, // Use selectedRegister.id instead of contextRegisterId
         contextLocation.id,
         contextLocation.name,
         selectedRegister.name,
         openingCash
       );
 
+      console.log("✅ Session started successfully");
       setShowOpenDrawerModal(false);
     } catch (error) {
+      console.error("❌ Error starting session:", error);
       if (process.env.NODE_ENV === "development") {
         logger.error("Error starting session:", error);
       }
@@ -464,6 +489,10 @@ export default function POSRegisterPage() {
 
     try {
       // Validation
+      if (taxLoading) {
+        throw new Error("Tax configuration is still loading. Please wait a moment.");
+      }
+
       if (taxRate === null) {
         throw new Error("Tax configuration not loaded. Please refresh the page.");
       }
@@ -522,6 +551,15 @@ export default function POSRegisterPage() {
 
       // Close modal
       setShowPayment(false);
+
+      // SEAMLESS RESET - The Steve Jobs Way
+      // Automatically reset everything for next sale - invisible, instant, perfect
+      setTimeout(() => {
+        // Reset product grid (search, filters, scroll)
+        if ((window as any).__posResetFunction) {
+          (window as any).__posResetFunction();
+        }
+      }, 100); // Small delay ensures smooth transition
 
       // Show success message
       alert(
@@ -746,16 +784,6 @@ export default function POSRegisterPage() {
 
   return (
     <div className="fixed inset-0 left-[60px] flex flex-col bg-black">
-      {/* Breadcrumb Navigation with Session Info */}
-      <POSBreadcrumb
-        items={[
-          { label: "POS", href: "/vendor/pos/register" },
-          { label: contextLocation.name },
-          { label: "Register" },
-        ]}
-        showSessionInfo={true}
-      />
-
       {/* Main POS Interface */}
       <div className="flex flex-1 h-full w-full bg-black overflow-hidden">
         {/* Left: Product Selection */}
@@ -773,6 +801,7 @@ export default function POSRegisterPage() {
             onSkuInputChange={setSkuInput}
             onSkuSubmit={handleSkuSubmit}
             skuInputRef={skuInputRef}
+            onResetRequest={() => {}} // Enable reset functionality
           />
         </div>
 
@@ -788,7 +817,7 @@ export default function POSRegisterPage() {
             onCheckout={handleCheckout}
             taxRate={taxRate || 0}
             taxBreakdown={taxBreakdown}
-            taxError={taxError}
+            taxError={taxLoading ? null : taxError}
             isProcessing={processing}
           />
         </div>

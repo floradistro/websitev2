@@ -113,19 +113,6 @@ export function POSCustomerSelector({
     onCustomerSelect(null);
   };
 
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case "platinum":
-        return "text-purple-400";
-      case "gold":
-        return "text-yellow-400";
-      case "silver":
-        return "text-gray-400";
-      default:
-        return "text-orange-400";
-    }
-  };
-
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Selected Customer Display */}
@@ -143,13 +130,7 @@ export function POSCustomerSelector({
                 {selectedCustomer.first_name} {selectedCustomer.last_name}
               </div>
               <div className="flex items-center gap-2 mt-1">
-                <span
-                  className={`text-[10px] uppercase tracking-[0.15em] font-black ${getTierColor(selectedCustomer.loyalty_tier)}`}
-                >
-                  {selectedCustomer.loyalty_tier}
-                </span>
-                <span className="text-[10px] text-white/40">·</span>
-                <span className="text-[10px] text-white/60 uppercase tracking-[0.15em]">
+                <span className="text-[10px] text-green-400 uppercase tracking-[0.15em] font-bold">
                   {selectedCustomer.loyalty_points} pts
                 </span>
               </div>
@@ -229,16 +210,9 @@ export function POSCustomerSelector({
                     >
                       {customer.first_name} {customer.last_name}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-400 font-black text-xs">
-                        {customer.loyalty_points.toLocaleString()}
-                      </span>
-                      <span
-                        className={`text-[9px] uppercase tracking-[0.15em] font-black ${getTierColor(customer.loyalty_tier)}`}
-                      >
-                        {customer.loyalty_tier}
-                      </span>
-                    </div>
+                    <span className="text-green-400 font-black text-xs">
+                      {customer.loyalty_points.toLocaleString()} pts
+                    </span>
                   </div>
                   <div className="text-[10px] text-white/40 uppercase tracking-[0.15em]">
                     {customer.phone || customer.email}

@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Package, ArrowLeft, CheckCircle, AlertCircle, Search, Scan } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { usePOSSession } from "@/context/POSSessionContext";
-import { POSBreadcrumb } from "@/components/component-registry/pos/POSBreadcrumb";
 
 import { logger } from "@/lib/logger";
 interface PurchaseOrder {
@@ -192,13 +191,6 @@ export default function POSReceivingPage() {
   if (!session || !location) {
     return (
       <div className="fixed inset-0 left-[60px] bg-black text-white flex flex-col overflow-hidden">
-        <POSBreadcrumb 
-          items={[
-            { label: "POS", href: "/vendor/pos/receiving" }, 
-            { label: "Receiving" }
-          ]} 
-          showSessionInfo={false}
-        />
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="text-center max-w-md">
             <Package size={64} className="mx-auto mb-6 text-white/20" />
@@ -223,17 +215,6 @@ export default function POSReceivingPage() {
   if (selectedPO) {
     return (
       <div className="fixed inset-0 left-[60px] bg-black text-white flex flex-col overflow-hidden">
-        {/* Breadcrumb Navigation */}
-        <POSBreadcrumb
-          items={[
-            { label: "POS", href: "/vendor/pos/receiving" },
-            { label: location.name },
-            { label: "Receiving", href: "/vendor/pos/receiving" },
-            { label: selectedPO.po_number },
-          ]}
-          showSessionInfo={true}
-        />
-
         {/* Header */}
         <div className="bg-white/5 border-b border-white/5 p-4">
           <button
@@ -401,16 +382,6 @@ export default function POSReceivingPage() {
   // PO List View
   return (
     <div className="fixed inset-0 left-[60px] bg-black text-white flex flex-col overflow-hidden">
-      {/* Breadcrumb Navigation */}
-      <POSBreadcrumb
-        items={[
-          { label: "POS", href: "/vendor/pos/receiving" },
-          { label: location.name },
-          { label: "Receiving" },
-        ]}
-        showSessionInfo={true}
-      />
-
       {/* Header */}
       <div className="bg-white/5 border-b border-white/5 p-4">
         <button

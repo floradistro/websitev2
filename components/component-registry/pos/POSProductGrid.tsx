@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import Image from "next/image";
-import { ShoppingBag, Eye, Package, ArrowDownAZ, PackageCheck } from "lucide-react";
+import { ShoppingBag, Eye, Package, ArrowDownAZ, PackageCheck, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import { POSQuickView } from "./POSQuickView";
 import { useAppAuth } from "@/context/AppAuthContext";
@@ -59,6 +59,7 @@ interface POSProductGridProps {
   onSkuInputChange?: (value: string) => void;
   onSkuSubmit?: (e: React.FormEvent) => void;
   skuInputRef?: React.RefObject<HTMLInputElement | null>;
+  onResetRequest?: () => void; // Callback when reset is triggered
 }
 
 // Category hierarchy - subcategories grouped under parent categories
@@ -81,6 +82,7 @@ export function POSProductGrid({
   onSkuInputChange,
   onSkuSubmit,
   skuInputRef,
+  onResetRequest,
 }: POSProductGridProps) {
   const { vendor } = useAppAuth();
   const [products, setProducts] = useState<Product[]>([]);
@@ -89,9 +91,9 @@ export function POSProductGrid({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const [selectedStrainType, setSelectedStrainType] = useState<string | null>(null);
-  const [selectedConsistency, setSelectedConsistency] = useState<string | null>(null);
-  const [selectedFlavor, setSelectedFlavor] = useState<string | null>(null);
+  const [selectedStrainTypes, setSelectedStrainTypes] = useState<string[]>([]);
+  const [selectedConsistencies, setSelectedConsistencies] = useState<string[]>([]);
+  const [selectedFlavors, setSelectedFlavors] = useState<string[]>([]);
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   // Alphabetical scroll indicator
@@ -100,11 +102,71 @@ export function POSProductGrid({
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const productRefsMap = useRef<Map<string, HTMLDivElement>>(new Map());
+  
+  // Filter dropdown state
+  const [showFilters, setShowFilters] = useState(false);
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  // Seamless POS Reset - Steve Jobs Style: Invisible, Automatic, Perfect
+  const resetPOSState = useCallback(() => {
+    // Clear all filters
+    setSelectedCategory("all");
+    setSelectedSubcategory(null);
+    setSelectedStrainTypes([]);
+    setSelectedConsistencies([]);
+    setSelectedFlavors([]);
+    
+    // Clear search
+    setSearchQuery("");
+    if (onSkuInputChange) {
+      onSkuInputChange("");
+    }
+    
+    // Reset sort
+    setSortAlphabetically(false);
+    
+    // Close filter dropdown
+    setShowFilters(false);
+    
+    // Scroll to top smoothly
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    // Focus search input for next sale
+    if (skuInputRef?.current) {
+      setTimeout(() => {
+        skuInputRef.current?.focus();
+      }, 100);
+    }
+  }, [onSkuInputChange, skuInputRef]);
+
+  // Expose reset function to parent via callback
+  useEffect(() => {
+    if (onResetRequest) {
+      (window as any).__posResetFunction = resetPOSState;
+    }
+    return () => {
+      delete (window as any).__posResetFunction;
+    };
+  }, [resetPOSState, onResetRequest]);
 
   // Load location inventory
   useEffect(() => {
     loadInventory();
   }, [locationId]);
+
+  // Close filter dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setShowFilters(false);
+      }
+    }
+    
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Clear product refs when switching sort modes
   useEffect(() => {
@@ -307,26 +369,26 @@ export function POSProductGrid({
         }
       }
 
-      // Strain type filter
-      if (selectedStrainType) {
+      // Strain type filter - multiple selection
+      if (selectedStrainTypes.length > 0) {
         const strainType = product.fields?.find((f) => f.label === "strain_type")?.value;
-        if (strainType !== selectedStrainType) {
+        if (!strainType || !selectedStrainTypes.includes(strainType)) {
           return false;
         }
       }
 
-      // Consistency filter
-      if (selectedConsistency) {
+      // Consistency filter - multiple selection
+      if (selectedConsistencies.length > 0) {
         const consistency = product.fields?.find((f) => f.label === "consistency")?.value;
-        if (consistency !== selectedConsistency) {
+        if (!consistency || !selectedConsistencies.includes(consistency)) {
           return false;
         }
       }
 
-      // Flavor filter
-      if (selectedFlavor) {
+      // Flavor filter - multiple selection
+      if (selectedFlavors.length > 0) {
         const flavor = product.fields?.find((f) => f.label === "flavor")?.value;
-        if (flavor !== selectedFlavor) {
+        if (!flavor || !selectedFlavors.includes(flavor)) {
           return false;
         }
       }
@@ -338,9 +400,9 @@ export function POSProductGrid({
     searchQuery,
     selectedCategory,
     selectedSubcategory,
-    selectedStrainType,
-    selectedConsistency,
-    selectedFlavor,
+    selectedStrainTypes,
+    selectedConsistencies,
+    selectedFlavors,
   ]);
 
   // Group products by first letter for alphabetical indicator
@@ -487,12 +549,248 @@ export function POSProductGrid({
     );
   }
 
+  // Count active filters
+  const activeFilterCount = [
+    selectedCategory !== "all",
+    selectedSubcategory,
+    selectedStrainTypes.length > 0,
+    selectedConsistencies.length > 0,
+    selectedFlavors.length > 0
+  ].filter(Boolean).length;
+
   return (
     <div className="h-full flex flex-col bg-black">
-      {/* Search & Filters - Fixed at top */}
+      {/* Search & Filters - Fixed at top - Steve Jobs Minimalist Design */}
       <div className="flex-shrink-0 p-4 border-b border-white/5 relative z-20">
         <div className="flex gap-2">
-          {/* Search Bar - filters as you type, Enter/double-click/button to lookup SKU */}
+          {/* Filters Button - Steve Jobs Design: Clean, Minimal, Perfect */}
+          <div className="relative" ref={filterRef}>
+            {activeFilterCount > 0 ? (
+              /* Active State: Split Button with Clear Action */
+              <div className="flex items-center border border-white/[0.15] rounded-2xl overflow-hidden bg-white/[0.1]">
+                {/* Left: Filter Count & Icon */}
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center gap-2 px-4 py-2.5 text-white/80 hover:text-white transition-colors"
+                >
+                  <SlidersHorizontal size={14} strokeWidth={1.5} />
+                  <span className="text-[10px] uppercase tracking-[0.15em] font-light">{activeFilterCount}</span>
+                </button>
+                
+                {/* Divider */}
+                <div className="w-px h-6 bg-white/[0.15]"></div>
+                
+                {/* Right: Clear X */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedCategory("all");
+                    setSelectedSubcategory(null);
+                    setSelectedStrainTypes([]);
+                    setSelectedConsistencies([]);
+                    setSelectedFlavors([]);
+                    setShowFilters(false);
+                  }}
+                  className="flex items-center justify-center w-10 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
+                >
+                  <X size={14} strokeWidth={1.5} />
+                </button>
+              </div>
+            ) : (
+              /* Default State: Simple Filter Button */
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-white/[0.06] bg-white/[0.02] text-white/60 hover:bg-white/[0.04] hover:text-white/80 transition-all text-[10px] uppercase tracking-[0.15em] font-light"
+              >
+                <SlidersHorizontal size={14} strokeWidth={1.5} />
+                Filters
+              </button>
+            )}
+
+            {/* Filters Dropdown Menu - Elegant & Organized */}
+            {showFilters && (
+              <div className="absolute top-full left-0 mt-2 w-80 bg-black border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
+                {/* Header */}
+                <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-[0.15em] text-white/80 font-light">Filters</span>
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={() => {
+                        setSelectedCategory("all");
+                        setSelectedSubcategory(null);
+                        setSelectedStrainTypes([]);
+                        setSelectedConsistencies([]);
+                        setSelectedFlavors([]);
+                      }}
+                      className="text-[9px] uppercase tracking-[0.15em] text-white/40 hover:text-white/80 transition-colors"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Sections - Scrollable */}
+                <div className="max-h-[480px] overflow-y-auto">
+                  {/* Category */}
+                  <div className="p-4 border-b border-white/5">
+                    <div className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-2 font-light">Category</div>
+                    <div className="space-y-1">
+                      {categories.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            setSelectedCategory(cat);
+                            setSelectedSubcategory(null);
+                            setSelectedStrainTypes([]);
+                            setSelectedConsistencies([]);
+                            setSelectedFlavors([]);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-[10px] transition-all ${
+                            selectedCategory === cat
+                              ? "bg-white/10 text-white"
+                              : "text-white/60 hover:bg-white/5 hover:text-white/80"
+                          }`}
+                        >
+                          {cat === "all" ? "All Categories" : cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Subcategories - Only if available */}
+                  {availableSubcategories.length > 0 && (
+                    <div className="p-4 border-b border-white/5">
+                      <div className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-2 font-light">Type</div>
+                      <div className="space-y-1">
+                        {availableSubcategories.map((subcat) => (
+                          <button
+                            key={subcat}
+                            onClick={() => {
+                              setSelectedSubcategory(subcat === selectedSubcategory ? null : subcat);
+                              if (subcat !== selectedSubcategory) {
+                                setSelectedFlavors([]);
+                              }
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-xl text-[10px] transition-all ${
+                              selectedSubcategory === subcat
+                                ? "bg-white/10 text-white"
+                                : "text-white/60 hover:bg-white/5 hover:text-white/80"
+                            }`}
+                          >
+                            {subcat}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Strain Types - Only if available - Multiple selection */}
+                  {availableStrainTypes.length > 0 && (
+                    <div className="p-4 border-b border-white/5">
+                      <div className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-2 font-light">Strain</div>
+                      <div className="space-y-1">
+                        {availableStrainTypes.map((strain) => {
+                          const isSelected = selectedStrainTypes.includes(strain);
+                          return (
+                            <button
+                              key={strain}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedStrainTypes(selectedStrainTypes.filter(s => s !== strain));
+                                } else {
+                                  setSelectedStrainTypes([...selectedStrainTypes, strain]);
+                                }
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-xl text-[10px] transition-all flex items-center justify-between ${
+                                isSelected
+                                  ? "bg-white/10 text-white"
+                                  : "text-white/60 hover:bg-white/5 hover:text-white/80"
+                              }`}
+                            >
+                              <span>{strain}</span>
+                              {isSelected && (
+                                <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Consistencies - Only if available - Multiple selection */}
+                  {availableConsistencies.length > 0 && (
+                    <div className="p-4 border-b border-white/5">
+                      <div className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-2 font-light">Consistency</div>
+                      <div className="space-y-1">
+                        {availableConsistencies.map((consistency) => {
+                          const isSelected = selectedConsistencies.includes(consistency);
+                          return (
+                            <button
+                              key={consistency}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedConsistencies(selectedConsistencies.filter(c => c !== consistency));
+                                } else {
+                                  setSelectedConsistencies([...selectedConsistencies, consistency]);
+                                }
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-xl text-[10px] transition-all flex items-center justify-between ${
+                                isSelected
+                                  ? "bg-white/10 text-white"
+                                  : "text-white/60 hover:bg-white/5 hover:text-white/80"
+                              }`}
+                            >
+                              <span>{consistency}</span>
+                              {isSelected && (
+                                <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Flavors - Only if available - Multiple selection */}
+                  {availableFlavors.length > 0 && (
+                    <div className="p-4">
+                      <div className="text-[9px] uppercase tracking-[0.15em] text-white/40 mb-2 font-light">Flavor</div>
+                      <div className="space-y-1">
+                        {availableFlavors.map((flavor) => {
+                          const isSelected = selectedFlavors.includes(flavor);
+                          return (
+                            <button
+                              key={flavor}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedFlavors(selectedFlavors.filter(f => f !== flavor));
+                                } else {
+                                  setSelectedFlavors([...selectedFlavors, flavor]);
+                                }
+                              }}
+                              className={`w-full text-left px-3 py-2 rounded-xl text-[10px] transition-all flex items-center justify-between ${
+                                isSelected
+                                  ? "bg-white/10 text-white"
+                                  : "text-white/60 hover:bg-white/5 hover:text-white/80"
+                              }`}
+                            >
+                              <span>{flavor}</span>
+                              {isSelected && (
+                                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Search Bar - Center, takes remaining space */}
           <div className="flex-1 relative flex gap-2">
             <div className="flex-1 relative">
               <input
@@ -534,48 +832,7 @@ export function POSProductGrid({
             )}
           </div>
 
-          {/* Category Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedCategory}
-              onChange={(e) => {
-                setSelectedCategory(e.target.value);
-                // Reset all filters when category changes
-                setSelectedSubcategory(null);
-                setSelectedStrainType(null);
-                setSelectedConsistency(null);
-                setSelectedFlavor(null);
-              }}
-              className="bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all min-w-[140px] cursor-pointer appearance-none pr-8"
-              style={{
-                colorScheme: "dark",
-              }}
-            >
-              {categories.map((cat) => (
-                <option
-                  key={cat}
-                  value={cat || "all"}
-                  style={{ backgroundColor: "#000", color: "#fff" }}
-                >
-                  {cat === "all" ? "All Categories" : cat}
-                </option>
-              ))}
-            </select>
-            {/* Dropdown arrow */}
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg
-                className="w-3 h-3 text-white/60"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth={2.5}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Alphabetical Sort Toggle */}
+          {/* Alphabetical Sort Toggle - Right Side */}
           <button
             onClick={() => setSortAlphabetically(!sortAlphabetically)}
             className={`px-4 py-2.5 rounded-2xl text-[10px] uppercase tracking-[0.15em] transition-all font-light border flex items-center gap-2 ${
@@ -588,107 +845,6 @@ export function POSProductGrid({
             A-Z
           </button>
         </div>
-
-        {/* Dynamic Filter Pills - Single horizontal row, Apple-style */}
-        {(availableSubcategories.length > 0 ||
-          availableStrainTypes.length > 0 ||
-          availableConsistencies.length > 0 ||
-          availableFlavors.length > 0) && (
-          <div
-            className="flex items-center gap-2 pt-2 overflow-x-auto hide-scrollbar"
-            style={{
-              WebkitOverflowScrolling: "touch",
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-            }}
-          >
-            {/* All filters in one seamless row */}
-            {availableSubcategories.map((subcat) => (
-              <button
-                key={`subcat-${subcat}`}
-                onClick={() => {
-                  setSelectedSubcategory(subcat === selectedSubcategory ? null : subcat);
-                  if (subcat !== selectedSubcategory) {
-                    setSelectedFlavor(null);
-                  }
-                }}
-                className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
-                  selectedSubcategory === subcat
-                    ? "bg-white text-black shadow-lg"
-                    : "bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm"
-                }`}
-              >
-                {subcat}
-              </button>
-            ))}
-
-            {availableStrainTypes.map((strain) => (
-              <button
-                key={`strain-${strain}`}
-                onClick={() => setSelectedStrainType(strain === selectedStrainType ? null : strain)}
-                className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
-                  selectedStrainType === strain
-                    ? "bg-white text-black shadow-lg"
-                    : "bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm"
-                }`}
-              >
-                {strain}
-              </button>
-            ))}
-
-            {availableConsistencies.map((consistency) => (
-              <button
-                key={`consistency-${consistency}`}
-                onClick={() =>
-                  setSelectedConsistency(consistency === selectedConsistency ? null : consistency)
-                }
-                className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
-                  selectedConsistency === consistency
-                    ? "bg-white text-black shadow-lg"
-                    : "bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm"
-                }`}
-              >
-                {consistency}
-              </button>
-            ))}
-
-            {availableFlavors.map((flavor) => (
-              <button
-                key={`flavor-${flavor}`}
-                onClick={() => setSelectedFlavor(flavor === selectedFlavor ? null : flavor)}
-                className={`px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 ${
-                  selectedFlavor === flavor
-                    ? "bg-white text-black shadow-lg"
-                    : "bg-white/[0.08] text-white/80 hover:bg-white/[0.12] backdrop-blur-sm"
-                }`}
-              >
-                {flavor}
-              </button>
-            ))}
-
-            {/* Clear All - Only show if any filter is active */}
-            {(selectedSubcategory ||
-              selectedStrainType ||
-              selectedConsistency ||
-              selectedFlavor) && (
-              <>
-                {/* Subtle divider */}
-                <div className="w-px h-5 bg-white/10 flex-shrink-0 mx-1" />
-                <button
-                  onClick={() => {
-                    setSelectedSubcategory(null);
-                    setSelectedStrainType(null);
-                    setSelectedConsistency(null);
-                    setSelectedFlavor(null);
-                  }}
-                  className="px-4 py-2 rounded-full text-[10px] font-semibold tracking-tight transition-all whitespace-nowrap flex-shrink-0 bg-white/[0.08] text-white/60 hover:bg-white/[0.12] hover:text-white/80 backdrop-blur-sm"
-                >
-                  Clear
-                </button>
-              </>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Products Grid - Scrollable */}
@@ -734,6 +890,11 @@ export function POSProductGrid({
                           onQuickView={setQuickViewProduct}
                           showInventory={showInventory}
                           vendorLogo={vendor?.logo_url || null}
+                          activeFilters={{
+                            strainTypes: selectedStrainTypes,
+                            consistencies: selectedConsistencies,
+                            flavors: selectedFlavors,
+                          }}
                         />
                       ))}
                     </div>
@@ -751,6 +912,11 @@ export function POSProductGrid({
                     onQuickView={setQuickViewProduct}
                     showInventory={showInventory}
                     vendorLogo={vendor?.logo_url || null}
+                    activeFilters={{
+                      strainTypes: selectedStrainTypes,
+                      consistencies: selectedConsistencies,
+                      flavors: selectedFlavors,
+                    }}
                   />
                 ))}
               </div>
@@ -853,6 +1019,11 @@ interface ProductCardProps {
   onQuickView?: (product: Product) => void;
   showInventory: boolean;
   vendorLogo: string | null;
+  activeFilters?: {
+    strainTypes?: string[];
+    consistencies?: string[];
+    flavors?: string[];
+  };
 }
 
 function ProductCard({
@@ -862,6 +1033,7 @@ function ProductCard({
   onQuickView,
   showInventory,
   vendorLogo,
+  activeFilters,
 }: ProductCardProps) {
   const [selectedTierIndex, setSelectedTierIndex] = useState<number | null>(null);
   const [showAddButton, setShowAddButton] = useState(false);
@@ -973,10 +1145,54 @@ function ProductCard({
 
         {/* Category Badge */}
         {product.category && (
-          <div className="mb-3">
+          <div className="mb-2">
             <span className="inline-block px-2 py-0.5 bg-white/5 border border-white/10 rounded-lg text-[9px] uppercase tracking-[0.15em] text-white/70 font-bold">
               {product.category}
             </span>
+          </div>
+        )}
+
+        {/* Filter Attributes - Only show when filters are active */}
+        {activeFilters && ((activeFilters.strainTypes?.length || 0) > 0 || (activeFilters.consistencies?.length || 0) > 0 || (activeFilters.flavors?.length || 0) > 0) && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {/* Show strain type if product matches any selected strains */}
+            {activeFilters.strainTypes && activeFilters.strainTypes.length > 0 && (
+              (() => {
+                const strainType = product.fields?.find((f) => f.label === "strain_type")?.value;
+                return strainType && activeFilters.strainTypes.includes(strainType) ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 border border-green-500/30 rounded-md text-[8px] uppercase tracking-[0.15em] text-green-400 font-bold">
+                    <div className="w-1 h-1 bg-green-400 rounded-full"></div>
+                    {strainType}
+                  </span>
+                ) : null;
+              })()
+            )}
+            
+            {/* Show consistency if product matches any selected consistencies */}
+            {activeFilters.consistencies && activeFilters.consistencies.length > 0 && (
+              (() => {
+                const consistency = product.fields?.find((f) => f.label === "consistency")?.value;
+                return consistency && activeFilters.consistencies.includes(consistency) ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 border border-purple-500/30 rounded-md text-[8px] uppercase tracking-[0.15em] text-purple-400 font-bold">
+                    <div className="w-1 h-1 bg-purple-400 rounded-full"></div>
+                    {consistency}
+                  </span>
+                ) : null;
+              })()
+            )}
+            
+            {/* Show flavor if product matches any selected flavors */}
+            {activeFilters.flavors && activeFilters.flavors.length > 0 && (
+              (() => {
+                const flavor = product.fields?.find((f) => f.label === "flavor")?.value;
+                return flavor && activeFilters.flavors.includes(flavor) ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 border border-orange-500/30 rounded-md text-[8px] uppercase tracking-[0.15em] text-orange-400 font-bold">
+                    <div className="w-1 h-1 bg-orange-400 rounded-full"></div>
+                    {flavor}
+                  </span>
+                ) : null;
+              })()
+            )}
           </div>
         )}
 

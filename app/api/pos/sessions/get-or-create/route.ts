@@ -32,9 +32,12 @@ export async function POST(request: NextRequest) {
   if (authResult instanceof NextResponse) {
     return authResult;
   }
-try {
+
+  const { user, vendorId } = authResult;
+
+  try {
     const supabase = getServiceSupabase();
-    const { registerId, locationId, vendorId, userId, openingCash = 200.0 } = await request.json();
+    const { registerId, locationId, openingCash = 200.0 } = await request.json();
 
     if (!registerId || !locationId) {
       return NextResponse.json(
@@ -50,13 +53,12 @@ try {
       p_location_id: locationId, // alphabetical: 1st
       p_opening_cash: openingCash, // alphabetical: 2nd
       p_register_id: registerId, // alphabetical: 3rd
-      p_user_id: userId, // alphabetical: 4th
-      p_vendor_id: vendorId, // alphabetical: 5th
+      p_user_id: user.id, // alphabetical: 4th (from auth)
+      p_vendor_id: vendorId, // alphabetical: 5th (from auth)
     });
 
     if (error) {
       // ❌ CRITICAL: Atomic function not deployed!
-      // Fail loudly instead of using broken fallback code
       if (process.env.NODE_ENV === "development") {
         logger.error("❌ CRITICAL: Atomic session function not deployed!", error);
       }
@@ -68,12 +70,6 @@ try {
             "The get_or_create_session() database function is missing. " +
             "Please deploy migrations/001_enterprise_session_management.sql via Supabase Dashboard.",
           migration_required: true,
-          instructions: {
-            step1: "Go to https://supabase.com/dashboard/project/uaednwpxursknmwdeejn/sql/new",
-            step2: "Copy content from migrations/001_enterprise_session_management.sql",
-            step3: "Click 'Run' to deploy the atomic function",
-            step4: "Retry session creation"
-          },
           database_error: error.message,
         },
         { status: 500 }

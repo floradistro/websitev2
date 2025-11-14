@@ -6,7 +6,6 @@ import { useAppAuth } from "@/context/AppAuthContext";
 import { usePOSSession } from "@/context/POSSessionContext";
 import { POSPickupQueue } from "@/components/component-registry/pos/POSPickupQueue";
 import { POSVendorDropdown } from "@/components/component-registry/pos/POSVendorDropdown";
-import { POSBreadcrumb } from "@/components/component-registry/pos/POSBreadcrumb";
 
 export default function POSOrdersPage() {
   const router = useRouter();
@@ -29,14 +28,7 @@ export default function POSOrdersPage() {
   // Show register selector if no session - stay in POS, don't redirect
   if (!session || !registerId || !location) {
     return (
-      <div className="fixed inset-0 left-[60px] bg-black">
-        <POSBreadcrumb
-          items={[
-            { label: "POS", href: "/vendor/pos/orders" },
-            { label: "Orders" },
-          ]}
-          showSessionInfo={false}
-        />
+      <div className="fixed inset-0 left-[60px] bg-black flex flex-col">
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="text-center max-w-md">
             <h2 className="text-2xl font-light text-white mb-4">No Active Session</h2>
@@ -58,16 +50,6 @@ export default function POSOrdersPage() {
 
   return (
     <div className="fixed inset-0 left-[60px] bg-black text-white flex flex-col overflow-hidden">
-      {/* Breadcrumb Navigation with Session Info */}
-      <POSBreadcrumb
-        items={[
-          { label: "POS", href: "/vendor/pos/orders" },
-          { label: location.name },
-          { label: "Orders" },
-        ]}
-        showSessionInfo={true}
-      />
-
       {/* Top Bar with Vendor Dropdown */}
       <div className="border-b border-white/5 flex-shrink-0 p-4">
         <POSVendorDropdown

@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Scan } from "lucide-react";
+import { Scan, LogOut } from "lucide-react";
 import { POSCustomerSelector } from "./POSCustomerSelector";
 import { POSIDScanner } from "./POSIDScanner";
 import { NewCustomerForm } from "./POSNewCustomerForm";
+import { usePOSSession } from "@/context/POSSessionContext";
+import { showConfirm } from "@/components/NotificationToast";
+import { useAppAuth } from "@/context/AppAuthContext";
+import Image from "next/image";
 
 interface Customer {
   id: string;
@@ -66,10 +70,13 @@ export function POSCart({
   taxError,
   isProcessing = false,
 }: POSCartProps) {
+  const { session, endSession } = usePOSSession();
+  const { vendor } = useAppAuth();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showIDScanner, setShowIDScanner] = useState(false);
   const [prefilledData, setPrefilledData] = useState<any>(null);
   const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
+  const [isEndingSession, setIsEndingSession] = useState(false);
 
   // Calculate totals
   const subtotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
@@ -77,64 +84,66 @@ export function POSCart({
   const total = subtotal + taxAmount;
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
+  const handleEndSession = async () => {
+    await showConfirm({
+      title: "End Session",
+      message: `Are you sure you want to end session ${session?.session_number}?\n\nYou can start a new session immediately after.`,
+      confirmText: "End Session",
+      cancelText: "Cancel",
+      type: "warning",
+      onConfirm: async () => {
+        try {
+          setIsEndingSession(true);
+          await endSession();
+        } catch (error) {
+          alert("Failed to end session. Please try again.");
+        } finally {
+          setIsEndingSession(false);
+        }
+      },
+    });
+  };
+
   return (
     <div className="h-full w-full flex flex-col bg-[#0a0a0a] overflow-hidden">
       {/* Header */}
       <div className="px-4 py-4 border-b border-white/5">
-        <h3
-          className="text-xs uppercase tracking-[0.15em] text-white font-black"
-          style={{ fontWeight: 900 }}
-        >
-          Cart
-        </h3>
-        <div className="text-white/40 text-[10px] mt-1 uppercase tracking-wider">
-          {items.length} items · {itemCount} units
+        <div className="flex items-start justify-between">
+          <div>
+            <h3
+              className="text-xs uppercase tracking-[0.15em] text-white font-black"
+              style={{ fontWeight: 900 }}
+            >
+              Cart
+            </h3>
+            <div className="text-white/40 text-[10px] mt-1 uppercase tracking-wider">
+              {items.length} items · {itemCount} units
+            </div>
+          </div>
+          
+          {/* End Session Button */}
+          {session && (
+            <button
+              onClick={handleEndSession}
+              disabled={isEndingSession}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-500/20 hover:border-red-500/50 transition-all text-[9px] uppercase tracking-[0.15em] font-black disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ fontWeight: 900 }}
+            >
+              <LogOut size={10} strokeWidth={2.5} />
+              <span>{isEndingSession ? "Ending..." : "End"}</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Customer Selector with Quick Scan */}
+      {/* Customer Selector - Sleek Full Width Design */}
       <div className="px-4 py-3 border-b border-white/5">
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-white/40 text-[10px] uppercase tracking-[0.15em]">Customer</label>
-          <button
-            onClick={() => {
-              setShowIDScanner(true);
-            }}
-            className="bg-white/10 text-white border border-white/20 rounded-xl px-2.5 py-1.5 text-[9px] uppercase tracking-[0.15em] hover:bg-white/20 hover:border-white/30 font-black transition-all flex items-center gap-1.5"
-            style={{ fontWeight: 900 }}
-          >
-            <Scan size={11} strokeWidth={2.5} />
-            Scan ID
-          </button>
-        </div>
         <POSCustomerSelector
           vendorId={vendorId}
           locationId={locationId}
           selectedCustomer={selectedCustomer}
           onCustomerSelect={setSelectedCustomer}
         />
-
-        {/* Customer Loyalty Info */}
-        {selectedCustomer && (
-          <div className="mt-2 p-2 bg-white/5 border border-white/10 rounded-xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-white text-[10px] font-bold uppercase tracking-wide">
-                  {selectedCustomer.first_name} {selectedCustomer.last_name}
-                </div>
-                <div className="text-white/60 text-[9px] uppercase tracking-wider mt-0.5">
-                  Tier: {selectedCustomer.loyalty_tier}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-green-400 text-xs font-black">
-                  {selectedCustomer.loyalty_points.toLocaleString()}
-                </div>
-                <div className="text-white/40 text-[8px] uppercase tracking-wider">Points</div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Cart Items - Scrollable */}
@@ -142,8 +151,29 @@ export function POSCart({
         {items.length === 0 ? (
           <div className="h-full flex items-center justify-center text-white/40">
             <div className="text-center">
-              <div className="text-5xl mb-4">🛒</div>
-              <div className="text-[10px] uppercase tracking-[0.15em] text-white/60">
+              {/* Interactive Vendor Logo - Click to Scan ID */}
+              {vendor?.logo_url ? (
+                <button
+                  onClick={() => setShowIDScanner(true)}
+                  className="group flex flex-col items-center gap-3 transition-all"
+                >
+                  <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-white/5 border border-white/10 opacity-40 group-hover:opacity-60 group-hover:border-white/20 group-hover:bg-white/10 transition-all">
+                    <Image
+                      src={vendor.logo_url}
+                      alt={vendor.store_name || "Vendor"}
+                      fill
+                      className="object-contain p-3"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-[0.15em] text-white/40 group-hover:text-white/60 transition-colors">
+                    <Scan size={10} strokeWidth={2} />
+                    <span>Scan ID</span>
+                  </div>
+                </button>
+              ) : (
+                <div className="text-5xl mb-4">🛒</div>
+              )}
+              <div className="text-[10px] uppercase tracking-[0.15em] text-white/60 mt-2">
                 Cart is empty
               </div>
               <div className="text-[10px] text-white/40 mt-1">Add products to start</div>
@@ -281,7 +311,7 @@ export function POSCart({
                     className="flex justify-between text-white/50 text-[9px] uppercase tracking-[0.15em] pl-2"
                   >
                     <span>
-                      {tax.name} ({tax.rate}%)
+                      {tax.name} ({Number(tax.rate).toFixed(2)}%)
                     </span>
                     <span>${taxAmt.toFixed(2)}</span>
                   </div>
@@ -294,7 +324,7 @@ export function POSCart({
             </>
           ) : (
             <div className="flex justify-between text-white/60 text-[10px] uppercase tracking-[0.15em]">
-              <span>Tax ({(taxRate * 100).toString()}%)</span>
+              <span>Tax ({(taxRate * 100).toFixed(2)}%)</span>
               <span>${taxAmount.toFixed(2)}</span>
             </div>
           )}

@@ -11,10 +11,10 @@ interface POSSession {
   register_name?: string;
   location_id: string;
   location_name?: string;
-  total_sales: number;
-  total_transactions: number;
+  total_sales?: number;
+  total_transactions?: number;
   opened_at: string;
-  opening_cash: number;
+  opening_cash?: number;
   status: "open" | "closed";
 }
 
@@ -154,6 +154,10 @@ export function POSSessionProvider({ children }: { children: React.ReactNode }) 
           register_name: registerName,
           location_id: locationId,
           location_name: locationName,
+          // Ensure numeric fields have defaults
+          total_sales: data.session.total_sales || 0,
+          total_transactions: data.session.total_transactions || 0,
+          opening_cash: data.session.opening_cash || 0,
         };
 
         setSession(newSession);

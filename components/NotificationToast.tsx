@@ -245,60 +245,58 @@ export default function NotificationToast() {
         ))}
       </div>
 
-      {/* Confirm Dialogs */}
+      {/* Confirm Dialogs - Steve Jobs Approved */}
       {confirmDialogs.length > 0 && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center px-4">
-          {/* Backdrop */}
+          {/* Backdrop - Deep black blur */}
           <div
-            className="absolute inset-0 bg-black/80 backdrop-blur-md"
-            style={{ transition: "opacity 0.3s ease-out" }}
+            className="absolute inset-0 bg-black/90 backdrop-blur-xl"
+            style={{ transition: "all 0.6s cubic-bezier(0.22, 1, 0.36, 1)" }}
             onClick={() => handleCancel(confirmDialogs[0])}
           />
 
-          {/* Dialog */}
+          {/* Dialog - Pure black with minimal borders */}
           <div
-            className={`relative bg-[#1a1a1a] border ${getDialogColor(confirmDialogs[0].type)} max-w-md w-full shadow-2xl`}
+            className="relative bg-black border-2 border-white/10 rounded-2xl max-w-md w-full"
             style={{
-              boxShadow: "0 25px 100px -20px rgba(0,0,0,0.9)",
-              transition: "opacity 0.3s ease-out, transform 0.3s ease-out",
+              boxShadow: "0 40px 120px -30px rgba(0,0,0,0.95), 0 0 0 1px rgba(255,255,255,0.05)",
+              transition: "all 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
+              animation: "dialogFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           >
-            {/* Yacht Club Branding */}
-            <div className="absolute top-4 right-4 opacity-5">
-              <Image
-                src="/yacht-club-logo.png"
-                alt=""
-                width={48}
-                height={48}
-                className="object-contain"
-              />
-            </div>
-
             <div className="p-8">
-              <h3 className="text-xl text-white mb-4 font-light uppercase tracking-wider">
+              {/* Title - Font Black 900 */}
+              <h3 
+                className="text-2xl font-black text-white uppercase tracking-tight mb-4"
+                style={{ fontWeight: 900 }}
+              >
                 {confirmDialogs[0].title}
               </h3>
-              <div className="h-[1px] w-12 bg-gradient-to-r from-white/30 to-transparent mb-6"></div>
-              <p className="text-sm text-white/70 leading-relaxed mb-8 font-light">
+              
+              {/* Message */}
+              <p className="text-sm text-white/60 leading-relaxed mb-8 whitespace-pre-line">
                 {confirmDialogs[0].message}
               </p>
 
+              {/* Buttons - Clean & Minimal */}
               <div className="flex gap-3">
                 <button
                   onClick={() => handleCancel(confirmDialogs[0])}
-                  className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 transition-all duration-300 text-xs uppercase tracking-wider font-medium"
+                  className="flex-1 px-6 py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 rounded-xl transition-all duration-300 text-xs uppercase tracking-[0.15em] font-black"
+                  style={{ fontWeight: 900 }}
                 >
                   {confirmDialogs[0].cancelText}
                 </button>
                 <button
                   onClick={() => handleConfirm(confirmDialogs[0])}
-                  className={`flex-1 px-6 py-3 transition-all duration-300 text-xs uppercase tracking-wider font-medium ${
+                  className={`flex-1 px-6 py-3 rounded-xl transition-all duration-300 text-xs uppercase tracking-[0.15em] font-black ${
                     confirmDialogs[0].type === "danger"
-                      ? "bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 hover:border-red-500/50"
+                      ? "bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 hover:border-red-500/50"
                       : confirmDialogs[0].type === "warning"
-                        ? "bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 border border-yellow-500/30 hover:border-yellow-500/50"
-                        : "bg-white hover:bg-white/90 text-black border border-white hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                        ? "bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:border-yellow-500/50"
+                        : "bg-white hover:bg-white/90 text-black border border-white"
                   }`}
+                  style={{ fontWeight: 900 }}
                 >
                   {confirmDialogs[0].confirmText}
                 </button>

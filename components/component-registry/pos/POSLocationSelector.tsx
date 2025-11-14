@@ -1,7 +1,8 @@
 "use client";
 
 import { MapPin, Check, Store } from "lucide-react";
-import { POSBreadcrumb } from "./POSBreadcrumb";
+import { useAppAuth } from "@/context/AppAuthContext";
+import Image from "next/image";
 
 interface Location {
   id: string;
@@ -16,6 +17,8 @@ interface POSLocationSelectorProps {
 }
 
 export function POSLocationSelector({ locations, onLocationSelected }: POSLocationSelectorProps) {
+  const { vendor } = useAppAuth();
+
   if (locations.length === 0) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
@@ -31,11 +34,24 @@ export function POSLocationSelector({ locations, onLocationSelected }: POSLocati
 
   return (
     <div className="h-full w-full bg-black text-white flex flex-col overflow-y-auto overflow-x-hidden">
-      <POSBreadcrumb items={[{ label: "POS", href: "/vendor/pos/register" }, { label: "Select Location" }]} />
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="max-w-5xl w-full">
           {/* Header */}
           <div className="text-center mb-8">
+            {/* Vendor Logo */}
+            {vendor?.logo_url && (
+              <div className="flex justify-center mb-6">
+                <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-white/5 border border-white/10">
+                  <Image
+                    src={vendor.logo_url}
+                    alt={vendor.name || "Vendor"}
+                    fill
+                    className="object-contain p-2"
+                    priority
+                  />
+                </div>
+              </div>
+            )}
             <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">
               Select Location
             </h1>

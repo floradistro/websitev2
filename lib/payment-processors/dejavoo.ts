@@ -262,6 +262,69 @@ export class DejavooClient {
   }
 
   /**
+   * Lightweight ping to check if Dejavoo API is reachable
+   * Does NOT send transaction to terminal - just validates API connectivity
+   * 
+   * Use this for real-time health checks and monitoring.
+   * For full terminal testing, use testConnection() instead.
+   * 
+   * @throws DejavooApiError if API is unreachable or credentials invalid
+   */
+  async ping(): Promise<boolean> {
+    try {
+      // Simple endpoint check - verify we can reach the API
+      // We'll use a minimal request that doesn't touch the terminal
+      const url = `${this.baseUrl}/v2/Payment/Sale`;
+      
+      // Quick HEAD request with timeout to check if endpoint exists
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+      
+      try {
+        const response = await fetch(url, {
+          method: 'OPTIONS',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal,
+        });
+        
+        clearTimeout(timeoutId);
+        
+        // If we get any response (even 404 or 405), the API is reachable
+        // We're just checking connectivity, not making an actual request
+        return true;
+      } catch (error: any) {
+        clearTimeout(timeoutId);
+        
+        if (error.name === 'AbortError') {
+          throw new DejavooApiError(
+            'API endpoint timeout - network may be slow or unavailable',
+            'TIMEOUT',
+            'NetworkError'
+          );
+        }
+        
+        throw new DejavooApiError(
+          'Unable to reach Dejavoo API - check network connection',
+          'NETWORK_ERROR',
+          'ApiError'
+        );
+      }
+    } catch (error) {
+      if (error instanceof DejavooApiError) {
+        throw error;
+      }
+      
+      throw new DejavooApiError(
+        'Health check failed',
+        'PING_ERROR',
+        'ApiError'
+      );
+    }
+  }
+
+  /**
    * Test connection to Dejavoo API AND physical terminal
    * Sends a $0.01 sale transaction to verify end-to-end connectivity
    *

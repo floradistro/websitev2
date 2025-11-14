@@ -100,7 +100,11 @@ export function POSBreadcrumb({ items, showSessionInfo = true }: POSBreadcrumbPr
                 
                 <div className="flex items-center gap-1.5 text-white/60 text-[10px]">
                   <DollarSign size={10} />
-                  <span>${session.total_sales.toFixed(2)}</span>
+                  <span>
+                    ${typeof session?.total_sales === 'number' && !isNaN(session.total_sales) 
+                      ? session.total_sales.toFixed(2) 
+                      : '0.00'}
+                  </span>
                 </div>
                 
                 <div className="h-4 w-px bg-white/10" />
