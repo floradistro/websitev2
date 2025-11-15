@@ -947,16 +947,25 @@ export default function POSRegisterPage() {
       </div>
 
       {/* Payment Modal */}
-      {showPayment && !processing && (
-        <POSPayment
-          total={total}
-          onPaymentComplete={handlePaymentComplete}
-          onCancel={() => setShowPayment(false)}
-          locationId={contextLocation?.id}
-          registerId={contextRegisterId || undefined}
-          hasPaymentProcessor={hasPaymentProcessor}
-        />
-      )}
+      {showPayment && !processing && (() => {
+        console.log("🎯 Rendering POSPayment with:", {
+          total,
+          locationId: contextLocation?.id,
+          registerId: contextRegisterId,
+          hasPaymentProcessor,
+          contextLocation,
+        });
+        return (
+          <POSPayment
+            total={total}
+            onPaymentComplete={handlePaymentComplete}
+            onCancel={() => setShowPayment(false)}
+            locationId={contextLocation?.id}
+            registerId={contextRegisterId || undefined}
+            hasPaymentProcessor={hasPaymentProcessor}
+          />
+        );
+      })()}
 
       {/* Open Cash Drawer Modal */}
       {showOpenDrawerModal && (

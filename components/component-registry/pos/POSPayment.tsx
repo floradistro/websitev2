@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Plus, X, Banknote, CreditCard, Wallet } from "lucide-react";
 
 import { logger } from "@/lib/logger";
@@ -43,6 +43,16 @@ export function POSPayment({
   const [splitPayments, setSplitPayments] = useState<SplitPayment[]>([]);
   const [splitMethod, setSplitMethod] = useState<"cash" | "card">("cash");
   const [splitAmount, setSplitAmount] = useState("");
+
+  // Log props on mount for debugging
+  React.useEffect(() => {
+    console.log("💰 POSPayment mounted with props:", {
+      total,
+      locationId,
+      registerId,
+      hasPaymentProcessor,
+    });
+  }, [total, locationId, registerId, hasPaymentProcessor]);
 
   // Clean cancel handler
   const handleCancel = () => {
@@ -123,11 +133,26 @@ export function POSPayment({
           // Payment processor IS configured - must use it
           // CRITICAL FIX: Validate IDs exist before API call
           if (!locationId || !registerId) {
+            // Log what we have for debugging
+            console.error("❌ Missing payment IDs:", {
+              locationId,
+              registerId,
+              hasPaymentProcessor,
+            });
             throw new Error(
-              "Location or Register ID missing. Cannot process payment. " +
+              "Location or Register ID missing. Cannot process payment.\n\n" +
+                `Location ID: ${locationId || "MISSING"}\n` +
+                `Register ID: ${registerId || "MISSING"}\n\n` +
                 "Please refresh the page and select your register again.",
             );
           }
+
+          console.log("💳 Processing card payment:", {
+            locationId,
+            registerId,
+            amount: total,
+            hasPaymentProcessor,
+          });
 
           // Process card payment through payment terminal
           const response = await fetch("/api/pos/payment/process", {
