@@ -72,12 +72,21 @@ export async function POST(request: NextRequest) {
     const userId = user?.id;
 
     try {
-      // Get payment processor
+      // CRITICAL SECURITY FIX: Get payment processor configuration
+      // This prevents bypass of payment processor when one is configured
       let processor;
       if (registerId) {
         processor = await getPaymentProcessorForRegister(registerId);
       } else {
         processor = await getPaymentProcessor(locationId);
+      }
+
+      // DEFENSIVE CHECK: Verify processor exists and is active
+      const config = processor.getConfig();
+      if (!config.is_active) {
+        throw new Error(
+          "Payment processor is not active. Please contact support or use manual entry."
+        );
       }
 
       // Build payment request

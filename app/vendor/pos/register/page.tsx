@@ -20,8 +20,10 @@ export default function POSRegisterPage() {
     session,
     registerId: contextRegisterId,
     location: contextLocation,
+    hasPaymentProcessor,
     startSession,
     joinSession,
+    refreshProcessorStatus,
     setLocation,
     clearLocation,
   } = usePOSSession();
@@ -29,7 +31,6 @@ export default function POSRegisterPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showPayment, setShowPayment] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [hasPaymentProcessor, setHasPaymentProcessor] = useState<boolean>(false);
 
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [skuInput, setSkuInput] = useState("");
@@ -132,20 +133,50 @@ export default function POSRegisterPage() {
       console.error("Missing required data", { existingSessionInfo, selectedRegister });
       return;
     }
-    
+
     try {
       setProcessing(true);
       console.log("Joining session via startSession...");
-      
+
+      // CRITICAL FIX: Re-fetch payment processor status before joining session
+      let processorStatus = false;
+      let processorId: string | null = null;
+
+      try {
+        const registerResponse = await fetch(
+          `/api/pos/registers?locationId=${contextLocation!.id}`
+        );
+        if (registerResponse.ok) {
+          const registerData = await registerResponse.json();
+          const currentRegister = registerData.registers?.find(
+            (r: any) => r.id === existingSessionInfo.register_id
+          );
+
+          if (currentRegister) {
+            processorStatus = !!(
+              currentRegister.payment_processor_id &&
+              currentRegister.payment_processor?.is_active === true
+            );
+            processorId = currentRegister.payment_processor_id;
+            console.log("🔄 Refreshed payment processor status:", processorStatus, processorId);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not refresh processor status, using existing:", err);
+        // Continue anyway - don't block session join
+      }
+
       // Join existing session via context - startSession will handle existing session
       await startSession(
         existingSessionInfo.register_id,
         contextLocation!.id,
         contextLocation!.name,
         selectedRegister.name,
-        0 // No opening cash needed for joining
+        0, // No opening cash needed for joining
+        processorStatus,
+        processorId
       );
-      
+
       setShowSessionModal(false);
       console.log("Successfully joined existing session");
     } catch (error) {
@@ -184,14 +215,14 @@ export default function POSRegisterPage() {
   };
 
   const handleOpenDrawerSubmit = async (openingCash: number, notes: string) => {
-    console.log("🟡 handleOpenDrawerSubmit called", { 
-      openingCash, 
+    console.log("🟡 handleOpenDrawerSubmit called", {
+      openingCash,
       notes,
       selectedRegister,
       contextLocation,
-      contextRegisterId 
+      contextRegisterId
     });
-    
+
     // Prevent concurrent requests
     if (processing) {
       console.log("⚠️ Already processing, skipping");
@@ -206,21 +237,54 @@ export default function POSRegisterPage() {
 
     try {
       setProcessing(true);
+
+      // CRITICAL FIX: Re-fetch payment processor status before starting new session
+      let processorStatus = false;
+      let processorId: string | null = null;
+
+      try {
+        const registerResponse = await fetch(
+          `/api/pos/registers?locationId=${contextLocation.id}`
+        );
+        if (registerResponse.ok) {
+          const registerData = await registerResponse.json();
+          const currentRegister = registerData.registers?.find(
+            (r: any) => r.id === selectedRegister.id
+          );
+
+          if (currentRegister) {
+            processorStatus = !!(
+              currentRegister.payment_processor_id &&
+              currentRegister.payment_processor?.is_active === true
+            );
+            processorId = currentRegister.payment_processor_id;
+            console.log("🔄 Refreshed payment processor status for new session:", processorStatus, processorId);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not refresh processor status, using existing:", err);
+        // Continue anyway - don't block session creation
+      }
+
       console.log("🟡 Starting session with:", {
         registerId: selectedRegister.id,
         locationId: contextLocation.id,
         locationName: contextLocation.name,
         registerName: selectedRegister.name,
-        openingCash
+        openingCash,
+        processorStatus,
+        processorId
       });
 
-      // Use session context to start session
+      // Use session context to start session with processor info
       await startSession(
-        selectedRegister.id, // Use selectedRegister.id instead of contextRegisterId
+        selectedRegister.id,
         contextLocation.id,
         contextLocation.name,
         selectedRegister.name,
-        openingCash
+        openingCash,
+        processorStatus,
+        processorId
       );
 
       console.log("✅ Session started successfully");
@@ -599,6 +663,10 @@ export default function POSRegisterPage() {
 
       const result = await response.json();
 
+      // CRITICAL FIX: Refresh processor status after successful transaction
+      // This prevents the processor from "disconnecting" after a few sales
+      await refreshProcessorStatus();
+
       // Clear cart and state FIRST
       setCart([]);
       setSelectedCustomer(null);
@@ -722,20 +790,19 @@ export default function POSRegisterPage() {
             locationId={contextLocation.id}
             locationName={contextLocation.name}
             onRegisterSelected={async (id, sessionId, hasProcessor, registerData) => {
-              console.log("🟢 onRegisterSelected callback triggered:", { 
-                id, 
-                sessionId, 
-                hasProcessor, 
+              console.log("🟢 onRegisterSelected callback triggered:", {
+                id,
+                sessionId,
+                hasProcessor,
                 registerName: registerData?.register_name,
-                hasCurrentSession: !!registerData?.current_session 
+                hasCurrentSession: !!registerData?.current_session
               });
-              
+
               try {
                 // Store register info for session creation
                 const register = { id, name: registerData?.register_name || `Register ${id.slice(0, 8)}` };
                 console.log("🟢 Setting register state:", register);
                 setSelectedRegister(register);
-                setHasPaymentProcessor(hasProcessor || false);
                 
                 if (sessionId && registerData?.current_session) {
                   // Existing session - fetch full session data and show join modal

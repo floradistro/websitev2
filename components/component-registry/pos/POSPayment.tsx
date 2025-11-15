@@ -109,9 +109,9 @@ export function POSPayment({
           splitPayments,
         });
       } else if (paymentMethod === "card") {
-        // If no processor, allow manual entry
+        // CRITICAL FIX: If processor configured, ALWAYS use it - never allow manual bypass
         if (!hasPaymentProcessor) {
-          // Manual card entry - mark as manual for later processing
+          // Manual card entry - only allowed when NO processor is configured
           onPaymentComplete({
             paymentMethod: "card",
             authorizationCode: "MANUAL-ENTRY",
@@ -120,6 +120,7 @@ export function POSPayment({
             cardLast4: "XXXX",
           });
         } else {
+          // Payment processor IS configured - must use it
           // CRITICAL FIX: Validate IDs exist before API call
           if (!locationId || !registerId) {
             throw new Error(
@@ -143,7 +144,17 @@ export function POSPayment({
 
           const result = await response.json();
 
+          // CRITICAL FIX: Handle all error cases properly
           if (!result.success) {
+            // Check if customer cancelled on terminal
+            if (
+              result.error?.includes("cancel") ||
+              result.error?.includes("Cancel") ||
+              result.error?.includes("CANCELLED") ||
+              result.isDeclined
+            ) {
+              throw new Error("CUSTOMER_CANCELLED");
+            }
             throw new Error(result.error || "Payment failed");
           }
 
@@ -160,8 +171,25 @@ export function POSPayment({
       if (process.env.NODE_ENV === "development") {
         logger.error("Payment error:", error);
       }
+
+      // CRITICAL FIX: Handle customer cancellation gracefully
+      if (error.message === "CUSTOMER_CANCELLED") {
+        // Customer cancelled on terminal - reset payment screen, don't freeze
+        setProcessing(false);
+        // Optional: Show brief message
+        const message = document.createElement("div");
+        message.textContent = "Payment cancelled by customer";
+        message.className =
+          "fixed top-4 left-1/2 -translate-x-1/2 bg-yellow-500/90 text-black px-6 py-3 rounded-lg text-sm font-bold z-[60]";
+        document.body.appendChild(message);
+        setTimeout(() => message.remove(), 2000);
+        return; // Don't call onPaymentComplete, let user try again
+      }
+
+      // Other errors - show message and allow retry
       alert(`Payment failed: ${error.message}`);
       setProcessing(false);
+      // Don't call onPaymentComplete - let user try again or cancel
     }
   };
 

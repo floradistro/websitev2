@@ -16,6 +16,8 @@ interface POSSession {
   opened_at: string;
   opening_cash?: number;
   status: "open" | "closed";
+  payment_processor_id?: string | null;
+  has_payment_processor?: boolean;
 }
 
 interface POSLocation {
@@ -28,22 +30,26 @@ interface POSSessionContextValue {
   session: POSSession | null;
   registerId: string | null;
   location: POSLocation | null;
-  
+  hasPaymentProcessor: boolean;
+
   // Session actions
   startSession: (
     registerId: string,
     locationId: string,
     locationName: string,
     registerName: string,
-    openingCash: number
+    openingCash: number,
+    hasProcessor?: boolean,
+    processorId?: string | null
   ) => Promise<void>;
   endSession: () => Promise<void>;
   joinSession: (sessionId: string) => Promise<void>;
-  
+  refreshProcessorStatus: () => Promise<void>;
+
   // Location/Register management
   setLocation: (location: POSLocation) => void;
   clearLocation: () => void;
-  
+
   // Loading states
   isLoading: boolean;
 }
@@ -55,6 +61,7 @@ export function POSSessionProvider({ children }: { children: React.ReactNode }) 
   const [registerId, setRegisterId] = useState<string | null>(null);
   const [location, setLocationState] = useState<POSLocation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasPaymentProcessor, setHasPaymentProcessor] = useState(false);
 
   // Load session from localStorage on mount
   useEffect(() => {
@@ -64,7 +71,10 @@ export function POSSessionProvider({ children }: { children: React.ReactNode }) 
 
     if (savedSession) {
       try {
-        setSession(JSON.parse(savedSession));
+        const parsedSession = JSON.parse(savedSession);
+        setSession(parsedSession);
+        // Restore payment processor status from session
+        setHasPaymentProcessor(parsedSession.has_payment_processor || false);
       } catch (e) {
         localStorage.removeItem("pos_active_session");
       }
@@ -125,11 +135,13 @@ export function POSSessionProvider({ children }: { children: React.ReactNode }) 
       locationId: string,
       locationName: string,
       registerName: string,
-      openingCash: number
+      openingCash: number,
+      hasProcessor?: boolean,
+      processorId?: string | null
     ) => {
       try {
-        console.log("Starting session with:", { registerId, locationId, openingCash });
-        
+        console.log("Starting session with:", { registerId, locationId, openingCash, hasProcessor });
+
         const response = await fetch("/api/pos/sessions/get-or-create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -147,7 +159,7 @@ export function POSSessionProvider({ children }: { children: React.ReactNode }) 
 
         const data = await response.json();
         console.log("Session created/joined:", data);
-        
+
         const newSession: POSSession = {
           ...data.session,
           register_id: registerId,
@@ -158,17 +170,21 @@ export function POSSessionProvider({ children }: { children: React.ReactNode }) 
           total_sales: data.session.total_sales || 0,
           total_transactions: data.session.total_transactions || 0,
           opening_cash: data.session.opening_cash || 0,
+          // CRITICAL: Store payment processor info in session
+          payment_processor_id: processorId,
+          has_payment_processor: hasProcessor || false,
         };
 
         setSession(newSession);
         setRegisterId(registerId);
         setLocationState({ id: locationId, name: locationName });
+        setHasPaymentProcessor(hasProcessor || false);
 
         localStorage.setItem("pos_active_session", JSON.stringify(newSession));
         localStorage.setItem("pos_register_id", registerId);
         localStorage.setItem("pos_selected_location", JSON.stringify({ id: locationId, name: locationName }));
-        
-        console.log("Session state updated successfully");
+
+        console.log("Session state updated successfully with processor status:", hasProcessor);
       } catch (error) {
         logger.error("Failed to start session:", error);
         throw error;
@@ -237,10 +253,50 @@ export function POSSessionProvider({ children }: { children: React.ReactNode }) 
     setLocationState(null);
     setSession(null);
     setRegisterId(null);
+    setHasPaymentProcessor(false);
     localStorage.removeItem("pos_selected_location");
     localStorage.removeItem("pos_active_session");
     localStorage.removeItem("pos_register_id");
   }, []);
+
+  // CRITICAL FIX: Refresh payment processor status
+  // Call this after successful transactions to ensure processor stays connected
+  const refreshProcessorStatus = useCallback(async () => {
+    if (!location?.id || !registerId) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/pos/registers?locationId=${location.id}`);
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const register = data.registers?.find((r: any) => r.id === registerId);
+
+      if (register) {
+        const processorStatus = !!(
+          register.payment_processor_id &&
+          register.payment_processor?.is_active === true
+        );
+
+        console.log("🔄 Refreshed processor status:", processorStatus);
+        setHasPaymentProcessor(processorStatus);
+
+        // Update session with fresh processor status
+        if (session) {
+          const updatedSession = {
+            ...session,
+            has_payment_processor: processorStatus,
+            payment_processor_id: register.payment_processor_id,
+          };
+          setSession(updatedSession);
+          localStorage.setItem("pos_active_session", JSON.stringify(updatedSession));
+        }
+      }
+    } catch (error) {
+      logger.error("Failed to refresh processor status:", error);
+    }
+  }, [location, registerId, session]);
 
   return (
     <POSSessionContext.Provider
@@ -248,9 +304,11 @@ export function POSSessionProvider({ children }: { children: React.ReactNode }) 
         session,
         registerId,
         location,
+        hasPaymentProcessor,
         startSession,
         endSession,
         joinSession,
+        refreshProcessorStatus,
         setLocation,
         clearLocation,
         isLoading,
