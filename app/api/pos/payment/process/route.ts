@@ -46,10 +46,29 @@ export async function POST(request: NextRequest) {
       metadata?: Record<string, any>;
     } = await request.json();
 
-    // Validate required fields
-    if (!locationId || !amount || !paymentMethod) {
+    // Validate required fields with detailed error
+    const missingFields = [];
+    if (!locationId) missingFields.push("locationId");
+    if (!amount) missingFields.push("amount");
+    if (!paymentMethod) missingFields.push("paymentMethod");
+
+    if (missingFields.length > 0) {
+      logger.error("❌ Payment request missing fields:", {
+        missingFields,
+        received: { locationId, registerId, amount, paymentMethod },
+        body: { locationId, registerId, amount, tipAmount, paymentMethod, orderId, referenceId },
+      });
+
       return NextResponse.json(
-        { error: "Missing required fields: locationId, amount, paymentMethod" },
+        {
+          error: `Missing required fields: ${missingFields.join(", ")}`,
+          details: {
+            locationId: locationId || "MISSING",
+            registerId: registerId || "not provided",
+            amount: amount || "MISSING",
+            paymentMethod: paymentMethod || "MISSING",
+          },
+        },
         { status: 400 },
       );
     }
