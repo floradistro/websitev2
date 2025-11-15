@@ -249,7 +249,7 @@ export function SimpleIDScanner({ onScanComplete, onClose }: SimpleIDScannerProp
   };
 
   return (
-    <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-50">
+    <div className="fixed inset-0 left-0 top-0 bg-black/95 backdrop-blur-sm z-[9999]">
       {/* Scanner Interface - Only show when actively scanning */}
       {isScanning && (
         <div className="fixed inset-0 flex items-center justify-center">

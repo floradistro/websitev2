@@ -61,6 +61,13 @@ export function NewCustomerForm({
     setCreating(true);
     setError(null); // Clear previous errors
 
+    // FAILSAFE: Force reset after 30 seconds to prevent permanent freeze
+    const failsafeTimeout = setTimeout(() => {
+      console.error("⚠️ FAILSAFE: Customer creation took too long, forcing reset");
+      setError("Request timed out. Please try again.");
+      setCreating(false);
+    }, 30000);
+
     try {
       console.log("🆕 Creating customer:", { vendorId, firstName, lastName });
 
@@ -90,6 +97,9 @@ export function NewCustomerForm({
       const data = await response.json();
       console.log("✅ Customer created successfully:", data.customer);
 
+      // Clear failsafe timeout
+      clearTimeout(failsafeTimeout);
+
       // CRITICAL FIX: Call onCustomerCreated which closes the modal
       onCustomerCreated(data.customer);
       // Modal closes, so no need to reset 'creating' state
@@ -99,6 +109,9 @@ export function NewCustomerForm({
         logger.error("Error creating customer:", error);
       }
 
+      // Clear failsafe timeout
+      clearTimeout(failsafeTimeout);
+
       // CRITICAL FIX: Show error to user and reset creating state
       setError(error.message || "Failed to create customer. Please try again.");
       setCreating(false);
@@ -106,8 +119,21 @@ export function NewCustomerForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[60] flex items-center justify-center p-4">
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 max-w-md w-full">
+    <div className="fixed inset-0 left-0 top-0 bg-black/90 backdrop-blur-xl z-[9999] flex items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 max-w-md w-full my-8 relative">
+        {/* Loading Overlay */}
+        {creating && (
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
+              <div className="text-white font-black text-sm uppercase tracking-[0.15em]">
+                Creating Customer...
+              </div>
+              <div className="text-white/60 text-xs mt-2">Please wait</div>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-6">
           <h3
             className="text-xs uppercase tracking-[0.15em] text-white font-black"
