@@ -53,6 +53,7 @@ export function NewCustomerForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔥 Form submit triggered!", { firstName, lastName });
 
     if (!firstName || !lastName) {
       return; // Form validation prevents submission
@@ -119,16 +120,27 @@ export function NewCustomerForm({
   };
 
   return (
-    <>
-      {/* Backdrop - separate from content */}
+    <div
+      className="fixed inset-0 z-[9999] overflow-y-auto"
+      style={{
+        touchAction: 'auto',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
+      {/* Backdrop */}
       <div
-        className="fixed inset-0 left-0 top-0 bg-black/90 backdrop-blur-xl z-[9999]"
+        className="fixed inset-0 bg-black/90 backdrop-blur-xl"
         onClick={creating ? undefined : onCancel}
+        style={{ touchAction: 'auto' }}
       />
 
-      {/* Modal Content */}
-      <div className="fixed inset-0 left-0 top-0 z-[10000] flex items-center justify-center p-4 overflow-y-auto pointer-events-none">
-        <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 max-w-md w-full my-8 relative pointer-events-auto">
+      {/* Modal Container */}
+      <div className="relative min-h-full flex items-center justify-center p-4">
+        <div
+          className="relative bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 max-w-md w-full my-8"
+          style={{ touchAction: 'auto' }}
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Loading Overlay */}
           {creating && (
             <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
@@ -163,10 +175,18 @@ export function NewCustomerForm({
               <input
                 type="text"
                 value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
+                onChange={(e) => {
+                  console.log("✏️ First name changed:", e.target.value);
+                  setFirstName(e.target.value);
+                }}
+                onFocus={() => console.log("📝 First name focused")}
+                onClick={() => console.log("🖱️ First name clicked")}
                 required
-                className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+                disabled={creating}
+                className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all disabled:opacity-50"
                 placeholder="First name"
+                style={{ touchAction: 'auto', cursor: 'text' }}
+                autoComplete="off"
               />
             </div>
             <div>
@@ -311,25 +331,32 @@ export function NewCustomerForm({
           <div className="flex gap-2 pt-4">
             <button
               type="button"
-              onClick={onCancel}
+              onClick={(e) => {
+                console.log("🔴 Cancel clicked!");
+                e.stopPropagation();
+                onCancel();
+              }}
+              onTouchEnd={(e) => {
+                console.log("👆 Cancel touched!");
+              }}
               disabled={creating}
-              className="flex-1 px-4 py-3 border border-white/10 text-white rounded-2xl hover:bg-white/5 hover:border-white/20 text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 transition-all"
-              style={{ fontWeight: 900 }}
+              className="flex-1 px-4 py-3 border border-white/10 text-white rounded-2xl hover:bg-white/5 hover:border-white/20 text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 transition-all active:scale-95"
+              style={{ fontWeight: 900, touchAction: 'manipulation', cursor: 'pointer' }}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={creating || !firstName || !lastName}
-              className="flex-1 px-4 py-3 bg-white/10 text-white border-2 border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-              style={{ fontWeight: 900 }}
+              className="flex-1 px-4 py-3 bg-white/10 text-white border-2 border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 active:scale-95"
+              style={{ fontWeight: 900, touchAction: 'manipulation' }}
             >
               {creating ? "Creating..." : "Create Customer"}
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
-    </>
   );
 }
