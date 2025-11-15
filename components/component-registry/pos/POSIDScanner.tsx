@@ -145,20 +145,25 @@ export function POSIDScanner({
 
       {/* Processing overlay */}
       {isProcessing && (
-        <div className="fixed inset-0 left-0 top-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]">
-          <div className="bg-white/10 border-2 border-white/20 rounded-2xl p-8">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-              <p className="text-white font-bold text-lg">Looking up customer...</p>
+        <>
+          <div className="fixed inset-0 left-0 top-0 bg-black/80 backdrop-blur-sm z-[10000]" />
+          <div className="fixed inset-0 left-0 top-0 flex items-center justify-center z-[10001] pointer-events-none">
+            <div className="bg-white/10 border-2 border-white/20 rounded-2xl p-8 pointer-events-auto">
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+                <p className="text-white font-bold text-lg">Looking up customer...</p>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Customer Match Confirmation */}
       {matchConfirmation && (
-        <div className="fixed inset-0 left-0 top-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[9999] p-4 overflow-y-auto">
-          <div className="bg-gradient-to-b from-white/[0.12] to-white/[0.06] border border-yellow-500/30 rounded-2xl p-6 max-w-lg w-full shadow-2xl">
+        <>
+          <div className="fixed inset-0 left-0 top-0 bg-black/90 backdrop-blur-sm z-[10000]" />
+          <div className="fixed inset-0 left-0 top-0 flex items-center justify-center z-[10001] p-4 overflow-y-auto pointer-events-none">
+            <div className="bg-gradient-to-b from-white/[0.12] to-white/[0.06] border border-yellow-500/30 rounded-2xl p-6 max-w-lg w-full shadow-2xl pointer-events-auto">
             <div className="flex items-start gap-3 mb-5">
               <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
                 <span className="text-2xl">⚠️</span>
@@ -246,6 +251,7 @@ export function POSIDScanner({
             </div>
           </div>
         </div>
+        </>
       )}
     </>
   );

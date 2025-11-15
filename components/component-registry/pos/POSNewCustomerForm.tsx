@@ -119,20 +119,28 @@ export function NewCustomerForm({
   };
 
   return (
-    <div className="fixed inset-0 left-0 top-0 bg-black/90 backdrop-blur-xl z-[9999] flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 max-w-md w-full my-8 relative">
-        {/* Loading Overlay */}
-        {creating && (
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
-              <div className="text-white font-black text-sm uppercase tracking-[0.15em]">
-                Creating Customer...
+    <>
+      {/* Backdrop - separate from content */}
+      <div
+        className="fixed inset-0 left-0 top-0 bg-black/90 backdrop-blur-xl z-[9999]"
+        onClick={creating ? undefined : onCancel}
+      />
+
+      {/* Modal Content */}
+      <div className="fixed inset-0 left-0 top-0 z-[10000] flex items-center justify-center p-4 overflow-y-auto pointer-events-none">
+        <div className="bg-[#0a0a0a] border border-white/10 rounded-2xl p-6 max-w-md w-full my-8 relative pointer-events-auto">
+          {/* Loading Overlay */}
+          {creating && (
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
+              <div className="text-center">
+                <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4" />
+                <div className="text-white font-black text-sm uppercase tracking-[0.15em]">
+                  Creating Customer...
+                </div>
+                <div className="text-white/60 text-xs mt-2">Please wait</div>
               </div>
-              <div className="text-white/60 text-xs mt-2">Please wait</div>
             </div>
-          </div>
-        )}
+          )}
 
         <div className="flex items-center justify-between mb-6">
           <h3
@@ -322,5 +330,6 @@ export function NewCustomerForm({
         </form>
       </div>
     </div>
+    </>
   );
 }
