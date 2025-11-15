@@ -49,6 +49,7 @@ export function NewCustomerForm({
   const [state, setState] = useState(prefilledData?.state || "");
   const [postalCode, setPostalCode] = useState(prefilledData?.postalCode || "");
   const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +59,11 @@ export function NewCustomerForm({
     }
 
     setCreating(true);
+    setError(null); // Clear previous errors
 
     try {
+      console.log("🆕 Creating customer:", { vendorId, firstName, lastName });
+
       const response = await fetch("/api/pos/customers/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,16 +83,24 @@ export function NewCustomerForm({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to create customer");
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.details || "Failed to create customer");
       }
 
       const data = await response.json();
+      console.log("✅ Customer created successfully:", data.customer);
+
+      // CRITICAL FIX: Call onCustomerCreated which closes the modal
       onCustomerCreated(data.customer);
+      // Modal closes, so no need to reset 'creating' state
     } catch (error: any) {
+      console.error("❌ Error creating customer:", error);
       if (process.env.NODE_ENV === "development") {
         logger.error("Error creating customer:", error);
       }
+
+      // CRITICAL FIX: Show error to user and reset creating state
+      setError(error.message || "Failed to create customer. Please try again.");
       setCreating(false);
     }
   };
@@ -188,8 +200,14 @@ export function NewCustomerForm({
               type="date"
               value={dateOfBirth}
               onChange={(e) => setDateOfBirth(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              min="1900-01-01"
               className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+              placeholder="YYYY-MM-DD"
             />
+            <div className="text-[9px] text-white/30 mt-1 uppercase tracking-wider">
+              Click calendar icon or type YYYY-MM-DD
+            </div>
           </div>
 
           <div>
@@ -246,6 +264,16 @@ export function NewCustomerForm({
             />
           </div>
 
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-3">
+              <div className="text-red-400 text-[10px] uppercase tracking-[0.15em] font-bold">
+                ❌ Error
+              </div>
+              <div className="text-red-300 text-xs mt-1">{error}</div>
+            </div>
+          )}
+
           <div className="flex gap-2 pt-4">
             <button
               type="button"
@@ -262,7 +290,7 @@ export function NewCustomerForm({
               className="flex-1 px-4 py-3 bg-white/10 text-white border-2 border-white/20 rounded-2xl hover:bg-white/20 hover:border-white/30 text-[10px] font-black uppercase tracking-[0.15em] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
               style={{ fontWeight: 900 }}
             >
-              {creating ? "Creating..." : "Create"}
+              {creating ? "Creating..." : "Create Customer"}
             </button>
           </div>
         </form>

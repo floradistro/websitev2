@@ -8,15 +8,23 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
-  
   // SECURITY: Require vendor authentication
   const authResult = await requireVendor(request);
   if (authResult instanceof NextResponse) {
     return authResult;
   }
-try {
+
+  try {
     const supabase = getServiceSupabase();
     const body = await request.json();
+
+    console.log("🆕 Customer creation request received:", {
+      vendorId: body.vendorId,
+      firstName: body.firstName,
+      lastName: body.lastName,
+      email: body.email,
+    });
+
     const {
       vendorId,
       firstName,
@@ -32,6 +40,7 @@ try {
     } = body;
 
     if (!vendorId || !firstName || !lastName) {
+      console.error("❌ Missing required fields:", { vendorId, firstName, lastName });
       return NextResponse.json(
         { error: "Missing required fields: vendorId, firstName, lastName" },
         { status: 400 },
@@ -88,6 +97,11 @@ try {
       };
     }
 
+    console.log("💾 Inserting customer data:", {
+      ...customerData,
+      billing_address: customerData.billing_address ? "included" : "not included",
+    });
+
     const { data: customer, error: customerError } = await supabase
       .from("customers")
       .insert(customerData)
@@ -95,11 +109,20 @@ try {
       .single();
 
     if (customerError) {
+      console.error("❌ Supabase error creating customer:", customerError);
       if (process.env.NODE_ENV === "development") {
         logger.error("Error creating customer:", customerError);
       }
-      return NextResponse.json({ error: customerError.message }, { status: 500 });
+      return NextResponse.json(
+        {
+          error: customerError.message || "Failed to create customer",
+          details: customerError.details || customerError.hint || "Database error",
+        },
+        { status: 500 },
+      );
     }
+
+    console.log("✅ Customer created successfully:", customer.id);
 
     // Return formatted customer
     return NextResponse.json({
@@ -120,11 +143,16 @@ try {
     });
   } catch (error) {
     const err = toError(error);
+    console.error("❌ Fatal error in create customer endpoint:", err);
     if (process.env.NODE_ENV === "development") {
       logger.error("Error in create customer endpoint:", err);
     }
     return NextResponse.json(
-      { error: "Internal server error", details: err.message },
+      {
+        error: "Internal server error",
+        details: err.message,
+        stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+      },
       { status: 500 },
     );
   }
