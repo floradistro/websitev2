@@ -72,6 +72,9 @@ export function NewCustomerForm({
     try {
       console.log("🆕 Creating customer:", { vendorId, firstName, lastName });
 
+      // Generate unique email if not provided
+      const uniqueEmail = email || `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${Date.now()}@walk-in.local`;
+
       const response = await fetch("/api/pos/customers/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -81,7 +84,7 @@ export function NewCustomerForm({
           middleName: middleName || null,
           lastName,
           phone: phone || null,
-          email: email || `${firstName.toLowerCase()}.${lastName.toLowerCase()}@walk-in.local`,
+          email: uniqueEmail,
           dateOfBirth: dateOfBirth || null,
           address: address || null,
           city: city || null,
@@ -92,7 +95,17 @@ export function NewCustomerForm({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || errorData.details || "Failed to create customer");
+        console.error("❌ API Error Response:", errorData);
+
+        // Handle specific error cases
+        let errorMessage = errorData.error || errorData.details || "Failed to create customer";
+
+        // Make duplicate email error user-friendly
+        if (errorMessage.includes("duplicate") && errorMessage.includes("email")) {
+          errorMessage = "This email is already registered. Please use a different email or leave it blank.";
+        }
+
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -253,14 +266,25 @@ export function NewCustomerForm({
             <input
               type="date"
               value={dateOfBirth}
-              onChange={(e) => setDateOfBirth(e.target.value)}
+              onChange={(e) => {
+                console.log("📅 Birthday changed:", e.target.value);
+                setDateOfBirth(e.target.value);
+              }}
+              onFocus={() => console.log("📅 Birthday picker focused")}
+              onClick={() => console.log("📅 Birthday picker clicked")}
+              disabled={creating}
               max={new Date().toISOString().split("T")[0]}
               min="1900-01-01"
-              className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all"
+              className="w-full bg-white/5 border border-white/10 text-white px-3 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-white/20 hover:bg-white/10 transition-all disabled:opacity-50"
               placeholder="YYYY-MM-DD"
+              style={{
+                touchAction: 'manipulation',
+                cursor: 'pointer',
+                colorScheme: 'dark'
+              }}
             />
             <div className="text-[9px] text-white/30 mt-1 uppercase tracking-wider">
-              Click calendar icon or type YYYY-MM-DD
+              Tap to open date picker
             </div>
           </div>
 
