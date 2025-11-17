@@ -24,39 +24,54 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     }
     const { vendorId } = authResult;
 
-    // Redis cache key for this vendor's product list
-    const cacheKey = buildCacheKey(CachePrefix.PRODUCTS_LIST, vendorId);
+    // CRITICAL FIX: Skip cache temporarily to debug issues
+    // Fetch directly from database with detailed error handling
+    const supabase = getServiceSupabase();
 
-    // Try cache first, fallback to database on miss
-    const products = await cacheGetOrSet(
-      cacheKey,
-      async () => {
-        const supabase = getServiceSupabase();
-        const { data, error } = await supabase
-          .from("products")
-          .select("*, categories:primary_category_id(id, name, slug)")
-          .eq("vendor_id", vendorId)
-          .order("created_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("products")
+      .select("*, categories:primary_category_id(id, name, slug)")
+      .eq("vendor_id", vendorId)
+      .order("created_at", { ascending: false });
 
-        if (error) {
-          logger.error("Error fetching vendor products:", error);
-          throw error;
-        }
+    if (error) {
+      logger.error("Supabase error fetching products:", {
+        error,
+        vendorId,
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
 
-        return data || [];
-      },
-      CacheTTL.MEDIUM, // 5 minutes - good balance for product lists
-    );
+      return NextResponse.json(
+        {
+          error: "Database query failed",
+          message: error.message,
+          details: process.env.NODE_ENV === "development" ? error : undefined,
+        },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      products,
+      products: data || [],
     });
   } catch (error) {
     const err = toError(error);
-    logger.error("Get vendor products error:", err);
+    logger.error("Get vendor products error:", {
+      error: err,
+      message: err.message,
+      stack: err.stack,
+    });
+
     return NextResponse.json(
-      { error: err.message || "Failed to fetch products" },
+      {
+        error: "Failed to fetch products",
+        message: err.message,
+        details: process.env.NODE_ENV === "development" ? String(error) : undefined,
+      },
       { status: 500 },
     );
   }
