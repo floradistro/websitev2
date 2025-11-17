@@ -34,7 +34,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         const supabase = getServiceSupabase();
         const { data, error } = await supabase
           .from("products")
-          .select("*, categories:primary_category_id(id, name, slug), meta_data")
+          .select("*, categories:primary_category_id(id, name, slug)")
           .eq("vendor_id", vendorId)
           .order("created_at", { ascending: false });
 
