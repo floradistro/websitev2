@@ -108,13 +108,15 @@ export function POSPayment({
         const tendered = parseFloat(cashTendered);
         const change = tendered - total;
 
-        onPaymentComplete({
+        // CRITICAL FIX: Await the completion handler
+        await onPaymentComplete({
           paymentMethod: "cash",
           cashTendered: tendered,
           changeGiven: change,
         });
       } else if (paymentMethod === "split") {
-        onPaymentComplete({
+        // CRITICAL FIX: Await the completion handler
+        await onPaymentComplete({
           paymentMethod: "split",
           splitPayments,
         });
@@ -122,7 +124,8 @@ export function POSPayment({
         // CRITICAL FIX: If processor configured, ALWAYS use it - never allow manual bypass
         if (!hasPaymentProcessor) {
           // Manual card entry - only allowed when NO processor is configured
-          onPaymentComplete({
+          // CRITICAL FIX: Await the completion handler
+          await onPaymentComplete({
             paymentMethod: "card",
             authorizationCode: "MANUAL-ENTRY",
             transactionId: `MANUAL-${Date.now()}`,
@@ -183,7 +186,9 @@ export function POSPayment({
             throw new Error(result.error || "Payment failed");
           }
 
-          onPaymentComplete({
+          // CRITICAL FIX: Await the completion handler to catch any errors
+          // from the sale creation process (inventory, network, etc.)
+          await onPaymentComplete({
             paymentMethod: "card",
             authorizationCode: result.authorizationCode,
             transactionId: result.transactionId,
