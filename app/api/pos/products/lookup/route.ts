@@ -80,7 +80,7 @@ try {
     // Get inventory for this location
     const { data: inventory, error: inventoryError } = await supabase
       .from("inventory")
-      .select("quantity, available_quantity, reserved_quantity, stock_status")
+      .select("id, quantity, available_quantity, reserved_quantity, stock_status")
       .eq("product_id", product.id)
       .eq("location_id", locationId)
       .single();
@@ -131,6 +131,7 @@ try {
       product: {
         ...product,
         pricing_tiers: pricingTiers,
+        inventory_id: inventory?.id || null, // CRITICAL: Include inventory ID for cart
         inventory: inventory || {
           quantity: 0,
           available_quantity: 0,

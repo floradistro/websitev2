@@ -554,7 +554,7 @@ export default function POSRegisterPage() {
           id: product.id,
           name: product.name,
           price: product.price,
-          inventory_id: product.id, // Will be resolved in backend
+          inventory_id: product.inventory_id, // CRITICAL: Use actual inventory ID from API
         },
         1,
       );
@@ -947,7 +947,7 @@ export default function POSRegisterPage() {
       </div>
 
       {/* Payment Modal */}
-      {showPayment && !processing && (() => {
+      {showPayment && (() => {
         console.log("🎯 Rendering POSPayment with:", {
           total,
           locationId: contextLocation?.id,
