@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServiceSupabase } from "@/lib/supabase/client";
 import { requireVendor } from "@/lib/auth/middleware";
-import { DejavooClient } from "@/lib/payment-processors/dejavoo";
+import { getPaymentProcessorById } from "@/lib/payment-processors";
 import { logger } from "@/lib/logger";
 
 export const dynamic = "force-dynamic";
@@ -48,115 +47,64 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = getServiceSupabase();
-
-    // Get processor configuration
-    const { data: processor, error } = await supabase
-      .from("payment_processors")
-      .select("id, processor_type, processor_name, dejavoo_authkey, dejavoo_tpn, environment, is_active, vendor_id")
-      .eq("id", processorId)
-      .eq("vendor_id", vendorId)
-      .single();
-
-    if (error || !processor) {
-      logger.error("Processor not found:", error);
-      return NextResponse.json(
-        { success: false, error: "Payment processor not found" },
-        { status: 404 }
-      );
-    }
-
-    if (!processor.is_active) {
-      return NextResponse.json(
-        { success: false, error: "Payment processor is not active" },
-        { status: 400 }
-      );
-    }
-
-    // Only Dejavoo is supported for now
-    if (processor.processor_type !== "dejavoo") {
-      return NextResponse.json(
-        { success: false, error: "Test transactions only supported for Dejavoo processors" },
-        { status: 400 }
-      );
-    }
-
-    // Verify credentials are configured
-    if (!processor.dejavoo_authkey || !processor.dejavoo_tpn) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Payment processor credentials not configured",
-          message: "Missing Dejavoo auth key or TPN"
-        },
-        { status: 400 }
-      );
-    }
-
     try {
-      // Initialize Dejavoo client
-      const client = new DejavooClient({
-        authKey: processor.dejavoo_authkey,
-        tpn: processor.dejavoo_tpn,
-        environment: processor.environment || "production",
-      });
+      // Use the SAME payment processor abstraction as working POS payments
+      const processor = await getPaymentProcessorById(processorId);
+      const config = processor.getConfig();
 
-      logger.info(`🧪 Sending $${amount} test transaction to ${processor.processor_name}`);
+      if (!config.is_active) {
+        return NextResponse.json(
+          { success: false, error: "Payment processor is not active" },
+          { status: 400 }
+        );
+      }
 
-      // Send test transaction (this will display on terminal)
+      logger.info(`🧪 Sending $${amount} test transaction to ${config.processor_name}`);
+
+      // Send test transaction using the payment processor
       const testRef = `TEST-${Date.now()}`;
-      const result = await client.sale({
+      const result = await processor.processSale({
         amount,
-        paymentType: "Credit",
+        paymentMethod: "card",
         referenceId: testRef,
-        printReceipt: "No",
-        getReceipt: "No",
-        getExtendedData: false,
-        timeout: 2, // 2 minute timeout for test
+        metadata: { isTest: true },
       });
 
-      // Check if approved
-      const isApproved = result.GeneralResponse?.StatusCode === "0000" ||
-                        result.GeneralResponse?.ResultCode === "0";
-
-      if (isApproved) {
-        logger.info(`✅ Test transaction approved for ${processor.processor_name}`, {
+      if (result.success) {
+        logger.info(`✅ Test transaction approved for ${config.processor_name}`, {
           referenceId: testRef,
-          authCode: result.AuthCode,
+          authCode: result.authorizationCode,
         });
 
         return NextResponse.json({
           success: true,
-          message: "Test transaction approved",
+          message: result.message || "Test transaction approved",
           data: {
-            processorName: processor.processor_name,
+            processorName: config.processor_name,
             referenceId: testRef,
-            authCode: result.AuthCode,
-            cardLast4: result.CardLast4,
-            cardType: result.CardType,
-            amount: result.Amount,
+            authCode: result.authorizationCode,
+            cardLast4: result.cardLast4,
+            cardType: result.cardType,
+            amount: result.amount,
           },
         });
       } else {
-        // Transaction was declined or failed
-        logger.warn(`⚠️ Test transaction declined for ${processor.processor_name}`, {
+        logger.warn(`⚠️ Test transaction failed for ${config.processor_name}`, {
           referenceId: testRef,
-          statusCode: result.GeneralResponse?.StatusCode,
-          message: result.GeneralResponse?.Message,
+          message: result.message,
         });
 
         return NextResponse.json({
           success: false,
-          message: result.GeneralResponse?.Message || "Transaction declined",
+          message: result.message || "Transaction failed",
           data: {
-            processorName: processor.processor_name,
+            processorName: config.processor_name,
             referenceId: testRef,
-            statusCode: result.GeneralResponse?.StatusCode,
           },
         });
       }
     } catch (error: any) {
-      logger.error(`❌ Test transaction failed for ${processor.processor_name}:`, error);
+      logger.error(`❌ Test transaction error:`, error);
 
       // Extract meaningful error message
       let errorMessage = "Test transaction failed";
@@ -178,7 +126,6 @@ export async function POST(request: NextRequest) {
           success: false,
           error: errorMessage,
           message: errorDetails,
-          processorName: processor.processor_name,
         },
         { status: 500 }
       );
