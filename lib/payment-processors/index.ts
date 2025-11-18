@@ -139,7 +139,7 @@ class DejavooPaymentProcessor implements IPaymentProcessor {
     }
 
     this.client = new DejavooClient({
-      authkey: config.dejavoo_authkey,
+      authKey: config.dejavoo_authkey,
       tpn: config.dejavoo_tpn,
       environment: config.environment,
     });

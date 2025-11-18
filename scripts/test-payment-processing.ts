@@ -214,7 +214,7 @@ async function testDejavooClientInstantiation() {
 
     // Try to instantiate client
     const client = new DejavooClient({
-      authkey: processor.dejavoo_authkey,
+      authKey: processor.dejavoo_authkey,
       tpn: processor.dejavoo_tpn,
       environment: processor.environment as "production" | "sandbox",
     });
