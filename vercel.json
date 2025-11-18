@@ -2,6 +2,12 @@
   "framework": "nextjs",
   "regions": ["iad1"],
   "functions": {
+    "app/api/pos/payment/process/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/pos/payment-processors/health/route.ts": {
+      "maxDuration": 30
+    },
     "app/api/ai/**/*.ts": {
       "maxDuration": 60
     },
