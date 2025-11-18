@@ -28,7 +28,7 @@ export type DejavooResultCode = "Ok" | "TerminalError" | "ApiError";
 export type DejavooReceiptOption = "No" | "Both" | "Merchant" | "Customer";
 
 export interface DejavooConfig {
-  authkey: string;
+  authKey: string;
   tpn: string; // Terminal Profile Number
   environment: DejavooEnvironment;
   timeout?: number; // in minutes (1-720)
@@ -111,7 +111,7 @@ export class DejavooClient {
   private readonly defaultTimeout: number;
 
   constructor(config: DejavooConfig) {
-    this.authkey = config.authkey;
+    this.authkey = config.authKey;
     this.tpn = config.tpn;
     this.defaultTimeout = config.timeout || 120; // 2 minutes default
 

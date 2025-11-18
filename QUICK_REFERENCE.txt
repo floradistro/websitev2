@@ -1,0 +1,334 @@
+================================================================================
+                    WHALETOOLS PO MODAL - QUICK REFERENCE CARD
+================================================================================
+
+STRUCTURE: Single Modal, NOT Tabs or Multi-Step
+  Size: size="xl" (max-w-[95vw] sm:max-w-4xl)
+  All content scrolls: max-h-[calc(100vh-200px)] overflow-y-auto
+  No wizards, no "Next" buttons, no separate modals
+
+================================================================================
+                         MAIN SECTIONS (Sequential)
+================================================================================
+
+1. Supplier Selection        [Required] → Native <select>
+2. Location Selection        [Required] → Native <select>  
+3. Expected Delivery Date    [Optional] → Date input
+4. Products (Inline Entry)   [Required] → MAIN FEATURE
+   ├─ Search input (keyboard nav)
+   ├─ Dropdown results (max-h-80)
+   └─ Added items list (max-h-400)
+5. Internal Notes            [Optional] → Textarea
+6. Subtotal                  [Calc]     → Conditional display
+
+================================================================================
+                         KEYBOARD SHORTCUTS (All shown in placeholder)
+================================================================================
+
+SEARCH INPUT:
+  ↑ / ↓        Navigate dropdown
+  Enter        Select product OR open dropdown
+  Escape       Close dropdown + clear search
+
+QUANTITY INPUT (after product selected):
+  Enter / Tab  Move to Unit Price
+  Escape       Cancel entry
+
+UNIT PRICE INPUT (after quantity entered):
+  Enter        Add item + return to search
+  Escape       Cancel entry
+
+================================================================================
+                              STATE STRUCTURE
+================================================================================
+
+[Data Loading]
+  suppliers, allProducts, locations
+  loadingSuppliers, loadingProducts, loadingLocations
+
+[User Selection]
+  selectedSupplier (string, required)
+  selectedLocation (string, required)
+  expectedDeliveryDate (string, optional)
+  internalNotes (string, optional)
+
+[Product Entry (Two-State Pattern)]
+  currentLineItem = { product, quantity, unit_price }
+  lineItems = [] (array of added items)
+
+[Search & Navigation]
+  productSearch (string)
+  showDropdown (boolean)
+  selectedProductIndex (number)
+
+[Feedback]
+  isSubmitting (boolean)
+  error (string | null)
+  success (boolean)
+
+================================================================================
+                            INLINE ENTRY PATTERN
+================================================================================
+
+           SEARCH MODE                    ENTRY MODE
+        (currentLineItem=null)        (currentLineItem=product)
+                |                              |
+        ┌───────────────┐             ┌──────────────────┐
+        │ Search input  │    Select   │ Product header   │
+        │ • Product 1   │  ───────→   │ SKU: ABC         │
+        │ • Product 2   │             │ Qty: [_____]     │
+        │ • Product 3   │             │ Price: [_____]   │
+        └───────────────┘             │ [Add Item] ✓     │
+                                      └──────────────────┘
+                                             |
+                                      Confirm (Enter)
+                                             |
+                                      Back to SEARCH MODE
+                                      + Add to lineItems
+
+================================================================================
+                         HEIGHT MANAGEMENT STRATEGY
+================================================================================
+
+DESKTOP (1200px viewport):
+  Header:           50px
+  Content:          calc(100vh - 200px) = 1000px scrollable
+    ├─ Supplier/Location: 100px
+    ├─ Search: 50px
+    ├─ Dropdown: max-h-80 (scrolls)
+    ├─ Line Items: max-h-400 (scrolls)
+    └─ Notes/Subtotal: 90px
+  Footer:           50px
+
+MOBILE (600px viewport):
+  Header:           40px
+  Content:          calc(100vh - 120px) = 480px scrollable
+  Footer:           40px
+
+KEY: Everything fits or scrolls. No modal bloat!
+
+================================================================================
+                            CODE PATTERNS (Copy-Paste Ready)
+================================================================================
+
+PATTERN 1: Two-State Conditional
+  {currentLineItem.product ? (
+    // ENTRY MODE
+    <div className="...">Entry form</div>
+  ) : (
+    // SEARCH MODE
+    <div className="...">Search form</div>
+  )}
+
+PATTERN 2: Auto-Focus Chain
+  const quantityInputRef = useRef<HTMLInputElement>(null);
+  setTimeout(() => quantityInputRef.current?.focus(), 50);
+
+PATTERN 3: Keyboard Navigation
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      confirmLineItem();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      cancelLineItem();
+    }
+  }}
+
+PATTERN 4: Immutable List Update
+  // Add item
+  setLineItems([...lineItems, newItem]);
+  
+  // Update item
+  const updated = [...lineItems];
+  updated[index] = { ...updated[index], quantity: 5 };
+  setLineItems(updated);
+
+PATTERN 5: Max-Height Scroll Container
+  <div className="max-h-[400px] overflow-y-auto">
+    {items.map((item) => (...))}
+  </div>
+
+PATTERN 6: Error Alert (Inline, not modal)
+  {error && (
+    <div className="flex items-center gap-2 p-3 rounded-lg mb-4 
+                    bg-red-500/10 border border-red-500/20">
+      <XCircle size={16} className="text-red-400" />
+      <span className="text-red-400 text-xs">{error}</span>
+    </div>
+  )}
+
+================================================================================
+                         DESIGN DECISIONS (Why?)
+================================================================================
+
+Single Modal (not tabs):
+  ✓ Linear workflow (Supplier → Location → Products)
+  ✓ 6 sections that are sequential, not independent
+  ✓ Simpler code + clearer UX
+  ✓ No branching logic needed
+
+Inline Entry (not separate dialog):
+  ✓ No modal-within-modal nesting
+  ✓ Compact (search + entry in same space)
+  ✓ Natural flow for data entry
+  ✓ Visual feedback on selected product
+
+Keyboard Navigation:
+  ✓ Power users can work without mouse
+  ✓ More accessible
+  ✓ Faster data entry workflow
+  ✓ All hints in placeholder text
+
+Height Management (max-height + scroll):
+  ✓ Content never bloats the modal
+  ✓ Works on all screen sizes
+  ✓ Searchable lists don't take up full screen
+  ✓ Users can still see header/footer while scrolling
+
+Lazy Loading (data on modal open):
+  ✓ Faster initial page load
+  ✓ Only fetch what's needed
+  ✓ Can cache from context (locations)
+
+================================================================================
+                         VALIDATION FLOW
+================================================================================
+
+1. Line Item Validation (when adding to list):
+   ✓ Product selected?
+   ✓ Quantity > 0?
+   ✓ Unit price >= 0?
+   → Shows error alert if invalid
+   → Add to lineItems[] if valid
+
+2. Form Validation (before API call):
+   ✓ Supplier selected?
+   ✓ Location selected?
+   ✓ At least 1 line item?
+   ✓ All items have valid qty/price?
+   → Shows error alert if invalid
+   → Submits if valid
+
+3. API Response:
+   ✓ Success → Show message (1.5s) → Auto-close modal
+   ✗ Error → Show error alert → Allow user to fix
+
+================================================================================
+                         PERFORMANCE NOTES
+================================================================================
+
+LAZY LOADING:
+  - useEffect triggers when modal opens
+  - Loads suppliers, products, locations in PARALLEL
+  - Caches locations from context (no duplicate fetch)
+
+SEARCH:
+  - NO debounce (instant filter feedback)
+  - Filter happens in-memory (fast)
+  - Search across 3 fields: name, SKU, category
+
+RENDERING:
+  - Conditional render: Search XOR Entry mode (never both)
+  - Dropdown items use data-product-index for scrollIntoView
+  - All inputs controlled components (value + onChange)
+
+STATE:
+  - Immutable updates (spread operator)
+  - useCallback prevents unnecessary re-renders
+  - Proper dependency arrays on useEffect
+
+================================================================================
+                         FILE LOCATIONS
+================================================================================
+
+Main Component:
+  /app/vendor/products/components/purchase-orders/CreatePOModal.tsx (918 lines)
+
+Supporting:
+  /app/vendor/products/components/purchase-orders/
+  ├─ PurchaseOrdersTab.tsx
+  ├─ POList.tsx
+  ├─ POFilters.tsx
+  ├─ POStats.tsx
+  ├─ ReceiveModal.tsx
+  └─ types.ts
+
+Design System:
+  /components/ds/
+  ├─ Modal.tsx (base modal component)
+  ├─ Tabs.tsx (NOT used in PO)
+  ├─ Button.tsx
+  ├─ Input.tsx
+  └─ index.ts
+
+Documentation:
+  PO_MODAL_DOCS_README.md      (Index & overview)
+  whaletools_po_visual_summary.md  (START HERE - diagrams & quick ref)
+  whaletools_po_modal_analysis.md  (Deep dive - 14 sections)
+  whaletools_po_code_patterns.md   (12 code patterns - copy/paste ready)
+  QUICK_REFERENCE.txt          (This file!)
+
+================================================================================
+                         QUICK QUESTIONS ANSWERED
+================================================================================
+
+Q: Is it multi-step?
+A: No. Single modal, all content on one scroll.
+
+Q: Does it use tabs?
+A: No. Tabs component exists in design system but not used here.
+
+Q: Why is it so compact?
+A: Tight padding (p-3), native selects, inline entry, height constraints, 
+   lazy loading.
+
+Q: What are the shortcuts?
+A: Arrow keys (navigate), Enter (select/confirm), Tab (next field), 
+   Escape (cancel).
+
+Q: How many pixels wide?
+A: Mobile: 95vw, Desktop: 4xl (about 896px)
+
+Q: How many pixels tall?
+A: Desktop: calc(100vh - 200px), Mobile: calc(100vh - 120px)
+   (Everything scrolls if needed)
+
+Q: Can I edit items after adding?
+A: Yes. Each line item shows quantity and price fields for editing.
+
+Q: Can I delete items?
+A: Yes. Each line item has a trash icon button.
+
+Q: What API endpoint does it use?
+A: POST /api/vendor/purchase-orders with action: "create"
+
+Q: How long does success message show?
+A: 1.5 seconds, then auto-closes modal.
+
+================================================================================
+                         IMPLEMENTATION CHECKLIST
+================================================================================
+
+Building something similar? Make sure you have:
+
+  [ ] Single modal component (Headless UI Dialog)
+  [ ] Two-state conditional render (search vs entry)
+  [ ] Keyboard navigation (handleKeyDown + switch statement)
+  [ ] Auto-focus management (useRef + setTimeout)
+  [ ] Inline validation (before adding items)
+  [ ] Form validation (before submit)
+  [ ] Max-height constraints (prevent bloat)
+  [ ] Lazy loading (data on modal open)
+  [ ] Error/success alerts (inline, not nested modals)
+  [ ] State reset (after successful submit)
+  [ ] API integration (POST endpoint)
+  [ ] Parent notification (onSuccess callback)
+
+================================================================================
+
+For detailed explanations, see:
+  - whaletools_po_modal_analysis.md (architecture)
+  - whaletools_po_code_patterns.md (code examples)
+  - whaletools_po_visual_summary.md (diagrams)
+
