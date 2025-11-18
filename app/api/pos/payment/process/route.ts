@@ -8,6 +8,7 @@ import { logger } from "@/lib/logger";
 import { toError, isPaymentError } from "@/lib/errors";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const maxDuration = 60; // Vercel Pro: 60s timeout for payment processing (customer card insert + PIN entry)
 
 /**
  * POST /api/pos/payment/process
