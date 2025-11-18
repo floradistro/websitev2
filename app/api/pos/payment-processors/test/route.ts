@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     try {
       // Initialize Dejavoo client
       const client = new DejavooClient({
-        authKey: processor.dejavoo_authkey,
+        authkey: processor.dejavoo_authkey,
         tpn: processor.dejavoo_tpn,
         environment: processor.environment || "production",
       });
