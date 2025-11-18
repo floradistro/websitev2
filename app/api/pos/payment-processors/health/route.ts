@@ -137,9 +137,10 @@ async function checkProcessorHealth(processor: any): Promise<HealthCheckResult> 
         environment: processor.environment || "production",
       });
 
-      // Simple timeout check - if API responds within 3 seconds, consider it live
+      // Timeout check - if API responds within 15 seconds, consider it live
+      // Increased from 3s to allow Dejavoo SPIN API time to respond (ping timeout is 10s)
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Health check timeout")), 3000)
+        setTimeout(() => reject(new Error("Health check timeout")), 15000)
       );
 
       // Lightweight ping by checking if we can construct a request

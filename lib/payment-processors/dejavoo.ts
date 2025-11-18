@@ -300,7 +300,7 @@ export class DejavooClient {
       
       // Quick HEAD request with timeout to check if endpoint exists
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout (increased from 2s for reliability)
       
       try {
         const response = await fetch(url, {
