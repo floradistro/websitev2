@@ -3,7 +3,6 @@
  */
 
 import fs from "fs";
-import path from "path";
 import { WALLET_CONFIG } from "../config";
 
 export interface PassCertificates {
@@ -20,8 +19,22 @@ export interface PassCertificates {
 export function loadCertificates(): PassCertificates {
   const certPassword = WALLET_CONFIG.certificates.signerKeyPassphrase;
 
-  // ALWAYS use file paths for now (BASE64 versions are corrupted)
-  // TODO: Fix BASE64 encoded certificates for production deployment
+  // Check for base64-encoded certificates in environment variables (production)
+  const certBase64 = process.env.APPLE_WALLET_CERT_BASE64;
+  const keyBase64 = process.env.APPLE_WALLET_KEY_BASE64;
+  const wwdrBase64 = process.env.APPLE_WALLET_WWDR_BASE64;
+
+  if (certBase64 && keyBase64 && wwdrBase64) {
+    // Production: Use base64-encoded certificates from environment variables
+    return {
+      wwdr: Buffer.from(wwdrBase64, "base64"),
+      signerCert: Buffer.from(certBase64, "base64"),
+      signerKey: Buffer.from(keyBase64, "base64"),
+      signerKeyPassphrase: certPassword,
+    };
+  }
+
+  // Development: Fall back to file paths
   const certPath = WALLET_CONFIG.certificates.signerCert;
   const keyPath = WALLET_CONFIG.certificates.signerKey;
   const wwdrPath = WALLET_CONFIG.certificates.wwdr;
