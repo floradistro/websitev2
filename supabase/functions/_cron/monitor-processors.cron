@@ -1,0 +1,5 @@
+# Payment Processor Health Monitoring Cron Job
+# Runs every 5 minutes to check terminal connectivity
+
+*/5 * * * * curl -X POST https://[YOUR_PROJECT_REF].supabase.co/functions/v1/monitor-processors \
+  -H "Authorization: Bearer [YOUR_ANON_KEY]"

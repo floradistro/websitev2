@@ -1,0 +1,3 @@
+# Process Apple Wallet push notifications every minute
+# This triggers the wallet-push edge function to send pending notifications
+*/1 * * * * wallet-push
