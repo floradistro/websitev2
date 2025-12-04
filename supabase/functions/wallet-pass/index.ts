@@ -21,8 +21,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0';
 import { encode as base64Encode } from 'https://deno.land/std@0.168.0/encoding/base64.ts';
 import { crypto } from 'https://deno.land/std@0.168.0/crypto/mod.ts';
 import JSZip from 'https://esm.sh/jszip@3.10.1';
-import * as pkcs7 from 'https://esm.sh/pkcs7@1.0.4';
-import * as forge from 'https://esm.sh/node-forge@1.3.1';
+// Use npm: specifier for node-forge (better Deno compatibility)
+import forge from 'npm:node-forge@1.3.1';
 
 // ============================================================================
 // CONFIGURATION
