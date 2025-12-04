@@ -115,29 +115,26 @@ serve(async (req: Request) => {
 
     // Generate or use existing serial number AND auth token
     let authToken: string;
-    if (!serialNumber) {
-      // Check if pass already exists for this customer
-      const { data: existingPass } = await supabase
-        .from('wallet_passes')
-        .select('serial_number, authentication_token')
-        .eq('customer_id', customerId)
-        .eq('vendor_id', vendorId)
-        .maybeSingle();
 
-      if (existingPass && existingPass.serial_number && existingPass.authentication_token) {
-        // Reuse existing serial number AND auth token for consistency
-        serialNumber = existingPass.serial_number;
-        authToken = existingPass.authentication_token;
-        console.log('[Wallet Pass] Reusing existing pass:', serialNumber);
-      } else {
-        // Generate new serial number and auth token
-        serialNumber = generateSerialNumber();
-        authToken = generateAuthToken();
-        console.log('[Wallet Pass] Creating new pass:', serialNumber);
-      }
+    // Always check for existing pass first (whether serial_number provided or not)
+    const { data: existingPass } = await supabase
+      .from('wallet_passes')
+      .select('serial_number, authentication_token')
+      .eq('customer_id', customerId)
+      .eq('vendor_id', vendorId)
+      .maybeSingle();
+
+    if (existingPass && existingPass.serial_number && existingPass.authentication_token) {
+      // Reuse existing serial number AND auth token for consistency
+      // This is critical - the auth token must match what the device has
+      serialNumber = serialNumber || existingPass.serial_number;
+      authToken = existingPass.authentication_token;
+      console.log('[Wallet Pass] Reusing existing pass:', serialNumber, 'with existing auth token');
     } else {
-      // Serial number provided, generate new auth token
+      // Generate new serial number and auth token (first time)
+      serialNumber = serialNumber || generateSerialNumber();
       authToken = generateAuthToken();
+      console.log('[Wallet Pass] Creating new pass:', serialNumber);
     }
 
     // Build pass data

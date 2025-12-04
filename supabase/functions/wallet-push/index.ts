@@ -219,16 +219,21 @@ async function sendApnsPush(pushToken: string, apnsToken: string): Promise<boole
   // The device will call our web service to get the updated pass
   const payload = {};
 
+  console.log(`[Wallet Push] Sending to APNs: ${APNS_HOST}, topic: ${PASS_TYPE_IDENTIFIER}`);
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'authorization': `bearer ${apnsToken}`,
       'apns-topic': PASS_TYPE_IDENTIFIER,
       'apns-push-type': 'background', // Wallet updates are background pushes
-      'apns-priority': '5', // 5 = send when convenient (power efficient)
+      'apns-priority': '10', // 10 = immediate delivery
     },
     body: JSON.stringify(payload),
   });
+
+  const apnsId = response.headers.get('apns-id');
+  console.log(`[Wallet Push] APNs response: status=${response.status}, apns-id=${apnsId}`);
 
   if (response.status === 200) {
     return true;
