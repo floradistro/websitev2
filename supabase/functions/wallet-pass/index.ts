@@ -249,6 +249,8 @@ function buildPassJson(customer: any, vendor: any, serialNumber: string, authTok
           key: 'points',
           label: 'LOYALTY POINTS',
           value: points.toLocaleString(),
+          // This triggers a native iOS notification when points change!
+          changeMessage: `🎉 You now have %@ points at ${storeName}!`,
         },
       ],
       secondaryFields: [
@@ -256,6 +258,8 @@ function buildPassJson(customer: any, vendor: any, serialNumber: string, authTok
           key: 'tier',
           label: 'TIER',
           value: `${tierEmoji} ${tierName.toUpperCase()}`,
+          // Notify on tier upgrades
+          changeMessage: `🏆 Congratulations! You're now %@ status!`,
         },
         {
           key: 'member',
@@ -280,6 +284,11 @@ function buildPassJson(customer: any, vendor: any, serialNumber: string, authTok
           key: 'customerId',
           label: 'MEMBER ID',
           value: customer.id.substring(0, 8).toUpperCase(),
+        },
+        {
+          key: 'website',
+          label: 'WEBSITE',
+          value: vendor.website_url || 'floradistro.com',
         },
         {
           key: 'terms',
