@@ -147,10 +147,11 @@ serve(async (req: Request) => {
     const pkpassBuffer = await generatePkpass(passData, certs, vendor.logo_url);
 
     // Store/update pass record in database
-    await supabase.from('wallet_passes').upsert({
+    const { error: upsertError } = await supabase.from('wallet_passes').upsert({
       customer_id: customerId,
       vendor_id: vendorId,
       serial_number: serialNumber,
+      pass_serial_number: serialNumber, // Required NOT NULL column
       authentication_token: authToken,
       pass_type: 'loyalty',
       pass_type_identifier: PASS_TYPE_IDENTIFIER,
@@ -168,6 +169,10 @@ serve(async (req: Request) => {
     }, {
       onConflict: 'customer_id,vendor_id',
     });
+
+    if (upsertError) {
+      console.error('[Wallet Pass] Failed to save pass record:', upsertError);
+    }
 
     console.log('[Wallet Pass] Pass generated successfully for customer:', customerId);
 
