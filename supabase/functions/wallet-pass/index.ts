@@ -113,7 +113,8 @@ serve(async (req: Request) => {
       });
     }
 
-    // Generate or use existing serial number
+    // Generate or use existing serial number AND auth token
+    let authToken: string;
     if (!serialNumber) {
       // Check if pass already exists for this customer
       const { data: existingPass } = await supabase
@@ -123,14 +124,21 @@ serve(async (req: Request) => {
         .eq('vendor_id', vendorId)
         .maybeSingle();
 
-      if (existingPass) {
+      if (existingPass && existingPass.serial_number && existingPass.authentication_token) {
+        // Reuse existing serial number AND auth token for consistency
         serialNumber = existingPass.serial_number;
+        authToken = existingPass.authentication_token;
+        console.log('[Wallet Pass] Reusing existing pass:', serialNumber);
       } else {
+        // Generate new serial number and auth token
         serialNumber = generateSerialNumber();
+        authToken = generateAuthToken();
+        console.log('[Wallet Pass] Creating new pass:', serialNumber);
       }
+    } else {
+      // Serial number provided, generate new auth token
+      authToken = generateAuthToken();
     }
-
-    const authToken = generateAuthToken();
 
     // Build pass data
     const passData = buildPassJson(customer, vendor, serialNumber, authToken);
