@@ -47,8 +47,15 @@ serve(async (req: Request) => {
   }
 
   const url = new URL(req.url);
-  const path = url.pathname;
+  const fullPath = url.pathname;
   const method = req.method;
+
+  // Supabase strips /functions/v1 but keeps the function name in path
+  // e.g., /wallet-api/v1/log -> need to extract /v1/log
+  let path = fullPath;
+  if (path.startsWith('/wallet-api')) {
+    path = path.replace(/^\/wallet-api/, '') || '/';
+  }
 
   console.log(`[Wallet API] ${method} ${path}`);
 
@@ -260,25 +267,47 @@ serve(async (req: Request) => {
     // Purpose: Log errors from Apple Wallet
     // ========================================================================
     if (path === '/v1/log' && method === 'POST') {
-      const body = await req.json();
-      console.log('[Wallet API] Error log from device:', JSON.stringify(body, null, 2));
+      try {
+        const body = await req.json().catch(() => ({ logs: [] }));
+        console.log('[Wallet API] Error log from device:', JSON.stringify(body, null, 2));
 
-      // Store in database for debugging
-      await supabase.from('wallet_error_logs').insert({
-        logs: body.logs || [],
-        received_at: new Date().toISOString(),
-      }).catch(() => {
-        // Table might not exist, ignore
-      });
+        // Store in database for debugging (table might not exist)
+        await supabase.from('wallet_error_logs').insert({
+          logs: body.logs || [],
+          received_at: new Date().toISOString(),
+        }).catch(() => {});
+      } catch (e) {
+        console.log('[Wallet API] Log endpoint error:', e);
+      }
 
       return new Response(null, { status: 200, headers: corsHeaders });
     }
 
     // ========================================================================
+    // Debug: Root path returns API info
+    // ========================================================================
+    if (path === '/' && method === 'GET') {
+      return new Response(JSON.stringify({
+        service: 'Apple Wallet Web Service API',
+        version: '1.0',
+        path_received: fullPath,
+        url_received: req.url,
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ========================================================================
     // Not Found
     // ========================================================================
-    console.log(`[Wallet API] Route not found: ${method} ${path}`);
-    return new Response('Not Found', { status: 404, headers: corsHeaders });
+    console.log(`[Wallet API] Route not found: ${method} ${path} (full: ${fullPath})`);
+    return new Response(JSON.stringify({
+      error: 'Not Found',
+      path_received: path,
+      full_path: fullPath,
+      url: req.url,
+    }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (error) {
     console.error('[Wallet API] Unexpected error:', error);
