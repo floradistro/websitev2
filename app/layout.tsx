@@ -6,7 +6,6 @@ import "./fullscreen.css"; // MUST be last to override globals.css
 import NotificationToast from "@/components/NotificationToast";
 import LoadingBar from "@/components/LoadingBar";
 import InstallPWAPrompt from "@/components/InstallPWAPrompt";
-import PWAUpdatePrompt from "@/components/PWAUpdatePrompt";
 import PWAReinstallPrompt from "@/components/PWAReinstallPrompt";
 import PWAInitializer from "@/components/PWAInitializer";
 import PWADebugPanel from "@/components/PWADebugPanel";
@@ -127,7 +126,6 @@ export default function RootLayout({
             {children}
             <NotificationToast />
             <InstallPWAPrompt />
-            <PWAUpdatePrompt />
             <PWAReinstallPrompt />
             <PWAInitializer />
             <PWADebugPanel />
