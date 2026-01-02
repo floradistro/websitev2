@@ -201,8 +201,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           isUser ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-900"
         }`}
       >
-        {/* Message content */}
-        <div className="whitespace-pre-wrap break-words text-sm">{message.content}</div>
+        {/* Message content with image support */}
+        <MessageContent content={message.content} isUser={isUser} />
 
         {/* Tool uses */}
         {message.toolUses && message.toolUses.length > 0 && (
@@ -284,6 +284,136 @@ function ToolUseIndicator({ tool }: { tool: ToolUse }) {
         <span className="text-gray-600">{tool.output.action && `(${tool.output.action})`}</span>
       )}
       {tool.error && <span className="text-red-600">- {tool.error}</span>}
+    </div>
+  );
+}
+
+/**
+ * Message Content Component - Parses and renders text with images
+ */
+function MessageContent({ content, isUser }: { content: string; isUser: boolean }) {
+  // Regex patterns for images
+  const markdownImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  const urlImageRegex = /(https?:\/\/[^\s]+\.(?:png|jpg|jpeg|gif|webp|svg)(?:\?[^\s]*)?)/gi;
+  const base64ImageRegex = /(data:image\/[^;]+;base64,[^\s]+)/gi;
+
+  // Check if content has any images
+  const hasMarkdownImages = markdownImageRegex.test(content);
+  const hasUrlImages = urlImageRegex.test(content);
+  const hasBase64Images = base64ImageRegex.test(content);
+
+  // Reset regex lastIndex
+  markdownImageRegex.lastIndex = 0;
+  urlImageRegex.lastIndex = 0;
+  base64ImageRegex.lastIndex = 0;
+
+  if (!hasMarkdownImages && !hasUrlImages && !hasBase64Images) {
+    // No images, render as plain text
+    return <div className="whitespace-pre-wrap break-words text-sm">{content}</div>;
+  }
+
+  // Parse content and extract images
+  const parts: Array<{ type: 'text' | 'image'; content: string; alt?: string }> = [];
+  let lastIndex = 0;
+  let processedContent = content;
+
+  // First, handle markdown images ![alt](url)
+  let match;
+  const allMatches: Array<{ index: number; length: number; type: 'markdown' | 'url' | 'base64'; url: string; alt?: string }> = [];
+
+  while ((match = markdownImageRegex.exec(content)) !== null) {
+    allMatches.push({
+      index: match.index,
+      length: match[0].length,
+      type: 'markdown',
+      url: match[2],
+      alt: match[1]
+    });
+  }
+
+  // Then handle raw image URLs (but not if they're already part of markdown)
+  while ((match = urlImageRegex.exec(content)) !== null) {
+    // Check if this URL is part of a markdown image
+    const isPartOfMarkdown = allMatches.some(m =>
+      m.type === 'markdown' && match!.index >= m.index && match!.index < m.index + m.length
+    );
+    if (!isPartOfMarkdown) {
+      allMatches.push({
+        index: match.index,
+        length: match[0].length,
+        type: 'url',
+        url: match[0]
+      });
+    }
+  }
+
+  // Handle base64 images
+  while ((match = base64ImageRegex.exec(content)) !== null) {
+    allMatches.push({
+      index: match.index,
+      length: match[0].length,
+      type: 'base64',
+      url: match[0]
+    });
+  }
+
+  // Sort matches by index
+  allMatches.sort((a, b) => a.index - b.index);
+
+  // Build parts array
+  for (const m of allMatches) {
+    // Add text before this match
+    if (m.index > lastIndex) {
+      const text = content.slice(lastIndex, m.index).trim();
+      if (text) {
+        parts.push({ type: 'text', content: text });
+      }
+    }
+    // Add the image
+    parts.push({ type: 'image', content: m.url, alt: m.alt });
+    lastIndex = m.index + m.length;
+  }
+
+  // Add remaining text
+  if (lastIndex < content.length) {
+    const text = content.slice(lastIndex).trim();
+    if (text) {
+      parts.push({ type: 'text', content: text });
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {parts.map((part, index) => {
+        if (part.type === 'text') {
+          return (
+            <div key={index} className="whitespace-pre-wrap break-words text-sm">
+              {part.content}
+            </div>
+          );
+        } else {
+          return (
+            <a
+              key={index}
+              href={part.content}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <img
+                src={part.content}
+                alt={part.alt || 'Generated image'}
+                className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity border border-gray-200"
+                style={{ maxHeight: '300px', objectFit: 'contain' }}
+                onError={(e) => {
+                  // Hide broken images
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </a>
+          );
+        }
+      })}
     </div>
   );
 }
